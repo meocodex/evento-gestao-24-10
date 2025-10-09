@@ -415,6 +415,27 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
       );
     }
 
+    // Filtro de status de pagamento (apenas para reembolsos)
+    if (filtros.statusPagamento && filtros.statusPagamento.length > 0) {
+      resultado = resultado.filter(d => 
+        d.dadosReembolso && 
+        filtros.statusPagamento!.includes(d.dadosReembolso.statusPagamento)
+      );
+    }
+
+    // Filtro de tipos de reembolso (apenas para reembolsos)
+    if (filtros.tiposReembolso && filtros.tiposReembolso.length > 0) {
+      resultado = resultado.filter(d => 
+        d.dadosReembolso && 
+        d.dadosReembolso.itens.some(item => filtros.tiposReembolso!.includes(item.tipo))
+      );
+    }
+
+    // Filtro de evento relacionado
+    if (filtros.eventoRelacionado) {
+      resultado = resultado.filter(d => d.eventoRelacionado === filtros.eventoRelacionado);
+    }
+
     return resultado;
   };
 

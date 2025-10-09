@@ -16,9 +16,6 @@ export function DemandaFilters() {
   const { filtros, setFiltros } = useDemandasContext();
   const { eventos } = useEventos();
   const [apenasReembolsos, setApenasReembolsos] = useState(false);
-  const [statusPagamento, setStatusPagamento] = useState<string[]>([]);
-  const [tiposReembolso, setTiposReembolso] = useState<TipoReembolso[]>([]);
-  const [eventoSelecionado, setEventoSelecionado] = useState<string>('todos');
 
   const toggleStatus = (status: StatusDemanda) => {
     const current = filtros.status || [];
@@ -45,31 +42,30 @@ export function DemandaFilters() {
   };
 
   const toggleStatusPagamento = (status: string) => {
-    const updated = statusPagamento.includes(status)
-      ? statusPagamento.filter(s => s !== status)
-      : [...statusPagamento, status];
-    setStatusPagamento(updated);
+    const current = filtros.statusPagamento || [];
+    const updated = current.includes(status)
+      ? current.filter(s => s !== status)
+      : [...current, status];
+    setFiltros({ ...filtros, statusPagamento: updated.length > 0 ? updated : undefined });
   };
 
   const toggleTipoReembolso = (tipo: TipoReembolso) => {
-    const updated = tiposReembolso.includes(tipo)
-      ? tiposReembolso.filter(t => t !== tipo)
-      : [...tiposReembolso, tipo];
-    setTiposReembolso(updated);
+    const current = filtros.tiposReembolso || [];
+    const updated = current.includes(tipo)
+      ? current.filter(t => t !== tipo)
+      : [...current, tipo];
+    setFiltros({ ...filtros, tiposReembolso: updated.length > 0 ? updated : undefined });
   };
 
   const limparFiltros = () => {
     setFiltros({ mostrarArquivadas: false });
     setApenasReembolsos(false);
-    setStatusPagamento([]);
-    setTiposReembolso([]);
-    setEventoSelecionado('todos');
   };
 
   const temFiltrosAtivos = Object.keys(filtros).some(key => {
     const value = filtros[key as keyof typeof filtros];
     return value !== undefined && (typeof value !== 'string' || value !== '');
-  }) || apenasReembolsos || statusPagamento.length > 0 || tiposReembolso.length > 0 || eventoSelecionado !== 'todos';
+  }) || apenasReembolsos;
 
   return (
     <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
@@ -215,7 +211,7 @@ export function DemandaFilters() {
                   <Badge
                     key={status}
                     variant="outline"
-                    className={statusPagamento.includes(status) ? 'bg-green-500/10 text-green-600' : 'cursor-pointer'}
+                    className={(filtros.statusPagamento || []).includes(status) ? 'bg-green-500/10 text-green-600' : 'cursor-pointer'}
                     onClick={() => toggleStatusPagamento(status)}
                   >
                     {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -231,7 +227,7 @@ export function DemandaFilters() {
                   <Badge
                     key={tipo}
                     variant="outline"
-                    className={tiposReembolso.includes(tipo as TipoReembolso) ? 'bg-green-500/10 text-green-600' : 'cursor-pointer'}
+                    className={(filtros.tiposReembolso || []).includes(tipo as TipoReembolso) ? 'bg-green-500/10 text-green-600' : 'cursor-pointer'}
                     onClick={() => toggleTipoReembolso(tipo as TipoReembolso)}
                   >
                     {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
@@ -243,8 +239,8 @@ export function DemandaFilters() {
             <div className="space-y-2">
               <Label className="text-xs">Evento</Label>
               <Select
-                value={eventoSelecionado}
-                onValueChange={setEventoSelecionado}
+                value={filtros.eventoRelacionado || 'todos'}
+                onValueChange={(value) => setFiltros({ ...filtros, eventoRelacionado: value === 'todos' ? undefined : value })}
               >
                 <SelectTrigger>
                   <SelectValue />

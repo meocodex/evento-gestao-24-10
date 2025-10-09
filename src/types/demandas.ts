@@ -90,4 +90,7 @@ export interface FiltroDemandas {
   mostrarArquivadas?: boolean;
   prazoVencido?: boolean;
   prazoProximo?: boolean;
+  statusPagamento?: string[];
+  tiposReembolso?: TipoReembolso[];
+  eventoRelacionado?: string;
 }
