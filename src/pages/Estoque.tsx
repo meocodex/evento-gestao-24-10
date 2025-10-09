@@ -12,6 +12,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { EstoqueFilters } from '@/components/estoque/EstoqueFilters';
 import { NovoMaterialDialog } from '@/components/estoque/NovoMaterialDialog';
+import { EditarMaterialDialog } from '@/components/estoque/EditarMaterialDialog';
 import { DetalhesMaterialDialog } from '@/components/estoque/DetalhesMaterialDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useEstoque } from '@/contexts/EstoqueContext';
@@ -23,6 +24,7 @@ import {
   Plus,
   Eye,
   Trash2,
+  Edit,
   LayoutGrid,
   List,
 } from 'lucide-react';
@@ -33,6 +35,7 @@ export default function Estoque() {
   const [showNovoMaterial, setShowNovoMaterial] = useState(false);
   const [materialSelecionado, setMaterialSelecionado] = useState<MaterialEstoque | null>(null);
   const [showDetalhes, setShowDetalhes] = useState(false);
+  const [showEditarMaterial, setShowEditarMaterial] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [materialParaExcluir, setMaterialParaExcluir] = useState<MaterialEstoque | null>(null);
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
@@ -42,6 +45,11 @@ export default function Estoque() {
   const handleVerDetalhes = (material: MaterialEstoque) => {
     setMaterialSelecionado(material);
     setShowDetalhes(true);
+  };
+
+  const handleEditarMaterial = (material: MaterialEstoque) => {
+    setMaterialSelecionado(material);
+    setShowEditarMaterial(true);
   };
 
   const handleDeleteClick = (material: MaterialEstoque) => {
@@ -176,12 +184,12 @@ export default function Estoque() {
                 <TableHead>Código</TableHead>
                 <TableHead>Material</TableHead>
                 <TableHead>Categoria</TableHead>
-                <TableHead className="text-center">Total</TableHead>
-                <TableHead className="text-center">Disponível</TableHead>
-                <TableHead className="text-center">Em Uso</TableHead>
-                <TableHead className="text-center">Manutenção</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
+                      <TableHead>Total</TableHead>
+                      <TableHead className="text-center">Disponível</TableHead>
+                      <TableHead className="text-center">Em Uso</TableHead>
+                      <TableHead className="text-center">Manutenção</TableHead>
+                      <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
             </TableHeader>
             <TableBody>
               {materiaisFiltrados.length === 0 ? (
@@ -221,13 +229,20 @@ export default function Estoque() {
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => handleVerDetalhes(material)}
                           >
                             <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditarMaterial(material)}
+                          >
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -295,6 +310,13 @@ export default function Estoque() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      onClick={() => handleEditarMaterial(material)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => handleDeleteClick(material)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -314,11 +336,18 @@ export default function Estoque() {
       />
 
       {materialSelecionado && (
-        <DetalhesMaterialDialog
-          open={showDetalhes}
-          onOpenChange={setShowDetalhes}
-          material={materialSelecionado}
-        />
+        <>
+          <DetalhesMaterialDialog
+            open={showDetalhes}
+            onOpenChange={setShowDetalhes}
+            material={materialSelecionado}
+          />
+          <EditarMaterialDialog
+            open={showEditarMaterial}
+            onOpenChange={setShowEditarMaterial}
+            material={materialSelecionado}
+          />
+        </>
       )}
 
       <ConfirmDialog

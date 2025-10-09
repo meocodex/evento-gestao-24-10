@@ -15,10 +15,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { MaterialEstoque } from '@/lib/mock-data/estoque';
-import { Package, MapPin, Plus, Trash2 } from 'lucide-react';
+import { MaterialEstoque, SerialEstoque } from '@/lib/mock-data/estoque';
+import { Package, MapPin, Plus, Trash2, Edit } from 'lucide-react';
 import { useState } from 'react';
 import { NovoSerialDialog } from './NovoSerialDialog';
+import { EditarMaterialDialog } from './EditarMaterialDialog';
+import { EditarSerialDialog } from './EditarSerialDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useEstoque } from '@/contexts/EstoqueContext';
 
@@ -41,8 +43,16 @@ export function DetalhesMaterialDialog({
 }: DetalhesMaterialDialogProps) {
   const { excluirSerial } = useEstoque();
   const [showNovoSerial, setShowNovoSerial] = useState(false);
+  const [showEditarMaterial, setShowEditarMaterial] = useState(false);
+  const [showEditarSerial, setShowEditarSerial] = useState(false);
+  const [serialParaEditar, setSerialParaEditar] = useState<SerialEstoque | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [serialParaExcluir, setSerialParaExcluir] = useState<string | null>(null);
+
+  const handleEditSerial = (serial: SerialEstoque) => {
+    setSerialParaEditar(serial);
+    setShowEditarSerial(true);
+  };
 
   const handleDeleteSerial = (numeroSerial: string) => {
     setSerialParaExcluir(numeroSerial);
@@ -62,9 +72,15 @@ export function DetalhesMaterialDialog({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Package className="h-5 w-5" />
-              {material.nome}
+            <DialogTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Package className="h-5 w-5" />
+                {material.nome}
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setShowEditarMaterial(true)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Editar Material
+              </Button>
             </DialogTitle>
           </DialogHeader>
 
@@ -125,7 +141,7 @@ export function DetalhesMaterialDialog({
                       <TableHead>Serial</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Localização</TableHead>
-                      <TableHead className="w-[80px]">Ações</TableHead>
+                      <TableHead className="w-[120px]">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -146,14 +162,23 @@ export function DetalhesMaterialDialog({
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteSerial(serial.numero)}
-                            disabled={serial.status === 'em-uso'}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleEditSerial(serial)}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteSerial(serial.numero)}
+                              disabled={serial.status === 'em-uso'}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -171,6 +196,21 @@ export function DetalhesMaterialDialog({
         materialId={material.id}
         materialNome={material.nome}
       />
+
+      <EditarMaterialDialog
+        open={showEditarMaterial}
+        onOpenChange={setShowEditarMaterial}
+        material={material}
+      />
+
+      {serialParaEditar && (
+        <EditarSerialDialog
+          open={showEditarSerial}
+          onOpenChange={setShowEditarSerial}
+          materialId={material.id}
+          serial={serialParaEditar}
+        />
+      )}
 
       <ConfirmDialog
         open={showDeleteConfirm}
