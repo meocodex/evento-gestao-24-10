@@ -3,13 +3,21 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useDemandasContext } from '@/contexts/DemandasContext';
-import { StatusDemanda, PrioridadeDemanda, CategoriaDemanda } from '@/types/demandas';
-import { Search, X } from 'lucide-react';
+import { StatusDemanda, PrioridadeDemanda, CategoriaDemanda, TipoReembolso } from '@/types/demandas';
+import { Search, X, DollarSign } from 'lucide-react';
 import { mockUsuarios } from '@/lib/mock-data/demandas';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useEventos } from '@/contexts/EventosContext';
+import { useState } from 'react';
 
 export function DemandaFilters() {
   const { filtros, setFiltros } = useDemandasContext();
+  const { eventos } = useEventos();
+  const [apenasReembolsos, setApenasReembolsos] = useState(false);
+  const [statusPagamento, setStatusPagamento] = useState<string[]>([]);
+  const [tiposReembolso, setTiposReembolso] = useState<TipoReembolso[]>([]);
+  const [eventoSelecionado, setEventoSelecionado] = useState<string>('todos');
 
   const toggleStatus = (status: StatusDemanda) => {
     const current = filtros.status || [];
@@ -35,14 +43,32 @@ export function DemandaFilters() {
     setFiltros({ ...filtros, categoria: updated.length > 0 ? updated : undefined });
   };
 
+  const toggleStatusPagamento = (status: string) => {
+    const updated = statusPagamento.includes(status)
+      ? statusPagamento.filter(s => s !== status)
+      : [...statusPagamento, status];
+    setStatusPagamento(updated);
+  };
+
+  const toggleTipoReembolso = (tipo: TipoReembolso) => {
+    const updated = tiposReembolso.includes(tipo)
+      ? tiposReembolso.filter(t => t !== tipo)
+      : [...tiposReembolso, tipo];
+    setTiposReembolso(updated);
+  };
+
   const limparFiltros = () => {
     setFiltros({});
+    setApenasReembolsos(false);
+    setStatusPagamento([]);
+    setTiposReembolso([]);
+    setEventoSelecionado('todos');
   };
 
   const temFiltrosAtivos = Object.keys(filtros).some(key => {
     const value = filtros[key as keyof typeof filtros];
     return value !== undefined && (typeof value !== 'string' || value !== '');
-  });
+  }) || apenasReembolsos || statusPagamento.length > 0 || tiposReembolso.length > 0 || eventoSelecionado !== 'todos';
 
   return (
     <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
@@ -141,17 +167,99 @@ export function DemandaFilters() {
       <div className="space-y-2">
         <Label>Categoria</Label>
         <div className="flex flex-wrap gap-2">
-          {['tecnica', 'operacional', 'comercial', 'financeira', 'administrativa', 'outra'].map((cat) => (
+          {['tecnica', 'operacional', 'comercial', 'financeira', 'administrativa', 'reembolso', 'outra'].map((cat) => (
             <Badge
               key={cat}
               variant="outline"
               className={filtros.categoria?.includes(cat as CategoriaDemanda) ? 'bg-primary/10 text-primary' : 'cursor-pointer'}
               onClick={() => toggleCategoria(cat as CategoriaDemanda)}
             >
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              {cat === 'reembolso' ? (
+                <span className="flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" />
+                  Reembolso
+                </span>
+              ) : (
+                cat.charAt(0).toUpperCase() + cat.slice(1)
+              )}
             </Badge>
           ))}
         </div>
+      </div>
+
+      {/* Filtros Específicos de Reembolso */}
+      <div className="space-y-4 p-3 bg-green-500/5 border border-green-500/20 rounded-md">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="apenas-reembolsos"
+            checked={apenasReembolsos}
+            onCheckedChange={(checked) => {
+              setApenasReembolsos(checked as boolean);
+              if (checked) {
+                toggleCategoria('reembolso');
+              }
+            }}
+          />
+          <Label htmlFor="apenas-reembolsos" className="text-sm font-semibold cursor-pointer">
+            Apenas Reembolsos
+          </Label>
+        </div>
+
+        {apenasReembolsos && (
+          <>
+            <div className="space-y-2">
+              <Label className="text-xs">Status de Pagamento</Label>
+              <div className="flex flex-wrap gap-2">
+                {['pendente', 'aprovado', 'pago', 'recusado'].map((status) => (
+                  <Badge
+                    key={status}
+                    variant="outline"
+                    className={statusPagamento.includes(status) ? 'bg-green-500/10 text-green-600' : 'cursor-pointer'}
+                    onClick={() => toggleStatusPagamento(status)}
+                  >
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs">Tipo de Reembolso</Label>
+              <div className="flex flex-wrap gap-2">
+                {['frete', 'diaria', 'hospedagem', 'combustivel', 'locacao', 'alimentacao', 'outros'].map((tipo) => (
+                  <Badge
+                    key={tipo}
+                    variant="outline"
+                    className={tiposReembolso.includes(tipo as TipoReembolso) ? 'bg-green-500/10 text-green-600' : 'cursor-pointer'}
+                    onClick={() => toggleTipoReembolso(tipo as TipoReembolso)}
+                  >
+                    {tipo.charAt(0).toUpperCase() + tipo.slice(1)}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs">Evento</Label>
+              <Select
+                value={eventoSelecionado}
+                onValueChange={setEventoSelecionado}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos os Eventos</SelectItem>
+                  {eventos.map((evento) => (
+                    <SelectItem key={evento.id} value={evento.id}>
+                      {evento.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
