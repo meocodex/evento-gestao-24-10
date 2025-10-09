@@ -1,17 +1,45 @@
+import { useState } from 'react';
 import { Evento } from '@/types/eventos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2 } from 'lucide-react';
+import { AdicionarReceitaDialog } from '../modals/AdicionarReceitaDialog';
+import { AdicionarDespesaDialog } from '../modals/AdicionarDespesaDialog';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface FinanceiroEventoProps {
   evento: Evento;
   permissions: any;
 }
 
-export function FinanceiroEvento({ evento }: FinanceiroEventoProps) {
+export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps) {
+  const { toast } = useToast();
+  const [showAddReceita, setShowAddReceita] = useState(false);
+  const [showAddDespesa, setShowAddDespesa] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; tipo: 'receita' | 'despesa' } | null>(null);
+
   const totalReceitas = evento.financeiro.receitas.reduce((sum, r) => sum + r.valor, 0);
   const totalDespesas = evento.financeiro.despesas.reduce((sum, d) => sum + d.valor, 0);
   const totalCobrancas = evento.financeiro.cobrancas.reduce((sum, c) => sum + c.valor, 0);
   const lucro = totalReceitas - totalDespesas - totalCobrancas;
+
+  const handleDeleteClick = (id: string, tipo: 'receita' | 'despesa') => {
+    setItemToDelete({ id, tipo });
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (itemToDelete) {
+      toast({
+        title: `${itemToDelete.tipo === 'receita' ? 'Receita' : 'Despesa'} removida!`,
+        description: 'O item foi removido com sucesso.',
+      });
+      setItemToDelete(null);
+      setShowDeleteDialog(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -71,42 +99,112 @@ export function FinanceiroEvento({ evento }: FinanceiroEventoProps) {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Receitas</CardTitle>
+          {permissions.canEditFinancial && (
+            <Button size="sm" onClick={() => setShowAddReceita(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Receita
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {evento.financeiro.receitas.map((receita) => (
-              <div key={receita.id} className="flex justify-between items-center p-3 border rounded">
-                <div>
-                  <p className="font-medium">{receita.descricao}</p>
-                  <p className="text-sm text-muted-foreground">{receita.tipo}</p>
+          {evento.financeiro.receitas.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              Nenhuma receita cadastrada
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {evento.financeiro.receitas.map((receita) => (
+                <div key={receita.id} className="flex justify-between items-center p-3 border rounded">
+                  <div className="flex-1">
+                    <p className="font-medium">{receita.descricao}</p>
+                    <p className="text-sm text-muted-foreground">{receita.tipo}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-green-600">R$ {receita.valor.toLocaleString('pt-BR')}</span>
+                    {permissions.canEditFinancial && (
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        onClick={() => handleDeleteClick(receita.id, 'receita')}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <span className="font-bold text-green-600">R$ {receita.valor.toLocaleString('pt-BR')}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Despesas</CardTitle>
+          {permissions.canEditFinancial && (
+            <Button size="sm" onClick={() => setShowAddDespesa(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Despesa
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {evento.financeiro.despesas.map((despesa) => (
-              <div key={despesa.id} className="flex justify-between items-center p-3 border rounded">
-                <div>
-                  <p className="font-medium">{despesa.descricao}</p>
-                  <p className="text-sm text-muted-foreground">{despesa.categoria}</p>
+          {evento.financeiro.despesas.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              Nenhuma despesa cadastrada
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {evento.financeiro.despesas.map((despesa) => (
+                <div key={despesa.id} className="flex justify-between items-center p-3 border rounded">
+                  <div className="flex-1">
+                    <p className="font-medium">{despesa.descricao}</p>
+                    <p className="text-sm text-muted-foreground">{despesa.categoria}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-red-600">R$ {despesa.valor.toLocaleString('pt-BR')}</span>
+                    {permissions.canEditFinancial && (
+                      <Button 
+                        size="sm" 
+                        variant="ghost"
+                        onClick={() => handleDeleteClick(despesa.id, 'despesa')}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <span className="font-bold text-red-600">R$ {despesa.valor.toLocaleString('pt-BR')}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      <AdicionarReceitaDialog
+        open={showAddReceita}
+        onOpenChange={setShowAddReceita}
+        onAdicionar={(data) => {
+          console.log('Adicionar receita:', data);
+        }}
+      />
+
+      <AdicionarDespesaDialog
+        open={showAddDespesa}
+        onOpenChange={setShowAddDespesa}
+        onAdicionar={(data) => {
+          console.log('Adicionar despesa:', data);
+        }}
+      />
+
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleConfirmDelete}
+        title="Confirmar Exclusão"
+        description="Tem certeza que deseja remover este item?"
+      />
     </div>
   );
 }

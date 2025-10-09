@@ -1,22 +1,61 @@
+import { useState } from 'react';
 import { Evento } from '@/types/eventos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EventoTimeline } from '@/components/shared/EventoTimeline';
-import { Calendar, MapPin, User, Building2, Mail, Phone } from 'lucide-react';
+import { Calendar, MapPin, User, Building2, Mail, Phone, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { EditarDadosEvento } from './EditarDadosEvento';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { useToast } from '@/hooks/use-toast';
 
 interface DadosEventoProps {
   evento: Evento;
   permissions: any;
 }
 
-export function DadosEvento({ evento }: DadosEventoProps) {
+export function DadosEvento({ evento, permissions }: DadosEventoProps) {
+  const { toast } = useToast();
+  const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const handleSave = () => {
+    setIsEditing(false);
+  };
+
+  const handleDelete = () => {
+    toast({
+      title: 'Evento excluído!',
+      description: 'O evento foi removido com sucesso.',
+    });
+    setShowDeleteDialog(false);
+  };
+
+  if (isEditing) {
+    return <EditarDadosEvento evento={evento} onSave={handleSave} onCancel={() => setIsEditing(false)} />;
+  }
+
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Informações do Evento</CardTitle>
+          <div className="flex gap-2">
+            {permissions.canEdit && (
+              <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
+            )}
+            {permissions.canDeleteEvent && (
+              <Button variant="destructive" size="sm" onClick={() => setShowDeleteDialog(true)}>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -83,6 +122,14 @@ export function DadosEvento({ evento }: DadosEventoProps) {
           <EventoTimeline timeline={evento.timeline} />
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleDelete}
+        title="Excluir Evento"
+        description="Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita."
+      />
     </div>
   );
 }
