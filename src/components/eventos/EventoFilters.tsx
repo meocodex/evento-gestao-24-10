@@ -113,16 +113,16 @@ export function EventoFilters({
           <div className="space-y-2">
             <label className="text-sm font-medium">Cidade</label>
             <Select
-              value={filters.cidade}
+              value={filters.cidade || 'all'}
               onValueChange={(value) =>
-                onFiltersChange({ ...filters, cidade: value })
+                onFiltersChange({ ...filters, cidade: value === 'all' ? '' : value })
               }
             >
               <SelectTrigger>
                 <SelectValue placeholder="Todas as cidades" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todas</SelectItem>
+                <SelectItem value="all">Todas</SelectItem>
                 {availableCities.map((city) => (
                   <SelectItem key={city} value={city}>
                     {city}

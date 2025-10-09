@@ -96,16 +96,16 @@ export function ClienteFilters() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Estado</label>
               <Select
-                value={filtros.estado}
+                value={filtros.estado || 'all'}
                 onValueChange={(value) => {
-                  aplicarFiltros({ estado: value, cidade: '' });
+                  aplicarFiltros({ estado: value === 'all' ? '' : value, cidade: '' });
                 }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todos</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
                   {ESTADOS_BRASILEIROS.map((estado) => (
                     <SelectItem key={estado} value={estado}>
                       {estado}
@@ -119,15 +119,15 @@ export function ClienteFilters() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Cidade</label>
               <Select
-                value={filtros.cidade}
-                onValueChange={(value) => aplicarFiltros({ cidade: value })}
+                value={filtros.cidade || 'all'}
+                onValueChange={(value) => aplicarFiltros({ cidade: value === 'all' ? '' : value })}
                 disabled={!filtros.estado}
               >
                 <SelectTrigger>
                   <SelectValue placeholder={filtros.estado ? 'Selecione...' : 'Escolha um estado'} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Todas</SelectItem>
+                  <SelectItem value="all">Todas</SelectItem>
                   {cidadesDisponiveis.map((cidade) => (
                     <SelectItem key={cidade} value={cidade}>
                       {cidade}
