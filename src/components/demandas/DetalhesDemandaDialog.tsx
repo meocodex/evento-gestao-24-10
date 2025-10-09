@@ -5,12 +5,16 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDemandasContext } from '@/contexts/DemandasContext';
-import { Demanda, StatusDemanda } from '@/types/demandas';
+import { Demanda, StatusDemanda, TipoReembolso } from '@/types/demandas';
 import { mockUsuarios } from '@/lib/mock-data/demandas';
 import { format } from 'date-fns';
-import { MessageSquare, Paperclip, Send, CheckCircle2, AlertCircle, Link2, Repeat } from 'lucide-react';
+import { MessageSquare, Paperclip, Send, CheckCircle2, AlertCircle, Link2, Repeat, DollarSign, FileText, Download, XCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { AprovarReembolsoDialog } from './AprovarReembolsoDialog';
+import { MarcarPagoDialog } from './MarcarPagoDialog';
+import { RecusarReembolsoDialog } from './RecusarReembolsoDialog';
 
 interface DetalhesDemandaDialogProps {
   demanda: Demanda | null;
@@ -25,10 +29,40 @@ const statusConfig: Record<StatusDemanda, { label: string; variant: 'default' | 
   cancelada: { label: 'Cancelada', variant: 'destructive' },
 };
 
+const tipoReembolsoLabels: Record<TipoReembolso, string> = {
+  frete: 'Frete',
+  diaria: 'Diária',
+  hospedagem: 'Hospedagem',
+  combustivel: 'Combustível',
+  locacao: 'Locação',
+  alimentacao: 'Alimentação',
+  outros: 'Outros'
+};
+
+const statusPagamentoConfig = {
+  pendente: { label: 'Pendente', color: 'bg-yellow-100 text-yellow-800' },
+  aprovado: { label: 'Aprovado', color: 'bg-blue-100 text-blue-800' },
+  pago: { label: 'Pago', color: 'bg-green-100 text-green-800' },
+  recusado: { label: 'Recusado', color: 'bg-red-100 text-red-800' }
+};
+
 export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesDemandaDialogProps) {
-  const { alterarStatus, atribuirResponsavel, adicionarComentario, removerAnexo, marcarComoResolvida, reabrirDemanda } = useDemandasContext();
+  const { 
+    alterarStatus, 
+    atribuirResponsavel, 
+    adicionarComentario, 
+    removerAnexo, 
+    marcarComoResolvida, 
+    reabrirDemanda,
+    aprovarReembolso,
+    marcarReembolsoPago,
+    recusarReembolso
+  } = useDemandasContext();
   const { user } = useAuth();
   const [novoComentario, setNovoComentario] = useState('');
+  const [showAprovarDialog, setShowAprovarDialog] = useState(false);
+  const [showPagoDialog, setShowPagoDialog] = useState(false);
+  const [showRecusarDialog, setShowRecusarDialog] = useState(false);
 
   if (!demanda) return null;
 
@@ -66,6 +100,23 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
     reabrirDemanda(demanda.id);
   };
 
+  const handleAprovarReembolso = (formaPagamento: string, observacoes?: string) => {
+    aprovarReembolso(demanda.id, formaPagamento, observacoes);
+    setShowAprovarDialog(false);
+  };
+
+  const handleMarcarPago = (dataPagamento: string, comprovante?: string, observacoes?: string) => {
+    marcarReembolsoPago(demanda.id, dataPagamento, comprovante, observacoes);
+    setShowPagoDialog(false);
+  };
+
+  const handleRecusar = (motivo: string) => {
+    recusarReembolso(demanda.id, motivo);
+    setShowRecusarDialog(false);
+  };
+
+  const isReembolso = demanda.categoria === 'reembolso' && demanda.dadosReembolso;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -76,9 +127,20 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
               <p className="text-muted-foreground mt-1">#{demanda.id}</p>
             </div>
             <div className="flex gap-2">
+              {isReembolso && (
+                <Badge className="bg-purple-100 text-purple-800">
+                  <DollarSign className="mr-1 h-3 w-3" />
+                  Reembolso
+                </Badge>
+              )}
               <Badge variant={statusConfig[demanda.status].variant}>
                 {statusConfig[demanda.status].label}
               </Badge>
+              {isReembolso && demanda.dadosReembolso && (
+                <Badge className={statusPagamentoConfig[demanda.dadosReembolso.statusPagamento].color}>
+                  {statusPagamentoConfig[demanda.dadosReembolso.statusPagamento].label}
+                </Badge>
+              )}
               {demanda.resolvida && (
                 <Badge variant="secondary" className="bg-green-100 text-green-800">
                   <CheckCircle2 className="mr-1 h-3 w-3" />
@@ -88,6 +150,134 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
             </div>
           </div>
         </DialogHeader>
+
+        <div className="space-y-6">
+          {/* Seção especial para reembolso */}
+          {isReembolso && demanda.dadosReembolso && (
+            <Card className="border-purple-200 bg-purple-50/50">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-purple-600" />
+                    Detalhes do Reembolso
+                  </span>
+                  <span className="text-2xl font-bold text-purple-600">
+                    R$ {demanda.dadosReembolso.valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Solicitante</p>
+                    <p className="font-medium">{demanda.dadosReembolso.membroEquipeNome}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Status do Pagamento</p>
+                    <Badge className={statusPagamentoConfig[demanda.dadosReembolso.statusPagamento].color}>
+                      {statusPagamentoConfig[demanda.dadosReembolso.statusPagamento].label}
+                    </Badge>
+                  </div>
+                  {demanda.dadosReembolso.formaPagamento && (
+                    <div>
+                      <p className="text-muted-foreground">Forma de Pagamento</p>
+                      <p className="font-medium uppercase">{demanda.dadosReembolso.formaPagamento}</p>
+                    </div>
+                  )}
+                  {demanda.dadosReembolso.dataPagamento && (
+                    <div>
+                      <p className="text-muted-foreground">Data do Pagamento</p>
+                      <p className="font-medium">
+                        {format(new Date(demanda.dadosReembolso.dataPagamento), 'dd/MM/yyyy')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Itens do reembolso */}
+                <div>
+                  <h4 className="font-semibold mb-3">Itens do Reembolso ({demanda.dadosReembolso.itens.length})</h4>
+                  <div className="space-y-2">
+                    {demanda.dadosReembolso.itens.map((item) => (
+                      <Card key={item.id}>
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">{tipoReembolsoLabels[item.tipo]}</span>
+                            </div>
+                            <span className="font-bold text-purple-600">
+                              R$ {item.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                          <p className="text-sm mb-2">{item.descricao}</p>
+                          {item.observacoes && (
+                            <p className="text-xs text-muted-foreground mb-2">Obs: {item.observacoes}</p>
+                          )}
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Paperclip className="h-3 w-3" />
+                            {item.anexos.length} comprovante(s)
+                            {item.anexos.map((anexo) => (
+                              <Button
+                                key={anexo.id}
+                                variant="link"
+                                size="sm"
+                                className="h-auto p-0 text-xs"
+                              >
+                                <Download className="h-3 w-3 mr-1" />
+                                {anexo.nome}
+                              </Button>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Ações administrativas */}
+                {isAdmin && demanda.dadosReembolso.statusPagamento !== 'pago' && demanda.dadosReembolso.statusPagamento !== 'recusado' && (
+                  <div className="flex gap-2 pt-4 border-t">
+                    {demanda.dadosReembolso.statusPagamento === 'pendente' && (
+                      <>
+                        <Button 
+                          onClick={() => setShowAprovarDialog(true)}
+                          className="flex-1"
+                        >
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                          Aprovar Reembolso
+                        </Button>
+                        <Button 
+                          variant="destructive"
+                          onClick={() => setShowRecusarDialog(true)}
+                          className="flex-1"
+                        >
+                          <XCircle className="h-4 w-4 mr-2" />
+                          Recusar
+                        </Button>
+                      </>
+                    )}
+                    {demanda.dadosReembolso.statusPagamento === 'aprovado' && (
+                      <Button 
+                        onClick={() => setShowPagoDialog(true)}
+                        className="flex-1"
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Marcar como Pago
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {demanda.dadosReembolso.observacoesPagamento && (
+                  <div className="pt-4 border-t">
+                    <p className="text-sm text-muted-foreground mb-1">Observações</p>
+                    <p className="text-sm">{demanda.dadosReembolso.observacoesPagamento}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
         <div className="space-y-6">
           {/* Informações principais */}
@@ -307,7 +497,31 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
             </TabsContent>
           </Tabs>
         </div>
+        </div>
       </DialogContent>
+
+      {/* Dialogs de reembolso */}
+      {isReembolso && demanda.dadosReembolso && (
+        <>
+          <AprovarReembolsoDialog
+            open={showAprovarDialog}
+            onOpenChange={setShowAprovarDialog}
+            onConfirm={handleAprovarReembolso}
+            valorTotal={demanda.dadosReembolso.valorTotal}
+          />
+          <MarcarPagoDialog
+            open={showPagoDialog}
+            onOpenChange={setShowPagoDialog}
+            onConfirm={handleMarcarPago}
+            valorTotal={demanda.dadosReembolso.valorTotal}
+          />
+          <RecusarReembolsoDialog
+            open={showRecusarDialog}
+            onOpenChange={setShowRecusarDialog}
+            onConfirm={handleRecusar}
+          />
+        </>
+      )}
     </Dialog>
   );
 }

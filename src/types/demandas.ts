@@ -1,6 +1,7 @@
 export type StatusDemanda = 'aberta' | 'em-andamento' | 'concluida' | 'cancelada';
 export type PrioridadeDemanda = 'baixa' | 'media' | 'alta' | 'urgente';
-export type CategoriaDemanda = 'tecnica' | 'operacional' | 'comercial' | 'financeira' | 'administrativa' | 'outra';
+export type CategoriaDemanda = 'tecnica' | 'operacional' | 'comercial' | 'financeira' | 'administrativa' | 'reembolso' | 'outra';
+export type TipoReembolso = 'frete' | 'diaria' | 'hospedagem' | 'combustivel' | 'locacao' | 'alimentacao' | 'outros';
 
 export interface Comentario {
   id: string;
@@ -19,6 +20,27 @@ export interface Anexo {
   tamanho: number;
   uploadPor: string;
   uploadEm: string;
+}
+
+export interface ItemReembolso {
+  id: string;
+  descricao: string;
+  tipo: TipoReembolso;
+  valor: number;
+  anexos: Anexo[];
+  observacoes?: string;
+}
+
+export interface DadosReembolso {
+  itens: ItemReembolso[];
+  valorTotal: number;
+  membroEquipeId: string;
+  membroEquipeNome: string;
+  statusPagamento: 'pendente' | 'aprovado' | 'pago' | 'recusado';
+  dataPagamento?: string;
+  formaPagamento?: string;
+  observacoesPagamento?: string;
+  comprovantePagamento?: Anexo;
 }
 
 export interface Demanda {
@@ -43,6 +65,7 @@ export interface Demanda {
   resolvida: boolean;
   podeResponder: boolean;
   tags: string[];
+  dadosReembolso?: DadosReembolso;
 }
 
 export interface DemandaFormData {

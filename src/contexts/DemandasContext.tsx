@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Demanda, DemandaFormData, FiltroDemandas, Comentario, Anexo, StatusDemanda } from '@/types/demandas';
+import { Demanda, DemandaFormData, FiltroDemandas, Comentario, Anexo, StatusDemanda, ItemReembolso } from '@/types/demandas';
 import { mockDemandas } from '@/lib/mock-data/demandas';
 import { useToast } from '@/hooks/use-toast';
 
@@ -18,6 +18,17 @@ interface DemandasContextData {
   marcarComoResolvida: (id: string) => void;
   reabrirDemanda: (id: string) => void;
   getDemandasPorEvento: (eventoId: string) => Demanda[];
+  adicionarDemandaReembolso: (data: {
+    eventoId: string;
+    descricao?: string;
+    itens: ItemReembolso[];
+    membroEquipeId: string;
+    membroEquipeNome: string;
+  }) => Promise<void>;
+  aprovarReembolso: (demandaId: string, formaPagamento: string, observacoes?: string) => void;
+  marcarReembolsoPago: (demandaId: string, dataPagamento: string, comprovante?: string, observacoes?: string) => void;
+  recusarReembolso: (demandaId: string, motivo: string) => void;
+  getDemandasReembolsoPorEvento: (eventoId: string) => Demanda[];
   getEstatisticas: () => {
     total: number;
     abertas: number;
@@ -293,6 +304,142 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
     return demandas.filter(d => d.eventoRelacionado === eventoId);
   };
 
+  const adicionarDemandaReembolso = async (data: {
+    eventoId: string;
+    descricao?: string;
+    itens: ItemReembolso[];
+    membroEquipeId: string;
+    membroEquipeNome: string;
+  }) => {
+    const eventoNome = data.eventoId; // Idealmente buscar do contexto de eventos
+    
+    const valorTotal = data.itens.reduce((sum, item) => sum + item.valor, 0);
+    
+    const novaDemanda: Demanda = {
+      id: `demanda-${Date.now()}`,
+      titulo: `Reembolso - ${data.membroEquipeNome} - ${new Date().toLocaleDateString('pt-BR')}`,
+      descricao: data.descricao || `Solicitação de reembolso com ${data.itens.length} item(ns)`,
+      categoria: 'reembolso',
+      prioridade: 'media',
+      status: 'aberta',
+      solicitante: data.membroEquipeNome,
+      solicitanteId: data.membroEquipeId,
+      dataCriacao: new Date().toISOString(),
+      dataAtualizacao: new Date().toISOString(),
+      comentarios: [],
+      anexos: [],
+      eventoRelacionado: data.eventoId,
+      eventoNome: eventoNome,
+      resolvida: false,
+      podeResponder: true,
+      tags: ['reembolso'],
+      dadosReembolso: {
+        itens: data.itens,
+        valorTotal,
+        membroEquipeId: data.membroEquipeId,
+        membroEquipeNome: data.membroEquipeNome,
+        statusPagamento: 'pendente'
+      }
+    };
+
+    setDemandas([...demandas, novaDemanda]);
+    
+    toast({
+      title: 'Reembolso criado!',
+      description: `Solicitação de reembolso no valor de R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} foi criada.`
+    });
+  };
+
+  const aprovarReembolso = (demandaId: string, formaPagamento: string, observacoes?: string) => {
+    setDemandas(demandas.map(demanda => {
+      if (demanda.id === demandaId && demanda.dadosReembolso) {
+        return {
+          ...demanda,
+          dadosReembolso: {
+            ...demanda.dadosReembolso,
+            statusPagamento: 'aprovado',
+            formaPagamento,
+            observacoesPagamento: observacoes
+          },
+          dataAtualizacao: new Date().toISOString()
+        };
+      }
+      return demanda;
+    }));
+
+    toast({
+      title: 'Reembolso aprovado!',
+      description: 'A solicitação foi aprovada e está aguardando pagamento.'
+    });
+  };
+
+  const marcarReembolsoPago = (demandaId: string, dataPagamento: string, comprovante?: string, observacoes?: string) => {
+    setDemandas(demandas.map(demanda => {
+      if (demanda.id === demandaId && demanda.dadosReembolso) {
+        const comprovanteAnexo = comprovante ? {
+          id: `anexo-pag-${Date.now()}`,
+          nome: comprovante,
+          url: `/uploads/${comprovante}`,
+          tipo: 'application/pdf',
+          tamanho: 1024,
+          uploadPor: 'Admin',
+          uploadEm: new Date().toISOString()
+        } : undefined;
+
+        return {
+          ...demanda,
+          dadosReembolso: {
+            ...demanda.dadosReembolso,
+            statusPagamento: 'pago',
+            dataPagamento,
+            comprovantePagamento: comprovanteAnexo,
+            observacoesPagamento: observacoes || demanda.dadosReembolso.observacoesPagamento
+          },
+          resolvida: true,
+          status: 'concluida',
+          dataConclusao: new Date().toISOString(),
+          dataAtualizacao: new Date().toISOString()
+        };
+      }
+      return demanda;
+    }));
+
+    toast({
+      title: 'Reembolso marcado como pago!',
+      description: 'A demanda foi finalizada e o pagamento foi registrado.'
+    });
+  };
+
+  const recusarReembolso = (demandaId: string, motivo: string) => {
+    setDemandas(demandas.map(demanda => {
+      if (demanda.id === demandaId && demanda.dadosReembolso) {
+        return {
+          ...demanda,
+          dadosReembolso: {
+            ...demanda.dadosReembolso,
+            statusPagamento: 'recusado',
+            observacoesPagamento: motivo
+          },
+          status: 'cancelada',
+          resolvida: true,
+          dataConclusao: new Date().toISOString(),
+          dataAtualizacao: new Date().toISOString()
+        };
+      }
+      return demanda;
+    }));
+
+    toast({
+      title: 'Reembolso recusado',
+      description: 'A solicitação foi recusada e o solicitante foi notificado.',
+      variant: 'destructive'
+    });
+  };
+
+  const getDemandasReembolsoPorEvento = (eventoId: string): Demanda[] => {
+    return demandas.filter(d => d.eventoRelacionado === eventoId && d.categoria === 'reembolso');
+  };
+
   const getEstatisticas = () => {
     return {
       total: demandas.length,
@@ -360,6 +507,11 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
         adicionarComentario,
         adicionarAnexo,
         removerAnexo,
+        adicionarDemandaReembolso,
+        aprovarReembolso,
+        marcarReembolsoPago,
+        recusarReembolso,
+        getDemandasReembolsoPorEvento,
         marcarComoResolvida,
         reabrirDemanda,
         getDemandasPorEvento,

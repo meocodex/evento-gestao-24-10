@@ -4,6 +4,7 @@ import { Demanda } from '@/types/demandas';
 import { DemandaCard } from '@/components/demandas/DemandaCard';
 import { DemandaFilters } from '@/components/demandas/DemandaFilters';
 import { NovaDemandaDialog } from '@/components/demandas/NovaDemandaDialog';
+import { NovaDemandaReembolsoDialog } from '@/components/demandas/NovaDemandaReembolsoDialog';
 import { EditarDemandaDialog } from '@/components/demandas/EditarDemandaDialog';
 import { DetalhesDemandaDialog } from '@/components/demandas/DetalhesDemandaDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
@@ -50,7 +51,10 @@ export default function Demandas() {
           <h1 className="text-3xl font-bold">Demandas</h1>
           <p className="text-muted-foreground">Gerencie todas as solicitações e tarefas da equipe</p>
         </div>
-        <NovaDemandaDialog />
+        <div className="flex gap-2">
+          <NovaDemandaDialog />
+          <NovaDemandaReembolsoDialog />
+        </div>
       </div>
 
       {/* Estatísticas */}

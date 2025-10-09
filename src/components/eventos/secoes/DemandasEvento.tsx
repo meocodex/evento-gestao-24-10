@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useDemandasContext } from '@/contexts/DemandasContext';
 import { Demanda } from '@/types/demandas';
-import { AlertCircle, Eye, Plus } from 'lucide-react';
+import { AlertCircle, Eye, Plus, DollarSign } from 'lucide-react';
 import { useState } from 'react';
 import { DetalhesDemandaDialog } from '@/components/demandas/DetalhesDemandaDialog';
+import { NovaDemandaReembolsoDialog } from '@/components/demandas/NovaDemandaReembolsoDialog';
 
 interface DemandasEventoProps {
   eventoId: string;
@@ -26,11 +27,12 @@ const prioridadeConfig = {
 };
 
 export function DemandasEvento({ eventoId }: DemandasEventoProps) {
-  const { getDemandasPorEvento } = useDemandasContext();
+  const { getDemandasPorEvento, getDemandasReembolsoPorEvento } = useDemandasContext();
   const [demandaSelecionada, setDemandaSelecionada] = useState<Demanda | null>(null);
   const [detalhesOpen, setDetalhesOpen] = useState(false);
 
   const demandas = getDemandasPorEvento(eventoId);
+  const demandasReembolso = getDemandasReembolsoPorEvento(eventoId);
 
   const estatisticas = {
     total: demandas.length,
@@ -39,6 +41,14 @@ export function DemandasEvento({ eventoId }: DemandasEventoProps) {
     concluidas: demandas.filter(d => d.status === 'concluida').length,
   };
 
+  const totalReembolsoPendente = demandasReembolso
+    .filter(d => d.dadosReembolso?.statusPagamento === 'pendente' || d.dadosReembolso?.statusPagamento === 'aprovado')
+    .reduce((sum, d) => sum + (d.dadosReembolso?.valorTotal || 0), 0);
+  
+  const totalReembolsoPago = demandasReembolso
+    .filter(d => d.dadosReembolso?.statusPagamento === 'pago')
+    .reduce((sum, d) => sum + (d.dadosReembolso?.valorTotal || 0), 0);
+
   const handleVerDetalhes = (demanda: Demanda) => {
     setDemandaSelecionada(demanda);
     setDetalhesOpen(true);
@@ -46,8 +56,12 @@ export function DemandasEvento({ eventoId }: DemandasEventoProps) {
 
   return (
     <div className="space-y-4">
+      <div className="flex justify-end">
+        <NovaDemandaReembolsoDialog eventoId={eventoId} />
+      </div>
+
       {/* Estatísticas */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-5 gap-4">
         <Card className="p-4">
           <div className="text-2xl font-bold">{estatisticas.total}</div>
           <div className="text-sm text-muted-foreground">Total</div>
@@ -63,6 +77,22 @@ export function DemandasEvento({ eventoId }: DemandasEventoProps) {
         <Card className="p-4">
           <div className="text-2xl font-bold text-green-600">{estatisticas.concluidas}</div>
           <div className="text-sm text-muted-foreground">Concluídas</div>
+        </Card>
+        <Card className="p-4 border-purple-200">
+          <div className="flex items-center gap-2 mb-2">
+            <DollarSign className="h-4 w-4 text-purple-600" />
+            <div className="text-sm text-muted-foreground">Reembolsos</div>
+          </div>
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between">
+              <span>Pendentes:</span>
+              <span className="font-medium text-yellow-600">R$ {totalReembolsoPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Pagos:</span>
+              <span className="font-medium text-green-600">R$ {totalReembolsoPago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+            </div>
+          </div>
         </Card>
       </div>
 
