@@ -49,6 +49,7 @@ export interface Comercial {
 
 export interface MaterialChecklist {
   id: string;
+  itemId: string;
   nome: string;
   quantidade: number;
   alocado: number;

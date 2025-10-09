@@ -26,19 +26,124 @@ export function RelatorioFechamentoDialog({
   const totalDespesas = despesasFiltradas.reduce((sum, d) => sum + d.valor, 0);
 
   const handleGerarPDF = () => {
-    toast({
-      title: 'PDF gerado!',
-      description: 'O relatório de fechamento foi gerado com sucesso.',
+    const { jsPDF } = require('jspdf');
+    require('jspdf-autotable');
+    
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    
+    // Header
+    doc.setFontSize(18);
+    doc.setFont(undefined, 'bold');
+    doc.text('RELATÓRIO DE FECHAMENTO DO EVENTO', pageWidth / 2, 20, { align: 'center' });
+    
+    // Dados do Evento
+    doc.setFontSize(14);
+    doc.text('Dados do Evento', 14, 35);
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    
+    const dadosEvento = [
+      ['Nome do Evento:', evento.nome],
+      ['Status:', evento.status],
+      ['Data de Início:', `${evento.dataInicio} às ${evento.horaInicio}`],
+      ['Data de Fim:', `${evento.dataFim} às ${evento.horaFim}`],
+      ['Local:', `${evento.cidade}, ${evento.estado}`]
+    ];
+    
+    (doc as any).autoTable({
+      startY: 40,
+      body: dadosEvento,
+      theme: 'plain',
+      styles: { fontSize: 9 },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 40 },
+        1: { cellWidth: 'auto' }
+      }
     });
     
-    // Aqui seria implementada a lógica real de geração de PDF
-    // Por exemplo, usando jsPDF ou outra biblioteca
-    console.log('Gerando PDF com os dados:', {
-      evento: evento.nome,
-      cliente: evento.cliente.nome,
-      comercial: evento.comercial.nome,
-      despesas: despesasFiltradas,
-      total: totalDespesas
+    // Dados do Cliente
+    let finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('Dados do Cliente', 14, finalY);
+    
+    const dadosCliente = [
+      ['Nome:', evento.cliente.nome],
+      ['Tipo:', evento.cliente.tipo],
+      ['Telefone:', evento.cliente.telefone],
+      ['Email:', evento.cliente.email]
+    ];
+    
+    (doc as any).autoTable({
+      startY: finalY + 5,
+      body: dadosCliente,
+      theme: 'plain',
+      styles: { fontSize: 9 },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 40 },
+        1: { cellWidth: 'auto' }
+      }
+    });
+    
+    // Produtor Responsável
+    finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.text('Produtor Responsável', 14, finalY);
+    
+    const dadosProdutor = [
+      ['Nome:', evento.comercial.nome],
+      ['Email:', evento.comercial.email]
+    ];
+    
+    (doc as any).autoTable({
+      startY: finalY + 5,
+      body: dadosProdutor,
+      theme: 'plain',
+      styles: { fontSize: 9 },
+      columnStyles: {
+        0: { fontStyle: 'bold', cellWidth: 40 },
+        1: { cellWidth: 'auto' }
+      }
+    });
+    
+    // Despesas
+    finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFontSize(14);
+    doc.text('Despesas do Evento', 14, finalY);
+    
+    const despesasData = despesasFiltradas.map(d => [
+      d.descricao,
+      d.categoria,
+      d.quantidade.toString(),
+      `R$ ${d.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+      `R$ ${d.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+    ]);
+    
+    (doc as any).autoTable({
+      startY: finalY + 5,
+      head: [['Descrição', 'Categoria', 'Qtd', 'Valor Un.', 'Total']],
+      body: despesasData,
+      foot: [['', '', '', 'Total de Despesas:', `R$ ${totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`]],
+      theme: 'striped',
+      headStyles: { fillColor: [66, 66, 66], fontSize: 9 },
+      footStyles: { fillColor: [240, 240, 240], fontStyle: 'bold', fontSize: 9, textColor: [220, 38, 38] },
+      styles: { fontSize: 8 },
+      columnStyles: {
+        0: { cellWidth: 60 },
+        1: { cellWidth: 35 },
+        2: { cellWidth: 20, halign: 'right' },
+        3: { cellWidth: 30, halign: 'right' },
+        4: { cellWidth: 30, halign: 'right' }
+      }
+    });
+    
+    // Salvar PDF
+    doc.save(`Relatorio_Fechamento_${evento.nome.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+    
+    toast({
+      title: 'PDF gerado!',
+      description: 'O relatório de fechamento foi baixado com sucesso.',
     });
 
     onOpenChange(false);

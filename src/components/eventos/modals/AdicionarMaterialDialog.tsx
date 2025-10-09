@@ -11,7 +11,7 @@ import { Package, Search } from 'lucide-react';
 interface AdicionarMaterialDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdicionar: (data: { nome: string; quantidade: number }) => void;
+  onAdicionar: (data: { itemId: string; nome: string; quantidade: number }) => void;
 }
 
 export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: AdicionarMaterialDialogProps) {
@@ -57,7 +57,11 @@ export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: Adi
       return;
     }
 
-    onAdicionar({ nome: materialSelecionado!.nome, quantidade });
+    onAdicionar({ 
+      itemId: materialSelecionado!.id, 
+      nome: materialSelecionado!.nome, 
+      quantidade 
+    });
 
     toast({
       title: 'Material adicionado!',

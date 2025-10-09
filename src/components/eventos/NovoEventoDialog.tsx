@@ -9,6 +9,7 @@ import { ClienteSelect } from './ClienteSelect';
 import { ComercialSelect } from './ComercialSelect';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
+import { useEventos } from '@/contexts/EventosContext';
 
 interface NovoEventoDialogProps {
   open: boolean;
@@ -18,6 +19,7 @@ interface NovoEventoDialogProps {
 
 export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEventoDialogProps) {
   const { toast } = useToast();
+  const { criarEvento } = useEventos();
   const [nome, setNome] = useState('');
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
@@ -30,6 +32,9 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
   const [clienteId, setClienteId] = useState('');
   const [comercialId, setComercialId] = useState('');
   const [descricao, setDescricao] = useState('');
+  const [observacoes, setObservacoes] = useState('');
+  const [contatosAdicionais, setContatosAdicionais] = useState('');
+  const [redesSociais, setRedesSociais] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
 
@@ -44,7 +49,7 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!clienteId || !comercialId) {
@@ -56,9 +61,32 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
       return;
     }
 
-    toast({
-      title: 'Evento criado!',
-      description: 'O evento foi criado com sucesso.',
+    if (dataFim && dataInicio && dataFim < dataInicio) {
+      toast({
+        title: 'Data inválida',
+        description: 'A data de fim não pode ser anterior à data de início.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    await criarEvento({
+      nome,
+      dataInicio,
+      dataFim,
+      horaInicio,
+      horaFim,
+      local,
+      cidade,
+      estado,
+      endereco,
+      clienteId,
+      comercialId,
+      tags,
+      descricao,
+      observacoes,
+      contatosAdicionais,
+      redesSociais
     });
     
     // Reset form
@@ -74,6 +102,9 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
     setClienteId('');
     setComercialId('');
     setDescricao('');
+    setObservacoes('');
+    setContatosAdicionais('');
+    setRedesSociais('');
     setTags([]);
     
     onOpenChange(false);

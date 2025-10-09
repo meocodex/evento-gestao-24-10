@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface EditarDadosEventoProps {
   evento: Evento;
-  onSave: () => void;
+  onSave: (data: Partial<Evento>) => void;
   onCancel: () => void;
 }
 

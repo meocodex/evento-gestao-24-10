@@ -2,15 +2,16 @@ import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Plus, Search } from 'lucide-react';
-import { mockEventos } from '@/lib/mock-data/eventos';
 import { Evento } from '@/types/eventos';
 import { EventosList } from '@/components/eventos/EventosList';
 import { EventoFilters, EventoFiltersType } from '@/components/eventos/EventoFilters';
 import { NovoEventoDialog } from '@/components/eventos/NovoEventoDialog';
 import { EventoDetailsDialog } from '@/components/eventos/EventoDetailsDialog';
 import { useEventoPermissions } from '@/hooks/useEventoPermissions';
+import { useEventos } from '@/contexts/EventosContext';
 
 export default function Eventos() {
+  const { eventos } = useEventos();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [] });
   const [novoEventoOpen, setNovoEventoOpen] = useState(false);
@@ -19,15 +20,15 @@ export default function Eventos() {
   const permissions = useEventoPermissions();
 
   const availableCities = useMemo(() => {
-    return Array.from(new Set(mockEventos.map(e => e.cidade)));
-  }, []);
+    return Array.from(new Set(eventos.map(e => e.cidade)));
+  }, [eventos]);
 
   const availableTags = useMemo(() => {
-    return Array.from(new Set(mockEventos.flatMap(e => e.tags)));
-  }, []);
+    return Array.from(new Set(eventos.flatMap(e => e.tags)));
+  }, [eventos]);
 
   const filteredEventos = useMemo(() => {
-    return mockEventos.filter(evento => {
+    return eventos.filter(evento => {
       const matchSearch = evento.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         evento.cliente.nome.toLowerCase().includes(searchTerm.toLowerCase());
       const matchStatus = filters.status.length === 0 || filters.status.includes(evento.status);
@@ -36,7 +37,7 @@ export default function Eventos() {
       
       return matchSearch && matchStatus && matchCidade && matchTags;
     });
-  }, [searchTerm, filters]);
+  }, [eventos, searchTerm, filters]);
 
   const handleViewDetails = (evento: Evento) => {
     setSelectedEvento(evento);

@@ -4,12 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EventoTimeline } from '@/components/shared/EventoTimeline';
-import { Calendar, MapPin, User, Building2, Mail, Phone, Edit, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, User, Building2, Mail, Phone, Edit, Trash2, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { EditarDadosEvento } from './EditarDadosEvento';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
+import { useEventos } from '@/contexts/EventosContext';
+import { AlterarStatusDialog } from '../modals/AlterarStatusDialog';
 
 interface DadosEventoProps {
   evento: Evento;
@@ -17,20 +19,23 @@ interface DadosEventoProps {
 }
 
 export function DadosEvento({ evento, permissions }: DadosEventoProps) {
-  const { toast } = useToast();
+  const { editarEvento, deletarEvento, alterarStatus } = useEventos();
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showStatusDialog, setShowStatusDialog] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async (data: Partial<Evento>) => {
+    await editarEvento(evento.id, data);
     setIsEditing(false);
   };
 
-  const handleDelete = () => {
-    toast({
-      title: 'Evento excluído!',
-      description: 'O evento foi removido com sucesso.',
-    });
+  const handleDelete = async () => {
+    await deletarEvento(evento.id);
     setShowDeleteDialog(false);
+  };
+
+  const handleStatusChange = async (novoStatus: any, observacao?: string) => {
+    await alterarStatus(evento.id, novoStatus, observacao);
   };
 
   if (isEditing) {
@@ -43,6 +48,10 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Informações do Evento</CardTitle>
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowStatusDialog(true)}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Alterar Status
+            </Button>
             {permissions.canEdit && (
               <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                 <Edit className="h-4 w-4 mr-2" />
@@ -129,6 +138,13 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
         onConfirm={handleDelete}
         title="Excluir Evento"
         description="Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita."
+      />
+
+      <AlterarStatusDialog
+        open={showStatusDialog}
+        onOpenChange={setShowStatusDialog}
+        statusAtual={evento.status}
+        onAlterar={handleStatusChange}
       />
     </div>
   );

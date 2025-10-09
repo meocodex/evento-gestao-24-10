@@ -27,11 +27,11 @@ export const mockEventos: Evento[] = [
     descricao: 'Festa de 50 anos com aproximadamente 150 convidados. Decoração clássica com tema azul e dourado.',
     observacoes: 'Cliente solicitou open bar premium e DJ profissional.',
     checklist: [
-      { id: '1', nome: 'Mesa Redonda 1,5m', quantidade: 10, alocado: 10 },
-      { id: '2', nome: 'Cadeira Branca', quantidade: 40, alocado: 40 },
-      { id: '3', nome: 'Toalha de Mesa Azul', quantidade: 10, alocado: 8 },
-      { id: '4', nome: 'Sistema de Som Completo', quantidade: 1, alocado: 1 },
-      { id: '5', nome: 'Iluminação LED', quantidade: 20, alocado: 20 },
+      { id: '1', itemId: 'item-1', nome: 'Mesa Redonda 1,5m', quantidade: 10, alocado: 10 },
+      { id: '2', itemId: 'item-2', nome: 'Cadeira Branca', quantidade: 40, alocado: 40 },
+      { id: '3', itemId: 'item-3', nome: 'Toalha de Mesa Azul', quantidade: 10, alocado: 8 },
+      { id: '4', itemId: 'item-4', nome: 'Sistema de Som Completo', quantidade: 1, alocado: 1 },
+      { id: '5', itemId: 'item-5', nome: 'Iluminação LED', quantidade: 20, alocado: 20 },
     ],
     materiaisAlocados: {
       antecipado: [
@@ -175,12 +175,12 @@ export const mockEventos: Evento[] = [
     plantaBaixa: '/uploads/planta-evento-2.pdf',
     descricao: 'Casamento ao ar livre com 200 convidados. Cerimônia ao pôr do sol seguida de festa.',
     checklist: [
-      { id: '1', nome: 'Tenda 10x10m', quantidade: 2, alocado: 2 },
-      { id: '2', nome: 'Mesa Retangular 2m', quantidade: 20, alocado: 20 },
-      { id: '3', nome: 'Cadeira Tiffany', quantidade: 200, alocado: 200 },
-      { id: '4', nome: 'Sistema de Som e Iluminação Completo', quantidade: 1, alocado: 1 },
-      { id: '5', nome: 'Gerador de Energia 50kVA', quantidade: 1, alocado: 1 },
-      { id: '6', nome: 'Pista de Dança LED', quantidade: 1, alocado: 1 },
+      { id: '1', itemId: 'item-6', nome: 'Tenda 10x10m', quantidade: 2, alocado: 2 },
+      { id: '2', itemId: 'item-7', nome: 'Mesa Retangular 2m', quantidade: 20, alocado: 20 },
+      { id: '3', itemId: 'item-8', nome: 'Cadeira Tiffany', quantidade: 200, alocado: 200 },
+      { id: '4', itemId: 'item-9', nome: 'Sistema de Som e Iluminação Completo', quantidade: 1, alocado: 1 },
+      { id: '5', itemId: 'item-10', nome: 'Gerador de Energia 50kVA', quantidade: 1, alocado: 1 },
+      { id: '6', itemId: 'item-11', nome: 'Pista de Dança LED', quantidade: 1, alocado: 1 },
     ],
     materiaisAlocados: {
       antecipado: [
@@ -309,11 +309,11 @@ export const mockEventos: Evento[] = [
     tags: ['Corporativo', 'Lançamento', 'Tech'],
     descricao: 'Evento de lançamento de produto com coquetel e apresentações.',
     checklist: [
-      { id: '1', nome: 'Palco Modular 6x4m', quantidade: 1, alocado: 1 },
-      { id: '2', nome: 'Telão LED 4x3m', quantidade: 1, alocado: 1 },
-      { id: '3', nome: 'Sistema de Som Profissional', quantidade: 1, alocado: 1 },
-      { id: '4', nome: 'Mesa Lounge', quantidade: 15, alocado: 15 },
-      { id: '5', nome: 'Sofá Lounge', quantidade: 10, alocado: 10 },
+      { id: '1', itemId: 'item-12', nome: 'Palco Modular 6x4m', quantidade: 1, alocado: 1 },
+      { id: '2', itemId: 'item-13', nome: 'Telão LED 4x3m', quantidade: 1, alocado: 1 },
+      { id: '3', itemId: 'item-14', nome: 'Sistema de Som Profissional', quantidade: 1, alocado: 1 },
+      { id: '4', itemId: 'item-15', nome: 'Mesa Lounge', quantidade: 15, alocado: 15 },
+      { id: '5', itemId: 'item-16', nome: 'Sofá Lounge', quantidade: 10, alocado: 10 },
     ],
     materiaisAlocados: {
       antecipado: [],
@@ -441,11 +441,11 @@ export const mockEventos: Evento[] = [
     tags: ['Show', 'Música', 'Grande Porte'],
     descricao: 'Show para 5000 pessoas com estrutura completa de palco e som.',
     checklist: [
-      { id: '1', nome: 'Palco Estrutura Grande 12x8m', quantidade: 1, alocado: 0 },
-      { id: '2', nome: 'Line Array Completo', quantidade: 1, alocado: 0 },
-      { id: '3', nome: 'Mesa de Som Digital 48 Canais', quantidade: 1, alocado: 0 },
-      { id: '4', nome: 'Iluminação Robotizada', quantidade: 30, alocado: 0 },
-      { id: '5', nome: 'Gerador 100kVA', quantidade: 2, alocado: 0 },
+      { id: '1', itemId: 'item-17', nome: 'Palco Estrutura Grande 12x8m', quantidade: 1, alocado: 0 },
+      { id: '2', itemId: 'item-18', nome: 'Line Array Completo', quantidade: 1, alocado: 0 },
+      { id: '3', itemId: 'item-19', nome: 'Mesa de Som Digital 48 Canais', quantidade: 1, alocado: 0 },
+      { id: '4', itemId: 'item-20', nome: 'Iluminação Robotizada', quantidade: 30, alocado: 0 },
+      { id: '5', itemId: 'item-21', nome: 'Gerador 100kVA', quantidade: 2, alocado: 0 },
     ],
     materiaisAlocados: {
       antecipado: [],
