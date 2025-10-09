@@ -72,7 +72,7 @@ export function EditarDemandaDialog({ demanda, open, onOpenChange }: EditarDeman
     const evento = eventosAtivos.find(e => e.id === eventoId);
     setFormData({
       ...formData,
-      eventoRelacionado: eventoId,
+      eventoRelacionado: eventoId === 'none' ? '' : eventoId,
       eventoNome: evento?.nome || '',
     });
   };
@@ -164,14 +164,14 @@ export function EditarDemandaDialog({ demanda, open, onOpenChange }: EditarDeman
           <div className="space-y-2">
             <Label>Evento Relacionado (opcional)</Label>
             <Select
-              value={formData.eventoRelacionado || ''}
-              onValueChange={handleEventoChange}
+              value={formData.eventoRelacionado || 'none'}
+              onValueChange={(value) => handleEventoChange(value === 'none' ? '' : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecione um evento" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Nenhum evento</SelectItem>
+                <SelectItem value="none">Nenhum evento</SelectItem>
                 {eventosAtivos.map((evento) => (
                   <SelectItem key={evento.id} value={evento.id}>
                     {evento.nome} - {new Date(evento.dataInicio).toLocaleDateString()}
