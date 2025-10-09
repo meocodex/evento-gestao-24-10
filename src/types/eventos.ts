@@ -76,8 +76,8 @@ export interface Receita {
   id: string;
   descricao: string;
   tipo: TipoReceita;
-  quantidade?: number;
-  valorUnitario?: number;
+  quantidade: number;
+  valorUnitario: number;
   valor: number;
   status: StatusFinanceiro;
   data: string;
@@ -88,12 +88,12 @@ export interface Despesa {
   id: string;
   descricao: string;
   categoria: CategoriaFinanceira;
-  tipo: TipoReceita;
-  quantidade?: number;
-  valorUnitario?: number;
+  quantidade: number;
+  valorUnitario: number;
   valor: number;
   data: string;
   comprovante?: string;
+  selecionadaRelatorio?: boolean;
 }
 
 export interface Cobranca {

@@ -15,13 +15,16 @@ interface AdicionarReceitaDialogProps {
 export function AdicionarReceitaDialog({ open, onOpenChange, onAdicionar }: AdicionarReceitaDialogProps) {
   const { toast } = useToast();
   const [descricao, setDescricao] = useState('');
-  const [valor, setValor] = useState('');
+  const [quantidade, setQuantidade] = useState(1);
+  const [valorUnitario, setValorUnitario] = useState('');
   const [tipo, setTipo] = useState<string>('');
+
+  const valorTotal = quantidade * (parseFloat(valorUnitario) || 0);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!descricao.trim() || !valor || !tipo) {
+    if (!descricao.trim() || !valorUnitario || !tipo) {
       toast({
         title: 'Campos obrigatórios',
         description: 'Por favor, preencha todos os campos.',
@@ -30,7 +33,13 @@ export function AdicionarReceitaDialog({ open, onOpenChange, onAdicionar }: Adic
       return;
     }
 
-    onAdicionar({ descricao, valor: parseFloat(valor), tipo });
+    onAdicionar({ 
+      descricao, 
+      quantidade,
+      valorUnitario: parseFloat(valorUnitario),
+      valor: valorTotal,
+      tipo 
+    });
 
     toast({
       title: 'Receita adicionada!',
@@ -38,7 +47,8 @@ export function AdicionarReceitaDialog({ open, onOpenChange, onAdicionar }: Adic
     });
     
     setDescricao('');
-    setValor('');
+    setQuantidade(1);
+    setValorUnitario('');
     setTipo('');
     onOpenChange(false);
   };
@@ -62,17 +72,38 @@ export function AdicionarReceitaDialog({ open, onOpenChange, onAdicionar }: Adic
           </div>
 
           <div>
-            <Label htmlFor="valor">Valor (R$) *</Label>
+            <Label htmlFor="quantidade">Quantidade *</Label>
             <Input 
-              id="valor"
+              id="quantidade"
+              type="number"
+              min="1"
+              value={quantidade} 
+              onChange={(e) => setQuantidade(parseInt(e.target.value) || 1)} 
+              required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="valorUnitario">Valor Unitário (R$) *</Label>
+            <Input 
+              id="valorUnitario"
               type="number"
               step="0.01"
               min="0"
-              value={valor} 
-              onChange={(e) => setValor(e.target.value)} 
+              value={valorUnitario} 
+              onChange={(e) => setValorUnitario(e.target.value)} 
               placeholder="0,00"
               required
             />
+          </div>
+
+          <div className="p-3 bg-accent rounded-lg">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Valor Total:</span>
+              <span className="text-lg font-bold text-green-600">
+                R$ {valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </span>
+            </div>
           </div>
 
           <div>

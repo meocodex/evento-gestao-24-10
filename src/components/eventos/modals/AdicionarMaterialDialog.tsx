@@ -3,7 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { materiaisEstoque } from '@/lib/mock-data/estoque';
+import { Package, Search } from 'lucide-react';
 
 interface AdicionarMaterialDialogProps {
   open: boolean;
@@ -13,16 +16,24 @@ interface AdicionarMaterialDialogProps {
 
 export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: AdicionarMaterialDialogProps) {
   const { toast } = useToast();
-  const [nome, setNome] = useState('');
+  const [materialId, setMaterialId] = useState('');
   const [quantidade, setQuantidade] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const materiaisFiltrados = materiaisEstoque.filter(m => 
+    m.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    m.categoria.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const materialSelecionado = materiaisEstoque.find(m => m.id === materialId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!nome.trim()) {
+    if (!materialId) {
       toast({
-        title: 'Nome obrigatório',
-        description: 'Por favor, informe o nome do material.',
+        title: 'Material obrigatório',
+        description: 'Por favor, selecione um material do estoque.',
         variant: 'destructive',
       });
       return;
@@ -37,7 +48,16 @@ export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: Adi
       return;
     }
 
-    onAdicionar({ nome, quantidade });
+    if (materialSelecionado && quantidade > materialSelecionado.quantidadeDisponivel) {
+      toast({
+        title: 'Quantidade indisponível',
+        description: `Apenas ${materialSelecionado.quantidadeDisponivel} unidades disponíveis em estoque.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    onAdicionar({ nome: materialSelecionado!.nome, quantidade });
 
     toast({
       title: 'Material adicionado!',
@@ -45,8 +65,9 @@ export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: Adi
     });
     
     // Reset form
-    setNome('');
+    setMaterialId('');
     setQuantidade(1);
+    setSearchTerm('');
     
     onOpenChange(false);
   };
@@ -59,15 +80,69 @@ export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: Adi
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="nome">Nome do Material *</Label>
-            <Input 
-              id="nome"
-              value={nome} 
-              onChange={(e) => setNome(e.target.value)} 
-              placeholder="Ex: Caixa de Som JBL"
-              required
-            />
+            <Label htmlFor="search">Buscar Material no Estoque</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input 
+                id="search"
+                value={searchTerm} 
+                onChange={(e) => setSearchTerm(e.target.value)} 
+                placeholder="Buscar por nome ou categoria..."
+                className="pl-9"
+              />
+            </div>
           </div>
+
+          <div className="border rounded-lg max-h-60 overflow-y-auto">
+            {materiaisFiltrados.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Nenhum material encontrado
+              </p>
+            ) : (
+              <div className="divide-y">
+                {materiaisFiltrados.map((material) => (
+                  <div
+                    key={material.id}
+                    onClick={() => setMaterialId(material.id)}
+                    className={`p-3 cursor-pointer transition-colors hover:bg-accent ${
+                      materialId === material.id ? 'bg-primary/5 border-l-4 border-l-primary' : ''
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">{material.nome}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-1">{material.categoria}</p>
+                        {material.descricao && (
+                          <p className="text-xs text-muted-foreground mt-1">{material.descricao}</p>
+                        )}
+                      </div>
+                      <div className="text-right ml-4">
+                        <span className={`text-sm font-medium ${
+                          material.quantidadeDisponivel > 0 ? 'text-green-600' : 'text-red-600'
+                        }`}>
+                          {material.quantidadeDisponivel} disponível
+                        </span>
+                        <p className="text-xs text-muted-foreground">de {material.quantidadeTotal} total</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {materialSelecionado && (
+            <div className="p-3 bg-accent rounded-lg">
+              <p className="text-sm font-medium">Material Selecionado:</p>
+              <p className="text-sm">{materialSelecionado.nome}</p>
+              <p className="text-xs text-muted-foreground">
+                Disponível: {materialSelecionado.quantidadeDisponivel} {materialSelecionado.unidade}
+              </p>
+            </div>
+          )}
 
           <div>
             <Label htmlFor="quantidade">Quantidade *</Label>
@@ -75,9 +150,11 @@ export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: Adi
               id="quantidade"
               type="number"
               min="1"
+              max={materialSelecionado?.quantidadeDisponivel || 999}
               value={quantidade} 
               onChange={(e) => setQuantidade(parseInt(e.target.value) || 1)} 
               required
+              disabled={!materialId}
             />
           </div>
 

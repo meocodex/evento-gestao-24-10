@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { Evento } from '@/types/eventos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2, FileText } from 'lucide-react';
 import { AdicionarReceitaDialog } from '../modals/AdicionarReceitaDialog';
 import { AdicionarDespesaDialog } from '../modals/AdicionarDespesaDialog';
+import { RelatorioFechamentoDialog } from '../modals/RelatorioFechamentoDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,6 +21,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
   const [showAddDespesa, setShowAddDespesa] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; tipo: 'receita' | 'despesa' } | null>(null);
+  const [despesasSelecionadas, setDespesasSelecionadas] = useState<Set<string>>(new Set());
 
   const totalReceitas = evento.financeiro.receitas.reduce((sum, r) => sum + r.valor, 0);
   const totalDespesas = evento.financeiro.despesas.reduce((sum, d) => sum + d.valor, 0);
@@ -39,6 +42,31 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
       setItemToDelete(null);
       setShowDeleteDialog(false);
     }
+  };
+
+  const toggleDespesaSelecionada = (despesaId: string) => {
+    const newSet = new Set(despesasSelecionadas);
+    if (newSet.has(despesaId)) {
+      newSet.delete(despesaId);
+    } else {
+      newSet.add(despesaId);
+    }
+    setDespesasSelecionadas(newSet);
+  };
+
+  const [showRelatorioDialog, setShowRelatorioDialog] = useState(false);
+
+  const handleGerarRelatorio = () => {
+    if (despesasSelecionadas.size === 0) {
+      toast({
+        title: 'Nenhuma despesa selecionada',
+        description: 'Selecione ao menos uma despesa para gerar o relatório.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setShowRelatorioDialog(true);
   };
 
   return (
@@ -120,9 +148,12 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
                   <div className="flex-1">
                     <p className="font-medium">{receita.descricao}</p>
                     <p className="text-sm text-muted-foreground">{receita.tipo}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {receita.quantidade} x R$ {receita.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-green-600">R$ {receita.valor.toLocaleString('pt-BR')}</span>
+                    <span className="font-bold text-green-600">R$ {receita.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                     {permissions.canEditFinancial && (
                       <Button 
                         size="sm" 
@@ -143,12 +174,20 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Despesas</CardTitle>
-          {permissions.canEditFinancial && (
-            <Button size="sm" onClick={() => setShowAddDespesa(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Despesa
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {permissions.canEditFinancial && despesasSelecionadas.size > 0 && (
+              <Button size="sm" variant="outline" onClick={handleGerarRelatorio}>
+                <FileText className="h-4 w-4 mr-2" />
+                Gerar Relatório ({despesasSelecionadas.size})
+              </Button>
+            )}
+            {permissions.canEditFinancial && (
+              <Button size="sm" onClick={() => setShowAddDespesa(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar Despesa
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {evento.financeiro.despesas.length === 0 ? (
@@ -159,12 +198,22 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
             <div className="space-y-2">
               {evento.financeiro.despesas.map((despesa) => (
                 <div key={despesa.id} className="flex justify-between items-center p-3 border rounded">
+                  {permissions.canEditFinancial && (
+                    <Checkbox 
+                      checked={despesasSelecionadas.has(despesa.id)}
+                      onCheckedChange={() => toggleDespesaSelecionada(despesa.id)}
+                      className="mr-3"
+                    />
+                  )}
                   <div className="flex-1">
                     <p className="font-medium">{despesa.descricao}</p>
                     <p className="text-sm text-muted-foreground">{despesa.categoria}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {despesa.quantidade} x R$ {despesa.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-red-600">R$ {despesa.valor.toLocaleString('pt-BR')}</span>
+                    <span className="font-bold text-red-600">R$ {despesa.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                     {permissions.canEditFinancial && (
                       <Button 
                         size="sm" 
@@ -196,6 +245,13 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
         onAdicionar={(data) => {
           console.log('Adicionar despesa:', data);
         }}
+      />
+
+      <RelatorioFechamentoDialog
+        open={showRelatorioDialog}
+        onOpenChange={setShowRelatorioDialog}
+        evento={evento}
+        despesasSelecionadas={Array.from(despesasSelecionadas)}
       />
 
       <ConfirmDialog
