@@ -22,6 +22,7 @@ interface EventosContextType {
   removerMembroEquipe: (eventoId: string, membroId: string) => Promise<void>;
   adicionarObservacaoOperacional: (eventoId: string, observacao: string) => Promise<void>;
   uploadArquivo: (eventoId: string, tipo: 'plantaBaixa' | 'documentos' | 'fotosEvento', arquivo: File) => Promise<string>;
+  vincularReembolsoADespesa: (eventoId: string, demandaId: string, descricao: string, valor: number, membroNome: string) => Promise<void>;
 }
 
 const EventosContext = createContext<EventosContextType | undefined>(undefined);
@@ -628,6 +629,46 @@ export function EventosProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const vincularReembolsoADespesa = async (eventoId: string, demandaId: string, descricao: string, valor: number, membroNome: string): Promise<void> => {
+    return new Promise((resolve) => {
+      const novaDespesa: Despesa = {
+        id: `despesa-reembolso-${Date.now()}`,
+        descricao: `Reembolso - ${membroNome} - ${descricao}`,
+        categoria: 'Reembolso de Equipe',
+        valor: valor,
+        quantidade: 1,
+        valorUnitario: valor,
+        responsavel: membroNome,
+        dataPagamento: new Date().toISOString(),
+        status: 'pago',
+        observacoes: `Vinculado à demanda de reembolso #${demandaId}`
+      };
+
+      setEventos(prev => prev.map(evento => {
+        if (evento.id === eventoId) {
+          return {
+            ...evento,
+            financeiro: {
+              ...evento.financeiro,
+              despesas: [...evento.financeiro.despesas, novaDespesa]
+            },
+            atualizadoEm: new Date().toISOString()
+          };
+        }
+        return evento;
+      }));
+
+      adicionarTimeline(eventoId, 'financeiro', `Despesa de reembolso adicionada: ${membroNome} - R$ ${valor.toFixed(2)}`);
+      
+      toast({
+        title: 'Despesa criada!',
+        description: 'Reembolso vinculado ao financeiro do evento.',
+      });
+
+      resolve();
+    });
+  };
+
   return (
     <EventosContext.Provider value={{
       eventos,
@@ -646,7 +687,8 @@ export function EventosProvider({ children }: { children: ReactNode }) {
       adicionarMembroEquipe,
       removerMembroEquipe,
       adicionarObservacaoOperacional,
-      uploadArquivo
+      uploadArquivo,
+      vincularReembolsoADespesa
     }}>
       {children}
     </EventosContext.Provider>

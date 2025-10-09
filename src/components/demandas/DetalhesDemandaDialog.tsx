@@ -83,12 +83,12 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
     if (!novoComentario.trim()) return;
 
     const usuarioAtual = mockUsuarios[0];
-    adicionarComentario(demanda.id, {
-      autor: usuarioAtual.nome,
-      autorId: usuarioAtual.id,
-      conteudo: novoComentario,
-      tipo: 'resposta',
-    });
+    adicionarComentario(
+      demanda.id,
+      novoComentario,
+      usuarioAtual.nome,
+      usuarioAtual.id
+    );
     setNovoComentario('');
   };
 

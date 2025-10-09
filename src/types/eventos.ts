@@ -20,7 +20,7 @@ export type StatusFinanceiro = 'pendente' | 'pago' | 'cancelado' | 'em_negociaca
 
 export type TipoReceita = 'fixo' | 'quantidade';
 
-export type CategoriaFinanceira = 'pessoal' | 'transporte' | 'insumos' | 'alimentacao' | 'outros';
+export type CategoriaFinanceira = 'pessoal' | 'transporte' | 'insumos' | 'alimentacao' | 'Reembolso de Equipe' | 'outros';
 
 export interface Cliente {
   id: string;
@@ -92,7 +92,11 @@ export interface Despesa {
   quantidade: number;
   valorUnitario: number;
   valor: number;
-  data: string;
+  data?: string;
+  dataPagamento?: string;
+  status?: 'pendente' | 'pago';
+  responsavel?: string;
+  observacoes?: string;
   comprovante?: string;
   selecionadaRelatorio?: boolean;
 }
@@ -111,7 +115,7 @@ export interface Cobranca {
 export interface TimelineItem {
   id: string;
   data: string;
-  tipo: 'criacao' | 'edicao' | 'confirmacao' | 'alocacao' | 'envio' | 'entrega' | 'execucao' | 'retorno' | 'fechamento' | 'cancelamento';
+  tipo: 'criacao' | 'edicao' | 'confirmacao' | 'alocacao' | 'envio' | 'entrega' | 'execucao' | 'retorno' | 'fechamento' | 'cancelamento' | 'financeiro';
   usuario: string;
   descricao: string;
 }

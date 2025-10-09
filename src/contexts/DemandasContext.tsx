@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Demanda, DemandaFormData, FiltroDemandas, Comentario, Anexo, StatusDemanda, ItemReembolso } from '@/types/demandas';
+import { Demanda, DemandaFormData, FiltroDemandas, Comentario, Anexo, StatusDemanda, ItemReembolso, TipoReembolso } from '@/types/demandas';
 import { mockDemandas } from '@/lib/mock-data/demandas';
 import { useToast } from '@/hooks/use-toast';
 
@@ -8,35 +8,39 @@ interface DemandasContextData {
   filtros: FiltroDemandas;
   setFiltros: (filtros: FiltroDemandas) => void;
   adicionarDemanda: (data: DemandaFormData, solicitante: string, solicitanteId: string) => void;
-  editarDemanda: (id: string, data: Partial<DemandaFormData>) => void;
+  editarDemanda: (id: string, data: Partial<Demanda>) => void;
   excluirDemanda: (id: string) => void;
   alterarStatus: (id: string, novoStatus: StatusDemanda) => void;
-  atribuirResponsavel: (id: string, responsavelId: string, responsavel: string) => void;
-  adicionarComentario: (demandaId: string, comentario: Omit<Comentario, 'id' | 'dataHora'>) => void;
-  adicionarAnexo: (demandaId: string, anexo: Omit<Anexo, 'id' | 'uploadEm'>) => void;
+  atribuirResponsavel: (demandaId: string, responsavelId: string, responsavelNome: string) => void;
+  adicionarComentario: (demandaId: string, conteudo: string, autor: string, autorId: string) => void;
+  adicionarAnexo: (demandaId: string, anexo: Omit<Anexo, 'id' | 'uploadPor' | 'uploadEm'>) => void;
   removerAnexo: (demandaId: string, anexoId: string) => void;
   marcarComoResolvida: (id: string) => void;
   reabrirDemanda: (id: string) => void;
   getDemandasPorEvento: (eventoId: string) => Demanda[];
-  adicionarDemandaReembolso: (data: {
-    eventoId: string;
-    descricao?: string;
-    itens: ItemReembolso[];
-    membroEquipeId: string;
-    membroEquipeNome: string;
-  }) => Promise<void>;
-  aprovarReembolso: (demandaId: string, formaPagamento: string, observacoes?: string) => void;
-  marcarReembolsoPago: (demandaId: string, dataPagamento: string, comprovante?: string, observacoes?: string) => void;
-  recusarReembolso: (demandaId: string, motivo: string) => void;
-  getDemandasReembolsoPorEvento: (eventoId: string) => Demanda[];
+  getDemandasPorResponsavel: (responsavelId: string) => Demanda[];
+  getDemandasPorSolicitante: (solicitanteId: string) => Demanda[];
   getEstatisticas: () => {
     total: number;
     abertas: number;
     emAndamento: number;
     concluidas: number;
+    canceladas: number;
     urgentes: number;
   };
-  demandasFiltradas: Demanda[];
+  getDemandasFiltradas: () => Demanda[];
+  adicionarDemandaReembolso: (
+    eventoId: string,
+    eventoNome: string,
+    membroEquipeId: string,
+    membroEquipeNome: string,
+    itens: ItemReembolso[],
+    observacoes?: string
+  ) => void;
+  aprovarReembolso: (demandaId: string, formaPagamento: string, observacoes?: string) => void;
+  marcarReembolsoPago: (demandaId: string, dataPagamento: string, observacoes?: string, comprovante?: string) => void;
+  recusarReembolso: (demandaId: string, motivo: string) => void;
+  getDemandasReembolsoPorEvento: (eventoId: string) => Demanda[];
 }
 
 const DemandasContext = createContext<DemandasContextData>({} as DemandasContextData);
@@ -49,6 +53,13 @@ export const useDemandasContext = () => {
   return context;
 };
 
+// Este é um wrapper que permite usar hooks do EventosContext
+let vincularReembolsoCallback: ((eventoId: string, demandaId: string, descricao: string, valor: number, membroNome: string) => void) | null = null;
+
+export function setVincularReembolsoCallback(callback: (eventoId: string, demandaId: string, descricao: string, valor: number, membroNome: string) => void) {
+  vincularReembolsoCallback = callback;
+}
+
 export const DemandasProvider = ({ children }: { children: ReactNode }) => {
   const [demandas, setDemandas] = useState<Demanda[]>(mockDemandas);
   const [filtros, setFiltros] = useState<FiltroDemandas>({});
@@ -58,25 +69,26 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
     const novaDemanda: Demanda = {
       id: Date.now().toString(),
       ...data,
-      status: 'aberta',
       solicitante,
       solicitanteId,
+      status: 'aberta',
       dataCriacao: new Date().toISOString(),
       dataAtualizacao: new Date().toISOString(),
-      comentarios: [],
-      anexos: [],
       resolvida: false,
       podeResponder: true,
+      comentarios: [],
+      anexos: [],
     };
 
-    setDemandas([novaDemanda, ...demandas]);
+    setDemandas([...demandas, novaDemanda]);
+
     toast({
-      title: 'Demanda criada',
+      title: 'Demanda criada!',
       description: 'A demanda foi criada com sucesso.',
     });
   };
 
-  const editarDemanda = (id: string, data: Partial<DemandaFormData>) => {
+  const editarDemanda = (id: string, data: Partial<Demanda>) => {
     setDemandas(demandas.map(demanda => {
       if (demanda.id === id) {
         return {
@@ -89,65 +101,47 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
     }));
 
     toast({
-      title: 'Demanda atualizada',
-      description: 'As alterações foram salvas com sucesso.',
+      title: 'Demanda atualizada!',
+      description: 'As alterações foram salvas.',
     });
   };
 
   const excluirDemanda = (id: string) => {
-    setDemandas(demandas.filter(d => d.id !== id));
+    setDemandas(demandas.filter(demanda => demanda.id !== id));
+
     toast({
-      title: 'Demanda excluída',
-      description: 'A demanda foi removida com sucesso.',
+      title: 'Demanda excluída!',
+      description: 'A demanda foi removida.',
     });
   };
 
   const alterarStatus = (id: string, novoStatus: StatusDemanda) => {
     setDemandas(demandas.map(demanda => {
       if (demanda.id === id) {
-        // Se tentar marcar como concluída, precisa estar resolvida
-        if (novoStatus === 'concluida' && !demanda.resolvida) {
-          toast({
-            title: 'Ação bloqueada',
-            description: 'A demanda precisa ser marcada como resolvida antes de ser concluída.',
-            variant: 'destructive',
-          });
-          return demanda;
-        }
-
-        // Atualizar podeResponder baseado no novo status
-        const podeResponder = novoStatus !== 'concluida' && novoStatus !== 'cancelada';
-
-        const updated: Demanda = {
+        return {
           ...demanda,
           status: novoStatus,
-          podeResponder,
           dataAtualizacao: new Date().toISOString(),
+          dataConclusao: novoStatus === 'concluida' || novoStatus === 'cancelada' ? new Date().toISOString() : demanda.dataConclusao,
         };
-        
-        if (novoStatus === 'concluida' || novoStatus === 'cancelada') {
-          updated.dataConclusao = new Date().toISOString();
-        }
-        
-        return updated;
       }
       return demanda;
     }));
 
     toast({
-      title: 'Status atualizado',
-      description: `A demanda foi marcada como "${novoStatus}".`,
+      title: 'Status atualizado!',
+      description: `Demanda marcada como ${novoStatus}.`,
     });
   };
 
-  const atribuirResponsavel = (id: string, responsavelId: string, responsavel: string) => {
+  const atribuirResponsavel = (demandaId: string, responsavelId: string, responsavelNome: string) => {
     setDemandas(demandas.map(demanda => {
-      if (demanda.id === id) {
+      if (demanda.id === demandaId) {
         return {
           ...demanda,
           responsavelId,
-          responsavel,
-          status: demanda.status === 'aberta' ? 'em-andamento' : demanda.status,
+          responsavel: responsavelNome,
+          status: 'em-andamento',
           dataAtualizacao: new Date().toISOString(),
         };
       }
@@ -155,61 +149,51 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
     }));
 
     toast({
-      title: 'Responsável atribuído',
-      description: `${responsavel} foi atribuído à demanda.`,
+      title: 'Responsável atribuído!',
+      description: `${responsavelNome} foi atribuído à demanda.`,
     });
   };
 
-  const adicionarComentario = (demandaId: string, comentario: Omit<Comentario, 'id' | 'dataHora'>) => {
+  const adicionarComentario = (demandaId: string, conteudo: string, autor: string, autorId: string) => {
+    const novoComentario: Comentario = {
+      id: Date.now().toString(),
+      autor,
+      autorId,
+      conteudo,
+      dataHora: new Date().toISOString(),
+      tipo: 'comentario',
+    };
+
     setDemandas(demandas.map(demanda => {
       if (demanda.id === demandaId) {
-        // Verificar se pode responder
-        if (!demanda.podeResponder && comentario.tipo !== 'sistema') {
-          toast({
-            title: 'Ação bloqueada',
-            description: 'Não é possível adicionar comentários em uma demanda finalizada.',
-            variant: 'destructive',
-          });
-          return demanda;
-        }
-
         return {
           ...demanda,
-          comentarios: [
-            ...demanda.comentarios,
-            {
-              ...comentario,
-              id: Date.now().toString(),
-              dataHora: new Date().toISOString(),
-            },
-          ],
+          comentarios: [...demanda.comentarios, novoComentario],
           dataAtualizacao: new Date().toISOString(),
         };
       }
       return demanda;
     }));
 
-    if (comentario.tipo !== 'sistema') {
-      toast({
-        title: comentario.tipo === 'resposta' ? 'Resposta enviada' : 'Comentário adicionado',
-        description: comentario.tipo === 'resposta' ? 'Sua resposta foi enviada com sucesso.' : 'Seu comentário foi publicado.',
-      });
-    }
+    toast({
+      title: 'Comentário adicionado',
+      description: 'Seu comentário foi publicado.',
+    });
   };
 
-  const adicionarAnexo = (demandaId: string, anexo: Omit<Anexo, 'id' | 'uploadEm'>) => {
+  const adicionarAnexo = (demandaId: string, anexo: Omit<Anexo, 'id' | 'uploadPor' | 'uploadEm'>) => {
+    const novoAnexo: Anexo = {
+      ...anexo,
+      id: Date.now().toString(),
+      uploadPor: 'Usuário Atual',
+      uploadEm: new Date().toISOString(),
+    };
+
     setDemandas(demandas.map(demanda => {
       if (demanda.id === demandaId) {
         return {
           ...demanda,
-          anexos: [
-            ...demanda.anexos,
-            {
-              ...anexo,
-              id: Date.now().toString(),
-              uploadEm: new Date().toISOString(),
-            },
-          ],
+          anexos: [...demanda.anexos, novoAnexo],
           dataAtualizacao: new Date().toISOString(),
         };
       }
@@ -218,7 +202,7 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
 
     toast({
       title: 'Anexo adicionado',
-      description: 'O arquivo foi anexado com sucesso.',
+      description: 'O arquivo foi anexado à demanda.',
     });
   };
 
@@ -296,57 +280,110 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
 
     toast({
       title: 'Demanda reaberta',
-      description: 'A demanda foi reaberta para novas respostas.',
+      description: 'A demanda foi reaberta para novas interações.',
     });
   };
 
-  const getDemandasPorEvento = (eventoId: string): Demanda[] => {
+  const getDemandasPorEvento = (eventoId: string) => {
     return demandas.filter(d => d.eventoRelacionado === eventoId);
   };
 
-  const adicionarDemandaReembolso = async (data: {
-    eventoId: string;
-    descricao?: string;
-    itens: ItemReembolso[];
-    membroEquipeId: string;
-    membroEquipeNome: string;
-  }) => {
-    const eventoNome = data.eventoId; // Idealmente buscar do contexto de eventos
-    
-    const valorTotal = data.itens.reduce((sum, item) => sum + item.valor, 0);
-    
+  const getDemandasPorResponsavel = (responsavelId: string) => {
+    return demandas.filter(d => d.responsavelId === responsavelId);
+  };
+
+  const getDemandasPorSolicitante = (solicitanteId: string) => {
+    return demandas.filter(d => d.solicitanteId === solicitanteId);
+  };
+
+  const getEstatisticas = () => {
+    return {
+      total: demandas.length,
+      abertas: demandas.filter(d => d.status === 'aberta').length,
+      emAndamento: demandas.filter(d => d.status === 'em-andamento').length,
+      concluidas: demandas.filter(d => d.status === 'concluida').length,
+      canceladas: demandas.filter(d => d.status === 'cancelada').length,
+      urgentes: demandas.filter(d => d.prioridade === 'urgente').length,
+    };
+  };
+
+  const getDemandasFiltradas = () => {
+    let resultado = [...demandas];
+
+    if (filtros.busca) {
+      const busca = filtros.busca.toLowerCase();
+      resultado = resultado.filter(d =>
+        d.titulo.toLowerCase().includes(busca) ||
+        d.descricao.toLowerCase().includes(busca) ||
+        d.id.includes(busca)
+      );
+    }
+
+    if (filtros.status && filtros.status.length > 0) {
+      resultado = resultado.filter(d => filtros.status!.includes(d.status));
+    }
+
+    if (filtros.prioridade && filtros.prioridade.length > 0) {
+      resultado = resultado.filter(d => filtros.prioridade!.includes(d.prioridade));
+    }
+
+    if (filtros.categoria && filtros.categoria.length > 0) {
+      resultado = resultado.filter(d => filtros.categoria!.includes(d.categoria));
+    }
+
+    if (filtros.responsavel) {
+      resultado = resultado.filter(d => d.responsavelId === filtros.responsavel);
+    }
+
+    if (filtros.solicitante) {
+      resultado = resultado.filter(d => d.solicitanteId === filtros.solicitante);
+    }
+
+    return resultado;
+  };
+
+  const adicionarDemandaReembolso = (
+    eventoId: string,
+    eventoNome: string,
+    membroEquipeId: string,
+    membroEquipeNome: string,
+    itens: ItemReembolso[],
+    observacoes?: string
+  ) => {
+    const valorTotal = itens.reduce((sum, item) => sum + item.valor, 0);
+
     const novaDemanda: Demanda = {
-      id: `demanda-${Date.now()}`,
-      titulo: `Reembolso - ${data.membroEquipeNome} - ${new Date().toLocaleDateString('pt-BR')}`,
-      descricao: data.descricao || `Solicitação de reembolso com ${data.itens.length} item(ns)`,
+      id: `reembolso-${Date.now()}`,
+      titulo: `Reembolso - ${membroEquipeNome} - ${new Date().toLocaleDateString('pt-BR')}`,
+      descricao: observacoes || `Solicitação de reembolso de ${itens.length} item(ns)`,
       categoria: 'reembolso',
       prioridade: 'media',
       status: 'aberta',
-      solicitante: data.membroEquipeNome,
-      solicitanteId: data.membroEquipeId,
+      solicitante: membroEquipeNome,
+      solicitanteId: membroEquipeId,
       dataCriacao: new Date().toISOString(),
       dataAtualizacao: new Date().toISOString(),
-      comentarios: [],
-      anexos: [],
-      eventoRelacionado: data.eventoId,
-      eventoNome: eventoNome,
       resolvida: false,
       podeResponder: true,
-      tags: ['reembolso'],
+      comentarios: [],
+      anexos: [],
+      eventoRelacionado: eventoId,
+      eventoNome: eventoNome,
+      tags: ['reembolso', eventoNome],
       dadosReembolso: {
-        itens: data.itens,
+        itens,
         valorTotal,
-        membroEquipeId: data.membroEquipeId,
-        membroEquipeNome: data.membroEquipeNome,
+        membroEquipeId,
+        membroEquipeNome,
         statusPagamento: 'pendente'
       }
     };
 
     setDemandas([...demandas, novaDemanda]);
-    
+
     toast({
-      title: 'Reembolso criado!',
-      description: `Solicitação de reembolso no valor de R$ ${valorTotal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })} foi criada.`
+      title: 'Solicitação de reembolso criada!',
+      description: `Valor total: R$ ${valorTotal.toFixed(2)}`,
     });
   };
 
@@ -361,6 +398,7 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
             formaPagamento,
             observacoesPagamento: observacoes
           },
+          status: 'em-andamento',
           dataAtualizacao: new Date().toISOString()
         };
       }
@@ -369,14 +407,25 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
 
     toast({
       title: 'Reembolso aprovado!',
-      description: 'A solicitação foi aprovada e está aguardando pagamento.'
+      description: 'A solicitação foi aprovada e aguarda pagamento.'
     });
   };
 
-  const marcarReembolsoPago = (demandaId: string, dataPagamento: string, comprovante?: string, observacoes?: string) => {
-    setDemandas(demandas.map(demanda => {
-      if (demanda.id === demandaId && demanda.dadosReembolso) {
-        const comprovanteAnexo = comprovante ? {
+  const marcarReembolsoPago = (demandaId: string, dataPagamento: string, observacoes?: string, comprovante?: string) => {
+    const demanda = demandas.find(d => d.id === demandaId);
+    
+    if (!demanda || !demanda.dadosReembolso || !demanda.eventoRelacionado) {
+      toast({
+        title: 'Erro',
+        description: 'Demanda ou reembolso não encontrado.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setDemandas(demandas.map(d => {
+      if (d.id === demandaId && d.dadosReembolso) {
+        const comprovanteAnexo: Anexo | undefined = comprovante ? {
           id: `anexo-pag-${Date.now()}`,
           nome: comprovante,
           url: `/uploads/${comprovante}`,
@@ -387,13 +436,13 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
         } : undefined;
 
         return {
-          ...demanda,
+          ...d,
           dadosReembolso: {
-            ...demanda.dadosReembolso,
+            ...d.dadosReembolso,
             statusPagamento: 'pago',
             dataPagamento,
             comprovantePagamento: comprovanteAnexo,
-            observacoesPagamento: observacoes || demanda.dadosReembolso.observacoesPagamento
+            observacoesPagamento: observacoes || d.dadosReembolso.observacoesPagamento
           },
           resolvida: true,
           status: 'concluida',
@@ -401,12 +450,23 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
           dataAtualizacao: new Date().toISOString()
         };
       }
-      return demanda;
+      return d;
     }));
+
+    // Vincular ao financeiro do evento usando callback
+    if (vincularReembolsoCallback) {
+      vincularReembolsoCallback(
+        demanda.eventoRelacionado,
+        demandaId,
+        demanda.titulo,
+        demanda.dadosReembolso.valorTotal,
+        demanda.dadosReembolso.membroEquipeNome
+      );
+    }
 
     toast({
       title: 'Reembolso marcado como pago!',
-      description: 'A demanda foi finalizada e o pagamento foi registrado.'
+      description: 'A demanda foi finalizada e vinculada ao financeiro do evento.'
     });
   };
 
@@ -431,67 +491,13 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
 
     toast({
       title: 'Reembolso recusado',
-      description: 'A solicitação foi recusada e o solicitante foi notificado.',
-      variant: 'destructive'
+      description: 'A solicitação foi recusada.'
     });
   };
 
-  const getDemandasReembolsoPorEvento = (eventoId: string): Demanda[] => {
+  const getDemandasReembolsoPorEvento = (eventoId: string) => {
     return demandas.filter(d => d.eventoRelacionado === eventoId && d.categoria === 'reembolso');
   };
-
-  const getEstatisticas = () => {
-    return {
-      total: demandas.length,
-      abertas: demandas.filter(d => d.status === 'aberta').length,
-      emAndamento: demandas.filter(d => d.status === 'em-andamento').length,
-      concluidas: demandas.filter(d => d.status === 'concluida').length,
-      urgentes: demandas.filter(d => d.prioridade === 'urgente' && d.status !== 'concluida' && d.status !== 'cancelada').length,
-    };
-  };
-
-  const demandasFiltradas = demandas.filter(demanda => {
-    if (filtros.busca) {
-      const busca = filtros.busca.toLowerCase();
-      if (!demanda.titulo.toLowerCase().includes(busca) &&
-          !demanda.descricao.toLowerCase().includes(busca) &&
-          !demanda.id.includes(busca)) {
-        return false;
-      }
-    }
-
-    if (filtros.status && filtros.status.length > 0) {
-      if (!filtros.status.includes(demanda.status)) {
-        return false;
-      }
-    }
-
-    if (filtros.prioridade && filtros.prioridade.length > 0) {
-      if (!filtros.prioridade.includes(demanda.prioridade)) {
-        return false;
-      }
-    }
-
-    if (filtros.categoria && filtros.categoria.length > 0) {
-      if (!filtros.categoria.includes(demanda.categoria)) {
-        return false;
-      }
-    }
-
-    if (filtros.responsavel) {
-      if (demanda.responsavelId !== filtros.responsavel) {
-        return false;
-      }
-    }
-
-    if (filtros.solicitante) {
-      if (demanda.solicitanteId !== filtros.solicitante) {
-        return false;
-      }
-    }
-
-    return true;
-  });
 
   return (
     <DemandasContext.Provider
@@ -507,16 +513,18 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
         adicionarComentario,
         adicionarAnexo,
         removerAnexo,
+        marcarComoResolvida,
+        reabrirDemanda,
+        getDemandasPorEvento,
+        getDemandasPorResponsavel,
+        getDemandasPorSolicitante,
+        getEstatisticas,
+        getDemandasFiltradas,
         adicionarDemandaReembolso,
         aprovarReembolso,
         marcarReembolsoPago,
         recusarReembolso,
-        getDemandasReembolsoPorEvento,
-        marcarComoResolvida,
-        reabrirDemanda,
-        getDemandasPorEvento,
-        getEstatisticas,
-        demandasFiltradas,
+        getDemandasReembolsoPorEvento
       }}
     >
       {children}

@@ -141,13 +141,14 @@ export function NovaDemandaReembolsoDialog({ eventoId }: NovaDemandaReembolsoDia
       return;
     }
 
-    await adicionarDemandaReembolso({
-      eventoId: selectedEventoId,
-      descricao,
+    adicionarDemandaReembolso(
+      selectedEventoId,
+      eventos.find(e => e.id === selectedEventoId)?.nome || 'Evento',
+      user?.id || 'user-1',
+      user?.name || 'Usuário',
       itens,
-      membroEquipeId: user?.id || 'user-1',
-      membroEquipeNome: user?.name || 'Usuário'
-    });
+      descricao
+    );
 
     // Resetar
     setOpen(false);

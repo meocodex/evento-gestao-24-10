@@ -12,7 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
 
 export default function Demandas() {
-  const { demandasFiltradas, getEstatisticas, excluirDemanda } = useDemandasContext();
+  const { getDemandasFiltradas, getEstatisticas, excluirDemanda } = useDemandasContext();
+  const demandasFiltradas = getDemandasFiltradas();
   const estatisticas = getEstatisticas();
 
   const [demandaSelecionada, setDemandaSelecionada] = useState<Demanda | null>(null);

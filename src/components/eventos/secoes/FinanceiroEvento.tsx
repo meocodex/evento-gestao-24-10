@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useEventos } from '@/contexts/EventosContext';
+import { useDemandasContext } from '@/contexts/DemandasContext';
 import { Evento } from '@/types/eventos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2, FileText } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2, FileText, Receipt } from 'lucide-react';
 import { AdicionarReceitaDialog } from '../modals/AdicionarReceitaDialog';
 import { AdicionarDespesaDialog } from '../modals/AdicionarDespesaDialog';
 import { RelatorioFechamentoDialog } from '../modals/RelatorioFechamentoDialog';
@@ -18,11 +20,18 @@ interface FinanceiroEventoProps {
 
 export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps) {
   const { toast } = useToast();
+  const { getDemandasReembolsoPorEvento } = useDemandasContext();
   const [showAddReceita, setShowAddReceita] = useState(false);
   const [showAddDespesa, setShowAddDespesa] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; tipo: 'receita' | 'despesa' } | null>(null);
   const [despesasSelecionadas, setDespesasSelecionadas] = useState<Set<string>>(new Set());
+
+  const reembolsosEvento = getDemandasReembolsoPorEvento(evento.id);
+  const reembolsosPagos = reembolsosEvento.filter(d => d.dadosReembolso?.statusPagamento === 'pago');
+  const totalReembolsosPendentes = reembolsosEvento
+    .filter(d => d.dadosReembolso?.statusPagamento === 'pendente' || d.dadosReembolso?.statusPagamento === 'aprovado')
+    .reduce((sum, d) => sum + (d.dadosReembolso?.valorTotal || 0), 0);
 
   const totalReceitas = evento.financeiro.receitas.reduce((sum, r) => sum + r.valor, 0);
   const totalDespesas = evento.financeiro.despesas.reduce((sum, d) => sum + d.valor, 0);
@@ -171,6 +180,26 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
           )}
         </CardContent>
       </Card>
+
+      {/* Card de Reembolsos Pendentes */}
+      {totalReembolsosPendentes > 0 && (
+        <Card className="border-yellow-500/50 bg-yellow-500/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-500">
+              <Receipt className="h-5 w-5" />
+              Reembolsos Pendentes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-2">
+              Há {reembolsosEvento.length - reembolsosPagos.length} solicitações de reembolso aguardando aprovação/pagamento.
+            </p>
+            <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-500">
+              R$ {totalReembolsosPendentes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
