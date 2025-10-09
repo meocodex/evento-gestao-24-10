@@ -56,12 +56,26 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
       return;
     }
 
+    const dadosAtualizados: Partial<Evento> = {
+      nome,
+      dataInicio,
+      dataFim,
+      horaInicio,
+      horaFim,
+      local,
+      cidade,
+      estado,
+      endereco,
+      descricao,
+      tags,
+    };
+
     toast({
       title: 'Evento atualizado!',
       description: 'As alterações foram salvas com sucesso.',
     });
     
-    onSave();
+    onSave(dadosAtualizados);
   };
 
   return (
