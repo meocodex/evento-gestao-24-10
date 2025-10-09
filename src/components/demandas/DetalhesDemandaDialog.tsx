@@ -10,11 +10,12 @@ import { useDemandasContext } from '@/contexts/DemandasContext';
 import { Demanda, StatusDemanda, TipoReembolso } from '@/types/demandas';
 import { mockUsuarios } from '@/lib/mock-data/demandas';
 import { format } from 'date-fns';
-import { MessageSquare, Paperclip, Send, CheckCircle2, AlertCircle, Link2, Repeat, DollarSign, FileText, Download, XCircle } from 'lucide-react';
+import { MessageSquare, Paperclip, Send, CheckCircle2, AlertCircle, Link2, Repeat, DollarSign, FileText, Download, XCircle, Archive, Play, Ban } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AprovarReembolsoDialog } from './AprovarReembolsoDialog';
 import { MarcarPagoDialog } from './MarcarPagoDialog';
 import { RecusarReembolsoDialog } from './RecusarReembolsoDialog';
+import { PrazoIndicador } from './PrazoIndicador';
 
 interface DetalhesDemandaDialogProps {
   demanda: Demanda | null;
@@ -56,7 +57,9 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
     reabrirDemanda,
     aprovarReembolso,
     marcarReembolsoPago,
-    recusarReembolso
+    recusarReembolso,
+    arquivarDemanda,
+    desarquivarDemanda
   } = useDemandasContext();
   const { user } = useAuth();
   const [novoComentario, setNovoComentario] = useState('');
@@ -115,6 +118,27 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
     setShowRecusarDialog(false);
   };
 
+  const handleIniciarAtendimento = () => {
+    alterarStatus(demanda.id, 'em-andamento');
+  };
+
+  const handleConcluirDemanda = () => {
+    marcarComoResolvida(demanda.id);
+    alterarStatus(demanda.id, 'concluida');
+  };
+
+  const handleCancelarDemanda = () => {
+    alterarStatus(demanda.id, 'cancelada');
+  };
+
+  const handleArquivar = () => {
+    arquivarDemanda(demanda.id);
+  };
+
+  const handleDesarquivar = () => {
+    desarquivarDemanda(demanda.id);
+  };
+
   const isReembolso = demanda.categoria === 'reembolso' && demanda.dadosReembolso;
 
   return (
@@ -141,11 +165,20 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
                   {statusPagamentoConfig[demanda.dadosReembolso.statusPagamento].label}
                 </Badge>
               )}
-              {demanda.resolvida && (
+              {demanda.arquivada && (
+                <Badge variant="secondary" className="bg-gray-100 text-gray-800">
+                  <Archive className="mr-1 h-3 w-3" />
+                  Arquivada
+                </Badge>
+              )}
+              {demanda.resolvida && !demanda.arquivada && (
                 <Badge variant="secondary" className="bg-green-100 text-green-800">
                   <CheckCircle2 className="mr-1 h-3 w-3" />
                   Resolvida
                 </Badge>
+              )}
+              {demanda.prazo && !demanda.arquivada && (
+                <PrazoIndicador prazo={demanda.prazo} />
               )}
             </div>
           </div>
@@ -316,6 +349,55 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
             </div>
           </div>
 
+          {/* Botões de Ação Rápida */}
+          {!demanda.arquivada && (
+            <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+              <h3 className="font-semibold text-sm">Ações Rápidas</h3>
+              <div className="flex flex-wrap gap-2">
+                {demanda.status === 'aberta' && (
+                  <Button 
+                    size="sm" 
+                    variant="default"
+                    onClick={handleIniciarAtendimento}
+                  >
+                    <Play className="mr-2 h-4 w-4" />
+                    Iniciar Atendimento
+                  </Button>
+                )}
+                {demanda.status === 'em-andamento' && (
+                  <Button 
+                    size="sm" 
+                    variant="default"
+                    onClick={handleConcluirDemanda}
+                  >
+                    <CheckCircle2 className="mr-2 h-4 w-4" />
+                    Concluir Demanda
+                  </Button>
+                )}
+                {demanda.status !== 'cancelada' && demanda.status !== 'concluida' && (
+                  <Button 
+                    size="sm" 
+                    variant="destructive"
+                    onClick={handleCancelarDemanda}
+                  >
+                    <Ban className="mr-2 h-4 w-4" />
+                    Cancelar
+                  </Button>
+                )}
+                {(demanda.status === 'concluida' || demanda.status === 'cancelada') && isAdmin && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={handleArquivar}
+                  >
+                    <Archive className="mr-2 h-4 w-4" />
+                    Arquivar
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Controles administrativos */}
           {isAdmin && (
             <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
@@ -331,7 +413,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
                     Marcar como Resolvida
                   </Button>
                 )}
-                {demanda.resolvida && (
+                {demanda.resolvida && !demanda.arquivada && (
                   <Button 
                     size="sm" 
                     variant="outline"
@@ -339,6 +421,16 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
                   >
                     <Repeat className="mr-2 h-4 w-4" />
                     Reabrir Demanda
+                  </Button>
+                )}
+                {demanda.arquivada && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={handleDesarquivar}
+                  >
+                    <Repeat className="mr-2 h-4 w-4" />
+                    Desarquivar
                   </Button>
                 )}
               </div>
@@ -349,16 +441,18 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
-              <Select value={demanda.status} onValueChange={handleAlterarStatus}>
+              <Select 
+                value={demanda.status} 
+                onValueChange={handleAlterarStatus}
+                disabled={demanda.arquivada}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="aberta">Aberta</SelectItem>
                   <SelectItem value="em-andamento">Em Andamento</SelectItem>
-                  <SelectItem value="concluida" disabled={!demanda.resolvida}>
-                    Concluída {!demanda.resolvida && '(Marque como resolvida primeiro)'}
-                  </SelectItem>
+                  <SelectItem value="concluida">Concluída</SelectItem>
                   <SelectItem value="cancelada">Cancelada</SelectItem>
                 </SelectContent>
               </Select>

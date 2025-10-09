@@ -9,7 +9,7 @@ import { EditarDemandaDialog } from '@/components/demandas/EditarDemandaDialog';
 import { DetalhesDemandaDialog } from '@/components/demandas/DetalhesDemandaDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, CheckCircle2, Clock, AlertTriangle } from 'lucide-react';
+import { Bell, CheckCircle2, Clock, AlertTriangle, Archive, XCircle } from 'lucide-react';
 
 export default function Demandas() {
   const { getDemandasFiltradas, getEstatisticas, excluirDemanda } = useDemandasContext();
@@ -59,10 +59,10 @@ export default function Demandas() {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total de Demandas</CardTitle>
+            <CardTitle className="text-sm font-medium">Total</CardTitle>
             <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -97,6 +97,26 @@ export default function Demandas() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{estatisticas.urgentes}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Prazos Vencidos</CardTitle>
+            <XCircle className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{estatisticas.prazosVencidos}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">Arquivadas</CardTitle>
+            <Archive className="h-4 w-4 text-gray-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{estatisticas.arquivadas}</div>
           </CardContent>
         </Card>
       </div>

@@ -14,7 +14,7 @@ export const mockDemandas: Demanda[] = [
     responsavelId: 'user-1',
     dataCriacao: '2024-01-15T10:00:00',
     dataAtualizacao: '2024-01-16T14:30:00',
-    prazo: '2024-01-20T18:00:00',
+    prazo: '2025-10-12T18:00:00',
     eventoRelacionado: '1',
     eventoNome: 'Conferência Anual Tech Summit 2024',
     resolvida: false,
@@ -31,6 +31,7 @@ export const mockDemandas: Demanda[] = [
     ],
     anexos: [],
     tags: ['equipamento', 'som', 'urgente'],
+    arquivada: false,
   },
   {
     id: '2',
@@ -43,12 +44,13 @@ export const mockDemandas: Demanda[] = [
     solicitanteId: '2',
     dataCriacao: '2024-01-18T11:30:00',
     dataAtualizacao: '2024-01-18T11:30:00',
-    prazo: '2024-01-25T17:00:00',
+    prazo: '2025-10-08T17:00:00',
     resolvida: false,
     podeResponder: true,
     comentarios: [],
     anexos: [],
     tags: ['fornecedores', 'cadastro'],
+    arquivada: false,
   },
   {
     id: '3',
@@ -63,7 +65,7 @@ export const mockDemandas: Demanda[] = [
     responsavelId: '4',
     dataCriacao: '2024-01-19T08:00:00',
     dataAtualizacao: '2024-01-19T08:00:00',
-    prazo: '2024-01-20T12:00:00',
+    prazo: '2025-10-10T12:00:00',
     eventoRelacionado: '2',
     eventoNome: 'Workshop de Inovação Digital',
     resolvida: false,
@@ -71,6 +73,7 @@ export const mockDemandas: Demanda[] = [
     comentarios: [],
     anexos: [],
     tags: ['proposta', 'comercial', 'cliente'],
+    arquivada: false,
   },
   {
     id: '4',
@@ -101,6 +104,7 @@ export const mockDemandas: Demanda[] = [
     ],
     anexos: [],
     tags: ['manutenção', 'equipamentos'],
+    arquivada: true,
   },
   {
     id: '5',
@@ -115,7 +119,7 @@ export const mockDemandas: Demanda[] = [
     responsavelId: '4',
     dataCriacao: '2024-01-05T09:00:00',
     dataAtualizacao: '2024-01-15T10:30:00',
-    prazo: '2024-01-22T17:00:00',
+    prazo: '2025-10-15T17:00:00',
     eventoRelacionado: '1',
     eventoNome: 'Conferência Anual Tech Summit 2024',
     resolvida: false,
@@ -123,6 +127,7 @@ export const mockDemandas: Demanda[] = [
     comentarios: [],
     anexos: [],
     tags: ['financeiro', 'conciliação'],
+    arquivada: false,
   },
 ];
 

@@ -4,12 +4,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { useDemandasContext } from '@/contexts/DemandasContext';
 import { StatusDemanda, PrioridadeDemanda, CategoriaDemanda, TipoReembolso } from '@/types/demandas';
-import { Search, X, DollarSign } from 'lucide-react';
+import { Search, X, DollarSign, Archive, AlertTriangle, Clock } from 'lucide-react';
 import { mockUsuarios } from '@/lib/mock-data/demandas';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useEventos } from '@/contexts/EventosContext';
 import { useState } from 'react';
+import { Switch } from '@/components/ui/switch';
 
 export function DemandaFilters() {
   const { filtros, setFiltros } = useDemandasContext();
@@ -58,7 +59,7 @@ export function DemandaFilters() {
   };
 
   const limparFiltros = () => {
-    setFiltros({});
+    setFiltros({ mostrarArquivadas: false });
     setApenasReembolsos(false);
     setStatusPagamento([]);
     setTiposReembolso([]);
@@ -260,6 +261,50 @@ export function DemandaFilters() {
             </div>
           </>
         )}
+      </div>
+
+      {/* Filtros de Prazo */}
+      <div className="space-y-3 p-3 bg-orange-500/5 border border-orange-500/20 rounded-md">
+        <Label className="font-semibold">Filtros de Prazo</Label>
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="prazo-vencido"
+              checked={filtros.prazoVencido || false}
+              onCheckedChange={(checked) => setFiltros({ ...filtros, prazoVencido: checked as boolean })}
+            />
+            <Label htmlFor="prazo-vencido" className="text-sm cursor-pointer flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3 text-red-500" />
+              Prazos Vencidos
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="prazo-proximo"
+              checked={filtros.prazoProximo || false}
+              onCheckedChange={(checked) => setFiltros({ ...filtros, prazoProximo: checked as boolean })}
+            />
+            <Label htmlFor="prazo-proximo" className="text-sm cursor-pointer flex items-center gap-1">
+              <Clock className="h-3 w-3 text-yellow-500" />
+              Vence em até 3 dias
+            </Label>
+          </div>
+        </div>
+      </div>
+
+      {/* Arquivadas */}
+      <div className="flex items-center justify-between p-3 bg-gray-500/5 border border-gray-500/20 rounded-md">
+        <div className="flex items-center space-x-2">
+          <Archive className="h-4 w-4 text-muted-foreground" />
+          <Label htmlFor="mostrar-arquivadas" className="text-sm font-medium cursor-pointer">
+            Mostrar Arquivadas
+          </Label>
+        </div>
+        <Switch
+          id="mostrar-arquivadas"
+          checked={filtros.mostrarArquivadas || false}
+          onCheckedChange={(checked) => setFiltros({ ...filtros, mostrarArquivadas: checked })}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">

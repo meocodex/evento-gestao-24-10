@@ -17,6 +17,8 @@ interface DemandasContextData {
   removerAnexo: (demandaId: string, anexoId: string) => void;
   marcarComoResolvida: (id: string) => void;
   reabrirDemanda: (id: string) => void;
+  arquivarDemanda: (id: string) => void;
+  desarquivarDemanda: (id: string) => void;
   getDemandasPorEvento: (eventoId: string) => Demanda[];
   getDemandasPorResponsavel: (responsavelId: string) => Demanda[];
   getDemandasPorSolicitante: (solicitanteId: string) => Demanda[];
@@ -27,6 +29,8 @@ interface DemandasContextData {
     concluidas: number;
     canceladas: number;
     urgentes: number;
+    arquivadas: number;
+    prazosVencidos: number;
   };
   getDemandasFiltradas: () => Demanda[];
   adicionarDemandaReembolso: (
@@ -78,6 +82,7 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
       podeResponder: true,
       comentarios: [],
       anexos: [],
+      arquivada: false,
     };
 
     setDemandas([...demandas, novaDemanda]);
@@ -296,19 +301,65 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
     return demandas.filter(d => d.solicitanteId === solicitanteId);
   };
 
+  const arquivarDemanda = (id: string) => {
+    setDemandas(demandas.map(demanda => {
+      if (demanda.id === id) {
+        return {
+          ...demanda,
+          arquivada: true,
+          dataAtualizacao: new Date().toISOString(),
+        };
+      }
+      return demanda;
+    }));
+
+    toast({
+      title: 'Demanda arquivada',
+      description: 'A demanda foi movida para arquivados.',
+    });
+  };
+
+  const desarquivarDemanda = (id: string) => {
+    setDemandas(demandas.map(demanda => {
+      if (demanda.id === id) {
+        return {
+          ...demanda,
+          arquivada: false,
+          dataAtualizacao: new Date().toISOString(),
+        };
+      }
+      return demanda;
+    }));
+
+    toast({
+      title: 'Demanda desarquivada',
+      description: 'A demanda foi reativada.',
+    });
+  };
+
   const getEstatisticas = () => {
+    const demandasAtivas = demandas.filter(d => !d.arquivada);
+    const agora = new Date();
+    
     return {
-      total: demandas.length,
-      abertas: demandas.filter(d => d.status === 'aberta').length,
-      emAndamento: demandas.filter(d => d.status === 'em-andamento').length,
-      concluidas: demandas.filter(d => d.status === 'concluida').length,
-      canceladas: demandas.filter(d => d.status === 'cancelada').length,
-      urgentes: demandas.filter(d => d.prioridade === 'urgente').length,
+      total: demandasAtivas.length,
+      abertas: demandasAtivas.filter(d => d.status === 'aberta').length,
+      emAndamento: demandasAtivas.filter(d => d.status === 'em-andamento').length,
+      concluidas: demandasAtivas.filter(d => d.status === 'concluida').length,
+      canceladas: demandasAtivas.filter(d => d.status === 'cancelada').length,
+      urgentes: demandasAtivas.filter(d => d.prioridade === 'urgente').length,
+      arquivadas: demandas.filter(d => d.arquivada).length,
+      prazosVencidos: demandasAtivas.filter(d => d.prazo && new Date(d.prazo) < agora && d.status !== 'concluida' && d.status !== 'cancelada').length,
     };
   };
 
   const getDemandasFiltradas = () => {
     let resultado = [...demandas];
+
+    // Por padrão, ocultar arquivadas
+    if (!filtros.mostrarArquivadas) {
+      resultado = resultado.filter(d => !d.arquivada);
+    }
 
     if (filtros.busca) {
       const busca = filtros.busca.toLowerCase();
@@ -337,6 +388,31 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
 
     if (filtros.solicitante) {
       resultado = resultado.filter(d => d.solicitanteId === filtros.solicitante);
+    }
+
+    // Filtro de prazo vencido
+    if (filtros.prazoVencido) {
+      const agora = new Date();
+      resultado = resultado.filter(d => 
+        d.prazo && 
+        new Date(d.prazo) < agora && 
+        d.status !== 'concluida' && 
+        d.status !== 'cancelada'
+      );
+    }
+
+    // Filtro de prazo próximo (3 dias)
+    if (filtros.prazoProximo) {
+      const agora = new Date();
+      const limite = new Date(agora);
+      limite.setDate(limite.getDate() + 3);
+      resultado = resultado.filter(d => 
+        d.prazo && 
+        new Date(d.prazo) >= agora && 
+        new Date(d.prazo) <= limite &&
+        d.status !== 'concluida' && 
+        d.status !== 'cancelada'
+      );
     }
 
     return resultado;
@@ -370,6 +446,7 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
       eventoRelacionado: eventoId,
       eventoNome: eventoNome,
       tags: ['reembolso', eventoNome],
+      arquivada: false,
       dadosReembolso: {
         itens,
         valorTotal,
@@ -515,6 +592,8 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
         removerAnexo,
         marcarComoResolvida,
         reabrirDemanda,
+        arquivarDemanda,
+        desarquivarDemanda,
         getDemandasPorEvento,
         getDemandasPorResponsavel,
         getDemandasPorSolicitante,

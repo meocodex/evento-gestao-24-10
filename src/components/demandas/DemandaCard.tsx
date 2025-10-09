@@ -2,9 +2,10 @@ import { Demanda } from '@/types/demandas';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, User, MessageSquare, Paperclip, Eye, Edit, Trash2, DollarSign, CheckCircle, Clock, XCircle, CalendarDays } from 'lucide-react';
+import { Calendar, User, MessageSquare, Paperclip, Eye, Edit, Trash2, DollarSign, CheckCircle, Clock, XCircle, CalendarDays, Archive } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { PrazoIndicador } from './PrazoIndicador';
 
 interface DemandaCardProps {
   demanda: Demanda;
@@ -87,6 +88,15 @@ export function DemandaCard({ demanda, onDetalhes, onEditar, onExcluir }: Demand
               <statusPagamentoConf.icon className="h-3 w-3 mr-1" />
               {statusPagamentoConf.label}
             </Badge>
+          )}
+          {demanda.arquivada && (
+            <Badge variant="secondary" className="bg-gray-500/10 text-gray-600">
+              <Archive className="h-3 w-3 mr-1" />
+              Arquivada
+            </Badge>
+          )}
+          {demanda.prazo && !demanda.arquivada && (
+            <PrazoIndicador prazo={demanda.prazo} compact />
           )}
           {demanda.eventoRelacionado && (
             <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20">

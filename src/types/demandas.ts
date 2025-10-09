@@ -66,6 +66,7 @@ export interface Demanda {
   podeResponder: boolean;
   tags: string[];
   dadosReembolso?: DadosReembolso;
+  arquivada: boolean;
 }
 
 export interface DemandaFormData {
@@ -86,4 +87,7 @@ export interface FiltroDemandas {
   categoria?: CategoriaDemanda[];
   responsavel?: string;
   solicitante?: string;
+  mostrarArquivadas?: boolean;
+  prazoVencido?: boolean;
+  prazoProximo?: boolean;
 }
