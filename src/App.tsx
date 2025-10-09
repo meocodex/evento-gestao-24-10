@@ -8,9 +8,10 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Eventos from "./pages/Eventos";
+import Clientes from "./pages/Clientes";
 import Placeholder from "./pages/Placeholder";
 import NotFound from "./pages/NotFound";
-import { Users, Package, Bell, Truck, DollarSign, FileText, BarChart3, Settings } from "lucide-react";
+import { Package, Bell, Truck, DollarSign, FileText, BarChart3, Settings } from "lucide-react";
 
 const queryClient = new QueryClient();
 
@@ -27,7 +28,7 @@ const App = () => (
             <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/eventos" element={<Eventos />} />
-              <Route path="/clientes" element={<Placeholder icon={Users} title="Clientes" description="Gerencie seus clientes e produtores" />} />
+              <Route path="/clientes" element={<Clientes />} />
               <Route path="/estoque" element={<Placeholder icon={Package} title="Estoque" description="Controle completo do seu estoque" />} />
               <Route path="/demandas" element={<Placeholder icon={Bell} title="Demandas" description="Gerencie demandas entre equipes" />} />
               <Route path="/transportadoras" element={<Placeholder icon={Truck} title="Transportadoras" description="Cadastro de transportadoras" />} />
