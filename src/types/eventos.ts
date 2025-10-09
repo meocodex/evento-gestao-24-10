@@ -125,7 +125,10 @@ export interface MembroEquipe {
 export interface Evento {
   id: string;
   nome: string;
-  data: string;
+  dataInicio: string;
+  dataFim: string;
+  horaInicio: string;
+  horaFim: string;
   local: string;
   cidade: string;
   estado: string;
@@ -160,7 +163,10 @@ export interface Evento {
 
 export interface EventoFormData {
   nome: string;
-  data: string;
+  dataInicio: string;
+  dataFim: string;
+  horaInicio: string;
+  horaFim: string;
   local: string;
   cidade: string;
   estado: string;

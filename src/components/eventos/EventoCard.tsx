@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { EventoCountdown } from './EventoCountdown';
 import { Calendar, MapPin, User, Building2, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -14,7 +15,7 @@ interface EventoCardProps {
 
 export function EventoCard({ evento, onViewDetails }: EventoCardProps) {
   const isUrgent = () => {
-    const eventDate = new Date(evento.data);
+    const eventDate = new Date(`${evento.dataInicio}T${evento.horaInicio}`);
     const today = new Date();
     const diffDays = Math.ceil((eventDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     return diffDays <= 7 && diffDays >= 0;
@@ -46,10 +47,16 @@ export function EventoCard({ evento, onViewDetails }: EventoCardProps) {
       </CardHeader>
 
       <CardContent className="space-y-3" onClick={() => onViewDetails(evento)}>
+        <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} />
+        
         <div className="space-y-2 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Calendar className="h-4 w-4 flex-shrink-0" />
-            <span>{format(new Date(evento.data), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}</span>
+            <span>
+              {format(new Date(evento.dataInicio), "dd 'de' MMM", { locale: ptBR })} às {evento.horaInicio}
+              {' → '}
+              {format(new Date(evento.dataFim), "dd 'de' MMM", { locale: ptBR })} às {evento.horaFim}
+            </span>
           </div>
           
           <div className="flex items-center gap-2 text-muted-foreground">

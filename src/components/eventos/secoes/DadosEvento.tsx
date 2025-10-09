@@ -23,9 +23,11 @@ export function DadosEvento({ evento }: DadosEventoProps) {
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="text-sm font-medium">Data</p>
+                <p className="text-sm font-medium">Data e Horário</p>
                 <p className="text-sm text-muted-foreground">
-                  {format(new Date(evento.data), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                  {format(new Date(evento.dataInicio), "dd/MM/yyyy", { locale: ptBR })} às {evento.horaInicio}
+                  {' → '}
+                  {format(new Date(evento.dataFim), "dd/MM/yyyy", { locale: ptBR })} às {evento.horaFim}
                 </p>
               </div>
             </div>
