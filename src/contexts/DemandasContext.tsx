@@ -15,6 +15,9 @@ interface DemandasContextData {
   adicionarComentario: (demandaId: string, comentario: Omit<Comentario, 'id' | 'dataHora'>) => void;
   adicionarAnexo: (demandaId: string, anexo: Omit<Anexo, 'id' | 'uploadEm'>) => void;
   removerAnexo: (demandaId: string, anexoId: string) => void;
+  marcarComoResolvida: (id: string) => void;
+  reabrirDemanda: (id: string) => void;
+  getDemandasPorEvento: (eventoId: string) => Demanda[];
   getEstatisticas: () => {
     total: number;
     abertas: number;
@@ -51,6 +54,8 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
       dataAtualizacao: new Date().toISOString(),
       comentarios: [],
       anexos: [],
+      resolvida: false,
+      podeResponder: true,
     };
 
     setDemandas([novaDemanda, ...demandas]);
@@ -89,13 +94,27 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
   const alterarStatus = (id: string, novoStatus: StatusDemanda) => {
     setDemandas(demandas.map(demanda => {
       if (demanda.id === id) {
+        // Se tentar marcar como concluída, precisa estar resolvida
+        if (novoStatus === 'concluida' && !demanda.resolvida) {
+          toast({
+            title: 'Ação bloqueada',
+            description: 'A demanda precisa ser marcada como resolvida antes de ser concluída.',
+            variant: 'destructive',
+          });
+          return demanda;
+        }
+
+        // Atualizar podeResponder baseado no novo status
+        const podeResponder = novoStatus !== 'concluida' && novoStatus !== 'cancelada';
+
         const updated: Demanda = {
           ...demanda,
           status: novoStatus,
+          podeResponder,
           dataAtualizacao: new Date().toISOString(),
         };
         
-        if (novoStatus === 'concluida') {
+        if (novoStatus === 'concluida' || novoStatus === 'cancelada') {
           updated.dataConclusao = new Date().toISOString();
         }
         
@@ -133,6 +152,16 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
   const adicionarComentario = (demandaId: string, comentario: Omit<Comentario, 'id' | 'dataHora'>) => {
     setDemandas(demandas.map(demanda => {
       if (demanda.id === demandaId) {
+        // Verificar se pode responder
+        if (!demanda.podeResponder && comentario.tipo !== 'sistema') {
+          toast({
+            title: 'Ação bloqueada',
+            description: 'Não é possível adicionar comentários em uma demanda finalizada.',
+            variant: 'destructive',
+          });
+          return demanda;
+        }
+
         return {
           ...demanda,
           comentarios: [
@@ -149,10 +178,12 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
       return demanda;
     }));
 
-    toast({
-      title: 'Comentário adicionado',
-      description: 'Seu comentário foi publicado.',
-    });
+    if (comentario.tipo !== 'sistema') {
+      toast({
+        title: comentario.tipo === 'resposta' ? 'Resposta enviada' : 'Comentário adicionado',
+        description: comentario.tipo === 'resposta' ? 'Sua resposta foi enviada com sucesso.' : 'Seu comentário foi publicado.',
+      });
+    }
   };
 
   const adicionarAnexo = (demandaId: string, anexo: Omit<Anexo, 'id' | 'uploadEm'>) => {
@@ -196,6 +227,70 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
       title: 'Anexo removido',
       description: 'O arquivo foi removido da demanda.',
     });
+  };
+
+  const marcarComoResolvida = (id: string) => {
+    setDemandas(demandas.map(demanda => {
+      if (demanda.id === id) {
+        return {
+          ...demanda,
+          resolvida: true,
+          comentarios: [
+            ...demanda.comentarios,
+            {
+              id: Date.now().toString(),
+              autor: 'Sistema',
+              autorId: 'sistema',
+              conteudo: 'Demanda marcada como resolvida',
+              dataHora: new Date().toISOString(),
+              tipo: 'sistema' as const,
+            },
+          ],
+          dataAtualizacao: new Date().toISOString(),
+        };
+      }
+      return demanda;
+    }));
+
+    toast({
+      title: 'Demanda resolvida',
+      description: 'A demanda foi marcada como resolvida.',
+    });
+  };
+
+  const reabrirDemanda = (id: string) => {
+    setDemandas(demandas.map(demanda => {
+      if (demanda.id === id) {
+        return {
+          ...demanda,
+          resolvida: false,
+          podeResponder: true,
+          status: 'em-andamento' as const,
+          comentarios: [
+            ...demanda.comentarios,
+            {
+              id: Date.now().toString(),
+              autor: 'Sistema',
+              autorId: 'sistema',
+              conteudo: 'Demanda reaberta',
+              dataHora: new Date().toISOString(),
+              tipo: 'sistema' as const,
+            },
+          ],
+          dataAtualizacao: new Date().toISOString(),
+        };
+      }
+      return demanda;
+    }));
+
+    toast({
+      title: 'Demanda reaberta',
+      description: 'A demanda foi reaberta para novas respostas.',
+    });
+  };
+
+  const getDemandasPorEvento = (eventoId: string): Demanda[] => {
+    return demandas.filter(d => d.eventoRelacionado === eventoId);
   };
 
   const getEstatisticas = () => {
@@ -265,6 +360,9 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
         adicionarComentario,
         adicionarAnexo,
         removerAnexo,
+        marcarComoResolvida,
+        reabrirDemanda,
+        getDemandasPorEvento,
         getEstatisticas,
         demandasFiltradas,
       }}

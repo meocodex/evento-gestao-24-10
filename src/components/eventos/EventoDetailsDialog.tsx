@@ -6,6 +6,7 @@ import { DadosEvento } from './secoes/DadosEvento';
 import { MateriaisEvento } from './secoes/MateriaisEvento';
 import { OperacaoEvento } from './secoes/OperacaoEvento';
 import { FinanceiroEvento } from './secoes/FinanceiroEvento';
+import { DemandasEvento } from './secoes/DemandasEvento';
 
 interface EventoDetailsDialogProps {
   evento: Evento | null;
@@ -26,10 +27,11 @@ export function EventoDetailsDialog({ evento, open, onOpenChange }: EventoDetail
         </DialogHeader>
 
         <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="dados">Dados</TabsTrigger>
             <TabsTrigger value="materiais">Materiais</TabsTrigger>
             <TabsTrigger value="operacao">Operação</TabsTrigger>
+            <TabsTrigger value="demandas">Demandas</TabsTrigger>
             <TabsTrigger value="financeiro" disabled={!permissions.canViewFinancial}>
               Financeiro
             </TabsTrigger>
@@ -45,6 +47,10 @@ export function EventoDetailsDialog({ evento, open, onOpenChange }: EventoDetail
 
           <TabsContent value="operacao" className="mt-6">
             <OperacaoEvento evento={evento} permissions={permissions} />
+          </TabsContent>
+
+          <TabsContent value="demandas" className="mt-6">
+            <DemandasEvento eventoId={evento.id} />
           </TabsContent>
 
           <TabsContent value="financeiro" className="mt-6">

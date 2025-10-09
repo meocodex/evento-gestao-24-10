@@ -9,6 +9,7 @@ import { useDemandasContext } from '@/contexts/DemandasContext';
 import { CategoriaDemanda, PrioridadeDemanda } from '@/types/demandas';
 import { Plus } from 'lucide-react';
 import { mockUsuarios } from '@/lib/mock-data/demandas';
+import { useEventos } from '@/contexts/EventosContext';
 
 const categorias: { value: CategoriaDemanda; label: string }[] = [
   { value: 'tecnica', label: 'Técnica' },
@@ -29,6 +30,11 @@ const prioridades: { value: PrioridadeDemanda; label: string }[] = [
 export function NovaDemandaDialog() {
   const [open, setOpen] = useState(false);
   const { adicionarDemanda } = useDemandasContext();
+  const { eventos } = useEventos();
+
+  const eventosAtivos = eventos.filter(e => 
+    ['orcamento', 'aprovado', 'em-preparacao', 'em-execucao'].includes(e.status)
+  );
 
   const [formData, setFormData] = useState({
     titulo: '',
@@ -37,6 +43,8 @@ export function NovaDemandaDialog() {
     prioridade: 'media' as PrioridadeDemanda,
     responsavelId: '',
     prazo: '',
+    eventoRelacionado: '',
+    eventoNome: '',
     tags: [] as string[],
   });
 
@@ -63,9 +71,20 @@ export function NovaDemandaDialog() {
       prioridade: 'media',
       responsavelId: '',
       prazo: '',
+      eventoRelacionado: '',
+      eventoNome: '',
       tags: [],
     });
     setOpen(false);
+  };
+
+  const handleEventoChange = (eventoId: string) => {
+    const evento = eventosAtivos.find(e => e.id === eventoId);
+    setFormData({
+      ...formData,
+      eventoRelacionado: eventoId,
+      eventoNome: evento?.nome || '',
+    });
   };
 
   return (
@@ -141,6 +160,26 @@ export function NovaDemandaDialog() {
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Evento Relacionado (opcional)</Label>
+            <Select
+              value={formData.eventoRelacionado}
+              onValueChange={handleEventoChange}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um evento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Nenhum evento</SelectItem>
+                {eventosAtivos.map((evento) => (
+                  <SelectItem key={evento.id} value={evento.id}>
+                    {evento.nome} - {new Date(evento.dataInicio).toLocaleDateString()}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

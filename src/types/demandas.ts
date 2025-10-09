@@ -8,6 +8,7 @@ export interface Comentario {
   autorId: string;
   conteudo: string;
   dataHora: string;
+  tipo: 'resposta' | 'comentario' | 'sistema';
 }
 
 export interface Anexo {
@@ -37,7 +38,10 @@ export interface Demanda {
   prazo?: string;
   comentarios: Comentario[];
   anexos: Anexo[];
-  eventoRelacionado?: string; // ID do evento relacionado
+  eventoRelacionado?: string;
+  eventoNome?: string;
+  resolvida: boolean;
+  podeResponder: boolean;
   tags: string[];
 }
 
