@@ -1,0 +1,184 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { MaterialEstoque } from '@/lib/mock-data/estoque';
+import { Package, MapPin, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { NovoSerialDialog } from './NovoSerialDialog';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { useEstoque } from '@/contexts/EstoqueContext';
+
+interface DetalhesMaterialDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  material: MaterialEstoque;
+}
+
+const statusConfig = {
+  'disponivel': { label: 'Disponível', variant: 'default' as const },
+  'em-uso': { label: 'Em Uso', variant: 'secondary' as const },
+  'manutencao': { label: 'Manutenção', variant: 'destructive' as const },
+};
+
+export function DetalhesMaterialDialog({ 
+  open, 
+  onOpenChange, 
+  material 
+}: DetalhesMaterialDialogProps) {
+  const { excluirSerial } = useEstoque();
+  const [showNovoSerial, setShowNovoSerial] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [serialParaExcluir, setSerialParaExcluir] = useState<string | null>(null);
+
+  const handleDeleteSerial = (numeroSerial: string) => {
+    setSerialParaExcluir(numeroSerial);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (serialParaExcluir) {
+      await excluirSerial(material.id, serialParaExcluir);
+      setSerialParaExcluir(null);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              {material.nome}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            {/* Informações Gerais */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Categoria</p>
+                <p className="font-medium">{material.categoria}</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Código</p>
+                <p className="font-medium font-mono">{material.id}</p>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Estatísticas */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-muted/50 rounded-lg">
+                <p className="text-2xl font-bold">{material.quantidadeTotal}</p>
+                <p className="text-sm text-muted-foreground">Total</p>
+              </div>
+              <div className="text-center p-4 bg-muted/50 rounded-lg">
+                <p className="text-2xl font-bold text-primary">{material.quantidadeDisponivel}</p>
+                <p className="text-sm text-muted-foreground">Disponível</p>
+              </div>
+              <div className="text-center p-4 bg-muted/50 rounded-lg">
+                <p className="text-2xl font-bold text-destructive">
+                  {material.quantidadeTotal - material.quantidadeDisponivel}
+                </p>
+                <p className="text-sm text-muted-foreground">Em Uso/Manutenção</p>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Lista de Seriais */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Unidades (Seriais)</h3>
+                <Button onClick={() => setShowNovoSerial(true)} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Unidade
+                </Button>
+              </div>
+
+              {material.seriais.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>Nenhuma unidade cadastrada</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Serial</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Localização</TableHead>
+                      <TableHead className="w-[80px]">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {material.seriais.map((serial) => (
+                      <TableRow key={serial.numero}>
+                        <TableCell className="font-mono text-sm">
+                          {serial.numero}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={statusConfig[serial.status].variant}>
+                            {statusConfig[serial.status].label}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            {serial.localizacao}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteSerial(serial.numero)}
+                            disabled={serial.status === 'em-uso'}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <NovoSerialDialog
+        open={showNovoSerial}
+        onOpenChange={setShowNovoSerial}
+        materialId={material.id}
+        materialNome={material.nome}
+      />
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Unidade"
+        description="Tem certeza que deseja excluir esta unidade do estoque? Esta ação não pode ser desfeita."
+      />
+    </>
+  );
+}

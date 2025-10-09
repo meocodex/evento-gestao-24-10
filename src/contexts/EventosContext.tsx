@@ -252,9 +252,9 @@ export function EventosProvider({ children }: { children: ReactNode }) {
 
       // Verificar se o serial existe no estoque e está disponível
       const materialEstoque = materiaisEstoque.find(m => m.id === material.itemId);
-      const serialEstoque = materialEstoque?.seriais.find(s => s.serial === material.serial);
+      const serialEstoque = materialEstoque?.seriais.find(s => s.numero === material.serial);
       
-      if (!serialEstoque?.disponivel) {
+      if (serialEstoque?.status !== 'disponivel') {
         toast({
           title: 'Erro de Alocação',
           description: 'Este serial não está disponível.',
@@ -264,7 +264,7 @@ export function EventosProvider({ children }: { children: ReactNode }) {
       }
 
       // Marcar serial como indisponível no estoque (simulação)
-      serialEstoque.disponivel = false;
+      serialEstoque.status = 'em-uso';
       serialEstoque.eventoId = eventoId;
       serialEstoque.eventoNome = evento.nome;
 
@@ -338,10 +338,10 @@ export function EventosProvider({ children }: { children: ReactNode }) {
         // Liberar serial no estoque
         if (materialRemovido) {
           const materialEstoque = materiaisEstoque.find(m => m.id === materialRemovido.itemId);
-          const serialEstoque = materialEstoque?.seriais.find(s => s.serial === materialRemovido.serial);
+          const serialEstoque = materialEstoque?.seriais.find(s => s.numero === materialRemovido.serial);
           
           if (serialEstoque) {
-            serialEstoque.disponivel = true;
+            serialEstoque.status = 'disponivel';
             serialEstoque.eventoId = undefined;
             serialEstoque.eventoNome = undefined;
           }

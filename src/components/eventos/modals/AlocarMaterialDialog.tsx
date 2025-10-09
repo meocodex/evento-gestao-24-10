@@ -51,12 +51,12 @@ export function AlocarMaterialDialog({
     if (!materialEstoque) return [];
     
     return materialEstoque.seriais
-      .filter(s => s.serial.toLowerCase().includes(searchTerm.toLowerCase()))
+      .filter(s => s.numero.toLowerCase().includes(searchTerm.toLowerCase()))
       .sort((a, b) => {
         // Disponíveis primeiro
-        if (a.disponivel && !b.disponivel) return -1;
-        if (!a.disponivel && b.disponivel) return 1;
-        return a.serial.localeCompare(b.serial);
+        if (a.status === 'disponivel' && b.status !== 'disponivel') return -1;
+        if (a.status !== 'disponivel' && b.status === 'disponivel') return 1;
+        return a.numero.localeCompare(b.numero);
       });
   }, [materialEstoque, searchTerm]);
 
@@ -75,8 +75,8 @@ export function AlocarMaterialDialog({
     }
 
     // Verificar se serial está disponível
-    const serialSelecionado = serialsFiltrados.find(s => s.serial === serial);
-    if (!serialSelecionado?.disponivel) {
+    const serialSelecionado = serialsFiltrados.find(s => s.numero === serial);
+    if (serialSelecionado?.status !== 'disponivel') {
       toast({
         title: 'Serial indisponível',
         description: 'Este serial não está disponível para alocação.',
@@ -194,12 +194,12 @@ export function AlocarMaterialDialog({
                 ) : (
                   serialsFiltrados.map((serialItem) => (
                     <div
-                      key={serialItem.serial}
-                      onClick={() => serialItem.disponivel && setSerial(serialItem.serial)}
+                      key={serialItem.numero}
+                      onClick={() => serialItem.status === 'disponivel' && setSerial(serialItem.numero)}
                       className={`p-3 border rounded cursor-pointer transition-colors ${
-                        serial === serialItem.serial
+                        serial === serialItem.numero
                           ? 'border-primary bg-primary/5'
-                          : serialItem.disponivel
+                          : serialItem.status === 'disponivel'
                           ? 'hover:border-primary/50'
                           : 'opacity-50 cursor-not-allowed'
                       }`}
@@ -208,7 +208,7 @@ export function AlocarMaterialDialog({
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <Package className="h-4 w-4" />
-                            <span className="font-medium">{serialItem.serial}</span>
+                            <span className="font-medium">{serialItem.numero}</span>
                           </div>
                           <div className="text-xs text-muted-foreground mt-1">
                             {serialItem.localizacao}
@@ -216,7 +216,7 @@ export function AlocarMaterialDialog({
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          {serialItem.disponivel ? (
+                          {serialItem.status === 'disponivel' ? (
                             <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                               <CheckCircle2 className="h-3 w-3 mr-1" />
                               Disponível

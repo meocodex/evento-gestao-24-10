@@ -3,11 +3,14 @@ import App from "./App.tsx";
 import "./index.css";
 import { EventosProvider } from "./contexts/EventosContext";
 import { ClientesProvider } from "./contexts/ClientesContext";
+import { EstoqueProvider } from "./contexts/EstoqueContext";
 
 createRoot(document.getElementById("root")!).render(
-  <EventosProvider>
-    <ClientesProvider>
-      <App />
-    </ClientesProvider>
-  </EventosProvider>
+  <ClientesProvider>
+    <EstoqueProvider>
+      <EventosProvider>
+        <App />
+      </EventosProvider>
+    </EstoqueProvider>
+  </ClientesProvider>
 );

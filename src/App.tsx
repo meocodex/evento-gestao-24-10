@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Eventos from "./pages/Eventos";
 import Clientes from "./pages/Clientes";
+import Estoque from "./pages/Estoque";
 import Placeholder from "./pages/Placeholder";
 import NotFound from "./pages/NotFound";
 import { Package, Bell, Truck, DollarSign, FileText, BarChart3, Settings } from "lucide-react";
@@ -29,7 +30,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/eventos" element={<Eventos />} />
               <Route path="/clientes" element={<Clientes />} />
-              <Route path="/estoque" element={<Placeholder icon={Package} title="Estoque" description="Controle completo do seu estoque" />} />
+              <Route path="/estoque" element={<Estoque />} />
               <Route path="/demandas" element={<Placeholder icon={Bell} title="Demandas" description="Gerencie demandas entre equipes" />} />
               <Route path="/transportadoras" element={<Placeholder icon={Truck} title="Transportadoras" description="Cadastro de transportadoras" />} />
               <Route path="/financeiro" element={<Placeholder icon={DollarSign} title="Financeiro" description="Gestão financeira completa" />} />
