@@ -1,20 +1,39 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Package, Search } from 'lucide-react';
+import { Package, Search, CheckCircle2, XCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { materiaisEstoque, SerialEstoque } from '@/lib/mock-data/estoque';
 
 interface AlocarMaterialDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  itemId: string;
   materialNome: string;
-  onAlocar: (data: any) => void;
+  quantidadeNecessaria: number;
+  quantidadeJaAlocada: number;
+  onAlocar: (data: {
+    itemId: string;
+    serial: string;
+    tipoEnvio: 'antecipado' | 'comTecnicos';
+    transportadora?: string;
+    responsavel?: string;
+  }) => void;
 }
 
-export function AlocarMaterialDialog({ open, onOpenChange, materialNome, onAlocar }: AlocarMaterialDialogProps) {
+export function AlocarMaterialDialog({ 
+  open, 
+  onOpenChange, 
+  itemId, 
+  materialNome, 
+  quantidadeNecessaria, 
+  quantidadeJaAlocada, 
+  onAlocar 
+}: AlocarMaterialDialogProps) {
   const { toast } = useToast();
   const [tipoEnvio, setTipoEnvio] = useState<'antecipado' | 'comTecnicos'>('comTecnicos');
   const [serial, setSerial] = useState('');
@@ -22,12 +41,26 @@ export function AlocarMaterialDialog({ open, onOpenChange, materialNome, onAloca
   const [responsavel, setResponsavel] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock de materiais em estoque
-  const materiaisEstoque = [
-    { id: '1', nome: materialNome, serial: 'SN001', disponivel: true },
-    { id: '2', nome: materialNome, serial: 'SN002', disponivel: true },
-    { id: '3', nome: materialNome, serial: 'SN003', disponivel: false },
-  ].filter(m => m.serial.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Buscar material no estoque
+  const materialEstoque = useMemo(() => {
+    return materiaisEstoque.find(m => m.id === itemId);
+  }, [itemId]);
+
+  // Filtrar seriais disponíveis
+  const serialsFiltrados = useMemo(() => {
+    if (!materialEstoque) return [];
+    
+    return materialEstoque.seriais
+      .filter(s => s.serial.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => {
+        // Disponíveis primeiro
+        if (a.disponivel && !b.disponivel) return -1;
+        if (!a.disponivel && b.disponivel) return 1;
+        return a.serial.localeCompare(b.serial);
+      });
+  }, [materialEstoque, searchTerm]);
+
+  const quantidadeRestante = quantidadeNecessaria - quantidadeJaAlocada;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +74,28 @@ export function AlocarMaterialDialog({ open, onOpenChange, materialNome, onAloca
       return;
     }
 
-    if (tipoEnvio === 'antecipado' && !transportadora) {
+    // Verificar se serial está disponível
+    const serialSelecionado = serialsFiltrados.find(s => s.serial === serial);
+    if (!serialSelecionado?.disponivel) {
+      toast({
+        title: 'Serial indisponível',
+        description: 'Este serial não está disponível para alocação.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Verificar se já atingiu quantidade necessária
+    if (quantidadeJaAlocada >= quantidadeNecessaria) {
+      toast({
+        title: 'Quantidade excedida',
+        description: 'Já foram alocados todos os materiais necessários.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (tipoEnvio === 'antecipado' && !transportadora.trim()) {
       toast({
         title: 'Transportadora obrigatória',
         description: 'Por favor, informe a transportadora.',
@@ -50,7 +104,7 @@ export function AlocarMaterialDialog({ open, onOpenChange, materialNome, onAloca
       return;
     }
 
-    if (tipoEnvio === 'comTecnicos' && !responsavel) {
+    if (tipoEnvio === 'comTecnicos' && !responsavel.trim()) {
       toast({
         title: 'Responsável obrigatório',
         description: 'Por favor, informe o responsável.',
@@ -60,15 +114,16 @@ export function AlocarMaterialDialog({ open, onOpenChange, materialNome, onAloca
     }
 
     onAlocar({
-      tipoEnvio,
+      itemId,
       serial,
-      transportadora,
-      responsavel,
+      tipoEnvio,
+      transportadora: tipoEnvio === 'antecipado' ? transportadora : undefined,
+      responsavel: tipoEnvio === 'comTecnicos' ? responsavel : undefined,
     });
 
     toast({
       title: 'Material alocado!',
-      description: 'O material foi alocado com sucesso.',
+      description: `Serial ${serial} alocado com sucesso.`,
     });
     
     // Reset form
@@ -115,36 +170,69 @@ export function AlocarMaterialDialog({ open, onOpenChange, materialNome, onAloca
               </div>
             </div>
 
-            <div className="border rounded-lg p-4 max-h-60 overflow-y-auto space-y-2">
-              {materiaisEstoque.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Nenhum material encontrado no estoque
-                </p>
-              ) : (
-                materiaisEstoque.map((material) => (
-                  <div
-                    key={material.id}
-                    onClick={() => material.disponivel && setSerial(material.serial)}
-                    className={`p-3 border rounded cursor-pointer transition-colors ${
-                      serial === material.serial
-                        ? 'border-primary bg-primary/5'
-                        : material.disponivel
-                        ? 'hover:border-primary/50'
-                        : 'opacity-50 cursor-not-allowed'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Package className="h-4 w-4" />
-                        <span className="font-medium">{material.serial}</span>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  Alocados: {quantidadeJaAlocada} de {quantidadeNecessaria}
+                </span>
+                {quantidadeRestante > 0 && (
+                  <Badge variant="secondary">
+                    Restam {quantidadeRestante} para alocar
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="border rounded-lg p-4 max-h-60 overflow-y-auto space-y-2">
+                {!materialEstoque ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Material não encontrado no estoque
+                  </p>
+                ) : serialsFiltrados.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Nenhum serial encontrado
+                  </p>
+                ) : (
+                  serialsFiltrados.map((serialItem) => (
+                    <div
+                      key={serialItem.serial}
+                      onClick={() => serialItem.disponivel && setSerial(serialItem.serial)}
+                      className={`p-3 border rounded cursor-pointer transition-colors ${
+                        serial === serialItem.serial
+                          ? 'border-primary bg-primary/5'
+                          : serialItem.disponivel
+                          ? 'hover:border-primary/50'
+                          : 'opacity-50 cursor-not-allowed'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <Package className="h-4 w-4" />
+                            <span className="font-medium">{serialItem.serial}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {serialItem.localizacao}
+                            {serialItem.eventoNome && ` • ${serialItem.eventoNome}`}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {serialItem.disponivel ? (
+                            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Disponível
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                              <XCircle className="h-3 w-3 mr-1" />
+                              Em uso
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <span className={`text-xs ${material.disponivel ? 'text-green-600' : 'text-red-600'}`}>
-                        {material.disponivel ? 'Disponível' : 'Em uso'}
-                      </span>
                     </div>
-                  </div>
-                ))
-              )}
+                  ))
+                )}
+              </div>
             </div>
 
             {tipoEnvio === 'antecipado' && (

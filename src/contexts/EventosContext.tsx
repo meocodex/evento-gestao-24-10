@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Evento, EventoFormData, MaterialChecklist, MaterialAntecipado, MaterialComTecnicos, Receita, Despesa, MembroEquipe, TimelineItem, StatusEvento } from '@/types/eventos';
 import { mockEventos as initialMockEventos } from '@/lib/mock-data/eventos';
+import { materiaisEstoque } from '@/lib/mock-data/estoque';
 import { useToast } from '@/hooks/use-toast';
 
 interface EventosContextType {
@@ -9,7 +10,7 @@ interface EventosContextType {
   editarEvento: (id: string, data: Partial<Evento>) => Promise<void>;
   deletarEvento: (id: string) => Promise<void>;
   alterarStatus: (id: string, novoStatus: StatusEvento, observacao?: string) => Promise<void>;
-  adicionarMaterialChecklist: (eventoId: string, material: Omit<MaterialChecklist, 'id'>) => Promise<void>;
+  adicionarMaterialChecklist: (eventoId: string, material: Omit<MaterialChecklist, 'id' | 'alocado'>) => Promise<void>;
   removerMaterialChecklist: (eventoId: string, materialId: string) => Promise<void>;
   alocarMaterial: (eventoId: string, tipo: 'antecipado' | 'comTecnicos', material: Omit<MaterialAntecipado | MaterialComTecnicos, 'id'>) => Promise<void>;
   removerMaterialAlocado: (eventoId: string, tipo: 'antecipado' | 'comTecnicos', materialId: string) => Promise<void>;
@@ -182,7 +183,7 @@ export function EventosProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const adicionarMaterialChecklist = async (eventoId: string, material: Omit<MaterialChecklist, 'id'>): Promise<void> => {
+  const adicionarMaterialChecklist = async (eventoId: string, material: Omit<MaterialChecklist, 'id' | 'alocado'>): Promise<void> => {
     return new Promise((resolve) => {
       setEventos(prev => prev.map(evento => {
         if (evento.id === eventoId) {
@@ -239,6 +240,34 @@ export function EventosProvider({ children }: { children: ReactNode }) {
 
   const alocarMaterial = async (eventoId: string, tipo: 'antecipado' | 'comTecnicos', material: any): Promise<void> => {
     return new Promise((resolve) => {
+      const evento = eventos.find(e => e.id === eventoId);
+      if (!evento) {
+        toast({
+          title: 'Erro',
+          description: 'Evento não encontrado.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // Verificar se o serial existe no estoque e está disponível
+      const materialEstoque = materiaisEstoque.find(m => m.id === material.itemId);
+      const serialEstoque = materialEstoque?.seriais.find(s => s.serial === material.serial);
+      
+      if (!serialEstoque?.disponivel) {
+        toast({
+          title: 'Erro de Alocação',
+          description: 'Este serial não está disponível.',
+          variant: 'destructive'
+        });
+        return;
+      }
+
+      // Marcar serial como indisponível no estoque (simulação)
+      serialEstoque.disponivel = false;
+      serialEstoque.eventoId = eventoId;
+      serialEstoque.eventoNome = evento.nome;
+
       setEventos(prev => prev.map(evento => {
         if (evento.id === eventoId) {
           const novoMaterial = {
@@ -283,11 +312,12 @@ export function EventosProvider({ children }: { children: ReactNode }) {
         return evento;
       }));
 
-      adicionarTimeline(eventoId, 'alocacao', `Material alocado para ${tipo === 'antecipado' ? 'envio antecipado' : 'com técnicos'}`);
+      const tipoTexto = tipo === 'antecipado' ? 'envio antecipado' : 'com técnicos';
+      adicionarTimeline(eventoId, 'alocacao', `Material ${material.nome} (Serial: ${material.serial}) alocado para ${tipoTexto}`);
       
       toast({
         title: 'Material alocado!',
-        description: `${material.nome} foi alocado com sucesso.`
+        description: `Serial ${material.serial} alocado com sucesso.`
       });
 
       resolve();
@@ -296,6 +326,28 @@ export function EventosProvider({ children }: { children: ReactNode }) {
 
   const removerMaterialAlocado = async (eventoId: string, tipo: 'antecipado' | 'comTecnicos', materialId: string): Promise<void> => {
     return new Promise((resolve) => {
+      // Primeiro, encontrar o material para liberar o serial
+      const evento = eventos.find(e => e.id === eventoId);
+      if (evento) {
+        const listaMateriais = tipo === 'antecipado' 
+          ? evento.materiaisAlocados.antecipado 
+          : evento.materiaisAlocados.comTecnicos;
+        
+        const materialRemovido = listaMateriais.find(m => m.id === materialId);
+        
+        // Liberar serial no estoque
+        if (materialRemovido) {
+          const materialEstoque = materiaisEstoque.find(m => m.id === materialRemovido.itemId);
+          const serialEstoque = materialEstoque?.seriais.find(s => s.serial === materialRemovido.serial);
+          
+          if (serialEstoque) {
+            serialEstoque.disponivel = true;
+            serialEstoque.eventoId = undefined;
+            serialEstoque.eventoNome = undefined;
+          }
+        }
+      }
+
       setEventos(prev => prev.map(evento => {
         if (evento.id === eventoId) {
           const listaMateriais = tipo === 'antecipado' 
@@ -342,7 +394,7 @@ export function EventosProvider({ children }: { children: ReactNode }) {
 
       toast({
         title: 'Material removido!',
-        description: 'O material foi removido da alocação.'
+        description: 'O material foi removido e o serial está disponível novamente.'
       });
 
       resolve();

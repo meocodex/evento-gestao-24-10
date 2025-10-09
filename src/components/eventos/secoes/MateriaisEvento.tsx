@@ -21,12 +21,22 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const { toast } = useToast();
   const [showAddMaterial, setShowAddMaterial] = useState(false);
   const [showAlocarMaterial, setShowAlocarMaterial] = useState(false);
-  const [selectedMaterial, setSelectedMaterial] = useState<string>('');
+  const [selectedMaterial, setSelectedMaterial] = useState<{
+    itemId: string;
+    nome: string;
+    quantidadeNecessaria: number;
+    quantidadeJaAlocada: number;
+  } | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; tipo: 'checklist' | 'alocado' } | null>(null);
 
-  const handleAlocarClick = (materialNome: string) => {
-    setSelectedMaterial(materialNome);
+  const handleAlocarClick = (item: any) => {
+    setSelectedMaterial({
+      itemId: item.itemId,
+      nome: item.nome,
+      quantidadeNecessaria: item.quantidade,
+      quantidadeJaAlocada: item.alocado,
+    });
     setShowAlocarMaterial(true);
   };
 
@@ -37,10 +47,14 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
 
   const handleConfirmDelete = () => {
     if (itemToDelete) {
-      toast({
-        title: 'Item removido!',
-        description: `${itemToDelete.tipo === 'checklist' ? 'Material' : 'Alocação'} removido com sucesso.`,
-      });
+      if (itemToDelete.tipo === 'checklist') {
+        removerMaterialChecklist(evento.id, itemToDelete.id);
+      } else {
+        // Determinar se é antecipado ou com técnicos
+        const isAntecipado = evento.materiaisAlocados.antecipado.some(m => m.id === itemToDelete.id);
+        const tipo = isAntecipado ? 'antecipado' : 'comTecnicos';
+        removerMaterialAlocado(evento.id, tipo, itemToDelete.id);
+      }
       setItemToDelete(null);
       setShowDeleteDialog(false);
     }
@@ -83,7 +97,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                         {item.alocado}/{item.quantidade}
                       </Badge>
                       {permissions.canAllocate && item.alocado < item.quantidade && (
-                        <Button size="sm" variant="outline" onClick={() => handleAlocarClick(item.nome)}>
+                        <Button size="sm" variant="outline" onClick={() => handleAlocarClick(item)}>
                           <PackagePlus className="h-4 w-4 mr-2" />
                           Alocar
                         </Button>
@@ -183,18 +197,40 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       open={showAddMaterial}
       onOpenChange={setShowAddMaterial}
       onAdicionar={(data) => {
-        console.log('Adicionar material:', data);
+        adicionarMaterialChecklist(evento.id, data);
+        setShowAddMaterial(false);
       }}
     />
 
-    <AlocarMaterialDialog
-      open={showAlocarMaterial}
-      onOpenChange={setShowAlocarMaterial}
-      materialNome={selectedMaterial}
-      onAlocar={(data) => {
-        console.log('Alocar material:', data);
-      }}
-    />
+    {selectedMaterial && (
+      <AlocarMaterialDialog
+        open={showAlocarMaterial}
+        onOpenChange={setShowAlocarMaterial}
+        itemId={selectedMaterial.itemId}
+        materialNome={selectedMaterial.nome}
+        quantidadeNecessaria={selectedMaterial.quantidadeNecessaria}
+        quantidadeJaAlocada={selectedMaterial.quantidadeJaAlocada}
+        onAlocar={(data) => {
+          alocarMaterial(evento.id, data.tipoEnvio, {
+            itemId: data.itemId,
+            nome: selectedMaterial.nome,
+            serial: data.serial,
+            status: 'reservado',
+            ...(data.tipoEnvio === 'antecipado' 
+              ? { 
+                  transportadora: data.transportadora!, 
+                  dataEnvio: new Date().toISOString(),
+                } 
+              : { 
+                  responsavel: data.responsavel! 
+                }
+            ),
+          } as any);
+          setShowAlocarMaterial(false);
+          setSelectedMaterial(null);
+        }}
+      />
+    )}
 
     <ConfirmDialog
       open={showDeleteDialog}
