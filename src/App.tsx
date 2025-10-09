@@ -11,8 +11,9 @@ import Eventos from "./pages/Eventos";
 import Clientes from "./pages/Clientes";
 import Estoque from "./pages/Estoque";
 import Placeholder from "./pages/Placeholder";
+import Demandas from "./pages/Demandas";
 import NotFound from "./pages/NotFound";
-import { Package, Bell, Truck, DollarSign, FileText, BarChart3, Settings } from "lucide-react";
+import { Package, Truck, DollarSign, FileText, BarChart3, Settings } from "lucide-react";
 
 const queryClient = new QueryClient();
 
@@ -31,7 +32,7 @@ const App = () => (
               <Route path="/eventos" element={<Eventos />} />
               <Route path="/clientes" element={<Clientes />} />
               <Route path="/estoque" element={<Estoque />} />
-              <Route path="/demandas" element={<Placeholder icon={Bell} title="Demandas" description="Gerencie demandas entre equipes" />} />
+              <Route path="/demandas" element={<Demandas />} />
               <Route path="/transportadoras" element={<Placeholder icon={Truck} title="Transportadoras" description="Cadastro de transportadoras" />} />
               <Route path="/financeiro" element={<Placeholder icon={DollarSign} title="Financeiro" description="Gestão financeira completa" />} />
               <Route path="/contratos" element={<Placeholder icon={FileText} title="Contratos" description="Modelos e documentos" />} />

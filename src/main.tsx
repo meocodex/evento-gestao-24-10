@@ -4,13 +4,16 @@ import "./index.css";
 import { EventosProvider } from "./contexts/EventosContext";
 import { ClientesProvider } from "./contexts/ClientesContext";
 import { EstoqueProvider } from "./contexts/EstoqueContext";
+import { DemandasProvider } from "./contexts/DemandasContext";
 
 createRoot(document.getElementById("root")!).render(
   <ClientesProvider>
     <EstoqueProvider>
-      <EventosProvider>
-        <App />
-      </EventosProvider>
+      <DemandasProvider>
+        <EventosProvider>
+          <App />
+        </EventosProvider>
+      </DemandasProvider>
     </EstoqueProvider>
   </ClientesProvider>
 );
