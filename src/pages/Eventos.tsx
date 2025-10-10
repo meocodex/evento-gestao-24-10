@@ -45,18 +45,23 @@ export default function Eventos() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Eventos</h1>
-        <p className="text-muted-foreground">Gerencie todos os eventos da sua empresa</p>
+    <div className="p-6 space-y-8 animate-fade-in">
+      {/* Header moderno com gradiente sutil */}
+      <div className="relative overflow-hidden rounded-2xl p-8 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent border border-primary/20">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
+        <div className="relative z-10">
+          <h1 className="text-4xl font-display font-bold mb-2">Eventos</h1>
+          <p className="text-lg text-muted-foreground">Gerencie todos os eventos da sua empresa</p>
+        </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      {/* Search e Filters com glass effect */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1 group">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <Input
             placeholder="Buscar eventos por nome, cliente..."
-            className="pl-10"
+            className="pl-10 h-11 border-2 focus:border-primary/50 transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -68,7 +73,12 @@ export default function Eventos() {
           availableTags={availableTags}
         />
         {permissions.canCreateEvent && (
-          <Button onClick={() => setNovoEventoOpen(true)}>
+          <Button 
+            onClick={() => setNovoEventoOpen(true)}
+            variant="gradient"
+            size="lg"
+            className="shadow-lg"
+          >
             <Plus className="h-4 w-4 mr-2" />
             Novo Evento
           </Button>

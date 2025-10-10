@@ -8,87 +8,102 @@ const Dashboard = () => {
   const { user } = useAuth();
 
   const renderAdminDashboard = () => (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-foreground">Bem-vindo, {user?.name}</h2>
-        <p className="text-muted-foreground mt-1">Visão geral do sistema</p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header com glassmorphism */}
+      <div className="relative overflow-hidden rounded-2xl p-8 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent border border-primary/20">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
+        <div className="relative z-10">
+          <h2 className="text-4xl font-display font-bold text-foreground mb-2">
+            Bem-vindo, {user?.name}
+          </h2>
+          <p className="text-lg text-muted-foreground">Visão geral do sistema</p>
+        </div>
       </div>
 
+      {/* Stats Grid com stagger animation */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Eventos Mês"
-          value="24"
-          icon={Calendar}
-          variant="primary"
-          trend={{ value: '+12%', isPositive: true }}
-        />
-        <StatCard
-          title="Receita Total"
-          value="R$ 185.000"
-          subtitle="Mês atual"
-          icon={DollarSign}
-          variant="success"
-          trend={{ value: '+23%', isPositive: true }}
-        />
-        <StatCard
-          title="Lucro Líquido"
-          value="R$ 107.000"
-          subtitle="57,8% margem"
-          icon={TrendingUp}
-          variant="default"
-        />
-        <StatCard
-          title="Cobranças Pendentes"
-          value="R$ 3.450"
-          subtitle="5 casos"
-          icon={AlertCircle}
-          variant="warning"
-        />
+        <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
+          <StatCard
+            title="Eventos Mês"
+            value="24"
+            icon={Calendar}
+            variant="primary"
+            trend={{ value: '+12%', isPositive: true }}
+          />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
+          <StatCard
+            title="Receita Total"
+            value="R$ 185.000"
+            subtitle="Mês atual"
+            icon={DollarSign}
+            variant="success"
+            trend={{ value: '+23%', isPositive: true }}
+          />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
+          <StatCard
+            title="Lucro Líquido"
+            value="R$ 107.000"
+            subtitle="57,8% margem"
+            icon={TrendingUp}
+            variant="default"
+          />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '300ms' }}>
+          <StatCard
+            title="Cobranças Pendentes"
+            value="R$ 3.450"
+            subtitle="5 casos"
+            icon={AlertCircle}
+            variant="warning"
+          />
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
+        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20">
           <CardHeader>
-            <CardTitle>Financeiro</CardTitle>
+            <CardTitle className="font-display">Financeiro</CardTitle>
             <CardDescription>Resumo mensal</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-success/10 rounded-lg">
-              <span className="text-sm font-medium">Receitas</span>
-              <span className="text-lg font-bold text-success">R$ 185.000</span>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-success/10 to-emerald-500/10 rounded-xl border border-success/20 hover:shadow-md transition-shadow">
+              <span className="text-sm font-semibold">Receitas</span>
+              <span className="text-xl font-display font-bold text-success">R$ 185.000</span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-destructive/10 rounded-lg">
-              <span className="text-sm font-medium">Despesas</span>
-              <span className="text-lg font-bold text-destructive">R$ 78.000</span>
+            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-destructive/10 to-rose-500/10 rounded-xl border border-destructive/20 hover:shadow-md transition-shadow">
+              <span className="text-sm font-semibold">Despesas</span>
+              <span className="text-xl font-display font-bold text-destructive">R$ 78.000</span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg">
-              <span className="text-sm font-medium">Lucro</span>
-              <span className="text-lg font-bold text-primary">R$ 107.000</span>
+            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl border border-primary/20 hover:shadow-md transition-shadow">
+              <span className="text-sm font-semibold">Lucro</span>
+              <span className="text-xl font-display font-bold text-primary">R$ 107.000</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-accent/20">
           <CardHeader>
-            <CardTitle>Estoque</CardTitle>
+            <CardTitle className="font-display">Estoque</CardTitle>
             <CardDescription>Status atual</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm">Disponível</span>
-              <Badge variant="outline" className="bg-success/10 text-success border-success/20">420 itens</Badge>
+            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-success/5 transition-colors">
+              <span className="text-sm font-medium">Disponível</span>
+              <Badge variant="success" className="shadow-sm">420 itens</Badge>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm">Em uso</span>
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">85 itens</Badge>
+            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
+              <span className="text-sm font-medium">Em uso</span>
+              <Badge className="shadow-sm">85 itens</Badge>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm">Manutenção</span>
-              <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">12 itens</Badge>
+            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-warning/5 transition-colors">
+              <span className="text-sm font-medium">Manutenção</span>
+              <Badge variant="warning" className="shadow-sm">12 itens</Badge>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm">Perdidos (mês)</span>
-              <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20">8 itens</Badge>
+            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-destructive/5 transition-colors">
+              <span className="text-sm font-medium">Perdidos (mês)</span>
+              <Badge variant="destructive" className="shadow-sm">8 itens</Badge>
             </div>
           </CardContent>
         </Card>

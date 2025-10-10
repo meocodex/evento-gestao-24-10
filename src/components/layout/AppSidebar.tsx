@@ -49,24 +49,26 @@ export function AppSidebar() {
   );
 
   return (
-    <Sidebar>
-      <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-2">
-          <div className="p-2 bg-primary rounded-lg">
-            <Calendar className="h-5 w-5 text-primary-foreground" />
+    <Sidebar className="border-r border-sidebar-border/50">
+      <SidebarHeader className="border-b border-sidebar-border/50 p-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg">
+            <Calendar className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-sidebar-foreground">Gestão Eventos</p>
-            <p className="text-xs text-sidebar-foreground/60">{user?.name}</p>
+            <p className="text-sm font-display font-bold text-sidebar-foreground">Gestão Eventos</p>
+            <p className="text-xs text-sidebar-foreground/70">{user?.name}</p>
           </div>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu Principal</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60">
+            Menu Principal
+          </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="space-y-1">
               {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
@@ -74,8 +76,8 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         isActive
-                          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                          : 'hover:bg-sidebar-accent/50'
+                          ? 'bg-gradient-to-r from-primary/20 to-accent/20 text-sidebar-foreground border-l-2 border-primary font-semibold shadow-sm'
+                          : 'hover:bg-sidebar-accent/50 hover:translate-x-1 transition-all duration-200'
                       }
                     >
                       <item.icon className="h-4 w-4" />
@@ -89,19 +91,19 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-4">
-        <div className="space-y-2">
-          <div className="px-3 py-2 bg-sidebar-accent/30 rounded-lg">
-            <p className="text-xs text-sidebar-foreground/60">Perfil</p>
-            <p className="text-sm font-medium text-sidebar-foreground capitalize">{user?.role}</p>
+      <SidebarFooter className="border-t border-sidebar-border/50 p-4">
+        <div className="space-y-3">
+          <div className="px-3 py-2.5 bg-gradient-to-r from-sidebar-accent/40 to-sidebar-accent/20 rounded-xl border border-sidebar-border/30">
+            <p className="text-xs text-sidebar-foreground/60 font-medium">Perfil</p>
+            <p className="text-sm font-semibold text-sidebar-foreground capitalize mt-0.5">{user?.role}</p>
           </div>
-          <Separator className="bg-sidebar-border" />
+          <Separator className="bg-sidebar-border/30" />
           <Button
             variant="ghost"
             onClick={logout}
-            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-destructive transition-all duration-200 group"
           >
-            <LogOut className="h-4 w-4 mr-2" />
+            <LogOut className="h-4 w-4 mr-2 group-hover:rotate-12 transition-transform" />
             Sair
           </Button>
         </div>
