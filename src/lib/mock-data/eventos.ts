@@ -22,6 +22,7 @@ export const mockEventos: Evento[] = [
     cliente: mockClientes[0],
     comercial: comerciais[0],
     status: 'confirmado',
+    tipoEvento: 'bar',
     tags: ['Bar', 'Aniversário', 'Premium'],
     plantaBaixa: '/uploads/planta-evento-1.pdf',
     descricao: 'Festa de 50 anos com aproximadamente 150 convidados. Decoração clássica com tema azul e dourado.',
@@ -171,6 +172,7 @@ export const mockEventos: Evento[] = [
     cliente: mockClientes[4],
     comercial: comerciais[0],
     status: 'materiais_alocados',
+    tipoEvento: 'hibrido',
     tags: ['Casamento', 'Luxo', 'Fazenda'],
     plantaBaixa: '/uploads/planta-evento-2.pdf',
     descricao: 'Casamento ao ar livre com 200 convidados. Cerimônia ao pôr do sol seguida de festa.',
@@ -306,6 +308,7 @@ export const mockEventos: Evento[] = [
     cliente: mockClientes[9],
     comercial: comerciais[1],
     status: 'em_preparacao',
+    tipoEvento: 'ingresso',
     tags: ['Corporativo', 'Lançamento', 'Tech'],
     descricao: 'Evento de lançamento de produto com coquetel e apresentações.',
     checklist: [
@@ -399,6 +402,7 @@ export const mockEventos: Evento[] = [
     cliente: mockClientes[6],
     comercial: comerciais[2],
     status: 'orcamento_enviado',
+    tipoEvento: 'hibrido',
     tags: ['Formatura', 'Acadêmico'],
     checklist: [],
     materiaisAlocados: {
@@ -438,6 +442,7 @@ export const mockEventos: Evento[] = [
     cliente: mockClientes[1],
     comercial: comerciais[0],
     status: 'aguardando_alocacao',
+    tipoEvento: 'ingresso',
     tags: ['Show', 'Música', 'Grande Porte'],
     descricao: 'Show para 5000 pessoas com estrutura completa de palco e som.',
     checklist: [

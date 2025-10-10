@@ -77,6 +77,7 @@ export function EventosProvider({ children }: { children: ReactNode }) {
         cidade: data.cidade,
         estado: data.estado,
         endereco: data.endereco,
+        tipoEvento: data.tipoEvento || 'bar',
         cliente,
         comercial,
         status: 'orcamento_enviado',

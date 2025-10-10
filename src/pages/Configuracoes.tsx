@@ -1,12 +1,64 @@
-import { Settings, User, Building2, Bell, Shield } from 'lucide-react';
+import { useState } from 'react';
+import { Settings, User, Building2, Bell, Shield, Zap, MessageSquare, Mail } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useConfiguracoes } from '@/contexts/ConfiguracoesContext';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Configuracoes() {
+  const { toast } = useToast();
+  const { configuracoes, atualizarConfiguracoes, testarWhatsApp, testarEmail } = useConfiguracoes();
+  const [whatsappConfig, setWhatsappConfig] = useState(configuracoes.notificacoes.whatsapp);
+  const [emailConfig, setEmailConfig] = useState(configuracoes.notificacoes.email);
+
+  const handleSalvarWhatsApp = async () => {
+    await atualizarConfiguracoes({
+      notificacoes: {
+        ...configuracoes.notificacoes,
+        whatsapp: whatsappConfig,
+      },
+    });
+  };
+
+  const handleSalvarEmail = async () => {
+    await atualizarConfiguracoes({
+      notificacoes: {
+        ...configuracoes.notificacoes,
+        email: emailConfig,
+      },
+    });
+  };
+
+  const handleTestarWhatsApp = async () => {
+    if (!whatsappConfig.phoneNumber) {
+      toast({
+        title: 'Número necessário',
+        description: 'Configure um número de WhatsApp antes de testar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    await testarWhatsApp(whatsappConfig.phoneNumber, 'Mensagem de teste da plataforma');
+  };
+
+  const handleTestarEmail = async () => {
+    if (!emailConfig.remetente) {
+      toast({
+        title: 'Remetente necessário',
+        description: 'Configure um e-mail remetente antes de testar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    await testarEmail(emailConfig.remetente, 'Teste de Configuração', 'Este é um e-mail de teste da plataforma.');
+  };
+
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto space-y-6">
@@ -19,6 +71,7 @@ export default function Configuracoes() {
           <TabsList>
             <TabsTrigger value="perfil">Perfil</TabsTrigger>
             <TabsTrigger value="empresa">Empresa</TabsTrigger>
+            <TabsTrigger value="integracoes">Integrações</TabsTrigger>
             <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
             <TabsTrigger value="seguranca">Segurança</TabsTrigger>
           </TabsList>
@@ -63,6 +116,203 @@ export default function Configuracoes() {
                   <Input defaultValue="00.000.000/0001-00" />
                 </div>
                 <Button>Salvar</Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="integracoes" className="space-y-4">
+            {/* WhatsApp */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  <CardTitle>WhatsApp Business API</CardTitle>
+                </div>
+                <CardDescription>
+                  Configure a API do WhatsApp para envio automático de notificações
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Ativar WhatsApp</Label>
+                  <Switch
+                    checked={whatsappConfig.enabled}
+                    onCheckedChange={(checked) =>
+                      setWhatsappConfig({ ...whatsappConfig, enabled: checked })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>API Key</Label>
+                  <Input
+                    type="password"
+                    placeholder="Sua chave da API WhatsApp"
+                    value={whatsappConfig.apiKey || ''}
+                    onChange={(e) =>
+                      setWhatsappConfig({ ...whatsappConfig, apiKey: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Número da Empresa (com DDI)</Label>
+                  <Input
+                    placeholder="+5511999999999"
+                    value={whatsappConfig.phoneNumber || ''}
+                    onChange={(e) =>
+                      setWhatsappConfig({ ...whatsappConfig, phoneNumber: e.target.value })
+                    }
+                  />
+                </div>
+
+                <Separator className="my-4" />
+                <h4 className="font-semibold">Templates de Mensagens</h4>
+
+                <div>
+                  <Label>Envio de Mercadoria</Label>
+                  <Textarea
+                    placeholder="Olá {{produtor}}, os materiais do evento {{evento}} foram enviados via {{transportadora}}. Rastreamento: {{rastreamento}}"
+                    rows={3}
+                    value={whatsappConfig.mensagens.envio_mercadoria}
+                    onChange={(e) =>
+                      setWhatsappConfig({
+                        ...whatsappConfig,
+                        mensagens: { ...whatsappConfig.mensagens, envio_mercadoria: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label>Solicitação de Devolução</Label>
+                  <Textarea
+                    placeholder="Olá {{produtor}}, por favor devolver os materiais do evento {{evento}} até {{data_limite}}."
+                    rows={3}
+                    value={whatsappConfig.mensagens.solicitacao_devolucao}
+                    onChange={(e) =>
+                      setWhatsappConfig({
+                        ...whatsappConfig,
+                        mensagens: { ...whatsappConfig.mensagens, solicitacao_devolucao: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+
+                <div>
+                  <Label>Envio de Proposta</Label>
+                  <Textarea
+                    placeholder="Olá {{cliente}}, segue proposta comercial para {{evento}}. Link: {{link_proposta}}"
+                    rows={3}
+                    value={whatsappConfig.mensagens.envio_proposta}
+                    onChange={(e) =>
+                      setWhatsappConfig({
+                        ...whatsappConfig,
+                        mensagens: { ...whatsappConfig.mensagens, envio_proposta: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={handleTestarWhatsApp} variant="outline">
+                    Testar Envio
+                  </Button>
+                  <Button onClick={handleSalvarWhatsApp}>Salvar Configurações</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Email */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  <CardTitle>Configurações de E-mail</CardTitle>
+                </div>
+                <CardDescription>Configure o SMTP para envio de e-mails</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Ativar E-mail</Label>
+                  <Switch
+                    checked={emailConfig.enabled}
+                    onCheckedChange={(checked) =>
+                      setEmailConfig({ ...emailConfig, enabled: checked })
+                    }
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Servidor SMTP</Label>
+                    <Input
+                      placeholder="smtp.gmail.com"
+                      value={emailConfig.smtp.host || ''}
+                      onChange={(e) =>
+                        setEmailConfig({
+                          ...emailConfig,
+                          smtp: { ...emailConfig.smtp, host: e.target.value },
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <Label>Porta</Label>
+                    <Input
+                      type="number"
+                      placeholder="587"
+                      value={emailConfig.smtp.port || ''}
+                      onChange={(e) =>
+                        setEmailConfig({
+                          ...emailConfig,
+                          smtp: { ...emailConfig.smtp, port: Number(e.target.value) },
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label>E-mail Remetente</Label>
+                  <Input
+                    type="email"
+                    placeholder="notificacoes@empresa.com"
+                    value={emailConfig.remetente || ''}
+                    onChange={(e) =>
+                      setEmailConfig({ ...emailConfig, remetente: e.target.value })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Usuário SMTP</Label>
+                  <Input
+                    placeholder="usuario@smtp.com"
+                    value={emailConfig.smtp.user || ''}
+                    onChange={(e) =>
+                      setEmailConfig({
+                        ...emailConfig,
+                        smtp: { ...emailConfig.smtp, user: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+                <div>
+                  <Label>Senha</Label>
+                  <Input
+                    type="password"
+                    value={emailConfig.smtp.password || ''}
+                    onChange={(e) =>
+                      setEmailConfig({
+                        ...emailConfig,
+                        smtp: { ...emailConfig.smtp, password: e.target.value },
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={handleTestarEmail} variant="outline">
+                    Testar Envio
+                  </Button>
+                  <Button onClick={handleSalvarEmail}>Salvar Configurações</Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

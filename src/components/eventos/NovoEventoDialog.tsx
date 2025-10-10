@@ -80,6 +80,7 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
       cidade,
       estado,
       endereco,
+      tipoEvento: 'bar',
       clienteId,
       comercialId,
       tags,

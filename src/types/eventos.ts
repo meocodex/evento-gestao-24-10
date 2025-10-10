@@ -22,6 +22,49 @@ export type TipoReceita = 'fixo' | 'quantidade';
 
 export type CategoriaFinanceira = 'pessoal' | 'transporte' | 'insumos' | 'alimentacao' | 'Reembolso de Equipe' | 'outros';
 
+export type TipoEvento = 'ingresso' | 'bar' | 'hibrido';
+
+export interface SetorEvento {
+  id: string;
+  nome: string;
+  capacidade: number;
+  tiposIngresso: TipoIngresso[];
+}
+
+export interface TipoIngresso {
+  id: string;
+  nome: string;
+  lotes: Lote[];
+}
+
+export interface Lote {
+  numero: 1 | 2 | 3 | 4;
+  quantidade: number;
+  preco: number;
+  dataAberturaOnline: string;
+  dataAberturaPDV: string;
+  dataFechamentoOnline: string;
+  dataFechamentoPDV: string;
+}
+
+export interface ConfiguracaoBar {
+  quantidadeMaquinas: number;
+  quantidadeBares: number;
+  temCardapio: boolean;
+  cardapioUrl?: string;
+  mapaLocal?: string;
+}
+
+export interface ConfiguracaoIngresso {
+  setores: SetorEvento[];
+  mapaEvento?: string;
+  banners?: {
+    bannerPrincipal?: string;
+    bannerMobile?: string;
+    bannerSite?: string;
+  };
+}
+
 export interface Cliente {
   id: string;
   nome: string;
@@ -141,6 +184,7 @@ export interface Evento {
   cliente: Cliente;
   comercial: Comercial;
   status: StatusEvento;
+  tipoEvento: TipoEvento;
   tags: string[];
   plantaBaixa?: string;
   descricao?: string;
@@ -162,6 +206,8 @@ export interface Evento {
   equipe: MembroEquipe[];
   observacoesOperacionais: string[];
   fotosEvento?: string[];
+  configuracaoIngresso?: ConfiguracaoIngresso;
+  configuracaoBar?: ConfiguracaoBar;
   criadoEm: string;
   atualizadoEm: string;
 }
@@ -178,12 +224,46 @@ export interface EventoFormData {
   endereco: string;
   clienteId: string;
   comercialId: string;
+  tipoEvento: TipoEvento;
   tags: string[];
   plantaBaixa?: File;
   descricao?: string;
   observacoes?: string;
   contatosAdicionais?: string;
   redesSociais?: string;
+  configuracaoIngresso?: ConfiguracaoIngresso;
+  configuracaoBar?: ConfiguracaoBar;
+}
+
+export interface CadastroEventoPublico {
+  tipoEvento: TipoEvento;
+  nome: string;
+  dataInicio: string;
+  dataFim: string;
+  horaInicio: string;
+  horaFim: string;
+  local: string;
+  endereco: string;
+  cidade: string;
+  estado: string;
+  produtor: {
+    nome: string;
+    documento: string;
+    telefone: string;
+    whatsapp: string;
+    email: string;
+  };
+  configuracaoIngresso?: ConfiguracaoIngresso;
+  configuracaoBar?: ConfiguracaoBar;
+}
+
+export interface CadastroPublico extends CadastroEventoPublico {
+  id: string;
+  protocolo: string;
+  status: 'pendente' | 'em_analise' | 'aprovado' | 'recusado';
+  dataCriacao: string;
+  observacoesInternas?: string;
+  eventoId?: string;
 }
 
 export interface ClienteFormData {

@@ -1,15 +1,21 @@
-import { useMemo } from 'react';
-import { DollarSign, TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { DollarSign, TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight, Eye, Receipt } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useEventos } from '@/contexts/EventosContext';
 import { useDemandasContext } from '@/contexts/DemandasContext';
+import { Evento } from '@/types/eventos';
+import { EventoDetailsDialog } from '@/components/eventos/EventoDetailsDialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export default function Financeiro() {
   const { eventos } = useEventos();
   const { demandas } = useDemandasContext();
+  const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const stats = useMemo(() => {
     // Receitas dos eventos
@@ -187,18 +193,28 @@ export default function Financeiro() {
                   {eventosFinanceiros.map((evento) => (
                     <div
                       key={evento.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer group"
+                      onClick={() => {
+                        const eventoCompleto = eventos.find(e => e.id === evento.id);
+                        if (eventoCompleto) {
+                          setSelectedEvento(eventoCompleto);
+                          setDetailsOpen(true);
+                        }
+                      }}
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
                           <h4 className="font-semibold">{evento.nome}</h4>
+                          <Badge variant={evento.status === 'finalizado' ? 'default' : 'secondary'}>
+                            {evento.status.replace('_', ' ')}
+                          </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">
                           {format(new Date(evento.data), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
                         </p>
                       </div>
-                      <div className="grid grid-cols-3 gap-6 text-right">
+                      <div className="grid grid-cols-4 gap-6 text-right items-center">
                         <div>
                           <p className="text-xs text-muted-foreground">Receita</p>
                           <p className="font-semibold text-green-600">{formatCurrency(evento.receita)}</p>
@@ -212,6 +228,19 @@ export default function Financeiro() {
                           <p className={`font-semibold ${evento.lucro >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {formatCurrency(evento.lucro)}
                           </p>
+                        </div>
+                        <div>
+                          <Button size="sm" variant="ghost" onClick={(e) => {
+                            e.stopPropagation();
+                            const eventoCompleto = eventos.find(e => e.id === evento.id);
+                            if (eventoCompleto) {
+                              setSelectedEvento(eventoCompleto);
+                              setDetailsOpen(true);
+                            }
+                          }}>
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -263,33 +292,89 @@ export default function Financeiro() {
             <Card>
               <CardHeader>
                 <CardTitle>Reembolsos</CardTitle>
-                <CardDescription>Status dos reembolsos solicitados</CardDescription>
+                <CardDescription>Lista completa de reembolsos solicitados</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Reembolsos Pagos</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {formatCurrency(stats.reembolsosPagos)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {demandas.filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'pago').length} reembolsos
-                    </p>
+                <div className="space-y-4 mb-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 border rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-1">Reembolsos Pagos</p>
+                      <p className="text-2xl font-bold text-green-600">
+                        {formatCurrency(stats.reembolsosPagos)}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {demandas.filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'pago').length} reembolsos
+                      </p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <p className="text-sm text-muted-foreground mb-1">Pendentes de Pagamento</p>
+                      <p className="text-2xl font-bold text-orange-600">
+                        {formatCurrency(stats.reembolsosPendentes)}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {demandas.filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'aprovado').length} reembolsos
+                      </p>
+                    </div>
                   </div>
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Pendentes de Pagamento</p>
-                    <p className="text-2xl font-bold text-orange-600">
-                      {formatCurrency(stats.reembolsosPendentes)}
+                </div>
+
+                <div className="space-y-3">
+                  {demandas
+                    .filter(d => d.categoria === 'reembolso')
+                    .map(demanda => (
+                      <div key={demanda.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="font-semibold">{demanda.titulo}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              Solicitante: {demanda.dadosReembolso?.membroEquipeNome}
+                            </p>
+                            {demanda.eventoNome && (
+                              <p className="text-xs text-muted-foreground">
+                                Evento: {demanda.eventoNome}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold">
+                              {formatCurrency(demanda.dadosReembolso?.valorTotal || 0)}
+                            </p>
+                            <Badge variant={
+                              demanda.dadosReembolso?.statusPagamento === 'pago' ? 'default' :
+                              demanda.dadosReembolso?.statusPagamento === 'aprovado' ? 'secondary' :
+                              demanda.dadosReembolso?.statusPagamento === 'recusado' ? 'destructive' :
+                              'outline'
+                            }>
+                              {demanda.dadosReembolso?.statusPagamento || 'Pendente'}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 mt-3">
+                          <Receipt className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-muted-foreground">
+                            {demanda.dadosReembolso?.itens.length || 0} itens
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  {demandas.filter(d => d.categoria === 'reembolso').length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">
+                      Nenhum reembolso cadastrado
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {demandas.filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'aprovado').length} reembolsos
-                    </p>
-                  </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
+
+        {selectedEvento && (
+          <EventoDetailsDialog
+            evento={selectedEvento}
+            open={detailsOpen}
+            onOpenChange={setDetailsOpen}
+          />
+        )}
       </div>
     </div>
   );
