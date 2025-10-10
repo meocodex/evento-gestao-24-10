@@ -110,136 +110,154 @@ export default function Eventos() {
   };
 
   return (
-    <div className="p-6 space-y-4 animate-fade-in">
-      {/* Header moderno com gradiente sutil */}
-      <div className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent border border-primary/20">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
-        <div className="relative z-10">
-          <h1 className="text-4xl font-display font-bold mb-2">Eventos</h1>
-          <p className="text-lg text-muted-foreground">Gerencie todos os eventos da sua empresa</p>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <EventosStats eventos={eventos} />
-
-      {/* Navigation Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full justify-start overflow-x-auto">
-          <TabsTrigger value="todos">Todos</TabsTrigger>
-          <TabsTrigger value="proximos7">Próximos 7 Dias</TabsTrigger>
-          <TabsTrigger value="esteMes">Este Mês</TabsTrigger>
-          <TabsTrigger value="proximoMes">Próximo Mês</TabsTrigger>
-          <TabsTrigger value="finalizados">Finalizados</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      {/* Quick Filters */}
-      <div className="flex flex-col gap-4">
-        <EventosQuickFilters 
-          eventos={eventos}
-          activeFilter={quickFilter}
-          onFilterChange={setQuickFilter}
-        />
-        
-        {/* Search, Filters, Sort and View Toggle */}
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="relative flex-1 group">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-            <Input
-              placeholder="Buscar eventos por nome, cliente..."
-              className="pl-10 h-9 border-2 focus:border-primary/50 transition-all"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+    <div className="min-h-full">
+      {/* Container with premium max-width and spacing */}
+      <div className="mx-auto max-w-[1600px] px-6 py-8 space-y-6 animate-fade-in">
+        {/* Premium header with enhanced glassmorphism */}
+        <div className="relative overflow-hidden rounded-3xl p-8 border border-border/40 bg-gradient-to-br from-card/60 via-card/40 to-transparent backdrop-blur-2xl">
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-accent/8" />
+          
+          {/* Floating accent elements */}
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-accent/10 rounded-full blur-2xl" />
+          
+          <div className="relative z-10">
+            <h1 className="text-5xl font-display font-bold mb-3 bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
+              Eventos
+            </h1>
+            <p className="text-lg text-muted-foreground/80 font-medium">
+              Gerencie todos os eventos da sua empresa com eficiência e profissionalismo
+            </p>
           </div>
+        </div>
 
-          <div className="flex gap-2">
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[200px] h-9">
-                <ArrowUpDown className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Ordenar por" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dataProxima">Data Mais Próxima</SelectItem>
-                <SelectItem value="dataDistante">Data Mais Distante</SelectItem>
-                <SelectItem value="nomeAZ">Nome (A-Z)</SelectItem>
-                <SelectItem value="status">Status</SelectItem>
-                <SelectItem value="ultimaAtualizacao">Última Atualização</SelectItem>
-              </SelectContent>
-            </Select>
+        {/* Stats Cards */}
+        <EventosStats eventos={eventos} />
 
-            <EventoFilters
-              filters={filters}
-              onFiltersChange={setFilters}
-              availableCities={availableCities}
-              availableTags={availableTags}
-            />
+        {/* Navigation Tabs - Premium style */}
+        <div className="relative">
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="w-full justify-start overflow-x-auto bg-card/60 backdrop-blur-xl border border-border/40 p-1">
+              <TabsTrigger value="todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
+              <TabsTrigger value="proximos7" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Próximos 7 Dias</TabsTrigger>
+              <TabsTrigger value="esteMes" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Este Mês</TabsTrigger>
+              <TabsTrigger value="proximoMes" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Próximo Mês</TabsTrigger>
+              <TabsTrigger value="finalizados" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Finalizados</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
-            <div className="flex border rounded-lg overflow-hidden">
-              <Button
-                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="rounded-none h-9 w-9"
-                onClick={() => setViewMode('grid')}
-              >
-                <Grid3x3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="rounded-none h-9 w-9"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="h-4 w-4" />
-              </Button>
+        {/* Quick Filters */}
+        <div className="flex flex-col gap-4">
+          <EventosQuickFilters 
+            eventos={eventos}
+            activeFilter={quickFilter}
+            onFilterChange={setQuickFilter}
+          />
+          
+          {/* Search, Filters, Sort and View Toggle - Premium glassmorphic container */}
+          <div className="flex flex-col lg:flex-row gap-3 p-4 rounded-2xl bg-card/40 backdrop-blur-xl border border-border/40">
+            <div className="relative flex-1 group">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input
+                placeholder="Buscar eventos por nome, cliente..."
+                className="pl-10 h-10 bg-background/60 border-border/60 focus:border-primary/50 focus:bg-background transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
 
-            {permissions.canCreateEvent && (
-              <Button 
-                onClick={() => setNovoEventoOpen(true)}
-                variant="gradient"
-                size="lg"
-                className="shadow-lg h-9"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Evento
-              </Button>
-            )}
+            <div className="flex gap-2 flex-wrap">
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-[200px] h-10 bg-background/60 border-border/60">
+                  <ArrowUpDown className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="dataProxima">Data Mais Próxima</SelectItem>
+                  <SelectItem value="dataDistante">Data Mais Distante</SelectItem>
+                  <SelectItem value="nomeAZ">Nome (A-Z)</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="ultimaAtualizacao">Última Atualização</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <EventoFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+                availableCities={availableCities}
+                availableTags={availableTags}
+              />
+
+              <div className="flex border border-border/60 rounded-xl overflow-hidden bg-background/40">
+                <Button
+                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="rounded-none h-10 w-10 hover:bg-primary/10"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="rounded-none h-10 w-10 hover:bg-primary/10"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {permissions.canCreateEvent && (
+                <Button 
+                  onClick={() => setNovoEventoOpen(true)}
+                  className="shadow-lg h-10 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Evento
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Results counter with premium styling */}
+          <div className="flex items-center gap-2 px-1">
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-muted-foreground">Mostrando</span>
+              <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-base">{sortedEventos.length}</span>
+              <span className="text-muted-foreground">de</span>
+              <span className="px-2 py-1 rounded-lg bg-muted/50 font-semibold">{eventos.length}</span>
+              <span className="text-muted-foreground">eventos</span>
+            </div>
           </div>
         </div>
 
-        {/* Results counter */}
-        <div className="text-sm text-muted-foreground">
-          Mostrando <span className="font-semibold text-foreground">{sortedEventos.length}</span> de{' '}
-          <span className="font-semibold text-foreground">{eventos.length}</span> eventos
-        </div>
+        {/* Events List or Table View */}
+        {viewMode === 'grid' ? (
+          <EventosList
+            eventos={sortedEventos}
+            onViewDetails={handleViewDetails}
+          />
+        ) : (
+          <EventosTableView
+            eventos={sortedEventos}
+            onViewDetails={handleViewDetails}
+          />
+        )}
+
+        <NovoEventoDialog
+          open={novoEventoOpen}
+          onOpenChange={setNovoEventoOpen}
+          onEventoCreated={() => {}}
+        />
+
+        <EventoDetailsDialog
+          evento={selectedEvento}
+          open={detailsOpen}
+          onOpenChange={setDetailsOpen}
+        />
       </div>
-
-      {/* Events List or Table View */}
-      {viewMode === 'grid' ? (
-        <EventosList
-          eventos={sortedEventos}
-          onViewDetails={handleViewDetails}
-        />
-      ) : (
-        <EventosTableView
-          eventos={sortedEventos}
-          onViewDetails={handleViewDetails}
-        />
-      )}
-
-      <NovoEventoDialog
-        open={novoEventoOpen}
-        onOpenChange={setNovoEventoOpen}
-        onEventoCreated={() => {}}
-      />
-
-      <EventoDetailsDialog
-        evento={selectedEvento}
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
-      />
     </div>
   );
 }
