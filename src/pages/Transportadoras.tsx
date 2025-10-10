@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Truck, Search, Filter } from 'lucide-react';
+import { Plus, Truck, Search, Filter, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NovaTransportadoraDialog } from '@/components/transportadoras/NovaTransportadoraDialog';
 import { EditarTransportadoraDialog } from '@/components/transportadoras/EditarTransportadoraDialog';
 import { DetalhesTransportadoraDialog } from '@/components/transportadoras/DetalhesTransportadoraDialog';
+import { GerenciarRotasDialog } from '@/components/transportadoras/GerenciarRotasDialog';
 import { NovoEnvioDialog } from '@/components/transportadoras/NovoEnvioDialog';
 import { EnvioCard } from '@/components/transportadoras/EnvioCard';
 import { Transportadora } from '@/types/transportadoras';
@@ -20,6 +21,7 @@ export default function Transportadoras() {
   const [novaTransportadoraOpen, setNovaTransportadoraOpen] = useState(false);
   const [editarTransportadora, setEditarTransportadora] = useState<Transportadora | null>(null);
   const [detalhesTransportadora, setDetalhesTransportadora] = useState<Transportadora | null>(null);
+  const [gerenciarRotasTransportadora, setGerenciarRotasTransportadora] = useState<Transportadora | null>(null);
   const [novoEnvioOpen, setNovoEnvioOpen] = useState(false);
 
   const transportadorasFiltradas = transportadoras.filter((t) => {
@@ -119,7 +121,7 @@ export default function Transportadoras() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {transportadorasFiltradas.map((transportadora) => (
-                <Card key={transportadora.id} className="hover:shadow-md transition-shadow cursor-pointer">
+                <Card key={transportadora.id} className="hover:shadow-md transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
@@ -129,9 +131,15 @@ export default function Transportadoras() {
                           <CardDescription>{transportadora.cnpj}</CardDescription>
                         </div>
                       </div>
-                      <Badge variant={transportadora.status === 'ativa' ? 'default' : 'secondary'}>
-                        {transportadora.status}
-                      </Badge>
+                      <div className="flex flex-col gap-1 items-end">
+                        <Badge variant={transportadora.status === 'ativa' ? 'default' : 'secondary'}>
+                          {transportadora.status}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {transportadora.rotasAtendidas.filter(r => r.ativa).length} rotas
+                        </Badge>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -153,11 +161,10 @@ export default function Transportadoras() {
                         {transportadora.endereco.cidade} - {transportadora.endereco.estado}
                       </div>
                     </div>
-                    <div className="flex gap-2 mt-4">
+                    <div className="grid grid-cols-2 gap-2 mt-4">
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1"
                         onClick={() => setDetalhesTransportadora(transportadora)}
                       >
                         Detalhes
@@ -165,7 +172,15 @@ export default function Transportadoras() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="flex-1"
+                        onClick={() => setGerenciarRotasTransportadora(transportadora)}
+                      >
+                        <MapPin className="h-4 w-4 mr-1" />
+                        Rotas
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="col-span-2"
                         onClick={() => setEditarTransportadora(transportadora)}
                       >
                         Editar
@@ -221,6 +236,13 @@ export default function Transportadoras() {
             transportadora={detalhesTransportadora}
             open={!!detalhesTransportadora}
             onOpenChange={(open) => !open && setDetalhesTransportadora(null)}
+          />
+        )}
+        {gerenciarRotasTransportadora && (
+          <GerenciarRotasDialog
+            transportadora={gerenciarRotasTransportadora}
+            open={!!gerenciarRotasTransportadora}
+            onOpenChange={(open) => !open && setGerenciarRotasTransportadora(null)}
           />
         )}
         <NovoEnvioDialog open={novoEnvioOpen} onOpenChange={setNovoEnvioOpen} />

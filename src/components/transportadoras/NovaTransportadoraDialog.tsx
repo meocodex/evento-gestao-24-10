@@ -32,7 +32,7 @@ export function NovaTransportadoraDialog({ open, onOpenChange }: NovaTransportad
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    criarTransportadora(formData);
+    criarTransportadora({ ...formData, rotasAtendidas: [] });
     onOpenChange(false);
     setFormData({
       nome: '',

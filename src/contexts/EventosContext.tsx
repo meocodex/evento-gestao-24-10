@@ -17,6 +17,7 @@ interface EventosContextType {
   adicionarReceita: (eventoId: string, receita: Omit<Receita, 'id'>) => Promise<void>;
   removerReceita: (eventoId: string, receitaId: string) => Promise<void>;
   adicionarDespesa: (eventoId: string, despesa: Omit<Despesa, 'id'>) => Promise<void>;
+  editarDespesa: (eventoId: string, despesaId: string, data: Partial<Despesa>) => Promise<void>;
   removerDespesa: (eventoId: string, despesaId: string) => Promise<void>;
   adicionarMembroEquipe: (eventoId: string, membro: Omit<MembroEquipe, 'id'>) => Promise<void>;
   removerMembroEquipe: (eventoId: string, membroId: string) => Promise<void>;
@@ -489,6 +490,33 @@ export function EventosProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const editarDespesa = async (eventoId: string, despesaId: string, data: Partial<Despesa>): Promise<void> => {
+    return new Promise((resolve) => {
+      setEventos(prev => prev.map(evento => {
+        if (evento.id === eventoId) {
+          return {
+            ...evento,
+            financeiro: {
+              ...evento.financeiro,
+              despesas: evento.financeiro.despesas.map(d => 
+                d.id === despesaId ? { ...d, ...data } : d
+              )
+            },
+            atualizadoEm: new Date().toISOString()
+          };
+        }
+        return evento;
+      }));
+
+      toast({
+        title: 'Despesa atualizada!',
+        description: 'A despesa foi atualizada com sucesso.'
+      });
+
+      resolve();
+    });
+  };
+
   const removerDespesa = async (eventoId: string, despesaId: string): Promise<void> => {
     return new Promise((resolve) => {
       setEventos(prev => prev.map(evento => {
@@ -683,6 +711,7 @@ export function EventosProvider({ children }: { children: ReactNode }) {
       adicionarReceita,
       removerReceita,
       adicionarDespesa,
+      editarDespesa,
       removerDespesa,
       adicionarMembroEquipe,
       removerMembroEquipe,
