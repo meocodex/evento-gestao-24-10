@@ -1,6 +1,8 @@
 import { Evento } from '@/types/eventos';
 import { EventoCard } from './EventoCard';
 import { CalendarX } from 'lucide-react';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { CardSkeleton } from '@/components/shared/LoadingSkeleton';
 
 interface EventosListProps {
   eventos: Evento[];
@@ -11,9 +13,9 @@ interface EventosListProps {
 export function EventosList({ eventos, onViewDetails, isLoading }: EventosListProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="h-80 bg-muted animate-pulse rounded-lg" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {[...Array(8)].map((_, i) => (
+          <CardSkeleton key={i} />
         ))}
       </div>
     );
@@ -21,13 +23,11 @@ export function EventosList({ eventos, onViewDetails, isLoading }: EventosListPr
 
   if (eventos.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <CalendarX className="h-16 w-16 text-muted-foreground mb-4" />
-        <h3 className="text-xl font-semibold mb-2">Nenhum evento encontrado</h3>
-        <p className="text-muted-foreground">
-          Tente ajustar os filtros ou criar um novo evento
-        </p>
-      </div>
+      <EmptyState
+        icon={CalendarX}
+        title="Nenhum evento encontrado"
+        description="Tente ajustar os filtros de busca ou criar um novo evento para começar."
+      />
     );
   }
 
