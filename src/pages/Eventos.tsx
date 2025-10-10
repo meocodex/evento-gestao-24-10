@@ -112,9 +112,9 @@ export default function Eventos() {
   return (
     <div className="min-h-full">
       {/* Container with premium max-width and spacing */}
-      <div className="mx-auto max-w-[1600px] px-6 py-8 space-y-6 animate-fade-in">
+      <div className="mx-auto max-w-[1600px] px-6 py-6 space-y-4 animate-fade-in">
         {/* Premium header with enhanced glassmorphism */}
-        <div className="relative overflow-hidden rounded-3xl p-8 border border-border/40 bg-gradient-to-br from-card/60 via-card/40 to-transparent backdrop-blur-2xl">
+        <div className="relative overflow-hidden rounded-2xl p-5 border border-border/40 bg-gradient-to-br from-card/60 via-card/40 to-transparent backdrop-blur-2xl">
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-accent/8" />
           
@@ -123,10 +123,10 @@ export default function Eventos() {
           <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-accent/10 rounded-full blur-2xl" />
           
           <div className="relative z-10">
-            <h1 className="text-5xl font-display font-bold mb-3 bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
+            <h1 className="text-3xl font-display font-bold mb-2 bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
               Eventos
             </h1>
-            <p className="text-lg text-muted-foreground/80 font-medium">
+            <p className="text-sm text-muted-foreground/80 font-medium">
               Gerencie todos os eventos da sua empresa com eficiência e profissionalismo
             </p>
           </div>
