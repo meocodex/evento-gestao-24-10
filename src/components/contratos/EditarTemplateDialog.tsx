@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContratos } from '@/contexts/ContratosContext';
 import { ContratoTemplate } from '@/types/contratos';
+import { UploadPapelTimbrado } from '@/components/propostas/UploadPapelTimbrado';
+import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 

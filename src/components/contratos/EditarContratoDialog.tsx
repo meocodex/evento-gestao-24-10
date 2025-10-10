@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContratos } from '@/contexts/ContratosContext';
-import { Contrato } from '@/types/contratos';
+import { Contrato, StatusContrato } from '@/types/contratos';
 
 interface EditarContratoDialogProps {
   open: boolean;
@@ -17,7 +17,7 @@ interface EditarContratoDialogProps {
 export function EditarContratoDialog({ open, onOpenChange, contrato }: EditarContratoDialogProps) {
   const { editarContrato } = useContratos();
   const [titulo, setTitulo] = useState('');
-  const [status, setStatus] = useState<'rascunho' | 'em_revisao' | 'aguardando_assinatura' | 'assinado' | 'cancelado'>('rascunho');
+  const [status, setStatus] = useState<StatusContrato>('rascunho');
   const [conteudo, setConteudo] = useState('');
   const [valor, setValor] = useState('');
   const [dataInicio, setDataInicio] = useState('');
@@ -77,11 +77,15 @@ export function EditarContratoDialog({ open, onOpenChange, contrato }: EditarCon
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="proposta">Proposta</SelectItem>
+                <SelectItem value="em_negociacao">Em Negociação</SelectItem>
+                <SelectItem value="aprovada">Aprovada</SelectItem>
                 <SelectItem value="rascunho">Rascunho</SelectItem>
                 <SelectItem value="em_revisao">Em Revisão</SelectItem>
                 <SelectItem value="aguardando_assinatura">Aguardando Assinatura</SelectItem>
                 <SelectItem value="assinado">Assinado</SelectItem>
                 <SelectItem value="cancelado">Cancelado</SelectItem>
+                <SelectItem value="expirado">Expirado</SelectItem>
               </SelectContent>
             </Select>
           </div>

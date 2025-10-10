@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { ContratoTemplate, Contrato } from '@/types/contratos';
+import { ContratoTemplate, Contrato, StatusContrato } from '@/types/contratos';
 import { templatesMock, contratosMock } from '@/lib/mock-data/contratos';
 import { toast } from '@/hooks/use-toast';
 
@@ -15,6 +15,8 @@ interface ContratosContextData {
   excluirContrato: (id: string) => void;
   assinarContrato: (contratoId: string, parte: string) => void;
   gerarPDF: (contratoId: string) => void;
+  aprovarProposta: (contratoId: string, observacoes?: string) => void;
+  converterPropostaEmContrato: (contratoId: string, opcao: 'vincular' | 'criar', eventoId?: string, dadosEvento?: any, adicionarReceitas?: boolean) => Promise<void>;
 }
 
 const ContratosContext = createContext<ContratosContextData>({} as ContratosContextData);
@@ -129,6 +131,65 @@ export function ContratosProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const aprovarProposta = (contratoId: string, observacoes?: string) => {
+    setContratos(contratos.map(c => 
+      c.id === contratoId 
+        ? { 
+            ...c, 
+            status: 'aprovada',
+            aprovacoesHistorico: [
+              ...(c.aprovacoesHistorico || []),
+              {
+                data: new Date().toISOString(),
+                acao: 'aprovada',
+                usuario: 'Usuário Atual',
+                observacoes
+              }
+            ],
+            atualizadoEm: new Date().toISOString()
+          }
+        : c
+    ));
+    toast({ title: 'Proposta aprovada', description: 'A proposta foi aprovada com sucesso.' });
+  };
+
+  const converterPropostaEmContrato = async (
+    contratoId: string,
+    opcao: 'vincular' | 'criar',
+    eventoId?: string,
+    dadosEvento?: any,
+    adicionarReceitas: boolean = true
+  ) => {
+    const contrato = contratos.find(c => c.id === contratoId);
+    if (!contrato) return;
+
+    // Aqui você integraria com EventosContext para criar evento e adicionar receitas
+    setContratos(contratos.map(c =>
+      c.id === contratoId
+        ? {
+            ...c,
+            status: 'rascunho',
+            eventoId: eventoId || `evento-${Date.now()}`,
+            aprovacoesHistorico: [
+              ...(c.aprovacoesHistorico || []),
+              {
+                data: new Date().toISOString(),
+                acao: 'convertida',
+                usuario: 'Usuário Atual',
+                observacoes: `Convertida em contrato e ${opcao === 'criar' ? 'novo evento criado' : 'vinculada ao evento'}`
+              }
+            ],
+            atualizadoEm: new Date().toISOString()
+          }
+        : c
+    ));
+
+    toast({
+      title: 'Proposta convertida',
+      description: 'A proposta foi convertida em contrato com sucesso.',
+    });
+  };
+
   return (
     <ContratosContext.Provider
       value={{
@@ -143,6 +204,8 @@ export function ContratosProvider({ children }: { children: ReactNode }) {
         excluirContrato,
         assinarContrato,
         gerarPDF,
+        aprovarProposta,
+        converterPropostaEmContrato,
       }}
     >
       {children}
