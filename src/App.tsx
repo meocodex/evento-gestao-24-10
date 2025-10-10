@@ -3,18 +3,17 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TransportadorasProvider } from "@/contexts/TransportadorasContext";
 import { ContratosProvider } from "@/contexts/ContratosContext";
 import { ConfiguracoesProvider } from "@/contexts/ConfiguracoesContext";
 import { CadastrosPublicosProvider } from "@/contexts/CadastrosPublicosContext";
 import { MainLayout } from "@/components/layout/MainLayout";
-import Login from "./pages/Login";
+import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Eventos from "./pages/Eventos";
 import Clientes from "./pages/Clientes";
 import Estoque from "./pages/Estoque";
-import Placeholder from "./pages/Placeholder";
 import Demandas from "./pages/Demandas";
 import Transportadoras from "./pages/Transportadoras";
 import Financeiro from "./pages/Financeiro";
@@ -28,44 +27,84 @@ import AcompanharCadastro from "./pages/public/AcompanharCadastro";
 
 const queryClient = new QueryClient();
 
+function ProtectedRoutes() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="eventos" element={<Eventos />} />
+        <Route path="clientes" element={<Clientes />} />
+        <Route path="demandas" element={<Demandas />} />
+        <Route path="estoque" element={<Estoque />} />
+        <Route path="contratos" element={<Contratos />} />
+        <Route path="transportadoras" element={<Transportadoras />} />
+        <Route path="financeiro" element={<Financeiro />} />
+        <Route path="relatorios" element={<Relatorios />} />
+        <Route path="configuracoes" element={<Configuracoes />} />
+        <Route path="cadastros-pendentes" element={<CadastrosPendentes />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
+  );
+}
+
+function AuthRoutes() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <Auth />;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <ConfiguracoesProvider>
-        <CadastrosPublicosProvider>
-          <TransportadorasProvider>
-            <ContratosProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
+        <ConfiguracoesProvider>
+          <CadastrosPublicosProvider>
+            <TransportadorasProvider>
+              <ContratosProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
                   <Routes>
-                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                    <Route path="/login" element={<Login />} />
+                    <Route path="/auth" element={<AuthRoutes />} />
                     <Route path="/cadastro-evento" element={<CadastroEvento />} />
                     <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
-                    <Route element={<MainLayout />}>
-                      <Route path="/dashboard" element={<Dashboard />} />
-                      <Route path="/eventos" element={<Eventos />} />
-                      <Route path="/clientes" element={<Clientes />} />
-                      <Route path="/estoque" element={<Estoque />} />
-                      <Route path="/demandas" element={<Demandas />} />
-                      <Route path="/transportadoras" element={<Transportadoras />} />
-                      <Route path="/financeiro" element={<Financeiro />} />
-                      <Route path="/contratos" element={<Contratos />} />
-                      <Route path="/relatorios" element={<Relatorios />} />
-                      <Route path="/configuracoes" element={<Configuracoes />} />
-                      <Route path="/cadastros-pendentes" element={<CadastrosPendentes />} />
-                    </Route>
-                    <Route path="*" element={<NotFound />} />
+                    <Route path="/*" element={<ProtectedRoutes />} />
                   </Routes>
-                </BrowserRouter>
-              </TooltipProvider>
-            </ContratosProvider>
-          </TransportadorasProvider>
-        </CadastrosPublicosProvider>
-      </ConfiguracoesProvider>
-    </AuthProvider>
+                </TooltipProvider>
+              </ContratosProvider>
+            </TransportadorasProvider>
+          </CadastrosPublicosProvider>
+        </ConfiguracoesProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 

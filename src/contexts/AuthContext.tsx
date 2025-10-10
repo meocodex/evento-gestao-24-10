@@ -1,4 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
 
 export type UserRole = 'admin' | 'comercial' | 'suporte';
 
@@ -11,56 +14,81 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  const login = async (email: string, password: string) => {
-    // Simulação de login - em produção seria uma chamada de API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Demo users
-    const demoUsers: Record<string, User> = {
-      'admin@gestao.com': {
-        id: '1',
-        name: 'Administrador',
-        email: 'admin@gestao.com',
-        role: 'admin',
-      },
-      'comercial@gestao.com': {
-        id: '2',
-        name: 'Maria Santos',
-        email: 'comercial@gestao.com',
-        role: 'comercial',
-      },
-      'suporte@gestao.com': {
-        id: '3',
-        name: 'Carlos Silva',
-        email: 'suporte@gestao.com',
-        role: 'suporte',
-      },
-    };
+  useEffect(() => {
+    // Setup auth listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        setSession(session);
+        
+        if (session?.user) {
+          // Fetch user profile and role
+          setTimeout(async () => {
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('nome')
+                .eq('id', session.user.id)
+                .single();
 
-    const foundUser = demoUsers[email];
-    if (foundUser && password === '123456') {
-      setUser(foundUser);
-    } else {
-      throw new Error('Credenciais inválidas');
-    }
-  };
+              const { data: roleData } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .single();
 
-  const logout = () => {
+              setUser({
+                id: session.user.id,
+                name: profile?.nome || 'Usuário',
+                email: session.user.email || '',
+                role: (roleData?.role as UserRole) || 'comercial',
+              });
+            } catch (error) {
+              console.error('Error fetching user data:', error);
+            } finally {
+              setLoading(false);
+            }
+          }, 0);
+        } else {
+          setUser(null);
+          setLoading(false);
+        }
+      }
+    );
+
+    // THEN check existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
     setUser(null);
+    navigate('/auth');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, logout, isAuthenticated: !!user, loading }}>
       {children}
     </AuthContext.Provider>
   );
