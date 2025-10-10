@@ -9,6 +9,7 @@ import { FinanceiroEvento } from './secoes/FinanceiroEvento';
 import { DemandasEvento } from './secoes/DemandasEvento';
 import { VendasEvento } from './secoes/VendasEvento';
 import { ConfiguracaoBarEvento } from './secoes/ConfiguracaoBarEvento';
+import { ContratosEvento } from './secoes/ContratosEvento';
 
 interface EventoDetailsDialogProps {
   evento: Evento | null;
@@ -29,7 +30,7 @@ export function EventoDetailsDialog({ evento, open, onOpenChange }: EventoDetail
         </DialogHeader>
 
         <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="dados">Dados</TabsTrigger>
             <TabsTrigger value="materiais">Materiais</TabsTrigger>
             <TabsTrigger value="operacao">Operação</TabsTrigger>
@@ -37,6 +38,7 @@ export function EventoDetailsDialog({ evento, open, onOpenChange }: EventoDetail
             <TabsTrigger value="financeiro" disabled={!permissions.canViewFinancial}>
               Financeiro
             </TabsTrigger>
+            <TabsTrigger value="contratos">Contratos</TabsTrigger>
             {(evento.tipoEvento === 'ingresso' || evento.tipoEvento === 'hibrido') && (
               <TabsTrigger value="vendas">Vendas</TabsTrigger>
             )}
@@ -63,6 +65,10 @@ export function EventoDetailsDialog({ evento, open, onOpenChange }: EventoDetail
 
           <TabsContent value="financeiro" className="mt-6">
             <FinanceiroEvento evento={evento} permissions={permissions} />
+          </TabsContent>
+
+          <TabsContent value="contratos" className="mt-6">
+            <ContratosEvento evento={evento} />
           </TabsContent>
 
           {(evento.tipoEvento === 'ingresso' || evento.tipoEvento === 'hibrido') && (

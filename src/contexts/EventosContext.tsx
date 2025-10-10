@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Evento, EventoFormData, MaterialChecklist, MaterialAntecipado, MaterialComTecnicos, Receita, Despesa, MembroEquipe, TimelineItem, StatusEvento } from '@/types/eventos';
+import { Evento, EventoFormData, MaterialChecklist, MaterialAntecipado, MaterialComTecnicos, Receita, Despesa, MembroEquipe, TimelineItem, StatusEvento, TipoReceita, StatusFinanceiro } from '@/types/eventos';
 import { mockEventos as initialMockEventos } from '@/lib/mock-data/eventos';
 import { materiaisEstoque } from '@/lib/mock-data/estoque';
 import { useToast } from '@/hooks/use-toast';
@@ -24,6 +24,8 @@ interface EventosContextType {
   adicionarObservacaoOperacional: (eventoId: string, observacao: string) => Promise<void>;
   uploadArquivo: (eventoId: string, tipo: 'plantaBaixa' | 'documentos' | 'fotosEvento', arquivo: File) => Promise<string>;
   vincularReembolsoADespesa: (eventoId: string, demandaId: string, descricao: string, valor: number, membroNome: string) => Promise<void>;
+  criarEventoDeProposta: (contratoId: string, dadosEvento: any) => string;
+  adicionarReceitasDeItens: (eventoId: string, itens: any[]) => void;
 }
 
 const EventosContext = createContext<EventosContextType | undefined>(undefined);
@@ -698,6 +700,116 @@ export function EventosProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const criarEventoDeProposta = (contratoId: string, dadosEvento: any): string => {
+    const novoEvento: Evento = {
+      id: `evento-${Date.now()}`,
+      nome: dadosEvento.nome,
+      dataInicio: dadosEvento.dataInicio,
+      dataFim: dadosEvento.dataFim,
+      horaInicio: '00:00',
+      horaFim: '23:59',
+      local: dadosEvento.local,
+      cidade: dadosEvento.cidade,
+      estado: dadosEvento.estado,
+      endereco: dadosEvento.local || '',
+      cliente: {
+        id: dadosEvento.clienteId,
+        nome: '',
+        tipo: 'CNPJ',
+        documento: '',
+        telefone: '',
+        email: '',
+        endereco: {
+          cep: '',
+          logradouro: '',
+          numero: '',
+          bairro: '',
+          cidade: dadosEvento.cidade,
+          estado: dadosEvento.estado
+        }
+      },
+      comercial: {
+        id: '1',
+        nome: 'Sistema',
+        email: 'sistema@empresa.com'
+      },
+      status: 'orcamento_enviado' as StatusEvento,
+      tipoEvento: dadosEvento.tipoEvento || 'ingresso',
+      tags: [],
+      descricao: dadosEvento.descricao,
+      checklist: [],
+      materiaisAlocados: {
+        antecipado: [],
+        comTecnicos: []
+      },
+      financeiro: {
+        receitas: [],
+        despesas: [],
+        cobrancas: []
+      },
+      equipe: [],
+      timeline: [{
+        id: `timeline-${Date.now()}`,
+        data: new Date().toISOString(),
+        tipo: 'criacao',
+        usuario: 'Sistema',
+        descricao: `Evento criado a partir da proposta/contrato`
+      }],
+      observacoesOperacionais: [],
+      criadoEm: new Date().toISOString(),
+      atualizadoEm: new Date().toISOString()
+    };
+
+    setEventos(prev => [...prev, novoEvento]);
+    
+    toast({
+      title: 'Evento criado',
+      description: `Evento "${novoEvento.nome}" criado com sucesso a partir da proposta.`
+    });
+
+    return novoEvento.id;
+  };
+
+  const adicionarReceitasDeItens = (eventoId: string, itens: any[]) => {
+    if (!itens || itens.length === 0) return;
+
+    setEventos(prev => prev.map(evento => {
+      if (evento.id === eventoId) {
+        const novasReceitas: Receita[] = itens.map(item => ({
+          id: `receita-${Date.now()}-${Math.random()}`,
+          descricao: item.descricao,
+          tipo: 'fixo' as TipoReceita,
+          quantidade: item.quantidade || 1,
+          valorUnitario: item.valorUnitario || item.valorTotal,
+          valor: item.valorTotal,
+          status: 'pendente' as StatusFinanceiro,
+          data: new Date().toISOString()
+        }));
+
+        return {
+          ...evento,
+          financeiro: {
+            ...evento.financeiro,
+            receitas: [...evento.financeiro.receitas, ...novasReceitas]
+          },
+          atualizadoEm: new Date().toISOString()
+        };
+      }
+      return evento;
+    }));
+
+    adicionarTimeline(
+      eventoId,
+      'financeiro',
+      `${itens.length} item(ns) da proposta adicionado(s) como receita`
+    );
+
+    toast({
+      title: 'Receitas adicionadas',
+      description: `${itens.length} receita(s) adicionada(s) ao evento.`
+    });
+  };
+
   return (
     <EventosContext.Provider value={{
       eventos,
@@ -718,7 +830,9 @@ export function EventosProvider({ children }: { children: ReactNode }) {
       removerMembroEquipe,
       adicionarObservacaoOperacional,
       uploadArquivo,
-      vincularReembolsoADespesa
+      vincularReembolsoADespesa,
+      criarEventoDeProposta,
+      adicionarReceitasDeItens
     }}>
       {children}
     </EventosContext.Provider>

@@ -2,6 +2,7 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 import { ContratoTemplate, Contrato, StatusContrato } from '@/types/contratos';
 import { templatesMock, contratosMock } from '@/lib/mock-data/contratos';
 import { toast } from '@/hooks/use-toast';
+import { gerarPDFComTimbrado } from '@/utils/pdfGenerator';
 
 interface ContratosContextData {
   templates: ContratoTemplate[];
@@ -121,14 +122,30 @@ export function ContratosProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const gerarPDF = (contratoId: string) => {
+  const gerarPDF = async (contratoId: string) => {
     const contrato = contratos.find((c) => c.id === contratoId);
     if (!contrato) return;
 
-    toast({
-      title: 'PDF gerado',
-      description: `PDF do contrato ${contrato.numero} gerado com sucesso.`,
-    });
+    try {
+      // Buscar template para obter papel timbrado
+      const template = templates.find(t => t.id === contrato.templateId);
+      await gerarPDFComTimbrado(contrato, {
+        papelTimbrado: template?.papelTimbrado,
+        margens: template?.margens,
+      });
+
+      toast({
+        title: 'PDF gerado',
+        description: `PDF do ${contrato.status === 'proposta' ? 'proposta' : 'contrato'} ${contrato.numero} baixado com sucesso.`,
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: 'Erro ao gerar PDF',
+        description: 'Não foi possível gerar o arquivo PDF.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const aprovarProposta = (contratoId: string, observacoes?: string) => {
@@ -158,18 +175,32 @@ export function ContratosProvider({ children }: { children: ReactNode }) {
     opcao: 'vincular' | 'criar',
     eventoId?: string,
     dadosEvento?: any,
-    adicionarReceitas: boolean = true
+    adicionarReceitas: boolean = true,
+    criarEventoDeProposta?: (contratoId: string, dadosEvento: any) => string,
+    adicionarReceitasDeItens?: (eventoId: string, itens: any[]) => void
   ) => {
     const contrato = contratos.find(c => c.id === contratoId);
     if (!contrato) return;
 
-    // Aqui você integraria com EventosContext para criar evento e adicionar receitas
+    let finalEventoId = eventoId;
+
+    // Criar novo evento se necessário
+    if (opcao === 'criar' && dadosEvento && criarEventoDeProposta) {
+      finalEventoId = criarEventoDeProposta(contratoId, dadosEvento);
+    }
+
+    // Adicionar receitas ao evento se solicitado
+    if (adicionarReceitas && contrato.itens && finalEventoId && adicionarReceitasDeItens) {
+      adicionarReceitasDeItens(finalEventoId, contrato.itens);
+    }
+
+    // Atualizar status do contrato
     setContratos(contratos.map(c =>
       c.id === contratoId
         ? {
             ...c,
             status: 'rascunho',
-            eventoId: eventoId || `evento-${Date.now()}`,
+            eventoId: finalEventoId,
             aprovacoesHistorico: [
               ...(c.aprovacoesHistorico || []),
               {
@@ -186,7 +217,7 @@ export function ContratosProvider({ children }: { children: ReactNode }) {
 
     toast({
       title: 'Proposta convertida',
-      description: 'A proposta foi convertida em contrato com sucesso.',
+      description: `A proposta foi convertida em contrato ${opcao === 'criar' ? 'e evento criado' : 'e vinculada ao evento'} com sucesso.`,
     });
   };
 

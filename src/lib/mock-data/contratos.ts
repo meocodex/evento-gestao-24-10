@@ -54,6 +54,85 @@ Valor: {{valor_total}}`,
 
 export const contratosMock: Contrato[] = [
   {
+    id: 'proposta-001',
+    templateId: 'template-1',
+    numero: 'PROP-2024-001',
+    clienteId: '1',
+    titulo: 'Proposta Festival Rock City',
+    tipo: 'evento',
+    status: 'aprovada',
+    conteudo: 'Proposta comercial para fornecimento de equipamentos de som e iluminação',
+    valor: 85000,
+    validade: '30 dias',
+    condicoesPagamento: '50% antecipado, 50% após o evento',
+    prazoExecucao: '15 dias',
+    garantia: '90 dias',
+    dadosEvento: {
+      nome: 'Festival Rock City',
+      dataInicio: '2024-06-15',
+      dataFim: '2024-06-16',
+      local: 'Parque Municipal',
+      cidade: 'São Paulo',
+      estado: 'SP',
+      descricao: 'Festival de música rock com 2 dias de duração'
+    },
+    itens: [
+      {
+        id: 'item-1',
+        tipo: 'servico',
+        descricao: 'Sistema de som completo (16.000W)',
+        quantidade: 1,
+        valorUnitario: 35000,
+        valorTotal: 35000,
+        unidade: 'un'
+      },
+      {
+        id: 'item-2',
+        tipo: 'servico',
+        descricao: 'Iluminação cênica (Moving heads + LEDs)',
+        quantidade: 1,
+        valorUnitario: 25000,
+        valorTotal: 25000,
+        unidade: 'un'
+      },
+      {
+        id: 'item-3',
+        tipo: 'servico',
+        descricao: 'Equipe técnica (2 dias)',
+        quantidade: 8,
+        valorUnitario: 3125,
+        valorTotal: 25000,
+        unidade: 'pessoa'
+      }
+    ],
+    assinaturas: [
+      {
+        parte: 'Contratante',
+        nome: 'João Silva',
+        email: 'joao@cliente.com',
+        assinado: true,
+        dataAssinatura: new Date().toISOString()
+      },
+      {
+        parte: 'Contratada',
+        nome: 'Empresa Eventos',
+        email: 'contratos@empresa.com',
+        assinado: false
+      }
+    ],
+    anexos: [],
+    criadoEm: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    atualizadoEm: new Date().toISOString(),
+    aprovacoesHistorico: [
+      {
+        data: new Date().toISOString(),
+        acao: 'aprovada',
+        usuario: 'João Silva',
+        observacoes: 'Proposta aprovada pelo cliente'
+      }
+    ]
+  },
+  {
     id: '1',
     templateId: '1',
     numero: 'CTR-2024-001',

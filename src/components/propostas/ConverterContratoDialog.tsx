@@ -9,6 +9,7 @@ import { useContratos } from '@/contexts/ContratosContext';
 import { useEventos } from '@/contexts/EventosContext';
 import { Contrato } from '@/types/contratos';
 import { FileCheck, Calendar, MapPin } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface ConverterContratoDialogProps {
   contrato: Contrato | null;
@@ -28,7 +29,14 @@ export function ConverterContratoDialog({ contrato, open, onOpenChange }: Conver
   const eventosDoCliente = eventos.filter(e => e.cliente.id === contrato.clienteId);
 
   const handleConverter = async () => {
-    if (opcao === 'vincular' && !eventoId) return;
+    if (opcao === 'vincular' && !eventoId) {
+      toast({
+        title: 'Erro',
+        description: 'Selecione um evento para vincular',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     await converterPropostaEmContrato(
       contrato.id,
