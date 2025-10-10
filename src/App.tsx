@@ -23,6 +23,8 @@ import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
 import CadastrosPendentes from "./pages/CadastrosPendentes";
 import NotFound from "./pages/NotFound";
+import CadastroEvento from "./pages/public/CadastroEvento";
+import AcompanharCadastro from "./pages/public/AcompanharCadastro";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +42,8 @@ const App = () => (
                   <Routes>
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/cadastro-evento" element={<CadastroEvento />} />
+                    <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
                     <Route element={<MainLayout />}>
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/eventos" element={<Eventos />} />

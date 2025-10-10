@@ -94,6 +94,12 @@ export function formatarCEP(cep: string): string {
   return cepLimpo.replace(/(\d{5})(\d{3})/, '$1-$2');
 }
 
+export const estados = [
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
+  'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
+  'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
+];
+
 export const clienteSchema = z.object({
   nome: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100, 'Nome deve ter no máximo 100 caracteres'),
   tipo: z.enum(['CPF', 'CNPJ']),
