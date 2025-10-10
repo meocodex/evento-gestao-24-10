@@ -14,6 +14,83 @@ export type Database = {
   }
   public: {
     Tables: {
+      cadastros_publicos: {
+        Row: {
+          cidade: string
+          configuracao_bar: Json | null
+          configuracao_ingresso: Json | null
+          created_at: string | null
+          data_fim: string
+          data_inicio: string
+          endereco: string
+          estado: string
+          evento_id: string | null
+          hora_fim: string
+          hora_inicio: string
+          id: string
+          local: string
+          nome: string
+          observacoes_internas: string | null
+          produtor: Json
+          protocolo: string
+          status: string
+          tipo_evento: Database["public"]["Enums"]["tipo_evento"]
+          updated_at: string | null
+        }
+        Insert: {
+          cidade: string
+          configuracao_bar?: Json | null
+          configuracao_ingresso?: Json | null
+          created_at?: string | null
+          data_fim: string
+          data_inicio: string
+          endereco: string
+          estado: string
+          evento_id?: string | null
+          hora_fim: string
+          hora_inicio: string
+          id?: string
+          local: string
+          nome: string
+          observacoes_internas?: string | null
+          produtor: Json
+          protocolo: string
+          status?: string
+          tipo_evento: Database["public"]["Enums"]["tipo_evento"]
+          updated_at?: string | null
+        }
+        Update: {
+          cidade?: string
+          configuracao_bar?: Json | null
+          configuracao_ingresso?: Json | null
+          created_at?: string | null
+          data_fim?: string
+          data_inicio?: string
+          endereco?: string
+          estado?: string
+          evento_id?: string | null
+          hora_fim?: string
+          hora_inicio?: string
+          id?: string
+          local?: string
+          nome?: string
+          observacoes_internas?: string | null
+          produtor?: Json
+          protocolo?: string
+          status?: string
+          tipo_evento?: Database["public"]["Enums"]["tipo_evento"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cadastros_publicos_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clientes: {
         Row: {
           created_at: string | null
@@ -55,6 +132,398 @@ export type Database = {
           whatsapp?: string | null
         }
         Relationships: []
+      }
+      contratos: {
+        Row: {
+          anexos: string[] | null
+          aprovacoes_historico: Json | null
+          assinaturas: Json
+          cliente_id: string | null
+          condicoes_pagamento: string | null
+          conteudo: string
+          created_at: string | null
+          dados_evento: Json | null
+          data_fim: string | null
+          data_inicio: string | null
+          evento_id: string | null
+          garantia: string | null
+          id: string
+          itens: Json | null
+          numero: string
+          observacoes: string | null
+          observacoes_comerciais: string | null
+          prazo_execucao: string | null
+          status: Database["public"]["Enums"]["status_contrato"]
+          template_id: string | null
+          tipo: string
+          titulo: string
+          updated_at: string | null
+          validade: string | null
+          valor: number | null
+        }
+        Insert: {
+          anexos?: string[] | null
+          aprovacoes_historico?: Json | null
+          assinaturas?: Json
+          cliente_id?: string | null
+          condicoes_pagamento?: string | null
+          conteudo: string
+          created_at?: string | null
+          dados_evento?: Json | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          evento_id?: string | null
+          garantia?: string | null
+          id?: string
+          itens?: Json | null
+          numero: string
+          observacoes?: string | null
+          observacoes_comerciais?: string | null
+          prazo_execucao?: string | null
+          status?: Database["public"]["Enums"]["status_contrato"]
+          template_id?: string | null
+          tipo: string
+          titulo: string
+          updated_at?: string | null
+          validade?: string | null
+          valor?: number | null
+        }
+        Update: {
+          anexos?: string[] | null
+          aprovacoes_historico?: Json | null
+          assinaturas?: Json
+          cliente_id?: string | null
+          condicoes_pagamento?: string | null
+          conteudo?: string
+          created_at?: string | null
+          dados_evento?: Json | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          evento_id?: string | null
+          garantia?: string | null
+          id?: string
+          itens?: Json | null
+          numero?: string
+          observacoes?: string | null
+          observacoes_comerciais?: string | null
+          prazo_execucao?: string | null
+          status?: Database["public"]["Enums"]["status_contrato"]
+          template_id?: string | null
+          tipo?: string
+          titulo?: string
+          updated_at?: string | null
+          validade?: string | null
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contratos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "contratos_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contratos_templates: {
+        Row: {
+          conteudo: string
+          created_at: string | null
+          descricao: string
+          id: string
+          margens: Json | null
+          nome: string
+          papel_timbrado: string | null
+          status: string
+          tipo: string
+          updated_at: string | null
+          variaveis: string[] | null
+          versao: number
+        }
+        Insert: {
+          conteudo: string
+          created_at?: string | null
+          descricao: string
+          id?: string
+          margens?: Json | null
+          nome: string
+          papel_timbrado?: string | null
+          status?: string
+          tipo: string
+          updated_at?: string | null
+          variaveis?: string[] | null
+          versao?: number
+        }
+        Update: {
+          conteudo?: string
+          created_at?: string | null
+          descricao?: string
+          id?: string
+          margens?: Json | null
+          nome?: string
+          papel_timbrado?: string | null
+          status?: string
+          tipo?: string
+          updated_at?: string | null
+          variaveis?: string[] | null
+          versao?: number
+        }
+        Relationships: []
+      }
+      demandas: {
+        Row: {
+          arquivada: boolean | null
+          categoria: Database["public"]["Enums"]["categoria_demanda"]
+          created_at: string | null
+          dados_reembolso: Json | null
+          data_conclusao: string | null
+          descricao: string
+          evento_id: string | null
+          evento_nome: string | null
+          id: string
+          prazo: string | null
+          prioridade: Database["public"]["Enums"]["prioridade_demanda"]
+          resolvida: boolean | null
+          responsavel: string | null
+          responsavel_id: string | null
+          solicitante: string
+          solicitante_id: string | null
+          status: Database["public"]["Enums"]["status_demanda"]
+          tags: string[] | null
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          arquivada?: boolean | null
+          categoria: Database["public"]["Enums"]["categoria_demanda"]
+          created_at?: string | null
+          dados_reembolso?: Json | null
+          data_conclusao?: string | null
+          descricao: string
+          evento_id?: string | null
+          evento_nome?: string | null
+          id?: string
+          prazo?: string | null
+          prioridade?: Database["public"]["Enums"]["prioridade_demanda"]
+          resolvida?: boolean | null
+          responsavel?: string | null
+          responsavel_id?: string | null
+          solicitante: string
+          solicitante_id?: string | null
+          status?: Database["public"]["Enums"]["status_demanda"]
+          tags?: string[] | null
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          arquivada?: boolean | null
+          categoria?: Database["public"]["Enums"]["categoria_demanda"]
+          created_at?: string | null
+          dados_reembolso?: Json | null
+          data_conclusao?: string | null
+          descricao?: string
+          evento_id?: string | null
+          evento_nome?: string | null
+          id?: string
+          prazo?: string | null
+          prioridade?: Database["public"]["Enums"]["prioridade_demanda"]
+          resolvida?: boolean | null
+          responsavel?: string | null
+          responsavel_id?: string | null
+          solicitante?: string
+          solicitante_id?: string | null
+          status?: Database["public"]["Enums"]["status_demanda"]
+          tags?: string[] | null
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demandas_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demandas_anexos: {
+        Row: {
+          created_at: string | null
+          demanda_id: string
+          id: string
+          nome: string
+          tamanho: number
+          tipo: string
+          upload_por: string
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          demanda_id: string
+          id?: string
+          nome: string
+          tamanho: number
+          tipo: string
+          upload_por: string
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          demanda_id?: string
+          id?: string
+          nome?: string
+          tamanho?: number
+          tipo?: string
+          upload_por?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demandas_anexos_demanda_id_fkey"
+            columns: ["demanda_id"]
+            isOneToOne: false
+            referencedRelation: "demandas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      demandas_comentarios: {
+        Row: {
+          autor: string
+          autor_id: string | null
+          conteudo: string
+          created_at: string | null
+          demanda_id: string
+          id: string
+          tipo: string
+        }
+        Insert: {
+          autor: string
+          autor_id?: string | null
+          conteudo: string
+          created_at?: string | null
+          demanda_id: string
+          id?: string
+          tipo: string
+        }
+        Update: {
+          autor?: string
+          autor_id?: string | null
+          conteudo?: string
+          created_at?: string | null
+          demanda_id?: string
+          id?: string
+          tipo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demandas_comentarios_demanda_id_fkey"
+            columns: ["demanda_id"]
+            isOneToOne: false
+            referencedRelation: "demandas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      envios: {
+        Row: {
+          comprovante_pagamento: string | null
+          created_at: string | null
+          data_coleta: string | null
+          data_entrega: string | null
+          data_entrega_prevista: string
+          despesa_evento_id: string | null
+          destino: string
+          evento_id: string | null
+          forma_pagamento: string
+          id: string
+          observacoes: string | null
+          origem: string
+          rastreio: string | null
+          status: string
+          tipo: string
+          transportadora_id: string | null
+          updated_at: string | null
+          valor: number | null
+        }
+        Insert: {
+          comprovante_pagamento?: string | null
+          created_at?: string | null
+          data_coleta?: string | null
+          data_entrega?: string | null
+          data_entrega_prevista: string
+          despesa_evento_id?: string | null
+          destino: string
+          evento_id?: string | null
+          forma_pagamento: string
+          id?: string
+          observacoes?: string | null
+          origem: string
+          rastreio?: string | null
+          status?: string
+          tipo: string
+          transportadora_id?: string | null
+          updated_at?: string | null
+          valor?: number | null
+        }
+        Update: {
+          comprovante_pagamento?: string | null
+          created_at?: string | null
+          data_coleta?: string | null
+          data_entrega?: string | null
+          data_entrega_prevista?: string
+          despesa_evento_id?: string | null
+          destino?: string
+          evento_id?: string | null
+          forma_pagamento?: string
+          id?: string
+          observacoes?: string | null
+          origem?: string
+          rastreio?: string | null
+          status?: string
+          tipo?: string
+          transportadora_id?: string | null
+          updated_at?: string | null
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "envios_despesa_evento_id_fkey"
+            columns: ["despesa_evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos_despesas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "envios_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "envios_transportadora_id_fkey"
+            columns: ["transportadora_id"]
+            isOneToOne: false
+            referencedRelation: "transportadoras"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       eventos: {
         Row: {
@@ -489,6 +958,89 @@ export type Database = {
           },
         ]
       }
+      materiais_estoque: {
+        Row: {
+          categoria: string
+          created_at: string | null
+          descricao: string | null
+          foto: string | null
+          id: string
+          nome: string
+          quantidade_disponivel: number
+          quantidade_total: number
+          updated_at: string | null
+          valor_unitario: number | null
+        }
+        Insert: {
+          categoria: string
+          created_at?: string | null
+          descricao?: string | null
+          foto?: string | null
+          id: string
+          nome: string
+          quantidade_disponivel?: number
+          quantidade_total?: number
+          updated_at?: string | null
+          valor_unitario?: number | null
+        }
+        Update: {
+          categoria?: string
+          created_at?: string | null
+          descricao?: string | null
+          foto?: string | null
+          id?: string
+          nome?: string
+          quantidade_disponivel?: number
+          quantidade_total?: number
+          updated_at?: string | null
+          valor_unitario?: number | null
+        }
+        Relationships: []
+      }
+      materiais_seriais: {
+        Row: {
+          created_at: string | null
+          data_aquisicao: string | null
+          localizacao: string
+          material_id: string
+          numero: string
+          observacoes: string | null
+          status: Database["public"]["Enums"]["status_serial"]
+          ultima_manutencao: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_aquisicao?: string | null
+          localizacao: string
+          material_id: string
+          numero: string
+          observacoes?: string | null
+          status?: Database["public"]["Enums"]["status_serial"]
+          ultima_manutencao?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_aquisicao?: string | null
+          localizacao?: string
+          material_id?: string
+          numero?: string
+          observacoes?: string | null
+          status?: Database["public"]["Enums"]["status_serial"]
+          ultima_manutencao?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materiais_seriais_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materiais_estoque"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -518,6 +1070,98 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      transportadoras: {
+        Row: {
+          cnpj: string
+          created_at: string | null
+          dados_bancarios: Json | null
+          email: string
+          endereco: Json
+          id: string
+          nome: string
+          observacoes: string | null
+          razao_social: string
+          responsavel: string
+          status: string
+          telefone: string
+          updated_at: string | null
+        }
+        Insert: {
+          cnpj: string
+          created_at?: string | null
+          dados_bancarios?: Json | null
+          email: string
+          endereco: Json
+          id?: string
+          nome: string
+          observacoes?: string | null
+          razao_social: string
+          responsavel: string
+          status?: string
+          telefone: string
+          updated_at?: string | null
+        }
+        Update: {
+          cnpj?: string
+          created_at?: string | null
+          dados_bancarios?: Json | null
+          email?: string
+          endereco?: Json
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          razao_social?: string
+          responsavel?: string
+          status?: string
+          telefone?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      transportadoras_rotas: {
+        Row: {
+          ativa: boolean | null
+          cidade_destino: string
+          created_at: string | null
+          estado_destino: string
+          id: string
+          prazo_entrega: number
+          transportadora_id: string
+          updated_at: string | null
+          valor_base: number | null
+        }
+        Insert: {
+          ativa?: boolean | null
+          cidade_destino: string
+          created_at?: string | null
+          estado_destino: string
+          id?: string
+          prazo_entrega: number
+          transportadora_id: string
+          updated_at?: string | null
+          valor_base?: number | null
+        }
+        Update: {
+          ativa?: boolean | null
+          cidade_destino?: string
+          created_at?: string | null
+          estado_destino?: string
+          id?: string
+          prazo_entrega?: number
+          transportadora_id?: string
+          updated_at?: string | null
+          valor_base?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transportadoras_rotas_transportadora_id_fkey"
+            columns: ["transportadora_id"]
+            isOneToOne: false
+            referencedRelation: "transportadoras"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
