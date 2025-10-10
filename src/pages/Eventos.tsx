@@ -110,9 +110,9 @@ export default function Eventos() {
   };
 
   return (
-    <div className="p-6 space-y-6 animate-fade-in">
+    <div className="p-6 space-y-4 animate-fade-in">
       {/* Header moderno com gradiente sutil */}
-      <div className="relative overflow-hidden rounded-2xl p-8 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent border border-primary/20">
+      <div className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent border border-primary/20">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
         <div className="relative z-10">
           <h1 className="text-4xl font-display font-bold mb-2">Eventos</h1>
@@ -148,7 +148,7 @@ export default function Eventos() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <Input
               placeholder="Buscar eventos por nome, cliente..."
-              className="pl-10 h-11 border-2 focus:border-primary/50 transition-all"
+              className="pl-10 h-9 border-2 focus:border-primary/50 transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -156,7 +156,7 @@ export default function Eventos() {
 
           <div className="flex gap-2">
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[200px] h-11">
+              <SelectTrigger className="w-[200px] h-9">
                 <ArrowUpDown className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
@@ -180,7 +180,7 @@ export default function Eventos() {
               <Button
                 variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                 size="icon"
-                className="rounded-none h-11 w-11"
+                className="rounded-none h-9 w-9"
                 onClick={() => setViewMode('grid')}
               >
                 <Grid3x3 className="h-4 w-4" />
@@ -188,7 +188,7 @@ export default function Eventos() {
               <Button
                 variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                 size="icon"
-                className="rounded-none h-11 w-11"
+                className="rounded-none h-9 w-9"
                 onClick={() => setViewMode('list')}
               >
                 <List className="h-4 w-4" />
@@ -200,7 +200,7 @@ export default function Eventos() {
                 onClick={() => setNovoEventoOpen(true)}
                 variant="gradient"
                 size="lg"
-                className="shadow-lg h-11"
+                className="shadow-lg h-9"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Novo Evento
