@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { FileText, Plus, Search, Eye, Edit, MoreVertical } from 'lucide-react';
+import { FileText, Plus, Search, Eye, Edit, MoreVertical, FileSignature, CheckCircle2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,38 +7,53 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useContratos } from '@/contexts/ContratosContext';
 import { NovoContratoDialog } from '@/components/contratos/NovoContratoDialog';
-import { DetalhesContratoDialog } from '@/components/contratos/DetalhesContratoDialog';
 import { EditarContratoDialog } from '@/components/contratos/EditarContratoDialog';
+import { DetalhesContratoDialog } from '@/components/contratos/DetalhesContratoDialog';
 import { NovoTemplateDialog } from '@/components/contratos/NovoTemplateDialog';
-import { DetalhesTemplateDialog } from '@/components/contratos/DetalhesTemplateDialog';
 import { EditarTemplateDialog } from '@/components/contratos/EditarTemplateDialog';
+import { DetalhesTemplateDialog } from '@/components/contratos/DetalhesTemplateDialog';
 import { SimularAssinaturaDialog } from '@/components/contratos/SimularAssinaturaDialog';
-import { Contrato, ContratoTemplate } from '@/types/contratos';
+import { NovaPropostaDialog } from '@/components/propostas/NovaPropostaDialog';
+import { ConverterContratoDialog } from '@/components/propostas/ConverterContratoDialog';
+import { Contrato, ContratoTemplate, StatusContrato } from '@/types/contratos';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function Contratos() {
   const { contratos, templates } = useContratos();
   
   const [searchContratos, setSearchContratos] = useState('');
   const [searchTemplates, setSearchTemplates] = useState('');
+  const [filtroStatus, setFiltroStatus] = useState<string>('todos');
   
-  const [novoContratoOpen, setNovoContratoOpen] = useState(false);
-  const [detalhesContratoOpen, setDetalhesContratoOpen] = useState(false);
-  const [editarContratoOpen, setEditarContratoOpen] = useState(false);
-  const [novoTemplateOpen, setNovoTemplateOpen] = useState(false);
-  const [detalhesTemplateOpen, setDetalhesTemplateOpen] = useState(false);
-  const [editarTemplateOpen, setEditarTemplateOpen] = useState(false);
-  const [simularAssinaturaOpen, setSimularAssinaturaOpen] = useState(false);
-  
+  const [mostrarNovoContrato, setMostrarNovoContrato] = useState(false);
+  const [mostrarNovaProposta, setMostrarNovaProposta] = useState(false);
+  const [mostrarNovoTemplate, setMostrarNovoTemplate] = useState(false);
+  const [mostrarDetalhesContrato, setMostrarDetalhesContrato] = useState(false);
+  const [mostrarDetalhesTemplate, setMostrarDetalhesTemplate] = useState(false);
+  const [mostrarEditarContrato, setMostrarEditarContrato] = useState(false);
+  const [mostrarEditarTemplate, setMostrarEditarTemplate] = useState(false);
+  const [mostrarSimularAssinatura, setMostrarSimularAssinatura] = useState(false);
+  const [mostrarConverterContrato, setMostrarConverterContrato] = useState(false);
   const [contratoSelecionado, setContratoSelecionado] = useState<Contrato | null>(null);
   const [templateSelecionado, setTemplateSelecionado] = useState<ContratoTemplate | null>(null);
 
   const contratosFiltrados = useMemo(() => {
-    return contratos.filter(c => 
+    let filtered = contratos.filter(c => 
       c.titulo.toLowerCase().includes(searchContratos.toLowerCase()) ||
       c.numero.toLowerCase().includes(searchContratos.toLowerCase())
     );
-  }, [contratos, searchContratos]);
+
+    if (filtroStatus === 'propostas') {
+      filtered = filtered.filter(c => ['proposta', 'em_negociacao', 'aprovada'].includes(c.status));
+    } else if (filtroStatus === 'contratos') {
+      filtered = filtered.filter(c => ['rascunho', 'em_revisao', 'aguardando_assinatura', 'assinado'].includes(c.status));
+    } else if (filtroStatus !== 'todos') {
+      filtered = filtered.filter(c => c.status === filtroStatus);
+    }
+
+    return filtered;
+  }, [contratos, searchContratos, filtroStatus]);
 
   const templatesFiltrados = useMemo(() => {
     return templates.filter(t => 
@@ -47,30 +62,52 @@ export default function Contratos() {
     );
   }, [templates, searchTemplates]);
 
-  const statusColors = {
+  const statusColors: Record<StatusContrato, string> = {
+    proposta: 'bg-blue-500',
+    em_negociacao: 'bg-purple-500',
+    aprovada: 'bg-green-500',
     rascunho: 'bg-gray-500',
     em_revisao: 'bg-blue-500',
     aguardando_assinatura: 'bg-yellow-500',
     assinado: 'bg-green-500',
     cancelado: 'bg-red-500',
+    expirado: 'bg-gray-400',
   };
+
+  const statusLabels: Record<StatusContrato, string> = {
+    proposta: 'Proposta',
+    em_negociacao: 'Em Negociação',
+    aprovada: 'Aprovada',
+    rascunho: 'Rascunho',
+    em_revisao: 'Em Revisão',
+    aguardando_assinatura: 'Aguardando Assinatura',
+    assinado: 'Assinado',
+    cancelado: 'Cancelado',
+    expirado: 'Expirado',
+  };
+
+  const totalPropostas = contratos.filter(c => ['proposta', 'em_negociacao', 'aprovada'].includes(c.status)).length;
 
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Contratos</h1>
-            <p className="text-muted-foreground">Gestão de contratos e templates</p>
+            <h1 className="text-3xl font-bold">Contratos & Propostas</h1>
+            <p className="text-muted-foreground">Gestão de propostas comerciais, contratos e templates</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setNovoTemplateOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Template
+            <Button onClick={() => setMostrarNovaProposta(true)}>
+              <FileText className="h-4 w-4" />
+              Nova Proposta
             </Button>
-            <Button onClick={() => setNovoContratoOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
+            <Button onClick={() => setMostrarNovoContrato(true)} variant="outline">
+              <FileSignature className="h-4 w-4" />
               Novo Contrato
+            </Button>
+            <Button onClick={() => setMostrarNovoTemplate(true)} variant="outline">
+              <FileSignature className="h-4 w-4" />
+              Novo Template
             </Button>
           </div>
         </div>
@@ -78,10 +115,10 @@ export default function Contratos() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Propostas</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{contratos.length}</div>
+              <div className="text-2xl font-bold text-blue-600">{totalPropostas}</div>
             </CardContent>
           </Card>
           <Card>
@@ -116,88 +153,127 @@ export default function Contratos() {
 
         <Tabs defaultValue="contratos">
           <TabsList>
-            <TabsTrigger value="contratos">Contratos</TabsTrigger>
+            <TabsTrigger value="contratos">Contratos & Propostas</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
           </TabsList>
 
           <TabsContent value="contratos" className="space-y-4">
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar contratos..."
+                  placeholder="Buscar contratos e propostas..."
                   value={searchContratos}
                   onChange={(e) => setSearchContratos(e.target.value)}
                   className="pl-9"
                 />
               </div>
+              <Select value={filtroStatus} onValueChange={setFiltroStatus}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="todos">Todos</SelectItem>
+                  <SelectItem value="propostas">📄 Propostas</SelectItem>
+                  <SelectItem value="contratos">📜 Contratos</SelectItem>
+                  <SelectItem value="proposta">Proposta</SelectItem>
+                  <SelectItem value="em_negociacao">Em Negociação</SelectItem>
+                  <SelectItem value="aprovada">Aprovada</SelectItem>
+                  <SelectItem value="assinado">Assinado</SelectItem>
+                  <SelectItem value="aguardando_assinatura">Aguardando</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+
             <div className="grid gap-4">
-              {contratosFiltrados.map((contrato) => (
-                <Card key={contrato.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        <div>
-                          <CardTitle className="text-lg">{contrato.titulo}</CardTitle>
-                          <p className="text-sm text-muted-foreground">{contrato.numero}</p>
+              {contratosFiltrados.map((contrato) => {
+                const isProposta = ['proposta', 'em_negociacao', 'aprovada'].includes(contrato.status);
+                const Icon = isProposta ? FileText : FileSignature;
+                
+                return (
+                  <Card key={contrato.id} className="hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-5 w-5" />
+                          <div>
+                            <CardTitle className="text-lg">{contrato.titulo}</CardTitle>
+                            <p className="text-sm text-muted-foreground">{contrato.numero}</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge className={statusColors[contrato.status]}>
-                          {contrato.status.replace('_', ' ')}
-                        </Badge>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => {
-                              setContratoSelecionado(contrato);
-                              setDetalhesContratoOpen(true);
-                            }}>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Ver Detalhes
-                            </DropdownMenuItem>
-                            {(contrato.status === 'rascunho' || contrato.status === 'em_revisao') && (
+                        <div className="flex items-center gap-2">
+                          <Badge className={statusColors[contrato.status]}>
+                            {statusLabels[contrato.status]}
+                          </Badge>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={() => {
                                 setContratoSelecionado(contrato);
-                                setEditarContratoOpen(true);
+                                setMostrarDetalhesContrato(true);
                               }}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Editar
+                                <Eye className="mr-2 h-4 w-4" />
+                                Ver Detalhes
                               </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Tipo:</span> {contrato.tipo}
-                      </div>
-                      {contrato.valor && (
-                        <div>
-                          <span className="text-muted-foreground">Valor:</span> R$ {contrato.valor.toLocaleString()}
+                              {(contrato.status === 'rascunho' || contrato.status === 'em_revisao' || contrato.status === 'proposta') && (
+                                <DropdownMenuItem onClick={() => {
+                                  setContratoSelecionado(contrato);
+                                  setMostrarEditarContrato(true);
+                                }}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Editar
+                                </DropdownMenuItem>
+                              )}
+                              {contrato.status === 'aprovada' && (
+                                <DropdownMenuItem onClick={() => {
+                                  setContratoSelecionado(contrato);
+                                  setMostrarConverterContrato(true);
+                                }}>
+                                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                                  Converter em Contrato
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
-                      )}
-                      <div>
-                        <span className="text-muted-foreground">Assinaturas:</span>{' '}
-                        {contrato.assinaturas.filter(a => a.assinado).length}/{contrato.assinaturas.length}
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Tipo:</span>{' '}
+                          <span className="capitalize">{contrato.tipo}</span>
+                        </div>
+                        {contrato.valor && (
+                          <div>
+                            <span className="text-muted-foreground">Valor:</span>{' '}
+                            {contrato.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                          </div>
+                        )}
+                        {isProposta && contrato.itens && (
+                          <div>
+                            <span className="text-muted-foreground">Itens:</span> {contrato.itens.length}
+                          </div>
+                        )}
+                        {!isProposta && (
+                          <div>
+                            <span className="text-muted-foreground">Assinaturas:</span>{' '}
+                            {contrato.assinaturas.filter(a => a.assinado).length}/{contrato.assinaturas.length}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
               {contratosFiltrados.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                   <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhum contrato encontrado</p>
+                  <p>Nenhum contrato ou proposta encontrado</p>
                 </div>
               )}
             </div>
@@ -233,14 +309,14 @@ export default function Contratos() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => {
                             setTemplateSelecionado(template);
-                            setDetalhesTemplateOpen(true);
+                            setMostrarDetalhesTemplate(true);
                           }}>
                             <Eye className="mr-2 h-4 w-4" />
                             Ver Detalhes
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => {
                             setTemplateSelecionado(template);
-                            setEditarTemplateOpen(true);
+                            setMostrarEditarTemplate(true);
                           }}>
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
@@ -255,6 +331,11 @@ export default function Contratos() {
                       <Badge variant={template.status === 'ativo' ? 'default' : 'secondary'}>
                         {template.status}
                       </Badge>
+                      {template.papelTimbrado && (
+                        <Badge variant="outline">
+                          📄 Com Timbrado
+                        </Badge>
+                      )}
                       <span className="text-xs text-muted-foreground ml-auto">
                         v{template.versao}
                       </span>
@@ -274,39 +355,49 @@ export default function Contratos() {
       </div>
 
       {/* Dialogs */}
-      <NovoContratoDialog open={novoContratoOpen} onOpenChange={setNovoContratoOpen} />
+      <NovoContratoDialog open={mostrarNovoContrato} onOpenChange={setMostrarNovoContrato} />
+      <NovaPropostaDialog open={mostrarNovaProposta} onOpenChange={setMostrarNovaProposta} />
       <DetalhesContratoDialog
-        open={detalhesContratoOpen}
-        onOpenChange={setDetalhesContratoOpen}
+        open={mostrarDetalhesContrato}
+        onOpenChange={setMostrarDetalhesContrato}
         contrato={contratoSelecionado}
         onEdit={() => {
-          setDetalhesContratoOpen(false);
-          setEditarContratoOpen(true);
+          setMostrarDetalhesContrato(false);
+          setMostrarEditarContrato(true);
+        }}
+        onConverter={() => {
+          setMostrarDetalhesContrato(false);
+          setMostrarConverterContrato(true);
         }}
       />
       <EditarContratoDialog
-        open={editarContratoOpen}
-        onOpenChange={setEditarContratoOpen}
+        open={mostrarEditarContrato}
+        onOpenChange={setMostrarEditarContrato}
         contrato={contratoSelecionado}
       />
-      <NovoTemplateDialog open={novoTemplateOpen} onOpenChange={setNovoTemplateOpen} />
+      <NovoTemplateDialog open={mostrarNovoTemplate} onOpenChange={setMostrarNovoTemplate} />
       <DetalhesTemplateDialog
-        open={detalhesTemplateOpen}
-        onOpenChange={setDetalhesTemplateOpen}
+        open={mostrarDetalhesTemplate}
+        onOpenChange={setMostrarDetalhesTemplate}
         template={templateSelecionado}
         onEdit={() => {
-          setDetalhesTemplateOpen(false);
-          setEditarTemplateOpen(true);
+          setMostrarDetalhesTemplate(false);
+          setMostrarEditarTemplate(true);
         }}
       />
       <EditarTemplateDialog
-        open={editarTemplateOpen}
-        onOpenChange={setEditarTemplateOpen}
+        open={mostrarEditarTemplate}
+        onOpenChange={setMostrarEditarTemplate}
         template={templateSelecionado}
       />
       <SimularAssinaturaDialog
-        open={simularAssinaturaOpen}
-        onOpenChange={setSimularAssinaturaOpen}
+        open={mostrarSimularAssinatura}
+        onOpenChange={setMostrarSimularAssinatura}
+        contrato={contratoSelecionado}
+      />
+      <ConverterContratoDialog
+        open={mostrarConverterContrato}
+        onOpenChange={setMostrarConverterContrato}
         contrato={contratoSelecionado}
       />
     </div>
