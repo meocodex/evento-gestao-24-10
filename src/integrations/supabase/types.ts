@@ -133,6 +133,36 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracoes_usuario: {
+        Row: {
+          created_at: string | null
+          empresa: Json
+          id: string
+          notificacoes: Json
+          sistema: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          empresa?: Json
+          id?: string
+          notificacoes?: Json
+          sistema?: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          empresa?: Json
+          id?: string
+          notificacoes?: Json
+          sistema?: Json
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       contratos: {
         Row: {
           anexos: string[] | null

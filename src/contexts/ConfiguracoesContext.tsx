@@ -1,6 +1,8 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
 import { ConfiguracoesNotificacao, TipoNotificacao, NotificacaoDestinatario, NotificacaoDados } from '@/types/notificacoes';
 import { useToast } from '@/hooks/use-toast';
+import { useConfiguracoesQueries } from './configuracoes/useConfiguracoesQueries';
+import { useConfiguracoesMutations } from './configuracoes/useConfiguracoesMutations';
 
 interface ConfiguracoesGlobais {
   notificacoes: ConfiguracoesNotificacao;
@@ -63,31 +65,44 @@ const configuracoesPadrao: ConfiguracoesGlobais = {
 
 export function ConfiguracoesProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  const [configuracoes, setConfiguracoes] = useState<ConfiguracoesGlobais>(() => {
-    const saved = localStorage.getItem('configuracoes');
-    
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return { ...configuracoesPadrao, ...parsed };
-      } catch (error) {
-        console.error('Erro ao parsear configurações do localStorage:', error);
-        localStorage.removeItem('configuracoes'); // Limpar dado corrompido
-        return configuracoesPadrao;
-      }
-    }
-    
-    return configuracoesPadrao;
-  });
+  const { configuracoes: dbConfig } = useConfiguracoesQueries();
+  const { atualizarNotificacoes, atualizarEmpresa, atualizarSistema } = useConfiguracoesMutations();
+
+  // Merge database config with defaults - use type guard for safe casting
+  const configuracoes: ConfiguracoesGlobais = {
+    notificacoes: dbConfig?.notificacoes 
+      ? (dbConfig.notificacoes as unknown as ConfiguracoesNotificacao)
+      : configuracoesPadrao.notificacoes,
+    empresa: dbConfig?.empresa
+      ? (dbConfig.empresa as unknown as ConfiguracoesGlobais['empresa'])
+      : configuracoesPadrao.empresa,
+    sistema: dbConfig?.sistema
+      ? (dbConfig.sistema as unknown as ConfiguracoesGlobais['sistema'])
+      : configuracoesPadrao.sistema,
+  };
 
   const atualizarConfiguracoes = async (config: Partial<ConfiguracoesGlobais>) => {
-    const novasConfiguracoes = { ...configuracoes, ...config };
-    setConfiguracoes(novasConfiguracoes);
-    localStorage.setItem('configuracoes', JSON.stringify(novasConfiguracoes));
-    toast({
-      title: 'Configurações salvas!',
-      description: 'As alterações foram aplicadas com sucesso.',
-    });
+    try {
+      if (config.notificacoes) {
+        await atualizarNotificacoes.mutateAsync(config.notificacoes);
+      }
+      if (config.empresa) {
+        await atualizarEmpresa.mutateAsync(config.empresa);
+      }
+      if (config.sistema) {
+        await atualizarSistema.mutateAsync(config.sistema);
+      }
+      toast({
+        title: 'Configurações salvas!',
+        description: 'As alterações foram aplicadas com sucesso.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro ao salvar',
+        description: 'Não foi possível salvar as configurações.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const testarWhatsApp = async (numero: string, mensagem: string): Promise<boolean> => {
