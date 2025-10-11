@@ -39,7 +39,12 @@ export function EventosProvider({ children }: { children: ReactNode }) {
   
   // Usar hooks do Supabase
   const { eventos, loading, refetch } = useEventosQueries();
-  const { criarEvento, editarEvento, excluirEvento, alterarStatus } = useEventosMutations();
+  const { 
+    criarEvento: criarEventoMutation, 
+    editarEvento: editarEventoMutation, 
+    excluirEvento: excluirEventoMutation, 
+    alterarStatus: alterarStatusMutation 
+  } = useEventosMutations();
   const { adicionarMaterial: addMaterialChecklist, removerMaterial: removeMaterialChecklist } = useEventosChecklist();
   const { alocarMaterial: allocMaterial, removerMaterialAlocado: removeMaterialAloc } = useEventosMateriaisAlocados();
   const { adicionarMembro: addMembroEquipe, removerMembro: removeMembroEquipe } = useEventosEquipe();
@@ -51,10 +56,11 @@ export function EventosProvider({ children }: { children: ReactNode }) {
     removerDespesa: removeDespesa
   } = useEventosFinanceiro();
 
-  // Funções CRUD principais agora usam os hooks do Supabase
-  // criarEvento, editarEvento, excluirEvento (deletarEvento), alterarStatus já vêm dos hooks
-  
-  const deletarEvento = excluirEvento; // Alias para manter compatibilidade
+  // Wrapping mutations para manter a interface do contexto
+  const criarEvento = criarEventoMutation;
+  const editarEvento = editarEventoMutation;
+  const deletarEvento = excluirEventoMutation;
+  const alterarStatus = alterarStatusMutation;
 
   const adicionarMaterialChecklist = async (eventoId: string, material: Omit<MaterialChecklist, 'id' | 'alocado'>): Promise<void> => {
     await addMaterialChecklist.mutateAsync({ eventoId, material });
