@@ -85,6 +85,7 @@ function AuthRoutes() {
   return <Auth />;
 }
 
+// Provider hierarchy fixed - QueryClient must be at the top level
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
