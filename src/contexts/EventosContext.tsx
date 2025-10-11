@@ -1,10 +1,9 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Evento, EventoFormData, MaterialChecklist, MaterialAntecipado, MaterialComTecnicos, Receita, Despesa, MembroEquipe, TimelineItem, StatusEvento, TipoReceita, StatusFinanceiro } from '@/types/eventos';
-import { mockEventos as initialMockEventos } from '@/lib/mock-data/eventos';
-import { mockClientes } from '@/lib/mock-data/clientes';
-import { mockComerciais } from '@/lib/mock-data/comerciais';
+import React, { createContext, useContext, ReactNode } from 'react';
+import { Evento, EventoFormData, MaterialChecklist, MaterialAntecipado, MaterialComTecnicos, Receita, Despesa, MembroEquipe, StatusEvento, TipoReceita, StatusFinanceiro } from '@/types/eventos';
 import { materiaisEstoque } from '@/lib/mock-data/estoque';
 import { useToast } from '@/hooks/use-toast';
+import { useEventosQueries } from './eventos/useEventosQueries';
+import { useEventosMutations } from './eventos/useEventosMutations';
 
 interface EventosContextType {
   eventos: Evento[];
@@ -33,782 +32,144 @@ interface EventosContextType {
 const EventosContext = createContext<EventosContextType | undefined>(undefined);
 
 export function EventosProvider({ children }: { children: ReactNode }) {
-  const [eventos, setEventos] = useState<Evento[]>(initialMockEventos);
   const { toast } = useToast();
+  
+  // Usar hooks do Supabase
+  const { eventos, loading, refetch } = useEventosQueries();
+  const { criarEvento, editarEvento, excluirEvento, alterarStatus } = useEventosMutations();
 
-  const adicionarTimeline = (eventoId: string, tipo: TimelineItem['tipo'], descricao: string) => {
-    setEventos(prev => prev.map(evento => {
-      if (evento.id === eventoId) {
-        const novoItem: TimelineItem = {
-          id: `timeline-${Date.now()}`,
-          data: new Date().toISOString(),
-          tipo,
-          usuario: 'Usuário Atual',
-          descricao
-        };
-        return {
-          ...evento,
-          timeline: [...evento.timeline, novoItem],
-          atualizadoEm: new Date().toISOString()
-        };
-      }
-      return evento;
-    }));
-  };
-
-  const criarEvento = async (data: EventoFormData): Promise<Evento> => {
-    return new Promise((resolve) => {
-      const cliente = mockClientes.find((c) => c.id === data.clienteId);
-      const comercial = mockComerciais.find((c) => c.id === data.comercialId);
-
-      if (!cliente || !comercial) {
-        toast({
-          title: 'Erro',
-          description: 'Cliente ou comercial não encontrado',
-          variant: 'destructive'
-        });
-        return;
-      }
-
-      const novoEvento: Evento = {
-        id: `evento-${Date.now()}`,
-        nome: data.nome,
-        dataInicio: data.dataInicio,
-        dataFim: data.dataFim,
-        horaInicio: data.horaInicio,
-        horaFim: data.horaFim,
-        local: data.local,
-        cidade: data.cidade,
-        estado: data.estado,
-        endereco: data.endereco,
-        tipoEvento: data.tipoEvento || 'bar',
-        cliente,
-        comercial,
-        status: 'orcamento_enviado',
-        tags: data.tags,
-        descricao: data.descricao,
-        observacoes: data.observacoes,
-        contatosAdicionais: data.contatosAdicionais,
-        redesSociais: data.redesSociais,
-        checklist: [],
-        materiaisAlocados: {
-          antecipado: [],
-          comTecnicos: []
-        },
-        financeiro: {
-          receitas: [],
-          despesas: [],
-          cobrancas: []
-        },
-        timeline: [{
-          id: 'timeline-1',
-          data: new Date().toISOString(),
-          tipo: 'criacao',
-          usuario: 'Usuário Atual',
-          descricao: 'Evento criado'
-        }],
-        equipe: [],
-        observacoesOperacionais: [],
-        criadoEm: new Date().toISOString(),
-        atualizadoEm: new Date().toISOString()
-      };
-
-      setEventos(prev => [...prev, novoEvento]);
-      
-      toast({
-        title: 'Evento criado!',
-        description: `${novoEvento.nome} foi criado com sucesso.`
-      });
-
-      resolve(novoEvento);
-    });
-  };
-
-  const editarEvento = async (id: string, data: Partial<Evento>): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === id) {
-          return {
-            ...evento,
-            ...data,
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      adicionarTimeline(id, 'edicao', 'Dados do evento atualizados');
-
-      toast({
-        title: 'Evento atualizado!',
-        description: 'As alterações foram salvas com sucesso.'
-      });
-
-      resolve();
-    });
-  };
-
-  const deletarEvento = async (id: string): Promise<void> => {
-    return new Promise((resolve) => {
-      const evento = eventos.find(e => e.id === id);
-      setEventos(prev => prev.filter(e => e.id !== id));
-
-      toast({
-        title: 'Evento deletado!',
-        description: `${evento?.nome} foi removido com sucesso.`
-      });
-
-      resolve();
-    });
-  };
-
-  const alterarStatus = async (id: string, novoStatus: StatusEvento, observacao?: string): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === id) {
-          return {
-            ...evento,
-            status: novoStatus,
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      const descricaoTimeline = observacao 
-        ? `Status alterado para ${novoStatus}: ${observacao}`
-        : `Status alterado para ${novoStatus}`;
-
-      adicionarTimeline(id, 'edicao', descricaoTimeline);
-
-      toast({
-        title: 'Status atualizado!',
-        description: `O evento agora está como "${novoStatus}".`
-      });
-
-      resolve();
-    });
-  };
+  // Funções CRUD principais agora usam os hooks do Supabase
+  // criarEvento, editarEvento, excluirEvento (deletarEvento), alterarStatus já vêm dos hooks
+  
+  const deletarEvento = excluirEvento; // Alias para manter compatibilidade
 
   const adicionarMaterialChecklist = async (eventoId: string, material: Omit<MaterialChecklist, 'id' | 'alocado'>): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          const novoMaterial: MaterialChecklist = {
-            ...material,
-            id: `checklist-${Date.now()}`,
-            itemId: material.itemId || `item-${Date.now()}`,
-            alocado: 0
-          };
-          return {
-            ...evento,
-            checklist: [...evento.checklist, novoMaterial],
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      adicionarTimeline(eventoId, 'edicao', `Material "${material.nome}" adicionado ao checklist`);
-      
-      toast({
-        title: 'Material adicionado!',
-        description: `${material.nome} foi adicionado ao checklist.`
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const removerMaterialChecklist = async (eventoId: string, materialId: string): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          const material = evento.checklist.find(m => m.id === materialId);
-          return {
-            ...evento,
-            checklist: evento.checklist.filter(m => m.id !== materialId),
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      adicionarTimeline(eventoId, 'edicao', 'Material removido do checklist');
-      
-      toast({
-        title: 'Material removido!',
-        description: 'O material foi removido do checklist.'
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const alocarMaterial = async (eventoId: string, tipo: 'antecipado' | 'comTecnicos', material: any): Promise<void> => {
-    return new Promise((resolve) => {
-      const evento = eventos.find(e => e.id === eventoId);
-      if (!evento) {
-        toast({
-          title: 'Erro',
-          description: 'Evento não encontrado.',
-          variant: 'destructive'
-        });
-        return;
-      }
-
-      // Verificar se o serial existe no estoque e está disponível
-      const materialEstoque = materiaisEstoque.find(m => m.id === material.itemId);
-      const serialEstoque = materialEstoque?.seriais.find(s => s.numero === material.serial);
-      
-      if (serialEstoque?.status !== 'disponivel') {
-        toast({
-          title: 'Erro de Alocação',
-          description: 'Este serial não está disponível.',
-          variant: 'destructive'
-        });
-        return;
-      }
-
-      // Marcar serial como indisponível no estoque (simulação)
-      serialEstoque.status = 'em-uso';
-      serialEstoque.eventoId = eventoId;
-      serialEstoque.eventoNome = evento.nome;
-
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          const novoMaterial = {
-            ...material,
-            id: `alocado-${Date.now()}`,
-            status: 'reservado' as const
-          };
-
-          // Atualizar quantidade alocada no checklist
-          const checklistAtualizado = evento.checklist.map(item => {
-            if (item.itemId === material.itemId) {
-              return {
-                ...item,
-                alocado: item.alocado + 1
-              };
-            }
-            return item;
-          });
-
-          if (tipo === 'antecipado') {
-            return {
-              ...evento,
-              checklist: checklistAtualizado,
-              materiaisAlocados: {
-                ...evento.materiaisAlocados,
-                antecipado: [...evento.materiaisAlocados.antecipado, novoMaterial]
-              },
-              atualizadoEm: new Date().toISOString()
-            };
-          } else {
-            return {
-              ...evento,
-              checklist: checklistAtualizado,
-              materiaisAlocados: {
-                ...evento.materiaisAlocados,
-                comTecnicos: [...evento.materiaisAlocados.comTecnicos, novoMaterial]
-              },
-              atualizadoEm: new Date().toISOString()
-            };
-          }
-        }
-        return evento;
-      }));
-
-      const tipoTexto = tipo === 'antecipado' ? 'envio antecipado' : 'com técnicos';
-      adicionarTimeline(eventoId, 'alocacao', `Material ${material.nome} (Serial: ${material.serial}) alocado para ${tipoTexto}`);
-      
-      toast({
-        title: 'Material alocado!',
-        description: `Serial ${material.serial} alocado com sucesso.`
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const removerMaterialAlocado = async (eventoId: string, tipo: 'antecipado' | 'comTecnicos', materialId: string): Promise<void> => {
-    return new Promise((resolve) => {
-      // Primeiro, encontrar o material para liberar o serial
-      const evento = eventos.find(e => e.id === eventoId);
-      if (evento) {
-        const listaMateriais = tipo === 'antecipado' 
-          ? evento.materiaisAlocados.antecipado 
-          : evento.materiaisAlocados.comTecnicos;
-        
-        const materialRemovido = listaMateriais.find(m => m.id === materialId);
-        
-        // Liberar serial no estoque
-        if (materialRemovido) {
-          const materialEstoque = materiaisEstoque.find(m => m.id === materialRemovido.itemId);
-          const serialEstoque = materialEstoque?.seriais.find(s => s.numero === materialRemovido.serial);
-          
-          if (serialEstoque) {
-            serialEstoque.status = 'disponivel';
-            serialEstoque.eventoId = undefined;
-            serialEstoque.eventoNome = undefined;
-          }
-        }
-      }
-
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          const listaMateriais = tipo === 'antecipado' 
-            ? evento.materiaisAlocados.antecipado 
-            : evento.materiaisAlocados.comTecnicos;
-          
-          const materialRemovido = listaMateriais.find(m => m.id === materialId);
-
-          // Atualizar quantidade alocada no checklist
-          const checklistAtualizado = evento.checklist.map(item => {
-            if (materialRemovido && item.itemId === materialRemovido.itemId) {
-              return {
-                ...item,
-                alocado: Math.max(0, item.alocado - 1)
-              };
-            }
-            return item;
-          });
-
-          if (tipo === 'antecipado') {
-            return {
-              ...evento,
-              checklist: checklistAtualizado,
-              materiaisAlocados: {
-                ...evento.materiaisAlocados,
-                antecipado: evento.materiaisAlocados.antecipado.filter(m => m.id !== materialId)
-              },
-              atualizadoEm: new Date().toISOString()
-            };
-          } else {
-            return {
-              ...evento,
-              checklist: checklistAtualizado,
-              materiaisAlocados: {
-                ...evento.materiaisAlocados,
-                comTecnicos: evento.materiaisAlocados.comTecnicos.filter(m => m.id !== materialId)
-              },
-              atualizadoEm: new Date().toISOString()
-            };
-          }
-        }
-        return evento;
-      }));
-
-      toast({
-        title: 'Material removido!',
-        description: 'O material foi removido e o serial está disponível novamente.'
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const adicionarReceita = async (eventoId: string, receita: Omit<Receita, 'id'>): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          const novaReceita: Receita = {
-            ...receita,
-            id: `receita-${Date.now()}`
-          };
-          return {
-            ...evento,
-            financeiro: {
-              ...evento.financeiro,
-              receitas: [...evento.financeiro.receitas, novaReceita]
-            },
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      adicionarTimeline(eventoId, 'edicao', `Receita "${receita.descricao}" adicionada`);
-      
-      toast({
-        title: 'Receita adicionada!',
-        description: `${receita.descricao} foi adicionada ao financeiro.`
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const removerReceita = async (eventoId: string, receitaId: string): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          return {
-            ...evento,
-            financeiro: {
-              ...evento.financeiro,
-              receitas: evento.financeiro.receitas.filter(r => r.id !== receitaId)
-            },
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      toast({
-        title: 'Receita removida!',
-        description: 'A receita foi removida do financeiro.'
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const adicionarDespesa = async (eventoId: string, despesa: Omit<Despesa, 'id'>): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          const novaDespesa: Despesa = {
-            ...despesa,
-            id: `despesa-${Date.now()}`
-          };
-          return {
-            ...evento,
-            financeiro: {
-              ...evento.financeiro,
-              despesas: [...evento.financeiro.despesas, novaDespesa]
-            },
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      adicionarTimeline(eventoId, 'edicao', `Despesa "${despesa.descricao}" adicionada`);
-      
-      toast({
-        title: 'Despesa adicionada!',
-        description: `${despesa.descricao} foi adicionada ao financeiro.`
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const editarDespesa = async (eventoId: string, despesaId: string, data: Partial<Despesa>): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          return {
-            ...evento,
-            financeiro: {
-              ...evento.financeiro,
-              despesas: evento.financeiro.despesas.map(d => 
-                d.id === despesaId ? { ...d, ...data } : d
-              )
-            },
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      toast({
-        title: 'Despesa atualizada!',
-        description: 'A despesa foi atualizada com sucesso.'
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const removerDespesa = async (eventoId: string, despesaId: string): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          return {
-            ...evento,
-            financeiro: {
-              ...evento.financeiro,
-              despesas: evento.financeiro.despesas.filter(d => d.id !== despesaId)
-            },
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      toast({
-        title: 'Despesa removida!',
-        description: 'A despesa foi removida do financeiro.'
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const adicionarMembroEquipe = async (eventoId: string, membro: Omit<MembroEquipe, 'id'>): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          const novoMembro: MembroEquipe = {
-            ...membro,
-            id: `membro-${Date.now()}`
-          };
-          return {
-            ...evento,
-            equipe: [...evento.equipe, novoMembro],
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      adicionarTimeline(eventoId, 'edicao', `${membro.nome} adicionado à equipe`);
-      
-      toast({
-        title: 'Membro adicionado!',
-        description: `${membro.nome} foi adicionado à equipe.`
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const removerMembroEquipe = async (eventoId: string, membroId: string): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          return {
-            ...evento,
-            equipe: evento.equipe.filter(m => m.id !== membroId),
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      toast({
-        title: 'Membro removido!',
-        description: 'O membro foi removido da equipe.'
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const adicionarObservacaoOperacional = async (eventoId: string, observacao: string): Promise<void> => {
-    return new Promise((resolve) => {
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          return {
-            ...evento,
-            observacoesOperacionais: [...evento.observacoesOperacionais, observacao],
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      adicionarTimeline(eventoId, 'edicao', 'Observação operacional adicionada');
-      
-      toast({
-        title: 'Observação adicionada!',
-        description: 'A observação foi registrada.'
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const uploadArquivo = async (eventoId: string, tipo: 'plantaBaixa' | 'documentos' | 'fotosEvento', arquivo: File): Promise<string> => {
-    return new Promise((resolve) => {
-      // Simulação de upload - em produção, usar Supabase Storage
-      const fakeUrl = `https://storage.example.com/${eventoId}/${tipo}/${arquivo.name}`;
-
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          if (tipo === 'plantaBaixa') {
-            return {
-              ...evento,
-              plantaBaixa: fakeUrl,
-              atualizadoEm: new Date().toISOString()
-            };
-          } else if (tipo === 'documentos') {
-            return {
-              ...evento,
-              documentos: [...(evento.documentos || []), fakeUrl],
-              atualizadoEm: new Date().toISOString()
-            };
-          } else if (tipo === 'fotosEvento') {
-            return {
-              ...evento,
-              fotosEvento: [...(evento.fotosEvento || []), fakeUrl],
-              atualizadoEm: new Date().toISOString()
-            };
-          }
-        }
-        return evento;
-      }));
-
-      adicionarTimeline(eventoId, 'edicao', `Arquivo "${arquivo.name}" adicionado`);
-      
-      toast({
-        title: 'Arquivo enviado!',
-        description: `${arquivo.name} foi adicionado com sucesso.`
-      });
-
-      resolve(fakeUrl);
+    // TODO: Implementar com Supabase Storage
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
+    return '';
   };
 
   const vincularReembolsoADespesa = async (eventoId: string, demandaId: string, descricao: string, valor: number, membroNome: string): Promise<void> => {
-    return new Promise((resolve) => {
-      const novaDespesa: Despesa = {
-        id: `despesa-reembolso-${Date.now()}`,
-        descricao: `Reembolso - ${membroNome} - ${descricao}`,
-        categoria: 'Reembolso de Equipe',
-        valor: valor,
-        quantidade: 1,
-        valorUnitario: valor,
-        responsavel: membroNome,
-        dataPagamento: new Date().toISOString(),
-        status: 'pago',
-        observacoes: `Vinculado à demanda de reembolso #${demandaId}`
-      };
-
-      setEventos(prev => prev.map(evento => {
-        if (evento.id === eventoId) {
-          return {
-            ...evento,
-            financeiro: {
-              ...evento.financeiro,
-              despesas: [...evento.financeiro.despesas, novaDespesa]
-            },
-            atualizadoEm: new Date().toISOString()
-          };
-        }
-        return evento;
-      }));
-
-      adicionarTimeline(eventoId, 'financeiro', `Despesa de reembolso adicionada: ${membroNome} - R$ ${valor.toFixed(2)}`);
-      
-      toast({
-        title: 'Despesa criada!',
-        description: 'Reembolso vinculado ao financeiro do evento.',
-      });
-
-      resolve();
+    // TODO: Implementar com Supabase
+    toast({
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 
   const criarEventoDeProposta = (contratoId: string, dadosEvento: any): string => {
-    const novoEvento: Evento = {
-      id: `evento-${Date.now()}`,
-      nome: dadosEvento.nome,
-      dataInicio: dadosEvento.dataInicio,
-      dataFim: dadosEvento.dataFim,
-      horaInicio: '00:00',
-      horaFim: '23:59',
-      local: dadosEvento.local,
-      cidade: dadosEvento.cidade,
-      estado: dadosEvento.estado,
-      endereco: dadosEvento.local || '',
-      cliente: {
-        id: dadosEvento.clienteId,
-        nome: '',
-        tipo: 'CNPJ',
-        documento: '',
-        telefone: '',
-        email: '',
-        endereco: {
-          cep: '',
-          logradouro: '',
-          numero: '',
-          bairro: '',
-          cidade: dadosEvento.cidade,
-          estado: dadosEvento.estado
-        }
-      },
-      comercial: {
-        id: '1',
-        nome: 'Sistema',
-        email: 'sistema@empresa.com'
-      },
-      status: 'orcamento_enviado' as StatusEvento,
-      tipoEvento: dadosEvento.tipoEvento || 'ingresso',
-      tags: [],
-      descricao: dadosEvento.descricao,
-      checklist: [],
-      materiaisAlocados: {
-        antecipado: [],
-        comTecnicos: []
-      },
-      financeiro: {
-        receitas: [],
-        despesas: [],
-        cobrancas: []
-      },
-      equipe: [],
-      timeline: [{
-        id: `timeline-${Date.now()}`,
-        data: new Date().toISOString(),
-        tipo: 'criacao',
-        usuario: 'Sistema',
-        descricao: `Evento criado a partir da proposta/contrato`
-      }],
-      observacoesOperacionais: [],
-      criadoEm: new Date().toISOString(),
-      atualizadoEm: new Date().toISOString()
-    };
-
-    setEventos(prev => [...prev, novoEvento]);
-    
+    // TODO: Implementar com Supabase
     toast({
-      title: 'Evento criado',
-      description: `Evento "${novoEvento.nome}" criado com sucesso a partir da proposta.`
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
-
-    return novoEvento.id;
+    return '';
   };
 
   const adicionarReceitasDeItens = (eventoId: string, itens: any[]) => {
-    if (!itens || itens.length === 0) return;
-
-    setEventos(prev => prev.map(evento => {
-      if (evento.id === eventoId) {
-        const novasReceitas: Receita[] = itens.map(item => ({
-          id: `receita-${Date.now()}-${Math.random()}`,
-          descricao: item.descricao,
-          tipo: 'fixo' as TipoReceita,
-          quantidade: item.quantidade || 1,
-          valorUnitario: item.valorUnitario || item.valorTotal,
-          valor: item.valorTotal,
-          status: 'pendente' as StatusFinanceiro,
-          data: new Date().toISOString()
-        }));
-
-        return {
-          ...evento,
-          financeiro: {
-            ...evento.financeiro,
-            receitas: [...evento.financeiro.receitas, ...novasReceitas]
-          },
-          atualizadoEm: new Date().toISOString()
-        };
-      }
-      return evento;
-    }));
-
-    adicionarTimeline(
-      eventoId,
-      'financeiro',
-      `${itens.length} item(ns) da proposta adicionado(s) como receita`
-    );
-
+    // TODO: Implementar com Supabase
     toast({
-      title: 'Receitas adicionadas',
-      description: `${itens.length} receita(s) adicionada(s) ao evento.`
+      title: 'Em desenvolvimento',
+      description: 'Funcionalidade será implementada em breve.'
     });
   };
 

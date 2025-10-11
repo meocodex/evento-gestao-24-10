@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { transformEvento } from './transformEvento';
+import { Evento } from '@/types/eventos';
 
 export function useEventosQueries() {
   const { data: eventos, isLoading, error, refetch } = useQuery({
@@ -23,14 +25,14 @@ export function useEventosQueries() {
       
       if (error) throw error;
       
-      // Retornar dados brutos por enquanto, vamos transformar depois
-      return data || [];
+      // Transformar dados do Supabase para o tipo Evento
+      return (data || []).map(transformEvento);
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
   });
 
   return {
-    eventos: eventos || [],
+    eventos: (eventos || []) as Evento[],
     loading: isLoading,
     error,
     refetch
