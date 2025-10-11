@@ -85,44 +85,38 @@ function AuthRoutes() {
   return <Auth />;
 }
 
-function AppWrapper() {
-  return (
-    <BrowserRouter>
-      <AuthProvider>
-        <ClientesProvider>
-          <EstoqueProvider>
-            <ConfiguracoesProvider>
-              <CadastrosPublicosProvider>
-                <TransportadorasProvider>
-                  <ContratosProvider>
-                    <TooltipProvider>
-                      <Toaster />
-                      <Sonner />
-                      <Routes>
-                        <Route path="/auth" element={<AuthRoutes />} />
-                        <Route path="/cadastro-evento" element={<CadastroEvento />} />
-                        <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
-                        <Route path="/*" element={<ProtectedRoutes />} />
-                      </Routes>
-                    </TooltipProvider>
-                  </ContratosProvider>
-                </TransportadorasProvider>
-              </CadastrosPublicosProvider>
-            </ConfiguracoesProvider>
-          </EstoqueProvider>
-        </ClientesProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  );
-}
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <EventosProvider>
-      <DemandasProvider>
-        <AppWrapper />
-      </DemandasProvider>
-    </EventosProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <EventosProvider>
+          <DemandasProvider>
+            <ClientesProvider>
+              <EstoqueProvider>
+                <ConfiguracoesProvider>
+                  <CadastrosPublicosProvider>
+                    <TransportadorasProvider>
+                      <ContratosProvider>
+                        <TooltipProvider>
+                          <Toaster />
+                          <Sonner />
+                          <Routes>
+                            <Route path="/auth" element={<AuthRoutes />} />
+                            <Route path="/cadastro-evento" element={<CadastroEvento />} />
+                            <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
+                            <Route path="/*" element={<ProtectedRoutes />} />
+                          </Routes>
+                        </TooltipProvider>
+                      </ContratosProvider>
+                    </TransportadorasProvider>
+                  </CadastrosPublicosProvider>
+                </ConfiguracoesProvider>
+              </EstoqueProvider>
+            </ClientesProvider>
+          </DemandasProvider>
+        </EventosProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
