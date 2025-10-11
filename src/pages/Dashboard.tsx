@@ -3,9 +3,31 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, DollarSign, Package, Users, AlertCircle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { useDashboardStats, useComercialStats, useSuporteStats } from '@/hooks/useDashboardStats';
+import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
+import { format, differenceInDays } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { data: stats, isLoading: loadingStats } = useDashboardStats();
+  const { data: comercialStats, isLoading: loadingComercial } = useComercialStats(user?.id || '');
+  const { data: suporteStats, isLoading: loadingSuporte } = useSuporteStats();
+
+  if (loadingStats || loadingComercial || loadingSuporte) {
+    return (
+      <div className="p-6">
+        <LoadingSkeleton />
+      </div>
+    );
+  }
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
 
   const renderAdminDashboard = () => (
     <div className="space-y-8 animate-fade-in">
@@ -25,27 +47,25 @@ const Dashboard = () => {
         <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
           <StatCard
             title="Eventos Mês"
-            value="24"
+            value={stats?.totalEventos.toString() || '0'}
             icon={Calendar}
             variant="primary"
-            trend={{ value: '+12%', isPositive: true }}
           />
         </div>
         <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
           <StatCard
             title="Receita Total"
-            value="R$ 185.000"
+            value={formatCurrency(stats?.receitaTotal || 0)}
             subtitle="Mês atual"
             icon={DollarSign}
             variant="success"
-            trend={{ value: '+23%', isPositive: true }}
           />
         </div>
         <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
           <StatCard
             title="Lucro Líquido"
-            value="R$ 107.000"
-            subtitle="57,8% margem"
+            value={formatCurrency(stats?.lucroLiquido || 0)}
+            subtitle={`${stats?.margemLucro.toFixed(1)}% margem`}
             icon={TrendingUp}
             variant="default"
           />
@@ -53,8 +73,8 @@ const Dashboard = () => {
         <div className="animate-slide-up" style={{ animationDelay: '300ms' }}>
           <StatCard
             title="Cobranças Pendentes"
-            value="R$ 3.450"
-            subtitle="5 casos"
+            value={formatCurrency(stats?.valorCobrancasPendentes || 0)}
+            subtitle={`${stats?.cobrancasPendentes || 0} casos`}
             icon={AlertCircle}
             variant="warning"
           />
@@ -70,15 +90,15 @@ const Dashboard = () => {
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center p-4 bg-gradient-to-r from-success/10 to-emerald-500/10 rounded-xl border border-success/20 hover:shadow-md transition-shadow">
               <span className="text-sm font-semibold">Receitas</span>
-              <span className="text-xl font-display font-bold text-success">R$ 185.000</span>
+              <span className="text-xl font-display font-bold text-success">{formatCurrency(stats?.receitaTotal || 0)}</span>
             </div>
             <div className="flex justify-between items-center p-4 bg-gradient-to-r from-destructive/10 to-rose-500/10 rounded-xl border border-destructive/20 hover:shadow-md transition-shadow">
               <span className="text-sm font-semibold">Despesas</span>
-              <span className="text-xl font-display font-bold text-destructive">R$ 78.000</span>
+              <span className="text-xl font-display font-bold text-destructive">{formatCurrency(stats?.despesaTotal || 0)}</span>
             </div>
             <div className="flex justify-between items-center p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl border border-primary/20 hover:shadow-md transition-shadow">
               <span className="text-sm font-semibold">Lucro</span>
-              <span className="text-xl font-display font-bold text-primary">R$ 107.000</span>
+              <span className="text-xl font-display font-bold text-primary">{formatCurrency(stats?.lucroLiquido || 0)}</span>
             </div>
           </CardContent>
         </Card>
@@ -91,19 +111,19 @@ const Dashboard = () => {
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center p-3 rounded-lg hover:bg-success/5 transition-colors">
               <span className="text-sm font-medium">Disponível</span>
-              <Badge variant="success" className="shadow-sm">420 itens</Badge>
+              <Badge variant="success" className="shadow-sm">{stats?.estoqueDisponivel || 0} itens</Badge>
             </div>
             <div className="flex justify-between items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
               <span className="text-sm font-medium">Em uso</span>
-              <Badge className="shadow-sm">85 itens</Badge>
+              <Badge className="shadow-sm">{stats?.estoqueEmUso || 0} itens</Badge>
             </div>
             <div className="flex justify-between items-center p-3 rounded-lg hover:bg-warning/5 transition-colors">
               <span className="text-sm font-medium">Manutenção</span>
-              <Badge variant="warning" className="shadow-sm">12 itens</Badge>
+              <Badge variant="warning" className="shadow-sm">{stats?.estoqueManutencao || 0} itens</Badge>
             </div>
             <div className="flex justify-between items-center p-3 rounded-lg hover:bg-destructive/5 transition-colors">
-              <span className="text-sm font-medium">Perdidos (mês)</span>
-              <Badge variant="destructive" className="shadow-sm">8 itens</Badge>
+              <span className="text-sm font-medium">Perdidos</span>
+              <Badge variant="destructive" className="shadow-sm">{stats?.estoquePerdido || 0} itens</Badge>
             </div>
           </CardContent>
         </Card>
@@ -114,27 +134,34 @@ const Dashboard = () => {
           <CardTitle>Alertas</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-start gap-3 p-3 bg-destructive/5 rounded-lg border border-destructive/20">
-            <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
-            <div>
-              <p className="text-sm font-medium">2 cobranças atrasadas há 15+ dias</p>
-              <p className="text-xs text-muted-foreground mt-1">Requer ação imediata</p>
+          {stats?.alertas && stats.alertas.length > 0 ? (
+            stats.alertas.map((alerta, index) => {
+              const Icon = alerta.tipo === 'error' ? AlertCircle : alerta.tipo === 'warning' ? Clock : Package;
+              const bgClass = alerta.tipo === 'error' ? 'bg-destructive/5 border-destructive/20' : 
+                             alerta.tipo === 'warning' ? 'bg-warning/5 border-warning/20' : 
+                             'bg-primary/5 border-primary/20';
+              const textClass = alerta.tipo === 'error' ? 'text-destructive' : 
+                               alerta.tipo === 'warning' ? 'text-warning' : 
+                               'text-primary';
+              
+              return (
+                <div key={index} className={`flex items-start gap-3 p-3 rounded-lg border ${bgClass}`}>
+                  <Icon className={`h-5 w-5 mt-0.5 ${textClass}`} />
+                  <div>
+                    <p className="text-sm font-medium">{alerta.mensagem}</p>
+                    {alerta.detalhes && (
+                      <p className="text-xs text-muted-foreground mt-1">{alerta.detalhes}</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="flex items-center gap-3 p-3 bg-success/5 rounded-lg border border-success/20">
+              <CheckCircle className="h-5 w-5 text-success" />
+              <p className="text-sm font-medium">Nenhum alerta no momento</p>
             </div>
-          </div>
-          <div className="flex items-start gap-3 p-3 bg-warning/5 rounded-lg border border-warning/20">
-            <Clock className="h-5 w-5 text-warning mt-0.5" />
-            <div>
-              <p className="text-sm font-medium">1 evento acima de R$ 50k (revisar)</p>
-              <p className="text-xs text-muted-foreground mt-1">Validação necessária</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
-            <Package className="h-5 w-5 text-primary mt-0.5" />
-            <div>
-              <p className="text-sm font-medium">Estoque de cabos XLR baixo</p>
-              <p className="text-xs text-muted-foreground mt-1">Reabastecer em breve</p>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
@@ -150,28 +177,28 @@ const Dashboard = () => {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Meus Eventos"
-          value="12"
+          value={comercialStats?.meusEventos.toString() || '0'}
           subtitle="Mês atual"
           icon={Calendar}
           variant="primary"
         />
         <StatCard
           title="Orçamentos"
-          value="18"
+          value={comercialStats?.orcamentosEmAnalise.toString() || '0'}
           subtitle="Em análise"
           icon={Users}
           variant="default"
         />
         <StatCard
           title="Contratos"
-          value="10"
+          value={comercialStats?.contratosFechados.toString() || '0'}
           subtitle="Fechados"
           icon={CheckCircle}
           variant="success"
         />
         <StatCard
           title="Receita Gerada"
-          value="R$ 85.000"
+          value={formatCurrency(comercialStats?.receitaGerada || 0)}
           subtitle="Mês atual"
           icon={DollarSign}
           variant="default"
@@ -184,27 +211,35 @@ const Dashboard = () => {
           <CardDescription>Nos próximos 7 dias</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-            <div>
-              <p className="font-medium">Festa de Aniversário</p>
-              <p className="text-sm text-muted-foreground">15/10 - Faltam 5 dias</p>
-            </div>
-            <Badge className="bg-success">Confirmado</Badge>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-            <div>
-              <p className="font-medium">Show Musical</p>
-              <p className="text-sm text-muted-foreground">18/10 - Faltam 8 dias</p>
-            </div>
-            <Badge className="bg-primary">Materiais Alocados</Badge>
-          </div>
-          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-            <div>
-              <p className="font-medium">Evento Corporativo</p>
-              <p className="text-sm text-muted-foreground">22/10 - Faltam 12 dias</p>
-            </div>
-            <Badge variant="outline" className="bg-warning/10 text-warning">Aguardando Alocação</Badge>
-          </div>
+          {comercialStats?.eventosProximos && comercialStats.eventosProximos.length > 0 ? (
+            comercialStats.eventosProximos.slice(0, 3).map((evento: any) => {
+              const dataEvento = new Date(evento.data_inicio);
+              const diasFaltam = differenceInDays(dataEvento, new Date());
+              const statusLabels: Record<string, string> = {
+                'orcamento_enviado': 'Orçamento Enviado',
+                'confirmado': 'Confirmado',
+                'materiais_alocados': 'Materiais Alocados',
+                'em_andamento': 'Em Andamento',
+                'aguardando_alocacao': 'Aguardando Alocação',
+              };
+              
+              return (
+                <div key={evento.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div>
+                    <p className="font-medium">Evento #{evento.id.slice(0, 8)}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {format(dataEvento, "dd/MM", { locale: ptBR })} - Faltam {diasFaltam} dias
+                    </p>
+                  </div>
+                  <Badge className={evento.status === 'confirmado' ? 'bg-success' : 'bg-primary'}>
+                    {statusLabels[evento.status] || evento.status}
+                  </Badge>
+                </div>
+              );
+            })
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento próximo</p>
+          )}
         </CardContent>
       </Card>
 
@@ -238,11 +273,15 @@ const Dashboard = () => {
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm">Criadas aguardando</span>
-              <Badge variant="outline" className="bg-warning/10 text-warning">1</Badge>
+              <Badge variant="outline" className="bg-warning/10 text-warning">
+                {comercialStats?.demandasCriadas || 0}
+              </Badge>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm">Concluídas hoje</span>
-              <Badge variant="outline" className="bg-success/10 text-success">2</Badge>
+              <Badge variant="outline" className="bg-success/10 text-success">
+                {comercialStats?.demandasConcluidas || 0}
+              </Badge>
             </div>
           </CardContent>
         </Card>
@@ -260,47 +299,49 @@ const Dashboard = () => {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Demandas Pendentes"
-          value="5"
+          value={suporteStats?.demandasPendentes.toString() || '0'}
           icon={AlertCircle}
           variant="warning"
         />
         <StatCard
           title="Operações Hoje"
-          value="3"
+          value={suporteStats?.operacoesHoje.toString() || '0'}
           icon={Calendar}
           variant="primary"
         />
         <StatCard
           title="Rastreamentos Ativos"
-          value="2"
+          value={suporteStats?.rastreamentosAtivos.toString() || '0'}
           icon={Package}
           variant="default"
         />
         <StatCard
           title="Retornos Atrasados"
-          value="3"
+          value={suporteStats?.retornosAtrasados.toString() || '0'}
           icon={Clock}
           variant="danger"
         />
       </div>
 
-      <Card className="border-destructive/20 bg-destructive/5">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-destructive" />
-            Demandas Urgentes
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center justify-between p-3 bg-background rounded-lg">
-            <div>
-              <p className="font-medium">Alocar materiais - Festa</p>
-              <p className="text-sm text-muted-foreground">Evento em 15/10</p>
+      {suporteStats && suporteStats.demandasUrgentes > 0 && (
+        <Card className="border-destructive/20 bg-destructive/5">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              Demandas Urgentes
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-background rounded-lg">
+              <div>
+                <p className="font-medium">{suporteStats.demandasUrgentes} demanda{suporteStats.demandasUrgentes > 1 ? 's' : ''} urgente{suporteStats.demandasUrgentes > 1 ? 's' : ''}</p>
+                <p className="text-sm text-muted-foreground">Requer atenção imediata</p>
+              </div>
+              <Badge variant="destructive">URGENTE</Badge>
             </div>
-            <Badge variant="destructive">URGENTE</Badge>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
