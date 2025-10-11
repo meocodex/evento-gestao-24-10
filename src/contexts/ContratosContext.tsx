@@ -1,8 +1,11 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
-import { ContratoTemplate, Contrato, StatusContrato } from '@/types/contratos';
-import { templatesMock, contratosMock } from '@/lib/mock-data/contratos';
+import { ContratoTemplate, Contrato } from '@/types/contratos';
 import { toast } from '@/hooks/use-toast';
 import { gerarPDFComTimbrado } from '@/utils/pdfGenerator';
+import { useContratosQueries } from './contratos/useContratosQueries';
+import { useContratosMutations } from './contratos/useContratosMutations';
+import { useTemplatesMutations } from './contratos/useTemplatesMutations';
+import { useContratosWorkflow } from './contratos/useContratosWorkflow';
 
 interface ContratosContextData {
   templates: ContratoTemplate[];
@@ -23,103 +26,43 @@ interface ContratosContextData {
 const ContratosContext = createContext<ContratosContextData>({} as ContratosContextData);
 
 export function ContratosProvider({ children }: { children: ReactNode }) {
-  const [templates, setTemplates] = useState<ContratoTemplate[]>(templatesMock);
-  const [contratos, setContratos] = useState<Contrato[]>(contratosMock);
-  const [loading] = useState(false);
+  // Hooks do Supabase
+  const { templates, contratos, loading } = useContratosQueries();
+  const contratosMutations = useContratosMutations();
+  const templatesMutations = useTemplatesMutations();
+  const workflow = useContratosWorkflow();
 
+  // Wrappers para manter a mesma interface
   const criarTemplate = (data: Omit<ContratoTemplate, 'id' | 'criadoEm' | 'atualizadoEm'>) => {
-    const novoTemplate: ContratoTemplate = {
-      ...data,
-      id: Date.now().toString(),
-      criadoEm: new Date().toISOString(),
-      atualizadoEm: new Date().toISOString(),
-    };
-    setTemplates([...templates, novoTemplate]);
-    toast({
-      title: 'Template criado',
-      description: 'Template de contrato criado com sucesso.',
-    });
+    templatesMutations.criarTemplate.mutate(data);
   };
 
   const editarTemplate = (id: string, data: Partial<ContratoTemplate>) => {
-    setTemplates(
-      templates.map((t) =>
-        t.id === id ? { ...t, ...data, atualizadoEm: new Date().toISOString() } : t
-      )
-    );
-    toast({
-      title: 'Template atualizado',
-      description: 'Template atualizado com sucesso.',
-    });
+    templatesMutations.editarTemplate.mutate({ id, data });
   };
 
   const excluirTemplate = (id: string) => {
-    setTemplates(templates.filter((t) => t.id !== id));
-    toast({
-      title: 'Template excluído',
-      description: 'Template removido do sistema.',
-    });
+    templatesMutations.excluirTemplate.mutate(id);
   };
 
   const criarContrato = (data: Omit<Contrato, 'id' | 'criadoEm' | 'atualizadoEm'>) => {
-    const novoContrato: Contrato = {
-      ...data,
-      id: Date.now().toString(),
-      criadoEm: new Date().toISOString(),
-      atualizadoEm: new Date().toISOString(),
-    };
-    setContratos([...contratos, novoContrato]);
-    toast({
-      title: 'Contrato criado',
-      description: 'Contrato criado com sucesso.',
-    });
+    contratosMutations.criarContrato.mutate(data);
   };
 
   const editarContrato = (id: string, data: Partial<Contrato>) => {
-    setContratos(
-      contratos.map((c) =>
-        c.id === id ? { ...c, ...data, atualizadoEm: new Date().toISOString() } : c
-      )
-    );
-    toast({
-      title: 'Contrato atualizado',
-      description: 'Contrato atualizado com sucesso.',
-    });
+    contratosMutations.editarContrato.mutate({ id, data });
   };
 
   const excluirContrato = (id: string) => {
-    setContratos(contratos.filter((c) => c.id !== id));
-    toast({
-      title: 'Contrato excluído',
-      description: 'Contrato removido do sistema.',
-    });
+    contratosMutations.excluirContrato.mutate(id);
   };
 
   const assinarContrato = (contratoId: string, parte: string) => {
-    setContratos(
-      contratos.map((c) => {
-        if (c.id !== contratoId) return c;
-        
-        const assinaturasAtualizadas = c.assinaturas.map((a) =>
-          a.parte === parte
-            ? { ...a, assinado: true, dataAssinatura: new Date().toISOString() }
-            : a
-        );
+    workflow.assinarContrato.mutate({ contratoId, parte });
+  };
 
-        const todasAssinadas = assinaturasAtualizadas.every((a) => a.assinado);
-        
-        return {
-          ...c,
-          assinaturas: assinaturasAtualizadas,
-          status: todasAssinadas ? 'assinado' : c.status,
-          atualizadoEm: new Date().toISOString(),
-        };
-      })
-    );
-    toast({
-      title: 'Contrato assinado',
-      description: 'Assinatura registrada com sucesso.',
-    });
+  const aprovarProposta = (contratoId: string, observacoes?: string) => {
+    workflow.aprovarProposta.mutate({ contratoId, observacoes });
   };
 
   const gerarPDF = async (contratoId: string) => {
@@ -127,7 +70,6 @@ export function ContratosProvider({ children }: { children: ReactNode }) {
     if (!contrato) return;
 
     try {
-      // Buscar template para obter papel timbrado
       const template = templates.find(t => t.id === contrato.templateId);
       await gerarPDFComTimbrado(contrato, {
         papelTimbrado: template?.papelTimbrado,
@@ -148,77 +90,24 @@ export function ContratosProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const aprovarProposta = (contratoId: string, observacoes?: string) => {
-    setContratos(contratos.map(c => 
-      c.id === contratoId 
-        ? { 
-            ...c, 
-            status: 'aprovada',
-            aprovacoesHistorico: [
-              ...(c.aprovacoesHistorico || []),
-              {
-                data: new Date().toISOString(),
-                acao: 'aprovada',
-                usuario: 'Usuário Atual',
-                observacoes
-              }
-            ],
-            atualizadoEm: new Date().toISOString()
-          }
-        : c
-    ));
-    toast({ title: 'Proposta aprovada', description: 'A proposta foi aprovada com sucesso.' });
-  };
-
   const converterPropostaEmContrato = async (
     contratoId: string,
     opcao: 'vincular' | 'criar',
     eventoId?: string,
     dadosEvento?: any,
-    adicionarReceitas: boolean = true,
-    criarEventoDeProposta?: (contratoId: string, dadosEvento: any) => string,
-    adicionarReceitasDeItens?: (eventoId: string, itens: any[]) => void
+    adicionarReceitas: boolean = true
   ) => {
-    const contrato = contratos.find(c => c.id === contratoId);
-    if (!contrato) return;
-
-    let finalEventoId = eventoId;
-
-    // Criar novo evento se necessário
-    if (opcao === 'criar' && dadosEvento && criarEventoDeProposta) {
-      finalEventoId = criarEventoDeProposta(contratoId, dadosEvento);
+    // Se criar novo evento, seria necessário integrar com EventosContext
+    // Por enquanto, apenas vincular a evento existente
+    if (opcao === 'vincular' && eventoId) {
+      workflow.converterPropostaEmContrato.mutate({ contratoId, eventoId });
+    } else {
+      toast({
+        title: 'Atenção',
+        description: 'A criação de novo evento a partir de proposta requer integração adicional.',
+        variant: 'destructive',
+      });
     }
-
-    // Adicionar receitas ao evento se solicitado
-    if (adicionarReceitas && contrato.itens && finalEventoId && adicionarReceitasDeItens) {
-      adicionarReceitasDeItens(finalEventoId, contrato.itens);
-    }
-
-    // Atualizar status do contrato
-    setContratos(contratos.map(c =>
-      c.id === contratoId
-        ? {
-            ...c,
-            status: 'rascunho',
-            eventoId: finalEventoId,
-            aprovacoesHistorico: [
-              ...(c.aprovacoesHistorico || []),
-              {
-                data: new Date().toISOString(),
-                acao: 'convertida',
-                usuario: 'Usuário Atual',
-                observacoes: `Convertida em contrato e ${opcao === 'criar' ? 'novo evento criado' : 'vinculada ao evento'}`
-              }
-            ],
-            atualizadoEm: new Date().toISOString()
-          }
-        : c
-    ));
-
-    toast({
-      title: 'Proposta convertida',
-      description: `A proposta foi convertida em contrato ${opcao === 'criar' ? 'e evento criado' : 'e vinculada ao evento'} com sucesso.`,
-    });
   };
 
   return (
