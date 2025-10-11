@@ -1189,12 +1189,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement_checklist_alocado: {
+        Args: { p_evento_id: string; p_item_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_checklist_alocado: {
+        Args: { p_evento_id: string; p_item_id: string }
+        Returns: undefined
       }
     }
     Enums: {

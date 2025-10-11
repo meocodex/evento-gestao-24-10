@@ -37,13 +37,22 @@ export function useEventosMateriaisAlocados() {
 
       if (error) throw error;
 
-      // Atualizar quantidade alocada no checklist
-      const { error: checklistError } = await supabase.rpc('increment_checklist_alocado', {
-        p_evento_id: eventoId,
-        p_item_id: material.itemId
-      });
+      // Atualizar quantidade alocada no checklist manualmente
+      // Buscar item atual
+      const { data: checklistItem } = await supabase
+        .from('eventos_checklist')
+        .select('alocado')
+        .eq('evento_id', eventoId)
+        .eq('item_id', material.itemId)
+        .single();
 
-      if (checklistError) console.error('Erro ao atualizar checklist:', checklistError);
+      if (checklistItem) {
+        await supabase
+          .from('eventos_checklist')
+          .update({ alocado: checklistItem.alocado + 1 })
+          .eq('evento_id', eventoId)
+          .eq('item_id', material.itemId);
+      }
 
       return data;
     },
@@ -85,14 +94,22 @@ export function useEventosMateriaisAlocados() {
 
       if (error) throw error;
 
-      // Decrementar quantidade alocada no checklist
+      // Decrementar quantidade alocada no checklist manualmente
       if (material) {
-        const { error: checklistError } = await supabase.rpc('decrement_checklist_alocado', {
-          p_evento_id: eventoId,
-          p_item_id: material.item_id
-        });
+        const { data: checklistItem } = await supabase
+          .from('eventos_checklist')
+          .select('alocado')
+          .eq('evento_id', eventoId)
+          .eq('item_id', material.item_id)
+          .single();
 
-        if (checklistError) console.error('Erro ao atualizar checklist:', checklistError);
+        if (checklistItem) {
+          await supabase
+            .from('eventos_checklist')
+            .update({ alocado: Math.max(0, checklistItem.alocado - 1) })
+            .eq('evento_id', eventoId)
+            .eq('item_id', material.item_id);
+        }
       }
     },
     onSuccess: () => {

@@ -93,19 +93,11 @@ export function EventosProvider({ children }: { children: ReactNode }) {
   };
 
   const adicionarMembroEquipe = async (eventoId: string, membro: Omit<MembroEquipe, 'id'>): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await addMembroEquipe.mutateAsync({ eventoId, membro });
   };
 
   const removerMembroEquipe = async (eventoId: string, membroId: string): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await removeMembroEquipe.mutateAsync({ membroId });
   };
 
   const adicionarObservacaoOperacional = async (eventoId: string, observacao: string): Promise<void> => {
