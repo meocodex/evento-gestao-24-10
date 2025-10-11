@@ -29,21 +29,41 @@ const Dashboard = () => {
     }).format(value);
   };
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Bom dia';
+    if (hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  };
+
   const renderAdminDashboard = () => (
-    <div className="space-y-8 animate-fade-in">
-      {/* Header com glassmorphism */}
-      <div className="relative overflow-hidden rounded-2xl p-8 bg-gradient-to-br from-primary/10 via-accent/5 to-transparent border border-primary/20">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5" />
+    <div className="space-y-12 animate-fade-in">
+      {/* Premium Hero Section */}
+      <div className="relative overflow-hidden rounded-3xl p-12 lg:p-16 bg-gradient-to-br from-primary/8 via-accent/4 to-transparent border border-primary/10">
+        {/* Subtle animated background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-accent/3 opacity-50" />
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+            backgroundSize: '32px 32px'
+          }} />
+        </div>
+        
         <div className="relative z-10">
-          <h2 className="text-4xl font-display font-bold text-foreground mb-2">
-            Bem-vindo, {user?.name}
-          </h2>
-          <p className="text-lg text-muted-foreground">Visão geral do sistema</p>
+          <p className="text-sm font-medium text-primary mb-3 tracking-wide uppercase">
+            {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
+          </p>
+          <h1 className="text-5xl lg:text-6xl font-display font-bold text-foreground mb-4 tracking-tight">
+            {user?.name}
+          </h1>
+          <p className="text-lg text-muted-foreground mb-8 max-w-2xl">
+            Visão geral do sistema e métricas principais
+          </p>
         </div>
       </div>
 
       {/* Stats Grid com stagger animation */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 lg:gap-8 md:grid-cols-2 lg:grid-cols-4">
         <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
           <StatCard
             title="Eventos Mês"
@@ -81,13 +101,13 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-primary/20">
-          <CardHeader>
-            <CardTitle className="font-display">Financeiro</CardTitle>
+      <div className="grid gap-6 lg:gap-8 lg:grid-cols-2">
+        <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 rounded-2xl hover:border-primary/20">
+          <CardHeader className="pb-4">
+            <CardTitle className="font-display text-2xl">Financeiro</CardTitle>
             <CardDescription>Resumo mensal</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             <div className="flex justify-between items-center p-4 bg-gradient-to-r from-success/10 to-emerald-500/10 rounded-xl border border-success/20 hover:shadow-md transition-shadow">
               <span className="text-sm font-semibold">Receitas</span>
               <span className="text-xl font-display font-bold text-success">{formatCurrency(stats?.receitaTotal || 0)}</span>
@@ -103,12 +123,12 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-xl transition-all duration-300 border-2 hover:border-accent/20">
-          <CardHeader>
-            <CardTitle className="font-display">Estoque</CardTitle>
+        <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 rounded-2xl hover:border-accent/20">
+          <CardHeader className="pb-4">
+            <CardTitle className="font-display text-2xl">Estoque</CardTitle>
             <CardDescription>Status atual</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             <div className="flex justify-between items-center p-3 rounded-lg hover:bg-success/5 transition-colors">
               <span className="text-sm font-medium">Disponível</span>
               <Badge variant="success" className="shadow-sm">{stats?.estoqueDisponivel || 0} itens</Badge>
@@ -129,11 +149,12 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Alertas</CardTitle>
+      <Card className="border border-border/50 rounded-2xl">
+        <CardHeader className="pb-4">
+          <CardTitle className="font-display text-2xl">Alertas do Sistema</CardTitle>
+          <CardDescription>Notificações importantes</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {stats?.alertas && stats.alertas.length > 0 ? (
             stats.alertas.map((alerta, index) => {
               const Icon = alerta.tipo === 'error' ? AlertCircle : alerta.tipo === 'warning' ? Clock : Package;
@@ -145,21 +166,32 @@ const Dashboard = () => {
                                'text-primary';
               
               return (
-                <div key={index} className={`flex items-start gap-3 p-3 rounded-lg border ${bgClass}`}>
-                  <Icon className={`h-5 w-5 mt-0.5 ${textClass}`} />
-                  <div>
-                    <p className="text-sm font-medium">{alerta.mensagem}</p>
+                <div 
+                  key={index} 
+                  className={`flex items-start gap-4 p-4 rounded-xl border ${bgClass} animate-fade-in`}
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className={`p-2 rounded-lg ${alerta.tipo === 'error' ? 'bg-destructive/10' : alerta.tipo === 'warning' ? 'bg-warning/10' : 'bg-primary/10'}`}>
+                    <Icon className={`h-5 w-5 ${textClass}`} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold mb-1">{alerta.mensagem}</p>
                     {alerta.detalhes && (
-                      <p className="text-xs text-muted-foreground mt-1">{alerta.detalhes}</p>
+                      <p className="text-xs text-muted-foreground">{alerta.detalhes}</p>
                     )}
                   </div>
                 </div>
               );
             })
           ) : (
-            <div className="flex items-center gap-3 p-3 bg-success/5 rounded-lg border border-success/20">
-              <CheckCircle className="h-5 w-5 text-success" />
-              <p className="text-sm font-medium">Nenhum alerta no momento</p>
+            <div className="flex items-center gap-4 p-6 bg-success/5 rounded-xl border border-success/20">
+              <div className="p-2 rounded-lg bg-success/10">
+                <CheckCircle className="h-6 w-6 text-success" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Tudo certo!</p>
+                <p className="text-xs text-muted-foreground mt-1">Nenhum alerta no momento</p>
+              </div>
             </div>
           )}
         </CardContent>
