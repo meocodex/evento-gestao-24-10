@@ -7,6 +7,9 @@ import { useEventosChecklist } from './eventos/useEventosChecklist';
 import { useEventosMateriaisAlocados } from './eventos/useEventosMateriaisAlocados';
 import { useEventosEquipe } from './eventos/useEventosEquipe';
 import { useEventosFinanceiro } from './eventos/useEventosFinanceiro';
+import { useEventosObservacoes } from './eventos/useEventosObservacoes';
+import { useEventosArquivos } from './eventos/useEventosArquivos';
+import { useEventosPropostas } from './eventos/useEventosPropostas';
 
 interface EventosContextType {
   eventos: Evento[];
@@ -28,8 +31,8 @@ interface EventosContextType {
   adicionarObservacaoOperacional: (eventoId: string, observacao: string) => Promise<void>;
   uploadArquivo: (eventoId: string, tipo: 'plantaBaixa' | 'documentos' | 'fotosEvento', arquivo: File) => Promise<string>;
   vincularReembolsoADespesa: (eventoId: string, demandaId: string, descricao: string, valor: number, membroNome: string) => Promise<void>;
-  criarEventoDeProposta: (contratoId: string, dadosEvento: any) => string;
-  adicionarReceitasDeItens: (eventoId: string, itens: any[]) => void;
+  criarEventoDeProposta: (contratoId: string, dadosEvento: any) => Promise<string>;
+  adicionarReceitasDeItens: (eventoId: string, itens: any[]) => Promise<void>;
 }
 
 const EventosContext = createContext<EventosContextType | undefined>(undefined);
@@ -55,6 +58,9 @@ export function EventosProvider({ children }: { children: ReactNode }) {
     editarDespesa: updateDespesa,
     removerDespesa: removeDespesa
   } = useEventosFinanceiro();
+  const { adicionarObservacao } = useEventosObservacoes();
+  const { uploadArquivo: uploadFile, removerArquivo: removeFile } = useEventosArquivos();
+  const { criarDeContrato, adicionarReceitasLote } = useEventosPropostas();
 
   // Wrapping mutations para manter a interface do contexto
   const criarEvento = criarEventoMutation;
@@ -107,45 +113,35 @@ export function EventosProvider({ children }: { children: ReactNode }) {
   };
 
   const adicionarObservacaoOperacional = async (eventoId: string, observacao: string): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await adicionarObservacao.mutateAsync({ eventoId, observacao });
   };
 
   const uploadArquivo = async (eventoId: string, tipo: 'plantaBaixa' | 'documentos' | 'fotosEvento', arquivo: File): Promise<string> => {
-    // TODO: Implementar com Supabase Storage
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
-    return '';
+    return await uploadFile.mutateAsync({ eventoId, tipo, arquivo });
   };
 
   const vincularReembolsoADespesa = async (eventoId: string, demandaId: string, descricao: string, valor: number, membroNome: string): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
+    await addDespesa.mutateAsync({
+      eventoId,
+      despesa: {
+        descricao,
+        categoria: 'outros' as const,
+        valor,
+        valorUnitario: valor,
+        quantidade: 1,
+        responsavel: membroNome,
+        status: 'pendente' as const,
+        data: new Date().toISOString().split('T')[0]
+      }
     });
   };
 
-  const criarEventoDeProposta = (contratoId: string, dadosEvento: any): string => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
-    return '';
+  const criarEventoDeProposta = async (contratoId: string, dadosEvento: any): Promise<string> => {
+    return await criarDeContrato.mutateAsync({ contratoId, dadosEvento });
   };
 
-  const adicionarReceitasDeItens = (eventoId: string, itens: any[]) => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+  const adicionarReceitasDeItens = async (eventoId: string, itens: any[]): Promise<void> => {
+    await adicionarReceitasLote.mutateAsync({ eventoId, itens });
   };
 
   return (
