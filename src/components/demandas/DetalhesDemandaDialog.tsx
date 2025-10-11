@@ -594,7 +594,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removerAnexo(demanda.id, anexo.id)}
+                        onClick={() => removerAnexo(demanda.id, anexo.id, anexo.url)}
                       >
                         Remover
                       </Button>
