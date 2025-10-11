@@ -3,6 +3,7 @@ import { Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
+import { NotificationCenter } from './NotificationCenter';
 
 export function MainLayout() {
   const { isAuthenticated } = useAuth();
@@ -46,6 +47,7 @@ export function MainLayout() {
             <div className="flex h-14 items-center gap-4 px-6">
               <SidebarTrigger className="hover:bg-primary/10 hover:text-primary transition-all duration-300 rounded-lg" />
               <div className="flex-1" />
+              <NotificationCenter />
             </div>
           </header>
           

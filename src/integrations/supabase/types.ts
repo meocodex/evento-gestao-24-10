@@ -1071,6 +1071,47 @@ export type Database = {
           },
         ]
       }
+      notificacoes: {
+        Row: {
+          created_at: string | null
+          id: string
+          lida: boolean | null
+          link: string | null
+          mensagem: string
+          tipo: string
+          titulo: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          lida?: boolean | null
+          link?: string | null
+          mensagem: string
+          tipo: string
+          titulo: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          lida?: boolean | null
+          link?: string | null
+          mensagem?: string
+          tipo?: string
+          titulo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificacoes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1219,6 +1260,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      criar_notificacao: {
+        Args: {
+          p_link?: string
+          p_mensagem: string
+          p_tipo: string
+          p_titulo: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       decrement_checklist_alocado: {
         Args: { p_evento_id: string; p_item_id: string }
         Returns: undefined
@@ -1232,6 +1283,18 @@ export type Database = {
       }
       increment_checklist_alocado: {
         Args: { p_evento_id: string; p_item_id: string }
+        Returns: undefined
+      }
+      notificar_cobrancas_atrasadas: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      notificar_demandas_urgentes: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      notificar_materiais_atrasados: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
     }
