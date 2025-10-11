@@ -200,51 +200,77 @@ const Dashboard = () => {
   );
 
   const renderComercialDashboard = () => (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-foreground">Bem-vindo, {user?.name}</h2>
-        <p className="text-muted-foreground mt-1">Seus números e eventos</p>
+    <div className="space-y-12 animate-fade-in">
+      {/* Premium Hero Section */}
+      <div className="relative overflow-hidden rounded-3xl p-12 lg:p-16 bg-gradient-to-br from-primary/8 via-accent/4 to-transparent border border-primary/10">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-accent/3 opacity-50" />
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+            backgroundSize: '32px 32px'
+          }} />
+        </div>
+        
+        <div className="relative z-10">
+          <p className="text-sm font-medium text-primary mb-3 tracking-wide uppercase">
+            {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
+          </p>
+          <h1 className="text-5xl lg:text-6xl font-display font-bold text-foreground mb-4 tracking-tight">
+            {user?.name}
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl">
+            Seus números e eventos
+          </p>
+        </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Meus Eventos"
-          value={comercialStats?.meusEventos.toString() || '0'}
-          subtitle="Mês atual"
-          icon={Calendar}
-          variant="primary"
-        />
-        <StatCard
-          title="Orçamentos"
-          value={comercialStats?.orcamentosEmAnalise.toString() || '0'}
-          subtitle="Em análise"
-          icon={Users}
-          variant="default"
-        />
-        <StatCard
-          title="Contratos"
-          value={comercialStats?.contratosFechados.toString() || '0'}
-          subtitle="Fechados"
-          icon={CheckCircle}
-          variant="success"
-        />
-        <StatCard
-          title="Receita Gerada"
-          value={formatCurrency(comercialStats?.receitaGerada || 0)}
-          subtitle="Mês atual"
-          icon={DollarSign}
-          variant="default"
-        />
+      <div className="grid gap-6 lg:gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
+          <StatCard
+            title="Meus Eventos"
+            value={comercialStats?.meusEventos.toString() || '0'}
+            subtitle="Mês atual"
+            icon={Calendar}
+            variant="primary"
+          />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
+          <StatCard
+            title="Orçamentos"
+            value={comercialStats?.orcamentosEmAnalise.toString() || '0'}
+            subtitle="Em análise"
+            icon={Users}
+            variant="default"
+          />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
+          <StatCard
+            title="Contratos"
+            value={comercialStats?.contratosFechados.toString() || '0'}
+            subtitle="Fechados"
+            icon={CheckCircle}
+            variant="success"
+          />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '300ms' }}>
+          <StatCard
+            title="Receita Gerada"
+            value={formatCurrency(comercialStats?.receitaGerada || 0)}
+            subtitle="Mês atual"
+            icon={DollarSign}
+            variant="default"
+          />
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Próximos Eventos</CardTitle>
+      <Card className="border border-border/50 rounded-2xl hover:shadow-xl transition-all duration-500">
+        <CardHeader className="pb-4">
+          <CardTitle className="font-display text-2xl">Próximos Eventos</CardTitle>
           <CardDescription>Nos próximos 7 dias</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           {comercialStats?.eventosProximos && comercialStats.eventosProximos.length > 0 ? (
-            comercialStats.eventosProximos.slice(0, 3).map((evento: any) => {
+            comercialStats.eventosProximos.slice(0, 3).map((evento: any, index: number) => {
               const dataEvento = new Date(evento.data_inicio);
               const diasFaltam = differenceInDays(dataEvento, new Date());
               const statusLabels: Record<string, string> = {
@@ -256,10 +282,14 @@ const Dashboard = () => {
               };
               
               return (
-                <div key={evento.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                <div 
+                  key={evento.id} 
+                  className="flex items-center justify-between p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-all duration-300 animate-fade-in"
+                  style={{ animationDelay: `${index * 75}ms` }}
+                >
                   <div>
-                    <p className="font-medium">Evento #{evento.id.slice(0, 8)}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-semibold">Evento #{evento.id.slice(0, 8)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">
                       {format(dataEvento, "dd/MM", { locale: ptBR })} - Faltam {diasFaltam} dias
                     </p>
                   </div>
@@ -270,48 +300,58 @@ const Dashboard = () => {
               );
             })
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento próximo</p>
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Calendar className="h-12 w-12 text-muted-foreground/30 mb-4" />
+              <p className="text-sm font-medium text-muted-foreground">Nenhum evento próximo</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">Novos eventos aparecerão aqui</p>
+            </div>
           )}
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Ações Necessárias</CardTitle>
+      <div className="grid gap-6 lg:gap-8 lg:grid-cols-2">
+        <Card className="border border-border/50 rounded-2xl hover:shadow-xl transition-all duration-500">
+          <CardHeader className="pb-4">
+            <CardTitle className="font-display text-2xl">Ações Necessárias</CardTitle>
+            <CardDescription>Itens que precisam da sua atenção</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-3 p-3 bg-warning/5 rounded-lg border border-warning/20">
-              <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">2 orçamentos aguardando resposta</p>
-                <p className="text-xs text-muted-foreground mt-1">Há mais de 3 dias</p>
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-4 p-4 bg-warning/5 rounded-xl border border-warning/20 hover:bg-warning/10 transition-colors duration-300">
+              <div className="p-2 rounded-lg bg-warning/10">
+                <AlertCircle className="h-5 w-5 text-warning" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold mb-1">2 orçamentos aguardando resposta</p>
+                <p className="text-xs text-muted-foreground">Há mais de 3 dias</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
-              <Clock className="h-5 w-5 text-primary mt-0.5" />
-              <div>
-                <p className="text-sm font-medium">1 evento precisa criar demanda</p>
-                <p className="text-xs text-muted-foreground mt-1">Solicitar alocação de materiais</p>
+            <div className="flex items-start gap-4 p-4 bg-primary/5 rounded-xl border border-primary/20 hover:bg-primary/10 transition-colors duration-300">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Clock className="h-5 w-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold mb-1">1 evento precisa criar demanda</p>
+                <p className="text-xs text-muted-foreground">Solicitar alocação de materiais</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Minhas Demandas</CardTitle>
+        <Card className="border border-border/50 rounded-2xl hover:shadow-xl transition-all duration-500">
+          <CardHeader className="pb-4">
+            <CardTitle className="font-display text-2xl">Minhas Demandas</CardTitle>
+            <CardDescription>Status atual</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-sm">Criadas aguardando</span>
-              <Badge variant="outline" className="bg-warning/10 text-warning">
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
+              <span className="text-sm font-medium">Criadas aguardando</span>
+              <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20">
                 {comercialStats?.demandasCriadas || 0}
               </Badge>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm">Concluídas hoje</span>
-              <Badge variant="outline" className="bg-success/10 text-success">
+            <div className="flex justify-between items-center p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
+              <span className="text-sm font-medium">Concluídas hoje</span>
+              <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                 {comercialStats?.demandasConcluidas || 0}
               </Badge>
             </div>
@@ -322,105 +362,142 @@ const Dashboard = () => {
   );
 
   const renderSuporteDashboard = () => (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold text-foreground">Bem-vindo, {user?.name}</h2>
-        <p className="text-muted-foreground mt-1">Operações e demandas</p>
+    <div className="space-y-12 animate-fade-in">
+      {/* Premium Hero Section */}
+      <div className="relative overflow-hidden rounded-3xl p-12 lg:p-16 bg-gradient-to-br from-primary/8 via-accent/4 to-transparent border border-primary/10">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-accent/3 opacity-50" />
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+            backgroundSize: '32px 32px'
+          }} />
+        </div>
+        
+        <div className="relative z-10">
+          <p className="text-sm font-medium text-primary mb-3 tracking-wide uppercase">
+            {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
+          </p>
+          <h1 className="text-5xl lg:text-6xl font-display font-bold text-foreground mb-4 tracking-tight">
+            {user?.name}
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl">
+            Operações e demandas
+          </p>
+        </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Demandas Pendentes"
-          value={suporteStats?.demandasPendentes.toString() || '0'}
-          icon={AlertCircle}
-          variant="warning"
-        />
-        <StatCard
-          title="Operações Hoje"
-          value={suporteStats?.operacoesHoje.toString() || '0'}
-          icon={Calendar}
-          variant="primary"
-        />
-        <StatCard
-          title="Rastreamentos Ativos"
-          value={suporteStats?.rastreamentosAtivos.toString() || '0'}
-          icon={Package}
-          variant="default"
-        />
-        <StatCard
-          title="Retornos Atrasados"
-          value={suporteStats?.retornosAtrasados.toString() || '0'}
-          icon={Clock}
-          variant="danger"
-        />
+      <div className="grid gap-6 lg:gap-8 md:grid-cols-2 lg:grid-cols-4">
+        <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
+          <StatCard
+            title="Demandas Pendentes"
+            value={suporteStats?.demandasPendentes.toString() || '0'}
+            icon={AlertCircle}
+            variant="warning"
+          />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
+          <StatCard
+            title="Operações Hoje"
+            value={suporteStats?.operacoesHoje.toString() || '0'}
+            icon={Calendar}
+            variant="primary"
+          />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
+          <StatCard
+            title="Rastreamentos Ativos"
+            value={suporteStats?.rastreamentosAtivos.toString() || '0'}
+            icon={Package}
+            variant="default"
+          />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '300ms' }}>
+          <StatCard
+            title="Retornos Atrasados"
+            value={suporteStats?.retornosAtrasados.toString() || '0'}
+            icon={Clock}
+            variant="danger"
+          />
+        </div>
       </div>
 
       {suporteStats && suporteStats.demandasUrgentes > 0 && (
-        <Card className="border-destructive/20 bg-destructive/5">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-destructive" />
+        <Card className="border-destructive/30 bg-destructive/5 rounded-2xl hover:shadow-xl hover:shadow-destructive/10 transition-all duration-500 animate-fade-in">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-3 text-2xl">
+              <div className="p-2 rounded-lg bg-destructive/10">
+                <AlertCircle className="h-6 w-6 text-destructive" />
+              </div>
               Demandas Urgentes
             </CardTitle>
+            <CardDescription>Requer atenção imediata</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-background rounded-lg">
+          <CardContent>
+            <div className="flex items-center justify-between p-4 bg-background/80 rounded-xl backdrop-blur-sm">
               <div>
-                <p className="font-medium">{suporteStats.demandasUrgentes} demanda{suporteStats.demandasUrgentes > 1 ? 's' : ''} urgente{suporteStats.demandasUrgentes > 1 ? 's' : ''}</p>
-                <p className="text-sm text-muted-foreground">Requer atenção imediata</p>
+                <p className="font-bold text-lg">{suporteStats.demandasUrgentes} demanda{suporteStats.demandasUrgentes > 1 ? 's' : ''} urgente{suporteStats.demandasUrgentes > 1 ? 's' : ''}</p>
+                <p className="text-sm text-muted-foreground mt-1">Ação necessária hoje</p>
               </div>
-              <Badge variant="destructive">URGENTE</Badge>
+              <Badge variant="destructive" className="text-sm px-3 py-1">URGENTE</Badge>
             </div>
           </CardContent>
         </Card>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Operações Hoje</CardTitle>
+      <div className="grid gap-6 lg:gap-8 lg:grid-cols-2">
+        <Card className="border border-border/50 rounded-2xl hover:shadow-xl transition-all duration-500">
+          <CardHeader className="pb-4">
+            <CardTitle className="font-display text-2xl">Operações Hoje</CardTitle>
+            <CardDescription>Agenda do dia</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-              <Clock className="h-5 w-5 text-primary mt-0.5" />
+          <CardContent className="space-y-4">
+            <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors duration-300">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Clock className="h-5 w-5 text-primary" />
+              </div>
               <div>
-                <p className="text-sm font-medium">14:00 - Enviar materiais</p>
+                <p className="text-sm font-semibold mb-1">14:00 - Enviar materiais</p>
                 <p className="text-xs text-muted-foreground">Transportadora TransLog</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-              <Clock className="h-5 w-5 text-primary mt-0.5" />
+            <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors duration-300">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Clock className="h-5 w-5 text-primary" />
+              </div>
               <div>
-                <p className="text-sm font-medium">16:00 - Saída técnicos</p>
+                <p className="text-sm font-semibold mb-1">16:00 - Saída técnicos</p>
                 <p className="text-xs text-muted-foreground">Festa João Silva</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-              <Clock className="h-5 w-5 text-primary mt-0.5" />
+            <div className="flex items-start gap-4 p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors duration-300">
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Clock className="h-5 w-5 text-primary" />
+              </div>
               <div>
-                <p className="text-sm font-medium">18:00 - Receber retorno</p>
+                <p className="text-sm font-semibold mb-1">18:00 - Receber retorno</p>
                 <p className="text-xs text-muted-foreground">Evento anterior</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Rastreamentos</CardTitle>
+        <Card className="border border-border/50 rounded-2xl hover:shadow-xl transition-all duration-500">
+          <CardHeader className="pb-4">
+            <CardTitle className="font-display text-2xl">Rastreamentos</CardTitle>
+            <CardDescription>Status das entregas</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
               <div>
-                <p className="font-medium text-sm">BR123456</p>
-                <p className="text-xs text-muted-foreground">Em trânsito</p>
+                <p className="font-semibold text-sm">BR123456</p>
+                <p className="text-xs text-muted-foreground mt-1">Em trânsito</p>
               </div>
               <Badge className="bg-primary">Entrega amanhã</Badge>
             </div>
-            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors">
               <div>
-                <p className="font-medium text-sm">BR789012</p>
-                <p className="text-xs text-muted-foreground">Chegou ao destino</p>
+                <p className="font-semibold text-sm">BR789012</p>
+                <p className="text-xs text-muted-foreground mt-1">Chegou ao destino</p>
               </div>
               <Badge className="bg-success">Entregue</Badge>
             </div>
@@ -428,23 +505,28 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Alertas</CardTitle>
+      <Card className="border border-border/50 rounded-2xl">
+        <CardHeader className="pb-4">
+          <CardTitle className="font-display text-2xl">Alertas Operacionais</CardTitle>
+          <CardDescription>Itens que requerem atenção</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-start gap-3 p-3 bg-warning/5 rounded-lg border border-warning/20">
-            <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
-            <div>
-              <p className="text-sm font-medium">3 materiais com retorno atrasado</p>
-              <p className="text-xs text-muted-foreground mt-1">Entrar em contato com produtores</p>
+        <CardContent className="space-y-4">
+          <div className="flex items-start gap-4 p-4 bg-warning/5 rounded-xl border border-warning/20 hover:bg-warning/10 transition-colors duration-300 animate-fade-in">
+            <div className="p-2 rounded-lg bg-warning/10">
+              <AlertCircle className="h-5 w-5 text-warning" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold mb-1">3 materiais com retorno atrasado</p>
+              <p className="text-xs text-muted-foreground">Entrar em contato com produtores</p>
             </div>
           </div>
-          <div className="flex items-start gap-3 p-3 bg-warning/5 rounded-lg border border-warning/20">
-            <Package className="h-5 w-5 text-warning mt-0.5" />
-            <div>
-              <p className="text-sm font-medium">2 itens em manutenção há 10+ dias</p>
-              <p className="text-xs text-muted-foreground mt-1">Verificar status</p>
+          <div className="flex items-start gap-4 p-4 bg-warning/5 rounded-xl border border-warning/20 hover:bg-warning/10 transition-colors duration-300 animate-fade-in" style={{ animationDelay: '75ms' }}>
+            <div className="p-2 rounded-lg bg-warning/10">
+              <Package className="h-5 w-5 text-warning" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold mb-1">2 itens em manutenção há 10+ dias</p>
+              <p className="text-xs text-muted-foreground">Verificar status</p>
             </div>
           </div>
         </CardContent>
@@ -453,11 +535,11 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="p-6">
+    <>
       {user?.role === 'admin' && renderAdminDashboard()}
       {user?.role === 'comercial' && renderComercialDashboard()}
       {user?.role === 'suporte' && renderSuporteDashboard()}
-    </div>
+    </>
   );
 };
 
