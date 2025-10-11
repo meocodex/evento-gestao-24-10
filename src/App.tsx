@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ClientesProvider } from "@/contexts/ClientesContext";
+import { EstoqueProvider } from "@/contexts/EstoqueContext";
 import { TransportadorasProvider } from "@/contexts/TransportadorasContext";
 import { ContratosProvider } from "@/contexts/ContratosContext";
 import { ConfiguracoesProvider } from "@/contexts/ConfiguracoesContext";
@@ -85,24 +87,28 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <AuthProvider>
-        <ConfiguracoesProvider>
-          <CadastrosPublicosProvider>
-            <TransportadorasProvider>
-              <ContratosProvider>
-                <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
-                  <Routes>
-                    <Route path="/auth" element={<AuthRoutes />} />
-                    <Route path="/cadastro-evento" element={<CadastroEvento />} />
-                    <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
-                    <Route path="/*" element={<ProtectedRoutes />} />
-                  </Routes>
-                </TooltipProvider>
-              </ContratosProvider>
-            </TransportadorasProvider>
-          </CadastrosPublicosProvider>
-        </ConfiguracoesProvider>
+        <ClientesProvider>
+          <EstoqueProvider>
+            <ConfiguracoesProvider>
+              <CadastrosPublicosProvider>
+                <TransportadorasProvider>
+                  <ContratosProvider>
+                    <TooltipProvider>
+                      <Toaster />
+                      <Sonner />
+                      <Routes>
+                        <Route path="/auth" element={<AuthRoutes />} />
+                        <Route path="/cadastro-evento" element={<CadastroEvento />} />
+                        <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
+                        <Route path="/*" element={<ProtectedRoutes />} />
+                      </Routes>
+                    </TooltipProvider>
+                  </ContratosProvider>
+                </TransportadorasProvider>
+              </CadastrosPublicosProvider>
+            </ConfiguracoesProvider>
+          </EstoqueProvider>
+        </ClientesProvider>
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>
