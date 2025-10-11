@@ -65,7 +65,19 @@ export function ConfiguracoesProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [configuracoes, setConfiguracoes] = useState<ConfiguracoesGlobais>(() => {
     const saved = localStorage.getItem('configuracoes');
-    return saved ? { ...configuracoesPadrao, ...JSON.parse(saved) } : configuracoesPadrao;
+    
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return { ...configuracoesPadrao, ...parsed };
+      } catch (error) {
+        console.error('Erro ao parsear configurações do localStorage:', error);
+        localStorage.removeItem('configuracoes'); // Limpar dado corrompido
+        return configuracoesPadrao;
+      }
+    }
+    
+    return configuracoesPadrao;
   });
 
   const atualizarConfiguracoes = async (config: Partial<ConfiguracoesGlobais>) => {

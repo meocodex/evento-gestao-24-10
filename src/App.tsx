@@ -12,9 +12,6 @@ import { ConfiguracoesProvider } from "@/contexts/ConfiguracoesContext";
 import { CadastrosPublicosProvider } from "@/contexts/CadastrosPublicosContext";
 import { EventosProvider } from "@/contexts/EventosContext";
 import { DemandasProvider } from "@/contexts/DemandasContext";
-import { setVincularReembolsoCallback } from "@/contexts/DemandasContext";
-import { useEventos } from "@/contexts/EventosContext";
-import { useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -89,12 +86,6 @@ function AuthRoutes() {
 }
 
 function AppWrapper() {
-  const { vincularReembolsoADespesa } = useEventos();
-  
-  useEffect(() => {
-    setVincularReembolsoCallback(vincularReembolsoADespesa);
-  }, [vincularReembolsoADespesa]);
-
   return (
     <BrowserRouter>
       <AuthProvider>

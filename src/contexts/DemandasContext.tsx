@@ -57,12 +57,8 @@ export const useDemandasContext = () => {
   return context;
 };
 
-// Este é um wrapper que permite usar hooks do EventosContext
-let vincularReembolsoCallback: ((eventoId: string, demandaId: string, descricao: string, valor: number, membroNome: string) => void) | null = null;
-
-export function setVincularReembolsoCallback(callback: (eventoId: string, demandaId: string, descricao: string, valor: number, membroNome: string) => void) {
-  vincularReembolsoCallback = callback;
-}
+// REMOVIDO: Callback global foi substituído por hook useEventosDespesas
+// Agora a vinculação é feita diretamente nos componentes que precisam dessa funcionalidade
 
 export const DemandasProvider = ({ children }: { children: ReactNode }) => {
   const [demandas, setDemandas] = useState<Demanda[]>(mockDemandas);
@@ -551,16 +547,9 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
       return d;
     }));
 
-    // Vincular ao financeiro do evento usando callback
-    if (vincularReembolsoCallback) {
-      vincularReembolsoCallback(
-        demanda.eventoRelacionado,
-        demandaId,
-        demanda.titulo,
-        demanda.dadosReembolso.valorTotal,
-        demanda.dadosReembolso.membroEquipeNome
-      );
-    }
+    // NOTA: A vinculação com o financeiro do evento agora é feita
+    // diretamente no componente MarcarPagoDialog usando useEventosDespesas()
+    // Isso elimina o acoplamento circular entre contexts
 
     toast({
       title: 'Reembolso marcado como pago!',

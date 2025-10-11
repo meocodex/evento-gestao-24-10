@@ -12,6 +12,7 @@ import { mockUsuarios } from '@/lib/mock-data/demandas';
 import { format } from 'date-fns';
 import { MessageSquare, Paperclip, Send, CheckCircle2, AlertCircle, Link2, Repeat, DollarSign, FileText, Download, XCircle, Archive, Play, Ban } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useEventosDespesas } from '@/hooks/useEventosDespesas';
 import { AprovarReembolsoDialog } from './AprovarReembolsoDialog';
 import { MarcarPagoDialog } from './MarcarPagoDialog';
 import { RecusarReembolsoDialog } from './RecusarReembolsoDialog';
@@ -62,6 +63,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
     desarquivarDemanda
   } = useDemandasContext();
   const { user } = useAuth();
+  const { vincularReembolsoADespesa } = useEventosDespesas();
   const [novoComentario, setNovoComentario] = useState('');
   const [showAprovarDialog, setShowAprovarDialog] = useState(false);
   const [showPagoDialog, setShowPagoDialog] = useState(false);
@@ -110,6 +112,18 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
 
   const handleMarcarPago = (dataPagamento: string, comprovante?: string, observacoes?: string) => {
     marcarReembolsoPago(demanda.id, dataPagamento, comprovante, observacoes);
+    
+    // Vincular reembolso ao financeiro do evento
+    if (demanda.eventoRelacionado && demanda.dadosReembolso) {
+      vincularReembolsoADespesa(
+        demanda.eventoRelacionado,
+        demanda.id,
+        demanda.titulo,
+        demanda.dadosReembolso.valorTotal,
+        demanda.dadosReembolso.membroEquipeNome
+      );
+    }
+    
     setShowPagoDialog(false);
   };
 

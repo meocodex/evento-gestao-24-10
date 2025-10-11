@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Evento, EventoFormData, MaterialChecklist, MaterialAntecipado, MaterialComTecnicos, Receita, Despesa, MembroEquipe, TimelineItem, StatusEvento, TipoReceita, StatusFinanceiro } from '@/types/eventos';
 import { mockEventos as initialMockEventos } from '@/lib/mock-data/eventos';
+import { mockClientes } from '@/lib/mock-data/clientes';
+import { mockComerciais } from '@/lib/mock-data/comerciais';
 import { materiaisEstoque } from '@/lib/mock-data/estoque';
 import { useToast } from '@/hooks/use-toast';
 
@@ -56,8 +58,8 @@ export function EventosProvider({ children }: { children: ReactNode }) {
 
   const criarEvento = async (data: EventoFormData): Promise<Evento> => {
     return new Promise((resolve) => {
-      const cliente = require('@/lib/mock-data/clientes').mockClientes.find((c: any) => c.id === data.clienteId);
-      const comercial = require('@/lib/mock-data/comerciais').mockComerciais.find((c: any) => c.id === data.comercialId);
+      const cliente = mockClientes.find((c) => c.id === data.clienteId);
+      const comercial = mockComerciais.find((c) => c.id === data.comercialId);
 
       if (!cliente || !comercial) {
         toast({
