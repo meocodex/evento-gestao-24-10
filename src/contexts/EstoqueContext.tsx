@@ -1,7 +1,31 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { materiaisEstoque as mockMateriais } from '@/lib/mock-data/estoque';
-import { MaterialEstoque, SerialEstoque } from '@/lib/mock-data/estoque';
+import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface SerialEstoque {
+  numero: string;
+  status: 'disponivel' | 'em-uso' | 'manutencao';
+  localizacao: string;
+  eventoId?: string;
+  eventoNome?: string;
+  ultimaManutencao?: string;
+  dataAquisicao?: string;
+  observacoes?: string;
+}
+
+export interface MaterialEstoque {
+  id: string;
+  nome: string;
+  categoria: string;
+  seriais: SerialEstoque[];
+  quantidadeDisponivel: number;
+  quantidadeTotal: number;
+  unidade: string;
+  descricao?: string;
+  foto?: string;
+  valorUnitario?: number;
+}
 
 interface FiltrosEstoque {
   busca: string;
@@ -35,8 +59,7 @@ interface EstoqueContextData {
 const EstoqueContext = createContext<EstoqueContextData | undefined>(undefined);
 
 export function EstoqueProvider({ children }: { children: ReactNode }) {
-  const [materiais, setMateriais] = useState<MaterialEstoque[]>(mockMateriais);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [filtros, setFiltros] = useState<FiltrosEstoque>({
     busca: '',
     categoria: 'todas',
@@ -44,7 +67,48 @@ export function EstoqueProvider({ children }: { children: ReactNode }) {
     localizacao: '',
   });
 
-  const materiaisFiltrados = React.useMemo(() => {
+  // Query para buscar materiais com seus seriais
+  const { data: materiais = [], isLoading: loading } = useQuery({
+    queryKey: ['materiais_estoque'],
+    queryFn: async () => {
+      const { data: materiaisDb, error: materiaisError } = await supabase
+        .from('materiais_estoque')
+        .select('*')
+        .order('nome');
+
+      if (materiaisError) throw materiaisError;
+
+      const { data: seriaisDb, error: seriaisError } = await supabase
+        .from('materiais_seriais')
+        .select('*');
+
+      if (seriaisError) throw seriaisError;
+
+      return (materiaisDb || []).map(m => ({
+        id: m.id,
+        nome: m.nome,
+        categoria: m.categoria,
+        descricao: m.descricao || undefined,
+        foto: m.foto || undefined,
+        valorUnitario: m.valor_unitario ? Number(m.valor_unitario) : undefined,
+        quantidadeTotal: m.quantidade_total,
+        quantidadeDisponivel: m.quantidade_disponivel,
+        unidade: 'un',
+        seriais: (seriaisDb || [])
+          .filter(s => s.material_id === m.id)
+          .map(s => ({
+            numero: s.numero,
+            status: s.status as SerialEstoque['status'],
+            localizacao: s.localizacao,
+            ultimaManutencao: s.ultima_manutencao || undefined,
+            dataAquisicao: s.data_aquisicao || undefined,
+            observacoes: s.observacoes || undefined,
+          })),
+      }));
+    },
+  });
+
+  const materiaisFiltrados = useMemo(() => {
     return materiais.filter((material) => {
       const matchBusca = filtros.busca === '' || 
         material.nome.toLowerCase().includes(filtros.busca.toLowerCase()) ||
@@ -63,172 +127,274 @@ export function EstoqueProvider({ children }: { children: ReactNode }) {
     });
   }, [materiais, filtros]);
 
-  const adicionarMaterial = async (dados: Omit<MaterialEstoque, 'id' | 'seriais'>): Promise<MaterialEstoque> => {
-    setLoading(true);
-    try {
-      const novoMaterial: MaterialEstoque = {
-        ...dados,
-        id: `MAT${String(materiais.length + 1).padStart(3, '0')}`,
-        seriais: [],
-      };
+  const adicionarMaterialMutation = useMutation({
+    mutationFn: async (dados: Omit<MaterialEstoque, 'id' | 'seriais'>) => {
+      const { data, error } = await supabase
+        .from('materiais_estoque')
+        .insert({
+          id: `MAT${Date.now()}`,
+          nome: dados.nome,
+          categoria: dados.categoria,
+          descricao: dados.descricao,
+          foto: dados.foto,
+          valor_unitario: dados.valorUnitario,
+          quantidade_total: 0,
+          quantidade_disponivel: 0,
+        })
+        .select()
+        .single();
 
-      setMateriais(prev => [...prev, novoMaterial]);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       toast({
         title: 'Material cadastrado',
-        description: `${novoMaterial.nome} foi adicionado ao estoque.`,
+        description: `${data.nome} foi adicionado ao estoque.`,
       });
+    },
+  });
 
-      return novoMaterial;
-    } finally {
-      setLoading(false);
-    }
+  const adicionarMaterial = async (dados: Omit<MaterialEstoque, 'id' | 'seriais'>): Promise<MaterialEstoque> => {
+    const result = await adicionarMaterialMutation.mutateAsync(dados);
+    return {
+      id: result.id,
+      nome: result.nome,
+      categoria: result.categoria,
+      descricao: result.descricao || undefined,
+      foto: result.foto || undefined,
+      valorUnitario: result.valor_unitario ? Number(result.valor_unitario) : undefined,
+      quantidadeTotal: result.quantidade_total,
+      quantidadeDisponivel: result.quantidade_disponivel,
+      unidade: 'un',
+      seriais: [],
+    };
   };
 
-  const editarMaterial = async (id: string, dados: Partial<MaterialEstoque>) => {
-    setLoading(true);
-    try {
-      setMateriais(prev => prev.map(m => m.id === id ? { ...m, ...dados } : m));
+  const editarMaterialMutation = useMutation({
+    mutationFn: async ({ id, dados }: { id: string; dados: Partial<MaterialEstoque> }) => {
+      const { error } = await supabase
+        .from('materiais_estoque')
+        .update({
+          nome: dados.nome,
+          categoria: dados.categoria,
+          descricao: dados.descricao,
+          foto: dados.foto,
+          valor_unitario: dados.valorUnitario,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       toast({
         title: 'Material atualizado',
         description: 'As alterações foram salvas com sucesso.',
       });
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  const editarMaterial = async (id: string, dados: Partial<MaterialEstoque>) => {
+    await editarMaterialMutation.mutateAsync({ id, dados });
   };
 
-  const excluirMaterial = async (id: string) => {
-    const material = materiais.find(m => m.id === id);
-    if (!material) {
-      toast({
-        title: 'Erro',
-        description: 'Material não encontrado.',
-        variant: 'destructive',
-      });
-      return;
-    }
+  const excluirMaterialMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const material = materiais.find(m => m.id === id);
+      if (!material) throw new Error('Material não encontrado');
 
-    const seriaisEmUso = material.seriais.filter(s => s.status === 'em-uso');
-    if (seriaisEmUso.length > 0) {
-      toast({
-        title: 'Não é possível excluir',
-        description: `Este material possui ${seriaisEmUso.length} unidade(s) em uso.`,
-        variant: 'destructive',
-      });
-      return;
-    }
+      const seriaisEmUso = material.seriais.filter(s => s.status === 'em-uso');
+      if (seriaisEmUso.length > 0) {
+        throw new Error(`Este material possui ${seriaisEmUso.length} unidade(s) em uso.`);
+      }
 
-    setLoading(true);
-    try {
-      setMateriais(prev => prev.filter(m => m.id !== id));
+      const { error } = await supabase
+        .from('materiais_estoque')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return material;
+    },
+    onSuccess: (material) => {
+      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       toast({
         title: 'Material excluído',
         description: `${material.nome} foi removido do estoque.`,
       });
-    } finally {
-      setLoading(false);
-    }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Não é possível excluir',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const excluirMaterial = async (id: string) => {
+    await excluirMaterialMutation.mutateAsync(id);
   };
 
-  const adicionarSerial = async (materialId: string, dados: Omit<SerialEstoque, 'numero'>) => {
-    setLoading(true);
-    try {
-      setMateriais(prev => prev.map(m => {
-        if (m.id === materialId) {
-          const proximoNumero = m.seriais.length + 1;
-          const novoSerial: SerialEstoque = {
-            ...dados,
-            numero: `${m.id}-${String(proximoNumero).padStart(3, '0')}`,
-          };
-          return {
-            ...m,
-            seriais: [...m.seriais, novoSerial],
-            quantidadeTotal: m.quantidadeTotal + 1,
-            quantidadeDisponivel: dados.status === 'disponivel' 
-              ? m.quantidadeDisponivel + 1 
-              : m.quantidadeDisponivel,
-          };
-        }
-        return m;
-      }));
+  const adicionarSerialMutation = useMutation({
+    mutationFn: async ({ materialId, dados }: { materialId: string; dados: Omit<SerialEstoque, 'numero'> }) => {
+      const material = materiais.find(m => m.id === materialId);
+      if (!material) throw new Error('Material não encontrado');
+
+      const proximoNumero = material.seriais.length + 1;
+      const numero = `${material.id}-${String(proximoNumero).padStart(3, '0')}`;
+
+      const { error } = await supabase
+        .from('materiais_seriais')
+        .insert({
+          material_id: materialId,
+          numero,
+          status: dados.status,
+          localizacao: dados.localizacao,
+          data_aquisicao: dados.dataAquisicao,
+          ultima_manutencao: dados.ultimaManutencao,
+          observacoes: dados.observacoes,
+        });
+
+      if (error) throw error;
+
+      // Atualizar contadores do material
+      const novaQuantidadeTotal = material.quantidadeTotal + 1;
+      const novaQuantidadeDisponivel = dados.status === 'disponivel' 
+        ? material.quantidadeDisponivel + 1 
+        : material.quantidadeDisponivel;
+
+      const { error: updateError } = await supabase
+        .from('materiais_estoque')
+        .update({
+          quantidade_total: novaQuantidadeTotal,
+          quantidade_disponivel: novaQuantidadeDisponivel,
+        })
+        .eq('id', materialId);
+
+      if (updateError) throw updateError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       toast({
         title: 'Serial adicionado',
         description: 'Novo item adicionado ao estoque.',
       });
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  const adicionarSerial = async (materialId: string, dados: Omit<SerialEstoque, 'numero'>) => {
+    await adicionarSerialMutation.mutateAsync({ materialId, dados });
   };
 
-  const editarSerial = async (materialId: string, numeroSerial: string, dados: Partial<SerialEstoque>) => {
-    setLoading(true);
-    try {
-      setMateriais(prev => prev.map(m => {
-        if (m.id === materialId) {
-          const serialAtual = m.seriais.find(s => s.numero === numeroSerial);
-          const novosSeriais = m.seriais.map(s => 
-            s.numero === numeroSerial ? { ...s, ...dados } : s
-          );
-          
-          let quantidadeDisponivel = m.quantidadeDisponivel;
-          if (serialAtual && dados.status) {
-            if (serialAtual.status !== 'disponivel' && dados.status === 'disponivel') {
-              quantidadeDisponivel++;
-            } else if (serialAtual.status === 'disponivel' && dados.status !== 'disponivel') {
-              quantidadeDisponivel--;
-            }
-          }
+  const editarSerialMutation = useMutation({
+    mutationFn: async ({ materialId, numeroSerial, dados }: { materialId: string; numeroSerial: string; dados: Partial<SerialEstoque> }) => {
+      const material = materiais.find(m => m.id === materialId);
+      if (!material) throw new Error('Material não encontrado');
 
-          return {
-            ...m,
-            seriais: novosSeriais,
-            quantidadeDisponivel,
-          };
+      const serialAtual = material.seriais.find(s => s.numero === numeroSerial);
+      if (!serialAtual) throw new Error('Serial não encontrado');
+
+      const { error } = await supabase
+        .from('materiais_seriais')
+        .update({
+          status: dados.status,
+          localizacao: dados.localizacao,
+          data_aquisicao: dados.dataAquisicao,
+          ultima_manutencao: dados.ultimaManutencao,
+          observacoes: dados.observacoes,
+        })
+        .eq('material_id', materialId)
+        .eq('numero', numeroSerial);
+
+      if (error) throw error;
+
+      // Atualizar quantidade disponível se mudou o status
+      if (dados.status && serialAtual.status !== dados.status) {
+        let novaQuantidadeDisponivel = material.quantidadeDisponivel;
+        if (serialAtual.status !== 'disponivel' && dados.status === 'disponivel') {
+          novaQuantidadeDisponivel++;
+        } else if (serialAtual.status === 'disponivel' && dados.status !== 'disponivel') {
+          novaQuantidadeDisponivel--;
         }
-        return m;
-      }));
+
+        const { error: updateError } = await supabase
+          .from('materiais_estoque')
+          .update({ quantidade_disponivel: novaQuantidadeDisponivel })
+          .eq('id', materialId);
+
+        if (updateError) throw updateError;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       toast({
         title: 'Serial atualizado',
         description: 'As alterações foram salvas com sucesso.',
       });
-    } finally {
-      setLoading(false);
-    }
+    },
+  });
+
+  const editarSerial = async (materialId: string, numeroSerial: string, dados: Partial<SerialEstoque>) => {
+    await editarSerialMutation.mutateAsync({ materialId, numeroSerial, dados });
   };
 
-  const excluirSerial = async (materialId: string, numeroSerial: string) => {
-    setLoading(true);
-    try {
-      setMateriais(prev => prev.map(m => {
-        if (m.id === materialId) {
-          const serial = m.seriais.find(s => s.numero === numeroSerial);
-          if (serial?.status === 'em-uso') {
-            toast({
-              title: 'Não é possível excluir',
-              description: 'Este serial está em uso.',
-              variant: 'destructive',
-            });
-            return m;
-          }
+  const excluirSerialMutation = useMutation({
+    mutationFn: async ({ materialId, numeroSerial }: { materialId: string; numeroSerial: string }) => {
+      const material = materiais.find(m => m.id === materialId);
+      if (!material) throw new Error('Material não encontrado');
 
-          return {
-            ...m,
-            seriais: m.seriais.filter(s => s.numero !== numeroSerial),
-            quantidadeTotal: m.quantidadeTotal - 1,
-            quantidadeDisponivel: serial?.status === 'disponivel' 
-              ? m.quantidadeDisponivel - 1 
-              : m.quantidadeDisponivel,
-          };
-        }
-        return m;
-      }));
+      const serial = material.seriais.find(s => s.numero === numeroSerial);
+      if (!serial) throw new Error('Serial não encontrado');
+
+      if (serial.status === 'em-uso') {
+        throw new Error('Este serial está em uso.');
+      }
+
+      const { error } = await supabase
+        .from('materiais_seriais')
+        .delete()
+        .eq('material_id', materialId)
+        .eq('numero', numeroSerial);
+
+      if (error) throw error;
+
+      // Atualizar contadores
+      const novaQuantidadeTotal = material.quantidadeTotal - 1;
+      const novaQuantidadeDisponivel = serial.status === 'disponivel' 
+        ? material.quantidadeDisponivel - 1 
+        : material.quantidadeDisponivel;
+
+      const { error: updateError } = await supabase
+        .from('materiais_estoque')
+        .update({
+          quantidade_total: novaQuantidadeTotal,
+          quantidade_disponivel: novaQuantidadeDisponivel,
+        })
+        .eq('id', materialId);
+
+      if (updateError) throw updateError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       toast({
         title: 'Serial excluído',
         description: 'Item removido do estoque.',
       });
-    } finally {
-      setLoading(false);
-    }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Não é possível excluir',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const excluirSerial = async (materialId: string, numeroSerial: string) => {
+    await excluirSerialMutation.mutateAsync({ materialId, numeroSerial });
   };
 
   const buscarMaterialPorId = (id: string) => {

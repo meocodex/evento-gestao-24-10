@@ -1,9 +1,10 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Cliente, ClienteFormData } from '@/types/eventos';
-import { mockClientes } from '@/lib/mock-data/clientes';
 import { buscarCEP, EnderecoViaCEP } from '@/lib/api/viacep';
 import { validarCPF, validarCNPJ } from '@/lib/validations/cliente';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FiltrosClientes {
   busca: string;
@@ -31,8 +32,7 @@ interface ClientesContextData {
 const ClientesContext = createContext<ClientesContextData>({} as ClientesContextData);
 
 export function ClientesProvider({ children }: { children: ReactNode }) {
-  const [clientes, setClientes] = useState<Cliente[]>(mockClientes);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [filtros, setFiltros] = useState<FiltrosClientes>({
     busca: '',
     tipo: 'todos',
@@ -41,102 +41,159 @@ export function ClientesProvider({ children }: { children: ReactNode }) {
     status: 'todos',
   });
 
-  const criarCliente = useCallback(async (data: ClienteFormData): Promise<Cliente> => {
-    setLoading(true);
-    try {
-      // Validar documento duplicado
-      const documentoExiste = clientes.some(
-        (c) => c.documento.replace(/\D/g, '') === data.documento.replace(/\D/g, '')
-      );
+  // Query para buscar clientes
+  const { data: clientes = [], isLoading: loading } = useQuery({
+    queryKey: ['clientes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      return (data || []).map(c => ({
+        id: c.id,
+        nome: c.nome,
+        tipo: c.tipo as 'CPF' | 'CNPJ',
+        documento: c.documento,
+        telefone: c.telefone,
+        whatsapp: c.whatsapp || undefined,
+        email: c.email,
+        endereco: c.endereco as Cliente['endereco'],
+      }));
+    },
+  });
 
-      if (documentoExiste) {
+  // Mutation para criar cliente
+  const criarClienteMutation = useMutation({
+    mutationFn: async (data: ClienteFormData) => {
+      // Validar documento duplicado
+      const documentoLimpo = data.documento.replace(/\D/g, '');
+      const { data: existente } = await supabase
+        .from('clientes')
+        .select('id')
+        .ilike('documento', `%${documentoLimpo}%`)
+        .maybeSingle();
+
+      if (existente) {
         throw new Error('Documento já cadastrado');
       }
 
-      const novoCliente: Cliente = {
-        id: Date.now().toString(),
-        nome: data.nome,
-        tipo: data.tipo,
-        documento: data.documento,
-        telefone: data.telefone,
-        whatsapp: data.whatsapp,
-        email: data.email,
-        endereco: data.endereco,
-      };
+      const { data: novoCliente, error } = await supabase
+        .from('clientes')
+        .insert({
+          nome: data.nome,
+          tipo: data.tipo,
+          documento: data.documento,
+          telefone: data.telefone,
+          whatsapp: data.whatsapp,
+          email: data.email,
+          endereco: data.endereco,
+        })
+        .select()
+        .single();
 
-      setClientes((prev) => [...prev, novoCliente]);
-      
+      if (error) throw error;
+      return novoCliente;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['clientes'] });
       toast({
         title: 'Cliente criado com sucesso!',
-        description: `${novoCliente.nome} foi adicionado ao sistema.`,
+        description: `${data.nome} foi adicionado ao sistema.`,
       });
-
-      return novoCliente;
-    } catch (error) {
+    },
+    onError: (error: Error) => {
       toast({
         title: 'Erro ao criar cliente',
-        description: error instanceof Error ? error.message : 'Tente novamente',
+        description: error.message || 'Tente novamente',
         variant: 'destructive',
       });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, [clientes]);
+    },
+  });
 
-  const editarCliente = useCallback(async (id: string, data: Partial<ClienteFormData>): Promise<void> => {
-    setLoading(true);
-    try {
-      setClientes((prev) =>
-        prev.map((cliente) =>
-          cliente.id === id
-            ? {
-                ...cliente,
-                ...data,
-                endereco: data.endereco ? { ...cliente.endereco, ...data.endereco } : cliente.endereco,
-              }
-            : cliente
-        )
-      );
+  const criarCliente = useCallback(async (data: ClienteFormData): Promise<Cliente> => {
+    const result = await criarClienteMutation.mutateAsync(data);
+    return {
+      id: result.id,
+      nome: result.nome,
+      tipo: result.tipo as 'CPF' | 'CNPJ',
+      documento: result.documento,
+      telefone: result.telefone,
+      whatsapp: result.whatsapp || undefined,
+      email: result.email,
+      endereco: result.endereco as Cliente['endereco'],
+    };
+  }, [criarClienteMutation]);
 
+  // Mutation para editar cliente
+  const editarClienteMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<ClienteFormData> }) => {
+      const cliente = clientes.find(c => c.id === id);
+      if (!cliente) throw new Error('Cliente não encontrado');
+
+      const { error } = await supabase
+        .from('clientes')
+        .update({
+          ...data,
+          endereco: data.endereco ? { ...cliente.endereco, ...data.endereco } : undefined,
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['clientes'] });
       toast({
         title: 'Cliente atualizado!',
         description: 'As alterações foram salvas com sucesso.',
       });
-    } catch (error) {
+    },
+    onError: () => {
       toast({
         title: 'Erro ao editar cliente',
         description: 'Tente novamente',
         variant: 'destructive',
       });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+  });
 
-  const excluirCliente = useCallback(async (id: string): Promise<void> => {
-    setLoading(true);
-    try {
+  const editarCliente = useCallback(async (id: string, data: Partial<ClienteFormData>): Promise<void> => {
+    await editarClienteMutation.mutateAsync({ id, data });
+  }, [editarClienteMutation]);
+
+  // Mutation para excluir cliente
+  const excluirClienteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('clientes')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      return id;
+    },
+    onSuccess: (id) => {
       const cliente = clientes.find((c) => c.id === id);
-      
-      setClientes((prev) => prev.filter((c) => c.id !== id));
-
+      queryClient.invalidateQueries({ queryKey: ['clientes'] });
       toast({
         title: 'Cliente excluído',
         description: `${cliente?.nome} foi removido do sistema.`,
       });
-    } catch (error) {
+    },
+    onError: () => {
       toast({
         title: 'Erro ao excluir cliente',
         description: 'Tente novamente',
         variant: 'destructive',
       });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  }, [clientes]);
+    },
+  });
+
+  const excluirCliente = useCallback(async (id: string): Promise<void> => {
+    await excluirClienteMutation.mutateAsync(id);
+  }, [excluirClienteMutation]);
 
   const buscarClientePorId = useCallback(
     (id: string): Cliente | undefined => {
@@ -177,38 +234,40 @@ export function ClientesProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Filtrar clientes
-  const clientesFiltrados = clientes.filter((cliente) => {
-    // Filtro de busca
-    if (filtros.busca) {
-      const busca = filtros.busca.toLowerCase();
-      const matchNome = cliente.nome.toLowerCase().includes(busca);
-      const matchDocumento = cliente.documento.replace(/\D/g, '').includes(busca.replace(/\D/g, ''));
-      const matchEmail = cliente.email?.toLowerCase().includes(busca);
-      const matchTelefone = cliente.telefone.replace(/\D/g, '').includes(busca.replace(/\D/g, ''));
-      
-      if (!matchNome && !matchDocumento && !matchEmail && !matchTelefone) {
+  // Filtrar clientes (memoizado)
+  const clientesFiltrados = useMemo(() => {
+    return clientes.filter((cliente) => {
+      // Filtro de busca
+      if (filtros.busca) {
+        const busca = filtros.busca.toLowerCase();
+        const matchNome = cliente.nome.toLowerCase().includes(busca);
+        const matchDocumento = cliente.documento.replace(/\D/g, '').includes(busca.replace(/\D/g, ''));
+        const matchEmail = cliente.email?.toLowerCase().includes(busca);
+        const matchTelefone = cliente.telefone.replace(/\D/g, '').includes(busca.replace(/\D/g, ''));
+        
+        if (!matchNome && !matchDocumento && !matchEmail && !matchTelefone) {
+          return false;
+        }
+      }
+
+      // Filtro de tipo
+      if (filtros.tipo !== 'todos' && cliente.tipo !== filtros.tipo) {
         return false;
       }
-    }
 
-    // Filtro de tipo
-    if (filtros.tipo !== 'todos' && cliente.tipo !== filtros.tipo) {
-      return false;
-    }
+      // Filtro de estado
+      if (filtros.estado && cliente.endereco.estado !== filtros.estado) {
+        return false;
+      }
 
-    // Filtro de estado
-    if (filtros.estado && cliente.endereco.estado !== filtros.estado) {
-      return false;
-    }
+      // Filtro de cidade
+      if (filtros.cidade && cliente.endereco.cidade !== filtros.cidade) {
+        return false;
+      }
 
-    // Filtro de cidade
-    if (filtros.cidade && cliente.endereco.cidade !== filtros.cidade) {
-      return false;
-    }
-
-    return true;
-  });
+      return true;
+    });
+  }, [clientes, filtros]);
 
   return (
     <ClientesContext.Provider
