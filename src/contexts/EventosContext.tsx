@@ -1,9 +1,12 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { Evento, EventoFormData, MaterialChecklist, MaterialAntecipado, MaterialComTecnicos, Receita, Despesa, MembroEquipe, StatusEvento, TipoReceita, StatusFinanceiro } from '@/types/eventos';
-import { materiaisEstoque } from '@/lib/mock-data/estoque';
+import { Evento, EventoFormData, MaterialChecklist, MaterialAntecipado, MaterialComTecnicos, Receita, Despesa, MembroEquipe, StatusEvento } from '@/types/eventos';
 import { useToast } from '@/hooks/use-toast';
 import { useEventosQueries } from './eventos/useEventosQueries';
 import { useEventosMutations } from './eventos/useEventosMutations';
+import { useEventosChecklist } from './eventos/useEventosChecklist';
+import { useEventosMateriaisAlocados } from './eventos/useEventosMateriaisAlocados';
+import { useEventosEquipe } from './eventos/useEventosEquipe';
+import { useEventosFinanceiro } from './eventos/useEventosFinanceiro';
 
 interface EventosContextType {
   eventos: Evento[];
@@ -37,6 +40,16 @@ export function EventosProvider({ children }: { children: ReactNode }) {
   // Usar hooks do Supabase
   const { eventos, loading, refetch } = useEventosQueries();
   const { criarEvento, editarEvento, excluirEvento, alterarStatus } = useEventosMutations();
+  const { adicionarMaterial: addMaterialChecklist, removerMaterial: removeMaterialChecklist } = useEventosChecklist();
+  const { alocarMaterial: allocMaterial, removerMaterialAlocado: removeMaterialAloc } = useEventosMateriaisAlocados();
+  const { adicionarMembro: addMembroEquipe, removerMembro: removeMembroEquipe } = useEventosEquipe();
+  const { 
+    adicionarReceita: addReceita, 
+    removerReceita: removeReceita,
+    adicionarDespesa: addDespesa,
+    editarDespesa: updateDespesa,
+    removerDespesa: removeDespesa
+  } = useEventosFinanceiro();
 
   // Funções CRUD principais agora usam os hooks do Supabase
   // criarEvento, editarEvento, excluirEvento (deletarEvento), alterarStatus já vêm dos hooks
@@ -44,75 +57,39 @@ export function EventosProvider({ children }: { children: ReactNode }) {
   const deletarEvento = excluirEvento; // Alias para manter compatibilidade
 
   const adicionarMaterialChecklist = async (eventoId: string, material: Omit<MaterialChecklist, 'id' | 'alocado'>): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await addMaterialChecklist.mutateAsync({ eventoId, material });
   };
 
   const removerMaterialChecklist = async (eventoId: string, materialId: string): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await removeMaterialChecklist.mutateAsync({ eventoId, materialId });
   };
 
   const alocarMaterial = async (eventoId: string, tipo: 'antecipado' | 'comTecnicos', material: any): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await allocMaterial.mutateAsync({ eventoId, tipo, material });
   };
 
   const removerMaterialAlocado = async (eventoId: string, tipo: 'antecipado' | 'comTecnicos', materialId: string): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await removeMaterialAloc.mutateAsync({ eventoId, materialId });
   };
 
   const adicionarReceita = async (eventoId: string, receita: Omit<Receita, 'id'>): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await addReceita.mutateAsync({ eventoId, receita });
   };
 
   const removerReceita = async (eventoId: string, receitaId: string): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await removeReceita.mutateAsync({ receitaId });
   };
 
   const adicionarDespesa = async (eventoId: string, despesa: Omit<Despesa, 'id'>): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await addDespesa.mutateAsync({ eventoId, despesa });
   };
 
   const editarDespesa = async (eventoId: string, despesaId: string, data: Partial<Despesa>): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await updateDespesa.mutateAsync({ despesaId, data });
   };
 
   const removerDespesa = async (eventoId: string, despesaId: string): Promise<void> => {
-    // TODO: Implementar com Supabase
-    toast({
-      title: 'Em desenvolvimento',
-      description: 'Funcionalidade será implementada em breve.'
-    });
+    await removeDespesa.mutateAsync({ despesaId });
   };
 
   const adicionarMembroEquipe = async (eventoId: string, membro: Omit<MembroEquipe, 'id'>): Promise<void> => {
