@@ -10,15 +10,7 @@ import { CategoriaDemanda, PrioridadeDemanda } from '@/types/demandas';
 import { Plus } from 'lucide-react';
 import { mockUsuarios } from '@/lib/mock-data/demandas';
 import { useEventos } from '@/contexts/EventosContext';
-
-const categorias: { value: CategoriaDemanda; label: string }[] = [
-  { value: 'tecnica', label: 'Técnica' },
-  { value: 'operacional', label: 'Operacional' },
-  { value: 'comercial', label: 'Comercial' },
-  { value: 'financeira', label: 'Financeira' },
-  { value: 'administrativa', label: 'Administrativa' },
-  { value: 'outra', label: 'Outra' },
-];
+import { useCategorias } from '@/contexts/CategoriasContext';
 
 const prioridades: { value: PrioridadeDemanda; label: string }[] = [
   { value: 'baixa', label: 'Baixa' },
@@ -31,6 +23,7 @@ export function NovaDemandaDialog() {
   const [open, setOpen] = useState(false);
   const { adicionarDemanda } = useDemandasContext();
   const { eventos } = useEventos();
+  const { categoriasDemandas, isLoading: loadingCategorias } = useCategorias();
 
   const eventosAtivos = eventos.filter(e => 
     ['orcamento', 'aprovado', 'em-preparacao', 'em-execucao'].includes(e.status)
@@ -133,7 +126,7 @@ export function NovaDemandaDialog() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {categorias.map((cat) => (
+                  {categoriasDemandas.map((cat) => (
                     <SelectItem key={cat.value} value={cat.value}>
                       {cat.label}
                     </SelectItem>

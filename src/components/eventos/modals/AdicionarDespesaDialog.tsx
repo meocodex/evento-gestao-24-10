@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useCategorias } from '@/contexts/CategoriasContext';
 
 interface AdicionarDespesaDialogProps {
   open: boolean;
@@ -14,6 +15,7 @@ interface AdicionarDespesaDialogProps {
 
 export function AdicionarDespesaDialog({ open, onOpenChange, onAdicionar }: AdicionarDespesaDialogProps) {
   const { toast } = useToast();
+  const { categoriasDespesas } = useCategorias();
   const [descricao, setDescricao] = useState('');
   const [quantidade, setQuantidade] = useState(1);
   const [valorUnitario, setValorUnitario] = useState('');
@@ -113,12 +115,11 @@ export function AdicionarDespesaDialog({ open, onOpenChange, onAdicionar }: Adic
                 <SelectValue placeholder="Selecione a categoria" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="transporte">Transporte</SelectItem>
-                <SelectItem value="alimentacao">Alimentação</SelectItem>
-                <SelectItem value="hospedagem">Hospedagem</SelectItem>
-                <SelectItem value="equipe">Equipe</SelectItem>
-                <SelectItem value="material">Material</SelectItem>
-                <SelectItem value="outros">Outros</SelectItem>
+                {categoriasDespesas.map((cat) => (
+                  <SelectItem key={cat.value} value={cat.value}>
+                    {cat.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

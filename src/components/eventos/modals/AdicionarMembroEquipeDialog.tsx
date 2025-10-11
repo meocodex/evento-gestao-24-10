@@ -3,7 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useCategorias } from '@/contexts/CategoriasContext';
 
 interface AdicionarMembroEquipeDialogProps {
   open: boolean;
@@ -13,6 +15,7 @@ interface AdicionarMembroEquipeDialogProps {
 
 export function AdicionarMembroEquipeDialog({ open, onOpenChange, onAdicionar }: AdicionarMembroEquipeDialogProps) {
   const { toast } = useToast();
+  const { funcoesEquipe } = useCategorias();
   const [nome, setNome] = useState('');
   const [funcao, setFuncao] = useState('');
   const [telefone, setTelefone] = useState('');
@@ -62,13 +65,18 @@ export function AdicionarMembroEquipeDialog({ open, onOpenChange, onAdicionar }:
 
           <div>
             <Label htmlFor="funcao">Função *</Label>
-            <Input 
-              id="funcao"
-              value={funcao} 
-              onChange={(e) => setFuncao(e.target.value)} 
-              placeholder="Ex: Técnico de Som"
-              required
-            />
+            <Select value={funcao} onValueChange={setFuncao}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione uma função" />
+              </SelectTrigger>
+              <SelectContent>
+                {funcoesEquipe.map((f) => (
+                  <SelectItem key={f.value} value={f.label}>
+                    {f.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div>

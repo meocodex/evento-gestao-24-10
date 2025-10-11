@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, User, Building2, Bell, Shield, Zap, MessageSquare, Mail } from 'lucide-react';
+import { Settings, User, Building2, Bell, Shield, Zap, MessageSquare, Mail, Tags } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useConfiguracoes } from '@/contexts/ConfiguracoesContext';
 import { useToast } from '@/hooks/use-toast';
+import { GerenciarCategorias } from '@/components/configuracoes/GerenciarCategorias';
 
 export default function Configuracoes() {
   const { toast } = useToast();
@@ -71,6 +72,7 @@ export default function Configuracoes() {
           <TabsList>
             <TabsTrigger value="perfil">Perfil</TabsTrigger>
             <TabsTrigger value="empresa">Empresa</TabsTrigger>
+            <TabsTrigger value="categorias">Categorias</TabsTrigger>
             <TabsTrigger value="integracoes">Integrações</TabsTrigger>
             <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
             <TabsTrigger value="seguranca">Segurança</TabsTrigger>
@@ -118,6 +120,41 @@ export default function Configuracoes() {
                 <Button>Salvar</Button>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="categorias" className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-display mb-2">Gerenciar Categorias</h2>
+              <p className="text-muted-foreground">
+                Configure as categorias personalizadas para demandas, estoque, despesas e funções de equipe
+              </p>
+            </div>
+
+            <div className="grid gap-6">
+              <GerenciarCategorias
+                tipo="demandas"
+                titulo="Categorias de Demandas"
+                descricao="Personalize as categorias disponíveis para demandas"
+              />
+
+              <GerenciarCategorias
+                tipo="estoque"
+                titulo="Categorias de Estoque"
+                descricao="Personalize as categorias de materiais do estoque"
+              />
+
+              <GerenciarCategorias
+                tipo="despesas"
+                titulo="Categorias de Despesas"
+                descricao="Personalize as categorias de despesas de eventos"
+              />
+
+              <GerenciarCategorias
+                tipo="funcoes_equipe"
+                titulo="Funções de Equipe"
+                descricao="Personalize as funções disponíveis para membros da equipe"
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="integracoes" className="space-y-4">

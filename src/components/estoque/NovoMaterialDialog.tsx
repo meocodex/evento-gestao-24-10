@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useEstoque } from '@/contexts/EstoqueContext';
+import { useCategorias } from '@/contexts/CategoriasContext';
 
 const materialSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -33,17 +34,9 @@ interface NovoMaterialDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const categorias = [
-  'Iluminação',
-  'Áudio',
-  'Vídeo',
-  'Estrutura',
-  'Cenografia',
-  'Outros',
-];
-
 export function NovoMaterialDialog({ open, onOpenChange }: NovoMaterialDialogProps) {
   const { adicionarMaterial } = useEstoque();
+  const { categoriasEstoque } = useCategorias();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -103,9 +96,9 @@ export function NovoMaterialDialog({ open, onOpenChange }: NovoMaterialDialogPro
                 <SelectValue placeholder="Selecione a categoria" />
               </SelectTrigger>
               <SelectContent>
-                {categorias.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
+                {categoriasEstoque.map((cat) => (
+                  <SelectItem key={cat.value} value={cat.label}>
+                    {cat.label}
                   </SelectItem>
                 ))}
               </SelectContent>

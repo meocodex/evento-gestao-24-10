@@ -12,6 +12,7 @@ import { ConfiguracoesProvider } from "@/contexts/ConfiguracoesContext";
 import { CadastrosPublicosProvider } from "@/contexts/CadastrosPublicosContext";
 import { EventosProvider } from "@/contexts/EventosContext";
 import { DemandasProvider } from "@/contexts/DemandasContext";
+import { CategoriasProvider } from "@/contexts/CategoriasContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -90,15 +91,16 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <AuthProvider>
-        <EventosProvider>
-          <DemandasProvider>
-            <ClientesProvider>
-              <EstoqueProvider>
-                <ConfiguracoesProvider>
-                  <CadastrosPublicosProvider>
-                    <TransportadorasProvider>
-                      <ContratosProvider>
-                        <TooltipProvider>
+        <CategoriasProvider>
+          <EventosProvider>
+            <DemandasProvider>
+              <ClientesProvider>
+                <EstoqueProvider>
+                  <ConfiguracoesProvider>
+                    <CadastrosPublicosProvider>
+                      <TransportadorasProvider>
+                        <ContratosProvider>
+                          <TooltipProvider>
                           <Toaster />
                           <Sonner />
                           <Routes>
@@ -107,15 +109,16 @@ const App = () => (
                             <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
                             <Route path="/*" element={<ProtectedRoutes />} />
                           </Routes>
-                        </TooltipProvider>
-                      </ContratosProvider>
-                    </TransportadorasProvider>
-                  </CadastrosPublicosProvider>
-                </ConfiguracoesProvider>
-              </EstoqueProvider>
-            </ClientesProvider>
-          </DemandasProvider>
-        </EventosProvider>
+                          </TooltipProvider>
+                        </ContratosProvider>
+                      </TransportadorasProvider>
+                    </CadastrosPublicosProvider>
+                  </ConfiguracoesProvider>
+                </EstoqueProvider>
+              </ClientesProvider>
+            </DemandasProvider>
+          </EventosProvider>
+        </CategoriasProvider>
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>

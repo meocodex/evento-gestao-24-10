@@ -133,6 +133,33 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracoes_categorias: {
+        Row: {
+          categorias: Json
+          created_at: string | null
+          id: string
+          tipo: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          categorias?: Json
+          created_at?: string | null
+          id?: string
+          tipo: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          categorias?: Json
+          created_at?: string | null
+          id?: string
+          tipo?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       configuracoes_usuario: {
         Row: {
           created_at: string | null
