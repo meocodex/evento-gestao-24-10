@@ -12,22 +12,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEstoque } from '@/contexts/EstoqueContext';
 import { Card, CardContent } from '@/components/ui/card';
-
-const categorias = [
-  'Iluminação',
-  'Áudio',
-  'Vídeo',
-  'Estrutura',
-  'Cenografia',
-  'Mobiliário',
-  'Cabeamento',
-  'Elétrica',
-  'Pagamento',
-  'Outros',
-];
+import { useCategorias } from '@/contexts/CategoriasContext';
 
 export function EstoqueFilters() {
   const { filtros, setFiltros } = useEstoque();
+  const { categoriasEstoque, isLoading } = useCategorias();
 
   const handleReset = () => {
     setFiltros({
@@ -91,11 +80,17 @@ export function EstoqueFilters() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todas">Todas</SelectItem>
-                  {categorias.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
+                  {isLoading ? (
+                    <SelectItem value="loading" disabled>Carregando...</SelectItem>
+                  ) : categoriasEstoque.length === 0 ? (
+                    <SelectItem value="empty" disabled>Nenhuma categoria configurada</SelectItem>
+                  ) : (
+                    categoriasEstoque.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

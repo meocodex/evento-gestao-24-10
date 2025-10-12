@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/select';
 import { useEstoque } from '@/contexts/EstoqueContext';
 import { MaterialEstoque } from '@/lib/mock-data/estoque';
+import { useCategorias } from '@/contexts/CategoriasContext';
 
 const materialSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -35,21 +36,9 @@ interface EditarMaterialDialogProps {
   material: MaterialEstoque;
 }
 
-const categorias = [
-  'Iluminação',
-  'Áudio',
-  'Vídeo',
-  'Estrutura',
-  'Cenografia',
-  'Mobiliário',
-  'Cabeamento',
-  'Elétrica',
-  'Pagamento',
-  'Outros',
-];
-
 export function EditarMaterialDialog({ open, onOpenChange, material }: EditarMaterialDialogProps) {
   const { editarMaterial } = useEstoque();
+  const { categoriasEstoque, isLoading: isLoadingCategorias } = useCategorias();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -116,11 +105,17 @@ export function EditarMaterialDialog({ open, onOpenChange, material }: EditarMat
                 <SelectValue placeholder="Selecione a categoria" />
               </SelectTrigger>
               <SelectContent>
-                {categorias.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
+                {isLoadingCategorias ? (
+                  <SelectItem value="loading" disabled>Carregando...</SelectItem>
+                ) : categoriasEstoque.length === 0 ? (
+                  <SelectItem value="empty" disabled>Nenhuma categoria configurada</SelectItem>
+                ) : (
+                  categoriasEstoque.map((cat) => (
+                    <SelectItem key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
             {errors.categoria && (

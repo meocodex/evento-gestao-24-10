@@ -11,10 +11,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useEventos } from '@/contexts/EventosContext';
 import { useState } from 'react';
 import { Switch } from '@/components/ui/switch';
+import { useCategorias } from '@/contexts/CategoriasContext';
 
 export function DemandaFilters() {
   const { filtros, setFiltros } = useDemandasContext();
   const { eventos } = useEventos();
+  const { categoriasDemandas, isLoading } = useCategorias();
   const [apenasReembolsos, setApenasReembolsos] = useState(false);
 
   const toggleStatus = (status: StatusDemanda) => {
@@ -163,25 +165,31 @@ export function DemandaFilters() {
 
       <div className="space-y-2">
         <Label>Categoria</Label>
-        <div className="flex flex-wrap gap-2">
-          {['tecnica', 'operacional', 'comercial', 'financeira', 'administrativa', 'reembolso', 'outra'].map((cat) => (
-            <Badge
-              key={cat}
-              variant="outline"
-              className={filtros.categoria?.includes(cat as CategoriaDemanda) ? 'bg-primary/10 text-primary' : 'cursor-pointer'}
-              onClick={() => toggleCategoria(cat as CategoriaDemanda)}
-            >
-              {cat === 'reembolso' ? (
-                <span className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3" />
-                  Reembolso
-                </span>
-              ) : (
-                cat.charAt(0).toUpperCase() + cat.slice(1)
-              )}
-            </Badge>
-          ))}
-        </div>
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Carregando categorias...</p>
+        ) : categoriasDemandas.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nenhuma categoria configurada</p>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {categoriasDemandas.map((cat) => (
+              <Badge
+                key={cat.value}
+                variant="outline"
+                className={filtros.categoria?.includes(cat.value as CategoriaDemanda) ? 'bg-primary/10 text-primary' : 'cursor-pointer'}
+                onClick={() => toggleCategoria(cat.value as CategoriaDemanda)}
+              >
+                {cat.value === 'reembolso' ? (
+                  <span className="flex items-center gap-1">
+                    <DollarSign className="h-3 w-3" />
+                    {cat.label}
+                  </span>
+                ) : (
+                  cat.label
+                )}
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Filtros Específicos de Reembolso */}

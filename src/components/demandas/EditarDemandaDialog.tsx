@@ -9,21 +9,13 @@ import { useDemandasContext } from '@/contexts/DemandasContext';
 import { Demanda, CategoriaDemanda, PrioridadeDemanda } from '@/types/demandas';
 import { mockUsuarios } from '@/lib/mock-data/demandas';
 import { useEventos } from '@/contexts/EventosContext';
+import { useCategorias } from '@/contexts/CategoriasContext';
 
 interface EditarDemandaDialogProps {
   demanda: Demanda | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const categorias: { value: CategoriaDemanda; label: string }[] = [
-  { value: 'tecnica', label: 'Técnica' },
-  { value: 'operacional', label: 'Operacional' },
-  { value: 'comercial', label: 'Comercial' },
-  { value: 'financeira', label: 'Financeira' },
-  { value: 'administrativa', label: 'Administrativa' },
-  { value: 'outra', label: 'Outra' },
-];
 
 const prioridades: { value: PrioridadeDemanda; label: string }[] = [
   { value: 'baixa', label: 'Baixa' },
@@ -35,6 +27,7 @@ const prioridades: { value: PrioridadeDemanda; label: string }[] = [
 export function EditarDemandaDialog({ demanda, open, onOpenChange }: EditarDemandaDialogProps) {
   const { editarDemanda } = useDemandasContext();
   const { eventos } = useEventos();
+  const { categoriasDemandas, isLoading } = useCategorias();
 
   const eventosAtivos = eventos.filter(e => 
     ['orcamento', 'aprovado', 'em-preparacao', 'em-execucao'].includes(e.status)
@@ -132,11 +125,17 @@ export function EditarDemandaDialog({ demanda, open, onOpenChange }: EditarDeman
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {categorias.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
+                  {isLoading ? (
+                    <SelectItem value="loading" disabled>Carregando...</SelectItem>
+                  ) : categoriasDemandas.length === 0 ? (
+                    <SelectItem value="empty" disabled>Nenhuma categoria configurada</SelectItem>
+                  ) : (
+                    categoriasDemandas.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
