@@ -13,17 +13,16 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center animate-fade-in">
       <div className="relative mb-6">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full blur-2xl animate-pulse-subtle" />
-        <div className="relative p-6 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 animate-bounce-subtle">
-          <Icon className="h-16 w-16 text-primary" />
+        <div className="p-6 rounded-full bg-navy-50">
+          <Icon className="h-16 w-16 text-navy-600" />
         </div>
       </div>
       
-      <h3 className="text-2xl font-display font-bold text-foreground mb-2">
+      <h3 className="text-2xl font-display font-bold text-navy-800 mb-2">
         {title}
       </h3>
       
-      <p className="text-muted-foreground max-w-md mb-6">
+      <p className="text-navy-600 max-w-md mb-6">
         {description}
       </p>
       

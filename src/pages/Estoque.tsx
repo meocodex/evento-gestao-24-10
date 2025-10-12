@@ -10,6 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { StatCard } from '@/components/dashboard/StatCard';
 import { EstoqueFilters } from '@/components/estoque/EstoqueFilters';
 import { NovoMaterialDialog } from '@/components/estoque/NovoMaterialDialog';
 import { EditarMaterialDialog } from '@/components/estoque/EditarMaterialDialog';
@@ -67,11 +68,11 @@ export default function Estoque() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header Navy */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Estoque</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-4xl font-display font-bold text-navy-800">Estoque</h1>
+          <p className="text-navy-600 mt-1">
             Gerencie materiais e controle de seriais
           </p>
         </div>
@@ -81,72 +82,57 @@ export default function Estoque() {
         </Button>
       </div>
 
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Itens</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalItens}</div>
-            <p className="text-xs text-muted-foreground">
-              {materiaisFiltrados.length} tipos de materiais
-            </p>
-          </CardContent>
-        </Card>
+      {/* Estatísticas Navy */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
+          <StatCard
+            title="Total de Itens"
+            value={stats.totalItens.toString()}
+            subtitle={`${materiaisFiltrados.length} tipos`}
+            icon={Package}
+            variant="primary"
+          />
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Disponíveis</CardTitle>
-            <PackageCheck className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.totalDisponiveis}</div>
-            <p className="text-xs text-muted-foreground">
-              Prontos para uso
-            </p>
-          </CardContent>
-        </Card>
+        <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
+          <StatCard
+            title="Disponíveis"
+            value={stats.totalDisponiveis.toString()}
+            subtitle="Prontos para uso"
+            icon={PackageCheck}
+            variant="success"
+          />
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Em Uso</CardTitle>
-            <PackageX className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.totalEmUso}</div>
-            <p className="text-xs text-muted-foreground">
-              Alocados em eventos
-            </p>
-          </CardContent>
-        </Card>
+        <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
+          <StatCard
+            title="Em Uso"
+            value={stats.totalEmUso.toString()}
+            subtitle="Alocados"
+            icon={PackageX}
+            variant="warning"
+          />
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Manutenção</CardTitle>
-            <Wrench className="h-4 w-4 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">{stats.totalManutencao}</div>
-            <p className="text-xs text-muted-foreground">
-              Necessitam reparo
-            </p>
-          </CardContent>
-        </Card>
+        <div className="animate-slide-up" style={{ animationDelay: '300ms' }}>
+          <StatCard
+            title="Manutenção"
+            value={stats.totalManutencao.toString()}
+            subtitle="Necessitam reparo"
+            icon={Wrench}
+            variant="danger"
+          />
+        </div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Categorias</CardTitle>
-            <LayoutGrid className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.categorias}</div>
-            <p className="text-xs text-muted-foreground">
-              Tipos diferentes
-            </p>
-          </CardContent>
-        </Card>
+        <div className="animate-slide-up" style={{ animationDelay: '400ms' }}>
+          <StatCard
+            title="Categorias"
+            value={stats.categorias.toString()}
+            subtitle="Tipos diferentes"
+            icon={LayoutGrid}
+            variant="default"
+          />
+        </div>
       </div>
 
       {/* Filtros */}
@@ -154,7 +140,7 @@ export default function Estoque() {
 
       {/* Controles de Visualização */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-navy-600">
           {materiaisFiltrados.length} {materiaisFiltrados.length === 1 ? 'material encontrado' : 'materiais encontrados'}
         </p>
         <div className="flex gap-2">

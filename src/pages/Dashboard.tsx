@@ -37,33 +37,24 @@ const Dashboard = () => {
   };
 
   const renderAdminDashboard = () => (
-    <div className="space-y-12 animate-fade-in">
-      {/* Premium Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl p-12 lg:p-16 bg-gradient-to-br from-primary/8 via-accent/4 to-transparent border border-primary/10">
-        {/* Subtle animated background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-accent/3 opacity-50" />
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-            backgroundSize: '32px 32px'
-          }} />
-        </div>
-        
+    <div className="space-y-8 animate-fade-in">
+      {/* Premium Hero Section - Navy Theme */}
+      <div className="relative overflow-hidden rounded-2xl p-8 lg:p-12 bg-white border-2 border-navy-100">
         <div className="relative z-10">
-          <p className="text-sm font-medium text-primary mb-3 tracking-wide uppercase">
+          <p className="text-sm font-medium text-navy-600 mb-2 tracking-wide uppercase">
             {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
           </p>
-          <h1 className="text-5xl lg:text-6xl font-display font-bold text-foreground mb-4 tracking-tight">
+          <h1 className="text-4xl lg:text-5xl font-display font-bold text-navy-800 mb-3 tracking-tight">
             {user?.name}
           </h1>
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl">
+          <p className="text-lg text-navy-600 max-w-2xl">
             Visão geral do sistema e métricas principais
           </p>
         </div>
       </div>
 
-      {/* Stats Grid com stagger animation */}
-      <div className="grid gap-6 lg:gap-8 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Grid Navy */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
           <StatCard
             title="Eventos Mês"
@@ -101,96 +92,99 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid gap-6 lg:gap-8 lg:grid-cols-2">
-        <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 rounded-2xl hover:border-primary/20">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="border-2 border-navy-100 hover:border-navy-200 hover:shadow-lg transition-all duration-300 rounded-2xl">
           <CardHeader className="pb-4">
-            <CardTitle className="font-display text-2xl">Financeiro</CardTitle>
-            <CardDescription>Resumo mensal</CardDescription>
+            <CardTitle className="font-display text-2xl text-navy-800">Financeiro</CardTitle>
+            <CardDescription className="text-navy-500">Resumo mensal</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-success/10 to-emerald-500/10 rounded-xl border border-success/20 hover:shadow-md transition-shadow">
-              <span className="text-sm font-semibold">Receitas</span>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center p-4 bg-emerald-50 rounded-xl border-2 border-emerald-200">
+              <span className="text-sm font-semibold text-navy-800">Receitas</span>
               <span className="text-xl font-display font-bold text-success">{formatCurrency(stats?.receitaTotal || 0)}</span>
             </div>
-            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-destructive/10 to-rose-500/10 rounded-xl border border-destructive/20 hover:shadow-md transition-shadow">
-              <span className="text-sm font-semibold">Despesas</span>
+            <div className="flex justify-between items-center p-4 bg-red-50 rounded-xl border-2 border-red-200">
+              <span className="text-sm font-semibold text-navy-800">Despesas</span>
               <span className="text-xl font-display font-bold text-destructive">{formatCurrency(stats?.despesaTotal || 0)}</span>
             </div>
-            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl border border-primary/20 hover:shadow-md transition-shadow">
-              <span className="text-sm font-semibold">Lucro</span>
-              <span className="text-xl font-display font-bold text-primary">{formatCurrency(stats?.lucroLiquido || 0)}</span>
+            <div className="flex justify-between items-center p-4 bg-navy-50 rounded-xl border-2 border-navy-200">
+              <span className="text-sm font-semibold text-navy-800">Lucro</span>
+              <span className="text-xl font-display font-bold text-navy-600">{formatCurrency(stats?.lucroLiquido || 0)}</span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-xl transition-all duration-500 border border-border/50 rounded-2xl hover:border-accent/20">
+        <Card className="border-2 border-navy-100 hover:border-navy-200 hover:shadow-lg transition-all duration-300 rounded-2xl">
           <CardHeader className="pb-4">
-            <CardTitle className="font-display text-2xl">Estoque</CardTitle>
-            <CardDescription>Status atual</CardDescription>
+            <CardTitle className="font-display text-2xl text-navy-800">Estoque</CardTitle>
+            <CardDescription className="text-navy-500">Status atual</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-success/5 transition-colors">
-              <span className="text-sm font-medium">Disponível</span>
-              <Badge variant="success" className="shadow-sm">{stats?.estoqueDisponivel || 0} itens</Badge>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-navy-50 transition-colors">
+              <span className="text-sm font-medium text-navy-700">Disponível</span>
+              <Badge className="bg-emerald-100 text-emerald-800 border-2 border-emerald-300 hover:bg-emerald-200">{stats?.estoqueDisponivel || 0} itens</Badge>
             </div>
-            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-primary/5 transition-colors">
-              <span className="text-sm font-medium">Em uso</span>
-              <Badge className="shadow-sm">{stats?.estoqueEmUso || 0} itens</Badge>
+            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-navy-50 transition-colors">
+              <span className="text-sm font-medium text-navy-700">Em uso</span>
+              <Badge className="bg-navy-100 text-navy-800 border-2 border-navy-300 hover:bg-navy-200">{stats?.estoqueEmUso || 0} itens</Badge>
             </div>
-            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-warning/5 transition-colors">
-              <span className="text-sm font-medium">Manutenção</span>
-              <Badge variant="warning" className="shadow-sm">{stats?.estoqueManutencao || 0} itens</Badge>
+            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-navy-50 transition-colors">
+              <span className="text-sm font-medium text-navy-700">Manutenção</span>
+              <Badge className="bg-amber-100 text-amber-800 border-2 border-amber-300 hover:bg-amber-200">{stats?.estoqueManutencao || 0} itens</Badge>
             </div>
-            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-destructive/5 transition-colors">
-              <span className="text-sm font-medium">Perdidos</span>
-              <Badge variant="destructive" className="shadow-sm">{stats?.estoquePerdido || 0} itens</Badge>
+            <div className="flex justify-between items-center p-3 rounded-lg hover:bg-navy-50 transition-colors">
+              <span className="text-sm font-medium text-navy-700">Perdidos</span>
+              <Badge className="bg-red-100 text-red-800 border-2 border-red-300 hover:bg-red-200">{stats?.estoquePerdido || 0} itens</Badge>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border border-border/50 rounded-2xl">
+      <Card className="border-2 border-navy-100 rounded-2xl">
         <CardHeader className="pb-4">
-          <CardTitle className="font-display text-2xl">Alertas do Sistema</CardTitle>
-          <CardDescription>Notificações importantes</CardDescription>
+          <CardTitle className="font-display text-2xl text-navy-800">Alertas do Sistema</CardTitle>
+          <CardDescription className="text-navy-500">Notificações importantes</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3">
           {stats?.alertas && stats.alertas.length > 0 ? (
             stats.alertas.map((alerta, index) => {
               const Icon = alerta.tipo === 'error' ? AlertCircle : alerta.tipo === 'warning' ? Clock : Package;
-              const bgClass = alerta.tipo === 'error' ? 'bg-destructive/5 border-destructive/20' : 
-                             alerta.tipo === 'warning' ? 'bg-warning/5 border-warning/20' : 
-                             'bg-primary/5 border-primary/20';
-              const textClass = alerta.tipo === 'error' ? 'text-destructive' : 
-                               alerta.tipo === 'warning' ? 'text-warning' : 
-                               'text-primary';
+              const bgClass = alerta.tipo === 'error' ? 'bg-red-50 border-red-200' : 
+                             alerta.tipo === 'warning' ? 'bg-amber-50 border-amber-200' : 
+                             'bg-navy-50 border-navy-200';
+              const iconBgClass = alerta.tipo === 'error' ? 'bg-red-100' : 
+                                 alerta.tipo === 'warning' ? 'bg-amber-100' : 
+                                 'bg-navy-100';
+              const textClass = alerta.tipo === 'error' ? 'text-red-600' : 
+                               alerta.tipo === 'warning' ? 'text-amber-600' : 
+                               'text-navy-600';
               
               return (
                 <div 
                   key={index} 
-                  className={`flex items-start gap-4 p-4 rounded-xl border ${bgClass} animate-fade-in`}
+                  className={`flex items-start gap-4 p-4 rounded-xl border-2 ${bgClass} animate-fade-in`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
-                  <div className={`p-2 rounded-lg ${alerta.tipo === 'error' ? 'bg-destructive/10' : alerta.tipo === 'warning' ? 'bg-warning/10' : 'bg-primary/10'}`}>
+                  <div className={`p-2 rounded-lg ${iconBgClass}`}>
                     <Icon className={`h-5 w-5 ${textClass}`} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold mb-1">{alerta.mensagem}</p>
+                    <p className="text-sm font-semibold text-navy-800 mb-1">{alerta.mensagem}</p>
                     {alerta.detalhes && (
-                      <p className="text-xs text-muted-foreground">{alerta.detalhes}</p>
+                      <p className="text-xs text-navy-600">{alerta.detalhes}</p>
                     )}
                   </div>
                 </div>
               );
             })
           ) : (
-            <div className="flex items-center gap-4 p-6 bg-success/5 rounded-xl border border-success/20">
-              <div className="p-2 rounded-lg bg-success/10">
+            <div className="flex items-center gap-4 p-6 bg-emerald-50 rounded-xl border-2 border-emerald-200">
+              <div className="p-2 rounded-lg bg-emerald-100">
                 <CheckCircle className="h-6 w-6 text-success" />
               </div>
               <div>
-                <p className="text-sm font-semibold">Tudo certo!</p>
-                <p className="text-xs text-muted-foreground mt-1">Nenhum alerta no momento</p>
+                <p className="text-sm font-semibold text-navy-800">Tudo certo!</p>
+                <p className="text-xs text-navy-600 mt-1">Nenhum alerta no momento</p>
               </div>
             </div>
           )}

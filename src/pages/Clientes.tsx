@@ -6,6 +6,7 @@ import { DetalhesClienteDialog } from '@/components/clientes/DetalhesClienteDial
 import { ClienteFilters } from '@/components/clientes/ClienteFilters';
 import { ClienteCard } from '@/components/clientes/ClienteCard';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { StatCard } from '@/components/dashboard/StatCard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -41,52 +42,41 @@ export default function Clientes() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Header Navy */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Clientes</h1>
-          <p className="text-muted-foreground">Gerencie seus clientes e contatos</p>
+          <h1 className="text-4xl font-display font-bold text-navy-800">Clientes</h1>
+          <p className="text-navy-600 mt-1">Gerencie seus clientes e contatos</p>
         </div>
         <NovoClienteDialog />
       </div>
 
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total de Clientes</p>
-                <p className="text-2xl font-bold">{totalClientes}</p>
-              </div>
-              <Users className="h-8 w-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Pessoa Física (CPF)</p>
-                <p className="text-2xl font-bold">{totalCPF}</p>
-              </div>
-              <User className="h-8 w-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Pessoa Jurídica (CNPJ)</p>
-                <p className="text-2xl font-bold">{totalCNPJ}</p>
-              </div>
-              <Building2 className="h-8 w-8 text-primary" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Estatísticas Navy */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
+          <StatCard
+            title="Total de Clientes"
+            value={totalClientes.toString()}
+            icon={Users}
+            variant="primary"
+          />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
+          <StatCard
+            title="Pessoa Física (CPF)"
+            value={totalCPF.toString()}
+            icon={User}
+            variant="default"
+          />
+        </div>
+        <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
+          <StatCard
+            title="Pessoa Jurídica (CNPJ)"
+            value={totalCNPJ.toString()}
+            icon={Building2}
+            variant="default"
+          />
+        </div>
       </div>
 
       {/* Filtros */}
@@ -94,7 +84,7 @@ export default function Clientes() {
 
       {/* Controles de Visualização */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-navy-600">
           Mostrando {indiceInicio + 1}-{Math.min(indiceFim, clientesFiltrados.length)} de {clientesFiltrados.length} clientes
         </p>
         <div className="flex gap-2">
