@@ -71,27 +71,22 @@ export function EventosStats({ eventos }: EventosStatsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {statsCards.map((stat, index) => (
         <div
           key={stat.title}
-          className="relative overflow-hidden rounded-xl border bg-card p-4 transition-all duration-300 hover:shadow-lg hover:scale-[1.02] animate-fade-in group"
-          style={{ animationDelay: `${index * 100}ms` }}
+          className="relative overflow-hidden rounded-lg border bg-card p-5 transition-all duration-200 hover:shadow-md hover:border-primary/30 animate-fade-in"
+          style={{ animationDelay: `${index * 50}ms` }}
         >
-          {/* Gradient background */}
-          <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-50 group-hover:opacity-70 transition-opacity`} />
-          
           {/* Content */}
-          <div className="relative z-10">
-            <div className="flex items-start justify-between mb-2">
-              <div className={`p-2 rounded-lg bg-background/50 backdrop-blur-sm ${stat.iconColor} transition-transform group-hover:scale-110`}>
-                <stat.icon className="h-5 w-5" />
-              </div>
+          <div className="flex items-start justify-between mb-3">
+            <div className={`p-2.5 rounded-lg bg-muted ${stat.iconColor}`}>
+              <stat.icon className="h-6 w-6" />
             </div>
-            
-            <p className="text-2xl font-display font-bold mb-1">{stat.value}</p>
-            <p className="text-xs text-muted-foreground font-medium">{stat.title}</p>
           </div>
+          
+          <p className="text-3xl font-bold mb-1">{stat.value}</p>
+          <p className="text-sm text-muted-foreground">{stat.title}</p>
         </div>
       ))}
     </div>

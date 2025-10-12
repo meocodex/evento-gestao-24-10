@@ -65,106 +65,89 @@ export function EventoCard({ evento, onViewDetails }: EventoCardProps) {
 
   return (
     <Card 
-      className={`p-4 hover:shadow-lg transition-all duration-200 hover:scale-[1.01] animate-fade-in flex flex-col h-full cursor-pointer relative overflow-hidden border-t-4 ${statusBorderColor}`}
+      className="group p-5 hover:shadow-lg transition-all duration-300 hover:border-primary/30 animate-fade-in flex flex-col min-h-[240px] cursor-pointer relative border-l-2 border-l-primary/0 hover:border-l-primary"
       onClick={() => onViewDetails(evento)}
     >
-      {/* Quick actions always visible */}
-      <div className="absolute top-3 right-3 flex gap-1 z-10">
+      {/* Quick actions - visible on hover */}
+      <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-7 w-7"
+          className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background"
           onClick={(e) => {
             e.stopPropagation();
             onViewDetails(evento);
           }}
         >
-          <Edit className="h-3.5 w-3.5" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-7 w-7"
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewDetails(evento);
-          }}
-        >
-          <ListOrdered className="h-3.5 w-3.5" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-7 w-7"
-          onClick={(e) => {
-            e.stopPropagation();
-            // TODO: Implement duplicate
-          }}
-        >
-          <Copy className="h-3.5 w-3.5" />
+          <Edit className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Content */}
-      <div className="relative z-[1] flex flex-col h-full">
-        <div className="space-y-1.5 mb-2">
-          <h3 className="text-base font-semibold line-clamp-2 pr-24">{evento.nome}</h3>
+      <div className="flex flex-col h-full gap-3">
+        {/* Header */}
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold leading-tight line-clamp-2 pr-12">
+            {evento.nome}
+          </h3>
           
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1.5">
             <StatusBadge status={evento.status} />
             {isUrgente && (
-              <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
+              <Badge variant="destructive" className="text-xs h-5">
                 Urgente
               </Badge>
             )}
-            {evento.tags.slice(0, 2).map(tag => (
-              <Badge key={tag} variant="outline" className="text-[10px] px-1.5 py-0">{tag}</Badge>
+            {evento.tags.slice(0, 1).map(tag => (
+              <Badge key={tag} variant="outline" className="text-xs h-5">
+                {tag}
+              </Badge>
             ))}
           </div>
         </div>
 
-        <div className="flex-1 space-y-2 mt-2">
-          {/* Progress bar */}
-          {evento.status !== 'cancelado' && (
-            <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          )}
+        {/* Progress bar */}
+        {evento.status !== 'cancelado' && (
+          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-primary transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
 
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Calendar className="h-3.5 w-3.5 text-primary" />
-            <span className="line-clamp-1">
+        {/* Info grid - flex-1 to push footer down */}
+        <div className="flex-1 space-y-2.5">
+          <div className="flex items-center gap-2 text-sm">
+            <Calendar className="h-5 w-5 text-primary flex-shrink-0" />
+            <span className="truncate">
               {format(dataEvento, "dd MMM", { locale: ptBR })} • {evento.horaInicio}-{evento.horaFim}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <MapPin className="h-3.5 w-3.5 text-blue-500" />
-            <span className="line-clamp-1">{evento.cidade}/{evento.estado}</span>
+          <div className="flex items-center gap-2 text-sm">
+            <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
+            <span className="truncate">{evento.cidade}/{evento.estado}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <User className="h-3.5 w-3.5 text-purple-500" />
-            <span className="line-clamp-1">{evento.cliente.nome}</span>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <User className="h-5 w-5 flex-shrink-0" />
+            <span className="truncate">{evento.cliente.nome}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Briefcase className="h-3.5 w-3.5 text-orange-500" />
-            <span className="line-clamp-1">{evento.comercial.nome}</span>
-          </div>
-
-          {/* Materials preview */}
           {materiaisCount.total > 0 && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Package className="h-3.5 w-3.5 text-success" />
-              <span className="text-[10px]">
-                Mat: {materiaisCount.antecipado} Ant + {materiaisCount.comTecnicos} Tec
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Package className="h-5 w-5 text-success flex-shrink-0" />
+              <span className="text-xs">
+                {materiaisCount.total} materiais alocados
               </span>
             </div>
           )}
+        </div>
+
+        {/* Footer - countdown */}
+        <div className="pt-2 border-t">
+          <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} />
         </div>
       </div>
     </Card>
