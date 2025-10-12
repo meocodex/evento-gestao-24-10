@@ -5,8 +5,8 @@ import { Plus, Search, Grid3x3, List, ArrowUpDown } from 'lucide-react';
 import { Evento } from '@/types/eventos';
 import { EventosList } from '@/components/eventos/EventosList';
 import { EventoFilters, EventoFiltersType } from '@/components/eventos/EventoFilters';
-import { NovoEventoDialog } from '@/components/eventos/NovoEventoDialog';
-import { EventoDetailsDialog } from '@/components/eventos/EventoDetailsDialog';
+import { NovoEventoSheet } from '@/components/eventos/NovoEventoSheet';
+import { EventoDetailsSheet } from '@/components/eventos/EventoDetailsSheet';
 import { useEventoPermissions } from '@/hooks/useEventoPermissions';
 import { useEventos } from '@/contexts/EventosContext';
 import { EventosStats } from '@/components/eventos/EventosStats';
@@ -246,13 +246,13 @@ export default function Eventos() {
           />
         )}
 
-        <NovoEventoDialog
+        <NovoEventoSheet
           open={novoEventoOpen}
           onOpenChange={setNovoEventoOpen}
           onEventoCreated={() => {}}
         />
 
-        <EventoDetailsDialog
+        <EventoDetailsSheet
           evento={selectedEvento}
           open={detailsOpen}
           onOpenChange={setDetailsOpen}
