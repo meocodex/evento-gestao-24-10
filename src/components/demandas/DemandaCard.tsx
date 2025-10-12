@@ -44,20 +44,20 @@ export function DemandaCard({ demanda, onDetalhes, onEditar, onExcluir }: Demand
     : null;
 
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
+    <Card className="group p-4 border-2 border-navy-100 hover:border-navy-300 hover:shadow-lg transition-all duration-300 rounded-2xl bg-white">
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-lg truncate">{demanda.titulo}</h3>
+              <h3 className="font-display font-semibold text-lg text-navy-800 truncate">{demanda.titulo}</h3>
               {isReembolso && (
-                <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300">
                   <DollarSign className="h-3 w-3 mr-1" />
                   Reembolso
                 </Badge>
               )}
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+            <p className="text-sm text-navy-600 line-clamp-2 mt-1">
               {demanda.descricao}
             </p>
             {isReembolso && demanda.dadosReembolso && (

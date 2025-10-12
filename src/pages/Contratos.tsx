@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { useContratos } from '@/contexts/ContratosContext';
-import { NovoContratoDialog } from '@/components/contratos/NovoContratoDialog';
+import { NovoContratoSheet } from '@/components/contratos/NovoContratoSheet';
 import { EditarContratoDialog } from '@/components/contratos/EditarContratoDialog';
 import { DetalhesContratoDialog } from '@/components/contratos/DetalhesContratoDialog';
 import { NovoTemplateDialog } from '@/components/contratos/NovoTemplateDialog';
@@ -351,7 +351,7 @@ export default function Contratos() {
       </div>
 
       {/* Dialogs */}
-      <NovoContratoDialog open={mostrarNovoContrato} onOpenChange={setMostrarNovoContrato} />
+      <NovoContratoSheet open={mostrarNovoContrato} onOpenChange={setMostrarNovoContrato} />
       <NovaPropostaDialog open={mostrarNovaProposta} onOpenChange={setMostrarNovaProposta} />
       <DetalhesContratoDialog
         open={mostrarDetalhesContrato}

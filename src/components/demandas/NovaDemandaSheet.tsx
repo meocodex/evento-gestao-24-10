@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,7 +19,7 @@ const prioridades: { value: PrioridadeDemanda; label: string }[] = [
   { value: 'urgente', label: 'Urgente' },
 ];
 
-export function NovaDemandaDialog() {
+export function NovaDemandaSheet() {
   const [open, setOpen] = useState(false);
   const { adicionarDemanda } = useDemandasContext();
   const { eventos } = useEventos();
@@ -81,48 +81,53 @@ export function NovaDemandaDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
           Nova Demanda
         </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Nova Demanda</DialogTitle>
-        </DialogHeader>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-full sm:w-[600px] lg:w-[800px] overflow-y-auto">
+        <SheetHeader className="border-b border-navy-100 pb-4 mb-6">
+          <SheetTitle className="text-2xl font-display text-navy-800">Nova Demanda</SheetTitle>
+          <SheetDescription className="text-navy-500">
+            Preencha os dados para criar uma nova demanda
+          </SheetDescription>
+        </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="titulo">Título *</Label>
+            <Label htmlFor="titulo" className="text-navy-700">Título *</Label>
             <Input
               id="titulo"
               value={formData.titulo}
               onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
               required
+              className="border-navy-200 focus:border-navy-400"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="descricao">Descrição *</Label>
+            <Label htmlFor="descricao" className="text-navy-700">Descrição *</Label>
             <Textarea
               id="descricao"
               value={formData.descricao}
               onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
               rows={4}
               required
+              className="border-navy-200 focus:border-navy-400"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Categoria *</Label>
+              <Label className="text-navy-700">Categoria *</Label>
               <Select
                 value={formData.categoria}
                 onValueChange={(value) => setFormData({ ...formData, categoria: value as CategoriaDemanda })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="border-navy-200">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -136,12 +141,12 @@ export function NovaDemandaDialog() {
             </div>
 
             <div className="space-y-2">
-              <Label>Prioridade *</Label>
+              <Label className="text-navy-700">Prioridade *</Label>
               <Select
                 value={formData.prioridade}
                 onValueChange={(value) => setFormData({ ...formData, prioridade: value as PrioridadeDemanda })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="border-navy-200">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -156,12 +161,12 @@ export function NovaDemandaDialog() {
           </div>
 
           <div className="space-y-2">
-            <Label>Evento Relacionado (opcional)</Label>
+            <Label className="text-navy-700">Evento Relacionado (opcional)</Label>
             <Select
               value={formData.eventoRelacionado || 'none'}
               onValueChange={(value) => handleEventoChange(value === 'none' ? '' : value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="border-navy-200">
                 <SelectValue placeholder="Selecione um evento" />
               </SelectTrigger>
               <SelectContent>
@@ -177,12 +182,12 @@ export function NovaDemandaDialog() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Responsável (opcional)</Label>
+              <Label className="text-navy-700">Responsável (opcional)</Label>
               <Select
                 value={formData.responsavelId}
                 onValueChange={(value) => setFormData({ ...formData, responsavelId: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="border-navy-200">
                   <SelectValue placeholder="Selecione um responsável" />
                 </SelectTrigger>
                 <SelectContent>
@@ -196,24 +201,25 @@ export function NovaDemandaDialog() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="prazo">Prazo (opcional)</Label>
+              <Label htmlFor="prazo" className="text-navy-700">Prazo (opcional)</Label>
               <Input
                 id="prazo"
                 type="datetime-local"
                 value={formData.prazo}
                 onChange={(e) => setFormData({ ...formData, prazo: e.target.value })}
+                className="border-navy-200 focus:border-navy-400"
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-2">
+          <SheetFooter className="border-t border-navy-100 pt-6 mt-6">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
             <Button type="submit">Criar Demanda</Button>
-          </div>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

@@ -195,24 +195,16 @@ const Dashboard = () => {
 
   const renderComercialDashboard = () => (
     <div className="space-y-12 animate-fade-in">
-      {/* Premium Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl p-12 lg:p-16 bg-gradient-to-br from-primary/8 via-accent/4 to-transparent border border-primary/10">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-accent/3 opacity-50" />
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-            backgroundSize: '32px 32px'
-          }} />
-        </div>
-        
+      {/* Premium Hero Section - Navy Theme */}
+      <div className="relative overflow-hidden rounded-2xl p-8 lg:p-12 bg-white border-2 border-navy-100">
         <div className="relative z-10">
-          <p className="text-sm font-medium text-primary mb-3 tracking-wide uppercase">
+          <p className="text-sm font-medium text-navy-600 mb-2 tracking-wide uppercase">
             {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
           </p>
-          <h1 className="text-5xl lg:text-6xl font-display font-bold text-foreground mb-4 tracking-tight">
+          <h1 className="text-4xl lg:text-5xl font-display font-bold text-navy-800 mb-3 tracking-tight">
             {user?.name}
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl">
+          <p className="text-lg text-navy-600 max-w-2xl">
             Seus números e eventos
           </p>
         </div>
@@ -357,24 +349,16 @@ const Dashboard = () => {
 
   const renderSuporteDashboard = () => (
     <div className="space-y-12 animate-fade-in">
-      {/* Premium Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl p-12 lg:p-16 bg-gradient-to-br from-primary/8 via-accent/4 to-transparent border border-primary/10">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/3 to-accent/3 opacity-50" />
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-            backgroundSize: '32px 32px'
-          }} />
-        </div>
-        
+      {/* Premium Hero Section - Navy Theme */}
+      <div className="relative overflow-hidden rounded-2xl p-8 lg:p-12 bg-white border-2 border-navy-100">
         <div className="relative z-10">
-          <p className="text-sm font-medium text-primary mb-3 tracking-wide uppercase">
+          <p className="text-sm font-medium text-navy-600 mb-2 tracking-wide uppercase">
             {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
           </p>
-          <h1 className="text-5xl lg:text-6xl font-display font-bold text-foreground mb-4 tracking-tight">
+          <h1 className="text-4xl lg:text-5xl font-display font-bold text-navy-800 mb-3 tracking-tight">
             {user?.name}
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl">
+          <p className="text-lg text-navy-600 max-w-2xl">
             Operações e demandas
           </p>
         </div>

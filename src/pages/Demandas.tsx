@@ -3,7 +3,7 @@ import { useDemandasContext } from '@/contexts/DemandasContext';
 import { Demanda } from '@/types/demandas';
 import { DemandaCard } from '@/components/demandas/DemandaCard';
 import { DemandaFilters } from '@/components/demandas/DemandaFilters';
-import { NovaDemandaDialog } from '@/components/demandas/NovaDemandaDialog';
+import { NovaDemandaSheet } from '@/components/demandas/NovaDemandaSheet';
 import { NovaDemandaReembolsoDialog } from '@/components/demandas/NovaDemandaReembolsoDialog';
 import { EditarDemandaDialog } from '@/components/demandas/EditarDemandaDialog';
 import { DetalhesDemandaDialog } from '@/components/demandas/DetalhesDemandaDialog';
@@ -55,7 +55,7 @@ export default function Demandas() {
             <p className="text-navy-600 dark:text-navy-400 mt-1">Gerencie todas as solicitações e tarefas da equipe</p>
           </div>
           <div className="flex gap-2">
-            <NovaDemandaDialog />
+            <NovaDemandaSheet />
             <NovaDemandaReembolsoDialog />
           </div>
         </div>
