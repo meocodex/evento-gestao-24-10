@@ -12,7 +12,7 @@ export function useEventosQueries() {
         .select(`
           *,
           cliente:clientes(*),
-          comercial:profiles!comercial_id(*),
+          comercial:profiles!eventos_comercial_id_fkey(*),
           timeline:eventos_timeline(*),
           checklist:eventos_checklist(*),
           materiais_alocados:eventos_materiais_alocados(*),
