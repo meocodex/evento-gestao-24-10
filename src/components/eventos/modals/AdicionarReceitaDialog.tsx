@@ -21,7 +21,7 @@ export function AdicionarReceitaDialog({ open, onOpenChange, onAdicionar }: Adic
 
   const valorTotal = quantidade * (parseFloat(valorUnitario) || 0);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!descricao.trim() || !valorUnitario || !tipo) {
@@ -33,24 +33,25 @@ export function AdicionarReceitaDialog({ open, onOpenChange, onAdicionar }: Adic
       return;
     }
 
-    onAdicionar({ 
-      descricao, 
-      quantidade,
-      valorUnitario: parseFloat(valorUnitario),
-      valor: valorTotal,
-      tipo 
-    });
-
-    toast({
-      title: 'Receita adicionada!',
-      description: 'A receita foi cadastrada com sucesso.',
-    });
-    
-    setDescricao('');
-    setQuantidade(1);
-    setValorUnitario('');
-    setTipo('');
-    onOpenChange(false);
+    try {
+      await onAdicionar({ 
+        descricao, 
+        quantidade,
+        valorUnitario: parseFloat(valorUnitario),
+        valor: valorTotal,
+        tipo,
+        status: 'pendente',
+        data: new Date().toISOString().split('T')[0]
+      });
+      
+      setDescricao('');
+      setQuantidade(1);
+      setValorUnitario('');
+      setTipo('');
+      onOpenChange(false);
+    } catch (error) {
+      // Erro já tratado pelo hook
+    }
   };
 
   return (

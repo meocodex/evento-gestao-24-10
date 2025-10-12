@@ -23,7 +23,7 @@ export function AdicionarDespesaDialog({ open, onOpenChange, onAdicionar }: Adic
 
   const valorTotal = quantidade * (parseFloat(valorUnitario) || 0);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!descricao.trim() || !valorUnitario || !categoria) {
@@ -35,24 +35,25 @@ export function AdicionarDespesaDialog({ open, onOpenChange, onAdicionar }: Adic
       return;
     }
 
-    onAdicionar({ 
-      descricao, 
-      quantidade,
-      valorUnitario: parseFloat(valorUnitario),
-      valor: valorTotal,
-      categoria 
-    });
-
-    toast({
-      title: 'Despesa adicionada!',
-      description: 'A despesa foi cadastrada com sucesso.',
-    });
-    
-    setDescricao('');
-    setQuantidade(1);
-    setValorUnitario('');
-    setCategoria('');
-    onOpenChange(false);
+    try {
+      await onAdicionar({ 
+        descricao, 
+        quantidade,
+        valorUnitario: parseFloat(valorUnitario),
+        valor: valorTotal,
+        categoria,
+        status: 'pendente',
+        data: new Date().toISOString().split('T')[0]
+      });
+      
+      setDescricao('');
+      setQuantidade(1);
+      setValorUnitario('');
+      setCategoria('');
+      onOpenChange(false);
+    } catch (error) {
+      // Erro já tratado pelo hook
+    }
   };
 
   return (

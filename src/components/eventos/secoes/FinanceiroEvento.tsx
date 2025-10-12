@@ -20,6 +20,12 @@ interface FinanceiroEventoProps {
 
 export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps) {
   const { toast } = useToast();
+  const { 
+    adicionarReceita, 
+    removerReceita, 
+    adicionarDespesa, 
+    removerDespesa 
+  } = useEventos();
   const { getDemandasReembolsoPorEvento } = useDemandasContext();
   const [showAddReceita, setShowAddReceita] = useState(false);
   const [showAddDespesa, setShowAddDespesa] = useState(false);
@@ -43,14 +49,20 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
     setShowDeleteDialog(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (itemToDelete) {
-      toast({
-        title: `${itemToDelete.tipo === 'receita' ? 'Receita' : 'Despesa'} removida!`,
-        description: 'O item foi removido com sucesso.',
-      });
-      setItemToDelete(null);
-      setShowDeleteDialog(false);
+      try {
+        if (itemToDelete.tipo === 'receita') {
+          await removerReceita(evento.id, itemToDelete.id);
+        } else {
+          await removerDespesa(evento.id, itemToDelete.id);
+        }
+      } catch (error) {
+        // Erro já tratado pelo hook
+      } finally {
+        setItemToDelete(null);
+        setShowDeleteDialog(false);
+      }
     }
   };
 
@@ -264,16 +276,18 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
       <AdicionarReceitaDialog
         open={showAddReceita}
         onOpenChange={setShowAddReceita}
-        onAdicionar={(data) => {
-          console.log('Adicionar receita:', data);
+        onAdicionar={async (data) => {
+          await adicionarReceita(evento.id, data);
+          setShowAddReceita(false);
         }}
       />
 
       <AdicionarDespesaDialog
         open={showAddDespesa}
         onOpenChange={setShowAddDespesa}
-        onAdicionar={(data) => {
-          console.log('Adicionar despesa:', data);
+        onAdicionar={async (data) => {
+          await adicionarDespesa(evento.id, data);
+          setShowAddDespesa(false);
         }}
       />
 

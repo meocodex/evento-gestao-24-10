@@ -17,6 +17,7 @@ interface OperacaoEventoProps {
 
 export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
   const { toast } = useToast();
+  const { adicionarMembroEquipe, removerMembroEquipe, adicionarObservacaoOperacional } = useEventos();
   const [showAddMembro, setShowAddMembro] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [membroToDelete, setMembroToDelete] = useState<string | null>(null);
@@ -27,24 +28,27 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
     setShowDeleteDialog(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (membroToDelete) {
-      toast({
-        title: 'Membro removido!',
-        description: 'O membro foi removido da equipe.',
-      });
-      setMembroToDelete(null);
-      setShowDeleteDialog(false);
+      try {
+        await removerMembroEquipe(evento.id, membroToDelete);
+      } catch (error) {
+        // Erro já tratado pelo hook
+      } finally {
+        setMembroToDelete(null);
+        setShowDeleteDialog(false);
+      }
     }
   };
 
-  const handleAdicionarObservacao = () => {
+  const handleAdicionarObservacao = async () => {
     if (novaObservacao.trim()) {
-      toast({
-        title: 'Observação adicionada!',
-        description: 'A observação foi registrada.',
-      });
-      setNovaObservacao('');
+      try {
+        await adicionarObservacaoOperacional(evento.id, novaObservacao);
+        setNovaObservacao('');
+      } catch (error) {
+        // Erro já tratado pelo hook
+      }
     }
   };
 
@@ -133,8 +137,13 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
       <AdicionarMembroEquipeDialog
         open={showAddMembro}
         onOpenChange={setShowAddMembro}
-        onAdicionar={(data) => {
-          console.log('Adicionar membro:', data);
+        onAdicionar={async (data) => {
+          try {
+            await adicionarMembroEquipe(evento.id, data);
+            setShowAddMembro(false);
+          } catch (error) {
+            // Erro já tratado pelo hook
+          }
         }}
       />
 
