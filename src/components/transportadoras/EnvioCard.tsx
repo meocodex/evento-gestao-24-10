@@ -6,7 +6,7 @@ import { Package, MapPin, Calendar, TrendingUp, Edit, DollarSign } from 'lucide-
 import { Envio } from '@/types/transportadoras';
 import { useTransportadoras } from '@/contexts/TransportadorasContext';
 import { useEventos } from '@/contexts/EventosContext';
-import { EditarEnvioDialog } from './EditarEnvioDialog';
+import { EditarEnvioSheet } from './EditarEnvioSheet';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -120,7 +120,7 @@ export function EnvioCard({ envio }: EnvioCardProps) {
       </Card>
 
       {editarOpen && (
-        <EditarEnvioDialog
+        <EditarEnvioSheet
           envio={envio}
           open={editarOpen}
           onOpenChange={setEditarOpen}

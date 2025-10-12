@@ -7,11 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { useTransportadoras } from '@/contexts/TransportadorasContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { NovaTransportadoraDialog } from '@/components/transportadoras/NovaTransportadoraDialog';
-import { EditarTransportadoraDialog } from '@/components/transportadoras/EditarTransportadoraDialog';
-import { DetalhesTransportadoraDialog } from '@/components/transportadoras/DetalhesTransportadoraDialog';
-import { GerenciarRotasDialog } from '@/components/transportadoras/GerenciarRotasDialog';
-import { NovoEnvioDialog } from '@/components/transportadoras/NovoEnvioDialog';
+import { NovaTransportadoraSheet } from '@/components/transportadoras/NovaTransportadoraSheet';
+import { EditarTransportadoraSheet } from '@/components/transportadoras/EditarTransportadoraSheet';
+import { DetalhesTransportadoraSheet } from '@/components/transportadoras/DetalhesTransportadoraSheet';
+import { GerenciarRotasSheet } from '@/components/transportadoras/GerenciarRotasSheet';
+import { NovoEnvioSheet } from '@/components/transportadoras/NovoEnvioSheet';
 import { EnvioCard } from '@/components/transportadoras/EnvioCard';
 import { Transportadora } from '@/types/transportadoras';
 
@@ -215,30 +215,30 @@ export default function Transportadoras() {
           </TabsContent>
         </Tabs>
 
-        {/* Dialogs */}
-        <NovaTransportadoraDialog open={novaTransportadoraOpen} onOpenChange={setNovaTransportadoraOpen} />
+        {/* Sheets */}
+        <NovaTransportadoraSheet open={novaTransportadoraOpen} onOpenChange={setNovaTransportadoraOpen} />
         {editarTransportadora && (
-          <EditarTransportadoraDialog
+          <EditarTransportadoraSheet
             transportadora={editarTransportadora}
             open={!!editarTransportadora}
             onOpenChange={(open) => !open && setEditarTransportadora(null)}
           />
         )}
         {detalhesTransportadora && (
-          <DetalhesTransportadoraDialog
+          <DetalhesTransportadoraSheet
             transportadora={detalhesTransportadora}
             open={!!detalhesTransportadora}
             onOpenChange={(open) => !open && setDetalhesTransportadora(null)}
           />
         )}
         {gerenciarRotasTransportadora && (
-          <GerenciarRotasDialog
+          <GerenciarRotasSheet
             transportadora={gerenciarRotasTransportadora}
             open={!!gerenciarRotasTransportadora}
             onOpenChange={(open) => !open && setGerenciarRotasTransportadora(null)}
           />
         )}
-        <NovoEnvioDialog open={novoEnvioOpen} onOpenChange={setNovoEnvioOpen} />
+        <NovoEnvioSheet open={novoEnvioOpen} onOpenChange={setNovoEnvioOpen} />
       </div>
     </div>
   );
