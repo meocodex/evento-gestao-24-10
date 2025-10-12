@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { StatCard } from '@/components/dashboard/StatCard';
 import { useContratos } from '@/contexts/ContratosContext';
 import { NovoContratoDialog } from '@/components/contratos/NovoContratoDialog';
 import { EditarContratoDialog } from '@/components/contratos/EditarContratoDialog';
@@ -89,12 +90,13 @@ export default function Contratos() {
   const totalPropostas = contratos.filter(c => ['proposta', 'em_negociacao', 'aprovada'].includes(c.status)).length;
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
       <div className="max-w-7xl mx-auto space-y-6">
+        {/* Hero Section */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Contratos & Propostas</h1>
-            <p className="text-muted-foreground">Gestão de propostas comerciais, contratos e templates</p>
+            <h1 className="text-4xl font-bold text-navy-900 dark:text-navy-50">Contratos & Propostas</h1>
+            <p className="text-navy-600 dark:text-navy-400 mt-1">Gestão de propostas comerciais, contratos e templates</p>
           </div>
           <div className="flex gap-2">
             <Button onClick={() => setMostrarNovaProposta(true)}>
@@ -112,49 +114,43 @@ export default function Contratos() {
           </div>
         </div>
 
+        {/* Stats Cards Navy */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Propostas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{totalPropostas}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Assinados</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {contratos.filter(c => c.status === 'assinado').length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Aguardando</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">
-                {contratos.filter(c => c.status === 'aguardando_assinatura').length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Templates</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{templates.length}</div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Propostas"
+            value={totalPropostas}
+            icon={FileText}
+            variant="primary"
+          />
+          <StatCard
+            title="Assinados"
+            value={contratos.filter(c => c.status === 'assinado').length}
+            icon={CheckCircle2}
+            variant="success"
+          />
+          <StatCard
+            title="Aguardando"
+            value={contratos.filter(c => c.status === 'aguardando_assinatura').length}
+            icon={Clock}
+            variant="warning"
+          />
+          <StatCard
+            title="Templates"
+            value={templates.length}
+            icon={FileSignature}
+            variant="default"
+          />
         </div>
 
-        <Tabs defaultValue="contratos">
-          <TabsList>
-            <TabsTrigger value="contratos">Contratos & Propostas</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
+        {/* Tabs Navy-themed */}
+        <Tabs defaultValue="contratos" className="space-y-4">
+          <TabsList className="bg-navy-100 dark:bg-navy-900">
+            <TabsTrigger value="contratos" className="data-[state=active]:bg-navy-600 data-[state=active]:text-white">
+              Contratos & Propostas
+            </TabsTrigger>
+            <TabsTrigger value="templates" className="data-[state=active]:bg-navy-600 data-[state=active]:text-white">
+              Templates
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="contratos" className="space-y-4">

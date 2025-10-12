@@ -77,11 +77,11 @@ export default function CadastrosPendentes() {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Cadastros Públicos Pendentes</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-4xl font-bold text-navy-900 dark:text-navy-50">Cadastros Públicos Pendentes</h1>
+          <p className="text-navy-600 dark:text-navy-400 mt-1">
             Analise e aprove os cadastros de eventos enviados pelos produtores
           </p>
         </div>

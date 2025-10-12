@@ -127,24 +127,27 @@ export default function Eventos() {
   return (
     <div className="min-h-full">
       {/* Container with premium max-width and spacing */}
-      <div className="mx-auto max-w-[1600px] px-6 py-6 space-y-4 animate-fade-in">
-        {/* Premium header with enhanced glassmorphism */}
-        <div className="relative overflow-hidden rounded-2xl p-5 border border-border/40 bg-gradient-to-br from-card/60 via-card/40 to-transparent backdrop-blur-2xl">
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-accent/8" />
-          
-          {/* Floating accent elements */}
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-accent/10 rounded-full blur-2xl" />
-          
-          <div className="relative z-10">
-            <h1 className="text-3xl font-display font-bold mb-2 bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
+      <div className="mx-auto max-w-[1600px] px-6 py-6 space-y-4 animate-fade-in bg-navy-50 dark:bg-navy-950">
+        {/* Navy Hero Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-4xl font-bold text-navy-900 dark:text-navy-50">
               Eventos
             </h1>
-            <p className="text-sm text-muted-foreground/80 font-medium">
+            <p className="text-navy-600 dark:text-navy-400 mt-1">
               Gerencie todos os eventos da sua empresa com eficiência e profissionalismo
             </p>
           </div>
+          {permissions.canCreateEvent && (
+            <Button 
+              onClick={() => setNovoEventoOpen(true)}
+              size="lg"
+              className="bg-navy-600 hover:bg-navy-700 text-white shadow-navy-sm"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Novo Evento
+            </Button>
+          )}
         </div>
 
         {/* Stats Cards */}
@@ -224,15 +227,6 @@ export default function Eventos() {
                 </Button>
               </div>
 
-              {permissions.canCreateEvent && (
-                <Button 
-                  onClick={() => setNovoEventoOpen(true)}
-                  className="shadow-lg h-10 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Evento
-                </Button>
-              )}
             </div>
           </div>
 

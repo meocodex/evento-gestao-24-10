@@ -8,8 +8,9 @@ import { NovaDemandaReembolsoDialog } from '@/components/demandas/NovaDemandaRee
 import { EditarDemandaDialog } from '@/components/demandas/EditarDemandaDialog';
 import { DetalhesDemandaDialog } from '@/components/demandas/DetalhesDemandaDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, CheckCircle2, Clock, AlertTriangle, Archive, XCircle } from 'lucide-react';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { Card } from '@/components/ui/card';
+import { Bell, Clock, AlertTriangle, Archive, XCircle } from 'lucide-react';
 
 export default function Demandas() {
   const { getDemandasFiltradas, getEstatisticas, excluirDemanda } = useDemandasContext();
@@ -45,111 +46,90 @@ export default function Demandas() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Demandas</h1>
-          <p className="text-muted-foreground">Gerencie todas as solicitações e tarefas da equipe</p>
-        </div>
-        <div className="flex gap-2">
-          <NovaDemandaDialog />
-          <NovaDemandaReembolsoDialog />
-        </div>
-      </div>
-
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
-            <Bell className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{estatisticas.total}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Abertas</CardTitle>
-            <Clock className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{estatisticas.abertas}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Em Andamento</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{estatisticas.emAndamento}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Urgentes</CardTitle>
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{estatisticas.urgentes}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Prazos Vencidos</CardTitle>
-            <XCircle className="h-4 w-4 text-red-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{estatisticas.prazosVencidos}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Arquivadas</CardTitle>
-            <Archive className="h-4 w-4 text-gray-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{estatisticas.arquivadas}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Filtros */}
-        <div className="lg:col-span-1">
-          <DemandaFilters />
+    <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Hero Section */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-navy-900 dark:text-navy-50">Demandas</h1>
+            <p className="text-navy-600 dark:text-navy-400 mt-1">Gerencie todas as solicitações e tarefas da equipe</p>
+          </div>
+          <div className="flex gap-2">
+            <NovaDemandaDialog />
+            <NovaDemandaReembolsoDialog />
+          </div>
         </div>
 
-        {/* Lista de Demandas */}
-        <div className="lg:col-span-3 space-y-4">
-          {demandasFiltradas.length === 0 ? (
-            <Card className="p-12">
-              <div className="text-center text-muted-foreground">
-                <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-medium">Nenhuma demanda encontrada</p>
-                <p className="text-sm">Ajuste os filtros ou crie uma nova demanda</p>
+        {/* Stats Cards Navy */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard
+            title="Total"
+            value={estatisticas.total}
+            icon={Bell}
+            variant="default"
+          />
+          <StatCard
+            title="Abertas"
+            value={estatisticas.abertas}
+            icon={Clock}
+            variant="primary"
+          />
+          <StatCard
+            title="Em Andamento"
+            value={estatisticas.emAndamento}
+            icon={Clock}
+            variant="warning"
+          />
+          <StatCard
+            title="Urgentes"
+            value={estatisticas.urgentes}
+            icon={AlertTriangle}
+            variant="danger"
+          />
+          <StatCard
+            title="Atrasadas"
+            value={estatisticas.prazosVencidos}
+            icon={XCircle}
+            variant="danger"
+          />
+          <StatCard
+            title="Arquivadas"
+            value={estatisticas.arquivadas}
+            icon={Archive}
+            variant="default"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Filtros */}
+          <div className="lg:col-span-1">
+            <DemandaFilters />
+          </div>
+
+          {/* Lista de Demandas */}
+          <div className="lg:col-span-3 space-y-4">
+            {demandasFiltradas.length === 0 ? (
+              <Card className="p-12">
+                <div className="text-center text-muted-foreground">
+                  <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium">Nenhuma demanda encontrada</p>
+                  <p className="text-sm">Ajuste os filtros ou crie uma nova demanda</p>
+                </div>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {demandasFiltradas.map((demanda) => (
+                  <DemandaCard
+                    key={demanda.id}
+                    demanda={demanda}
+                    onDetalhes={() => handleDetalhes(demanda)}
+                    onEditar={() => handleEditar(demanda)}
+                    onExcluir={() => handleExcluir(demanda)}
+                  />
+                ))}
               </div>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {demandasFiltradas.map((demanda) => (
-                <DemandaCard
-                  key={demanda.id}
-                  demanda={demanda}
-                  onDetalhes={() => handleDetalhes(demanda)}
-                  onEditar={() => handleEditar(demanda)}
-                  onExcluir={() => handleExcluir(demanda)}
-                />
-              ))}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 

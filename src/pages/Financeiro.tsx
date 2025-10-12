@@ -83,103 +83,117 @@ export default function Financeiro() {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
+        {/* Hero Section */}
         <div>
-          <h1 className="text-3xl font-bold">Financeiro</h1>
-          <p className="text-muted-foreground">Visão consolidada das finanças</p>
+          <h1 className="text-4xl font-bold text-navy-900 dark:text-navy-50">Financeiro</h1>
+          <p className="text-navy-600 dark:text-navy-400 mt-1">Visão consolidada das finanças</p>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards Navy */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
+          <Card className="border-navy-200 dark:border-navy-800 bg-gradient-to-br from-green-50 to-white dark:from-green-950/20 dark:to-navy-900">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-navy-600 dark:text-navy-400">
                   Receitas Totais
                 </CardTitle>
-                <ArrowUpRight className="h-4 w-4 text-green-600" />
+                <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                  <ArrowUpRight className="h-4 w-4 text-green-600 dark:text-green-400" />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                 {formatCurrency(stats.totalReceitas)}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-navy-500 dark:text-navy-500 mt-1">
                 De {eventos.length} eventos
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-navy-200 dark:border-navy-800 bg-gradient-to-br from-red-50 to-white dark:from-red-950/20 dark:to-navy-900">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-navy-600 dark:text-navy-400">
                   Despesas Totais
                 </CardTitle>
-                <ArrowDownRight className="h-4 w-4 text-red-600" />
+                <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                  <ArrowDownRight className="h-4 w-4 text-red-600 dark:text-red-400" />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                 {formatCurrency(stats.totalDespesas)}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-navy-500 dark:text-navy-500 mt-1">
                 Incluindo reembolsos
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className={`border-navy-200 dark:border-navy-800 bg-gradient-to-br ${stats.lucro >= 0 ? 'from-green-50 to-white dark:from-green-950/20 dark:to-navy-900' : 'from-red-50 to-white dark:from-red-950/20 dark:to-navy-900'}`}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-navy-600 dark:text-navy-400">
                   Lucro Líquido
                 </CardTitle>
-                {stats.lucro >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-green-600" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-red-600" />
-                )}
+                <div className={`p-2 rounded-lg ${stats.lucro >= 0 ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'}`}>
+                  {stats.lucro >= 0 ? (
+                    <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  ) : (
+                    <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+                  )}
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold ${stats.lucro >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`text-2xl font-bold ${stats.lucro >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                 {formatCurrency(stats.lucro)}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-navy-500 dark:text-navy-500 mt-1">
                 Margem: {stats.margemLucro.toFixed(1)}%
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-navy-200 dark:border-navy-800 bg-gradient-to-br from-orange-50 to-white dark:from-orange-950/20 dark:to-navy-900">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-navy-600 dark:text-navy-400">
                   Reembolsos Pendentes
                 </CardTitle>
-                <DollarSign className="h-4 w-4 text-orange-600" />
+                <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+                  <DollarSign className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                 {formatCurrency(stats.reembolsosPendentes)}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-navy-500 dark:text-navy-500 mt-1">
                 A serem pagos
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Tabs */}
+        {/* Tabs Navy-themed */}
         <Tabs defaultValue="eventos" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="eventos">Por Evento</TabsTrigger>
-            <TabsTrigger value="fluxo">Fluxo de Caixa</TabsTrigger>
-            <TabsTrigger value="reembolsos">Reembolsos</TabsTrigger>
+          <TabsList className="bg-navy-100 dark:bg-navy-900">
+            <TabsTrigger value="eventos" className="data-[state=active]:bg-navy-600 data-[state=active]:text-white">
+              Por Evento
+            </TabsTrigger>
+            <TabsTrigger value="fluxo" className="data-[state=active]:bg-navy-600 data-[state=active]:text-white">
+              Fluxo de Caixa
+            </TabsTrigger>
+            <TabsTrigger value="reembolsos" className="data-[state=active]:bg-navy-600 data-[state=active]:text-white">
+              Reembolsos
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="eventos" className="space-y-4">

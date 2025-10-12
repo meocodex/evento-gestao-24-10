@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Plus, Truck, Search, Filter, MapPin } from 'lucide-react';
+import { Plus, Truck, Search, Filter, MapPin, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { StatCard } from '@/components/dashboard/StatCard';
 import { useTransportadoras } from '@/contexts/TransportadorasContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NovaTransportadoraDialog } from '@/components/transportadoras/NovaTransportadoraDialog';
@@ -35,13 +36,13 @@ export default function Transportadoras() {
   const enviosFinalizados = envios.filter(e => e.status === 'entregue' || e.status === 'cancelado');
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
+        {/* Hero Section */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Transportadoras</h1>
-            <p className="text-muted-foreground">Gestão de transportadoras e envios</p>
+            <h1 className="text-4xl font-bold text-navy-900 dark:text-navy-50">Transportadoras</h1>
+            <p className="text-navy-600 dark:text-navy-400 mt-1">Gestão de transportadoras e envios</p>
           </div>
           <div className="flex gap-2">
             <Button onClick={() => setNovoEnvioOpen(true)}>
@@ -55,51 +56,43 @@ export default function Transportadoras() {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats Cards Navy */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{transportadoras.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Ativas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {transportadoras.filter(t => t.status === 'ativa').length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Envios Ativos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">{enviosAtivos.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Entregas Pendentes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">
-                {envios.filter(e => e.status === 'pendente').length}
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            title="Total"
+            value={transportadoras.length}
+            icon={Truck}
+            variant="default"
+          />
+          <StatCard
+            title="Ativas"
+            value={transportadoras.filter(t => t.status === 'ativa').length}
+            icon={Truck}
+            variant="success"
+          />
+          <StatCard
+            title="Envios Ativos"
+            value={enviosAtivos.length}
+            icon={Package}
+            variant="primary"
+          />
+          <StatCard
+            title="Entregas Pendentes"
+            value={envios.filter(e => e.status === 'pendente').length}
+            icon={Package}
+            variant="warning"
+          />
         </div>
 
-        {/* Tabs */}
+        {/* Tabs Navy-themed */}
         <Tabs defaultValue="transportadoras" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="transportadoras">Transportadoras</TabsTrigger>
-            <TabsTrigger value="envios">Envios</TabsTrigger>
+          <TabsList className="bg-navy-100 dark:bg-navy-900">
+            <TabsTrigger value="transportadoras" className="data-[state=active]:bg-navy-600 data-[state=active]:text-white">
+              Transportadoras
+            </TabsTrigger>
+            <TabsTrigger value="envios" className="data-[state=active]:bg-navy-600 data-[state=active]:text-white">
+              Envios
+            </TabsTrigger>
           </TabsList>
 
           {/* Transportadoras Tab */}
