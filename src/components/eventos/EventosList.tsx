@@ -7,13 +7,16 @@ import { CardSkeleton } from '@/components/shared/LoadingSkeleton';
 interface EventosListProps {
   eventos: Evento[];
   onViewDetails: (evento: Evento) => void;
+  onEdit: (evento: Evento) => void;
+  onDelete: (evento: Evento) => void;
+  onChangeStatus: (evento: Evento) => void;
   isLoading?: boolean;
 }
 
-export function EventosList({ eventos, onViewDetails, isLoading }: EventosListProps) {
+export function EventosList({ eventos, onViewDetails, onEdit, onDelete, onChangeStatus, isLoading }: EventosListProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
         {[...Array(8)].map((_, i) => (
           <CardSkeleton key={i} />
         ))}
@@ -32,12 +35,15 @@ export function EventosList({ eventos, onViewDetails, isLoading }: EventosListPr
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
       {eventos.map((evento) => (
         <EventoCard
           key={evento.id}
           evento={evento}
-          onViewDetails={onViewDetails}
+          onClick={onViewDetails}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onChangeStatus={onChangeStatus}
         />
       ))}
     </div>

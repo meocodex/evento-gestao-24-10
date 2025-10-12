@@ -109,6 +109,21 @@ export default function Eventos() {
     setDetailsOpen(true);
   };
 
+  const handleEditarEvento = (evento: Evento) => {
+    setSelectedEvento(evento);
+    setDetailsOpen(true);
+  };
+
+  const handleDeletarEvento = (evento: Evento) => {
+    setSelectedEvento(evento);
+    setDetailsOpen(true);
+  };
+
+  const handleAlterarStatus = (evento: Evento) => {
+    setSelectedEvento(evento);
+    setDetailsOpen(true);
+  };
+
   return (
     <div className="min-h-full">
       {/* Container with premium max-width and spacing */}
@@ -238,6 +253,9 @@ export default function Eventos() {
           <EventosList
             eventos={sortedEventos}
             onViewDetails={handleViewDetails}
+            onEdit={handleEditarEvento}
+            onDelete={handleDeletarEvento}
+            onChangeStatus={handleAlterarStatus}
           />
         ) : (
           <EventosTableView

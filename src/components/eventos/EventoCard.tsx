@@ -1,155 +1,170 @@
 import { Evento } from '@/types/eventos';
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, MapPin, User, Briefcase, Package, Edit, Copy, ListOrdered } from 'lucide-react';
-import { format, parseISO, differenceInDays } from 'date-fns';
+import { Calendar, Clock, MapPin, Building, MoreVertical, Pencil, Trash2, ChevronRight } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EventoCountdown } from './EventoCountdown';
-import { useMemo } from 'react';
+import { useEventoPermissions } from '@/hooks/useEventoPermissions';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface EventoCardProps {
   evento: Evento;
-  onViewDetails: (evento: Evento) => void;
+  onClick: (evento: Evento) => void;
+  onEdit: (evento: Evento) => void;
+  onDelete: (evento: Evento) => void;
+  onChangeStatus: (evento: Evento) => void;
 }
 
-export function EventoCard({ evento, onViewDetails }: EventoCardProps) {
-  const dataEvento = parseISO(evento.dataInicio);
-  const diasAteEvento = differenceInDays(dataEvento, new Date());
-  const isUrgente = diasAteEvento >= 0 && diasAteEvento < 7;
+export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }: EventoCardProps) {
+  const { canEdit, canDeleteEvent } = useEventoPermissions(evento);
 
-  // Status color coding
-  const statusBorderColor = useMemo(() => {
-    const statusColors = {
-      finalizado: 'border-t-success',
-      confirmado: 'border-t-blue-500',
-      em_preparacao: 'border-t-blue-500',
-      materiais_alocados: 'border-t-yellow-500',
-      em_andamento: 'border-t-orange-500',
-      cancelado: 'border-t-destructive',
-      orcamento_enviado: 'border-t-muted-foreground',
-      aguardando_retorno: 'border-t-yellow-500',
-      aguardando_fechamento: 'border-t-purple-500',
-      aguardando_alocacao: 'border-t-cyan-500',
-    };
-    return statusColors[evento.status] || 'border-t-muted';
-  }, [evento.status]);
-
-  // Progress indicator
-  const progress = useMemo(() => {
-    const statusSteps = {
-      orcamento_enviado: 1,
-      aguardando_retorno: 1,
-      confirmado: 2,
-      aguardando_alocacao: 2,
-      materiais_alocados: 3,
-      em_preparacao: 3,
-      em_andamento: 4,
-      aguardando_fechamento: 4,
-      finalizado: 5,
-      cancelado: 0,
-    };
-    const step = statusSteps[evento.status] || 0;
-    return (step / 5) * 100;
-  }, [evento.status]);
-
-  // Materials count
-  const materiaisCount = useMemo(() => {
-    return {
-      antecipado: evento.materiaisAlocados.antecipado.length,
-      comTecnicos: evento.materiaisAlocados.comTecnicos.length,
-      total: evento.materiaisAlocados.antecipado.length + evento.materiaisAlocados.comTecnicos.length,
-    };
-  }, [evento.materiaisAlocados]);
+  const statusColors = {
+    orcamento_enviado: 'bg-amber-500',
+    confirmado: 'bg-emerald-500',
+    materiais_alocados: 'bg-navy-600',
+    em_preparacao: 'bg-purple-500',
+    em_andamento: 'bg-slate-700',
+    aguardando_retorno: 'bg-orange-500',
+    aguardando_fechamento: 'bg-gray-400',
+    finalizado: 'bg-green-600',
+    cancelado: 'bg-red-500',
+    aguardando_alocacao: 'bg-yellow-600',
+  };
 
   return (
-    <Card 
-      className="group p-5 hover:shadow-lg transition-all duration-300 hover:border-primary/30 animate-fade-in flex flex-col min-h-[240px] cursor-pointer relative border-l-2 border-l-primary/0 hover:border-l-primary"
-      onClick={() => onViewDetails(evento)}
+    <Card className="group bg-white border-2 border-navy-100 hover:border-navy-400 hover:shadow-2xl transition-all duration-300 rounded-2xl overflow-hidden min-h-[280px] flex flex-col relative cursor-pointer"
+      onClick={() => onClick(evento)}
     >
-      {/* Quick actions - visible on hover */}
-      <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-8 w-8 bg-background/80 backdrop-blur-sm hover:bg-background"
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewDetails(evento);
-          }}
-        >
-          <Edit className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {/* Content */}
-      <div className="flex flex-col h-full gap-3">
-        {/* Header */}
-        <div className="space-y-2">
-          <h3 className="text-lg font-semibold leading-tight line-clamp-2 pr-12">
-            {evento.nome}
-          </h3>
-          
-          <div className="flex flex-wrap items-center gap-1.5">
+      {/* Status indicator top */}
+      <div className={`absolute top-0 left-0 right-0 h-1 ${statusColors[evento.status]}`} />
+      
+      <CardHeader className="pb-3 pt-5">
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-navy-800 leading-tight mb-2 line-clamp-2">
+              {evento.nome}
+            </h3>
             <StatusBadge status={evento.status} />
-            {isUrgente && (
-              <Badge variant="destructive" className="text-xs h-5">
-                Urgente
-              </Badge>
-            )}
-            {evento.tags.slice(0, 1).map(tag => (
-              <Badge key={tag} variant="outline" className="text-xs h-5">
-                {tag}
-              </Badge>
-            ))}
           </div>
-        </div>
-
-        {/* Progress bar */}
-        {evento.status !== 'cancelado' && (
-          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-primary transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        )}
-
-        {/* Info grid - flex-1 to push footer down */}
-        <div className="flex-1 space-y-2.5">
-          <div className="flex items-center gap-2 text-sm">
-            <Calendar className="h-5 w-5 text-primary flex-shrink-0" />
-            <span className="truncate">
-              {format(dataEvento, "dd MMM", { locale: ptBR })} • {evento.horaInicio}-{evento.horaFim}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 text-sm">
-            <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
-            <span className="truncate">{evento.cidade}/{evento.estado}</span>
-          </div>
-
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <User className="h-5 w-5 flex-shrink-0" />
-            <span className="truncate">{evento.cliente.nome}</span>
-          </div>
-
-          {materiaisCount.total > 0 && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Package className="h-5 w-5 text-success flex-shrink-0" />
-              <span className="text-xs">
-                {materiaisCount.total} materiais alocados
-              </span>
-            </div>
+          
+          {canEdit && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onChangeStatus(evento);
+                }}>
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Alterar Status
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(evento);
+                }}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Editar
+                </DropdownMenuItem>
+                {canDeleteEvent && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      className="text-destructive focus:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDelete(evento);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
-
-        {/* Footer - countdown */}
-        <div className="pt-2 border-t">
-          <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} />
+      </CardHeader>
+      
+      <CardContent className="flex-1 space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-navy-50">
+            <Calendar className="h-5 w-5 text-navy-600" />
+          </div>
+          <div>
+            <p className="text-xs text-navy-400 font-medium">Data</p>
+            <p className="text-sm font-semibold text-navy-800">
+              {format(parseISO(evento.dataInicio), "dd/MM/yyyy", { locale: ptBR })}
+            </p>
+          </div>
         </div>
-      </div>
+        
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-navy-50">
+            <Clock className="h-5 w-5 text-navy-600" />
+          </div>
+          <div>
+            <p className="text-xs text-navy-400 font-medium">Horário</p>
+            <p className="text-sm font-semibold text-navy-800">{evento.horaInicio}</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-navy-50">
+            <MapPin className="h-5 w-5 text-navy-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-navy-400 font-medium">Local</p>
+            <p className="text-sm font-semibold text-navy-800 truncate">{evento.local}</p>
+          </div>
+        </div>
+        
+        {evento.cliente && (
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-navy-50">
+              <Building className="h-5 w-5 text-navy-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-navy-400 font-medium">Cliente</p>
+              <p className="text-sm font-semibold text-navy-800 truncate">{evento.cliente.nome}</p>
+            </div>
+          </div>
+        )}
+        
+        <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} />
+      </CardContent>
+      
+      <CardFooter className="border-t border-navy-100 pt-4">
+        <Button 
+          variant="outline" 
+          className="w-full"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick(evento);
+          }}
+        >
+          Ver Detalhes
+          <ChevronRight className="ml-2 h-4 w-4" />
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

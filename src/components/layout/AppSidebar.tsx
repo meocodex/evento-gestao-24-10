@@ -24,9 +24,10 @@ import {
   SidebarHeader,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { useAuth, UserRole } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 const menuItems = [
   { title: 'Dashboard', url: '/dashboard', icon: Home, roles: ['admin', 'comercial', 'suporte'] },
@@ -49,39 +50,57 @@ export function AppSidebar() {
   );
 
   return (
-    <Sidebar className="border-r border-sidebar-border/50">
-      <SidebarHeader className="border-b border-sidebar-border/50 p-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-primary to-accent rounded-xl shadow-lg">
-            <Calendar className="h-5 w-5 text-white" />
+    <Sidebar className="border-r-0 bg-sidebar">
+      <SidebarHeader className="border-b border-sidebar-border/30 p-6">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-accent/20 backdrop-blur-sm rounded-xl shadow-lg shadow-accent/30 ring-2 ring-accent/50">
+            <Calendar className="h-6 w-6 text-accent" />
           </div>
-          <div>
-            <p className="text-sm font-display font-bold text-sidebar-foreground">Gestão Eventos</p>
-            <p className="text-xs text-sidebar-foreground/70">{user?.name}</p>
+          
+          <div className="data-[collapsed=true]:hidden">
+            <p className="text-base font-display font-bold text-sidebar-foreground">
+              Gestão Eventos
+            </p>
+            <p className="text-xs text-sidebar-foreground/70">
+              {user?.name}
+            </p>
           </div>
         </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60">
+          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60 px-4">
             Menu Principal
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-1">
+            <SidebarMenu className="space-y-1 px-2">
               {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink
                       to={item.url}
                       className={({ isActive }) =>
-                        isActive
-                          ? 'bg-gradient-to-r from-primary/20 to-accent/20 text-sidebar-foreground border-l-2 border-primary font-semibold shadow-sm'
-                          : 'hover:bg-sidebar-accent/50 hover:translate-x-1 transition-all duration-200'
+                        cn(
+                          "group relative flex items-center gap-3 px-4 py-3 rounded-xl mx-0 transition-all duration-200",
+                          isActive
+                            ? "bg-sidebar-accent border-l-4 border-accent text-sidebar-foreground shadow-md"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                        )
                       }
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                      {({ isActive }) => (
+                        <>
+                          <item.icon className="h-5 w-5" />
+                          <span className="font-medium data-[collapsed=true]:hidden">
+                            {item.title}
+                          </span>
+                          
+                          {isActive && (
+                            <div className="absolute right-3 w-2 h-2 rounded-full bg-accent animate-pulse" />
+                          )}
+                        </>
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -91,20 +110,26 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border/50 p-4">
+      <SidebarFooter className="border-t border-sidebar-border/30 p-4">
         <div className="space-y-3">
-          <div className="px-3 py-2.5 bg-gradient-to-r from-sidebar-accent/40 to-sidebar-accent/20 rounded-xl border border-sidebar-border/30">
-            <p className="text-xs text-sidebar-foreground/60 font-medium">Perfil</p>
-            <p className="text-sm font-semibold text-sidebar-foreground capitalize mt-0.5">{user?.role}</p>
+          <div className="px-4 py-3 bg-sidebar-accent/50 backdrop-blur-sm rounded-xl border border-sidebar-border/30">
+            <p className="text-xs text-sidebar-foreground/60 font-medium uppercase tracking-wide">
+              Perfil
+            </p>
+            <p className="text-sm font-semibold text-sidebar-foreground capitalize mt-1">
+              {user?.role}
+            </p>
           </div>
+          
           <Separator className="bg-sidebar-border/30" />
+          
           <Button
             variant="ghost"
             onClick={logout}
             className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-destructive transition-all duration-200 group"
           >
-            <LogOut className="h-4 w-4 mr-2 group-hover:rotate-12 transition-transform" />
-            Sair
+            <LogOut className="h-4 w-4 mr-3 group-hover:rotate-12 transition-transform" />
+            <span className="data-[collapsed=true]:hidden">Sair</span>
           </Button>
         </div>
       </SidebarFooter>

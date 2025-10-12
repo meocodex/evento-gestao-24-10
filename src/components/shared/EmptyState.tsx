@@ -30,7 +30,7 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, onActi
       {actionLabel && onAction && (
         <Button 
           onClick={onAction}
-          variant="gradient"
+          variant="default"
           size="lg"
           className="shadow-xl"
         >

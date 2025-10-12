@@ -25,16 +25,20 @@ export function MainLayout() {
         <AppSidebar />
         
         <div className="flex-1 flex flex-col">
-          <header className="sticky top-0 z-10 h-16 border-b bg-background">
-            <div className="flex h-16 items-center gap-4 px-4 sm:px-6 lg:px-8">
-              <SidebarTrigger className="hover:bg-accent transition-colors rounded-md" />
-              <div className="flex-1" />
-              <NotificationCenter />
+          <header className="sticky top-0 z-50 h-16 bg-white border-b border-navy-100 shadow-sm backdrop-blur-sm bg-white/95">
+            <div className="h-full flex items-center justify-between px-6">
+              <div className="flex items-center gap-4">
+                <SidebarTrigger className="hover:bg-navy-50 rounded-lg transition-colors" />
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <NotificationCenter />
+              </div>
             </div>
           </header>
           
           <main className="flex-1 overflow-auto bg-background">
-            <div className="w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+            <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 lg:py-8">
               <Outlet />
             </div>
           </main>
