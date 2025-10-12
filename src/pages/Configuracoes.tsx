@@ -15,8 +15,31 @@ import { GerenciarCategorias } from '@/components/configuracoes/GerenciarCategor
 export default function Configuracoes() {
   const { toast } = useToast();
   const { configuracoes, atualizarConfiguracoes, testarWhatsApp, testarEmail } = useConfiguracoes();
-  const [whatsappConfig, setWhatsappConfig] = useState(configuracoes.notificacoes.whatsapp);
-  const [emailConfig, setEmailConfig] = useState(configuracoes.notificacoes.email);
+  const [whatsappConfig, setWhatsappConfig] = useState(configuracoes?.notificacoes?.whatsapp || {
+    enabled: false,
+    apiKey: '',
+    phoneNumber: '',
+    mensagens: {
+      envio_mercadoria: '',
+      solicitacao_devolucao: '',
+      envio_proposta: ''
+    }
+  });
+  const [emailConfig, setEmailConfig] = useState(configuracoes?.notificacoes?.email || {
+    enabled: false,
+    remetente: '',
+    smtp: {
+      host: '',
+      port: 587,
+      user: '',
+      password: ''
+    },
+    templates: {
+      envio_mercadoria: '',
+      solicitacao_devolucao: '',
+      envio_proposta: ''
+    }
+  });
 
   const handleSalvarWhatsApp = async () => {
     await atualizarConfiguracoes({
@@ -173,7 +196,7 @@ export default function Configuracoes() {
                 <div className="flex items-center justify-between">
                   <Label>Ativar WhatsApp</Label>
                   <Switch
-                    checked={whatsappConfig.enabled}
+                    checked={whatsappConfig?.enabled || false}
                     onCheckedChange={(checked) =>
                       setWhatsappConfig({ ...whatsappConfig, enabled: checked })
                     }
@@ -209,11 +232,11 @@ export default function Configuracoes() {
                   <Textarea
                     placeholder="Olá {{produtor}}, os materiais do evento {{evento}} foram enviados via {{transportadora}}. Rastreamento: {{rastreamento}}"
                     rows={3}
-                    value={whatsappConfig.mensagens.envio_mercadoria}
+                    value={whatsappConfig?.mensagens?.envio_mercadoria || ''}
                     onChange={(e) =>
                       setWhatsappConfig({
                         ...whatsappConfig,
-                        mensagens: { ...whatsappConfig.mensagens, envio_mercadoria: e.target.value },
+                        mensagens: { ...whatsappConfig?.mensagens, envio_mercadoria: e.target.value },
                       })
                     }
                   />
@@ -224,11 +247,11 @@ export default function Configuracoes() {
                   <Textarea
                     placeholder="Olá {{produtor}}, por favor devolver os materiais do evento {{evento}} até {{data_limite}}."
                     rows={3}
-                    value={whatsappConfig.mensagens.solicitacao_devolucao}
+                    value={whatsappConfig?.mensagens?.solicitacao_devolucao || ''}
                     onChange={(e) =>
                       setWhatsappConfig({
                         ...whatsappConfig,
-                        mensagens: { ...whatsappConfig.mensagens, solicitacao_devolucao: e.target.value },
+                        mensagens: { ...whatsappConfig?.mensagens, solicitacao_devolucao: e.target.value },
                       })
                     }
                   />
@@ -239,11 +262,11 @@ export default function Configuracoes() {
                   <Textarea
                     placeholder="Olá {{cliente}}, segue proposta comercial para {{evento}}. Link: {{link_proposta}}"
                     rows={3}
-                    value={whatsappConfig.mensagens.envio_proposta}
+                    value={whatsappConfig?.mensagens?.envio_proposta || ''}
                     onChange={(e) =>
                       setWhatsappConfig({
                         ...whatsappConfig,
-                        mensagens: { ...whatsappConfig.mensagens, envio_proposta: e.target.value },
+                        mensagens: { ...whatsappConfig?.mensagens, envio_proposta: e.target.value },
                       })
                     }
                   />
@@ -271,7 +294,7 @@ export default function Configuracoes() {
                 <div className="flex items-center justify-between">
                   <Label>Ativar E-mail</Label>
                   <Switch
-                    checked={emailConfig.enabled}
+                    checked={emailConfig?.enabled || false}
                     onCheckedChange={(checked) =>
                       setEmailConfig({ ...emailConfig, enabled: checked })
                     }
@@ -282,11 +305,16 @@ export default function Configuracoes() {
                     <Label>Servidor SMTP</Label>
                     <Input
                       placeholder="smtp.gmail.com"
-                      value={emailConfig.smtp.host || ''}
+                      value={emailConfig?.smtp?.host || ''}
                       onChange={(e) =>
                         setEmailConfig({
                           ...emailConfig,
-                          smtp: { ...emailConfig.smtp, host: e.target.value },
+                          smtp: { 
+                            host: e.target.value,
+                            port: emailConfig?.smtp?.port || 587,
+                            user: emailConfig?.smtp?.user || '',
+                            password: emailConfig?.smtp?.password || ''
+                          },
                         })
                       }
                     />
@@ -296,11 +324,16 @@ export default function Configuracoes() {
                     <Input
                       type="number"
                       placeholder="587"
-                      value={emailConfig.smtp.port || ''}
+                      value={emailConfig?.smtp?.port || ''}
                       onChange={(e) =>
                         setEmailConfig({
                           ...emailConfig,
-                          smtp: { ...emailConfig.smtp, port: Number(e.target.value) },
+                          smtp: { 
+                            host: emailConfig?.smtp?.host || '',
+                            port: Number(e.target.value),
+                            user: emailConfig?.smtp?.user || '',
+                            password: emailConfig?.smtp?.password || ''
+                          },
                         })
                       }
                     />
@@ -321,11 +354,16 @@ export default function Configuracoes() {
                   <Label>Usuário SMTP</Label>
                   <Input
                     placeholder="usuario@smtp.com"
-                    value={emailConfig.smtp.user || ''}
+                    value={emailConfig?.smtp?.user || ''}
                     onChange={(e) =>
                       setEmailConfig({
                         ...emailConfig,
-                        smtp: { ...emailConfig.smtp, user: e.target.value },
+                        smtp: { 
+                          host: emailConfig?.smtp?.host || '',
+                          port: emailConfig?.smtp?.port || 587,
+                          user: e.target.value,
+                          password: emailConfig?.smtp?.password || ''
+                        },
                       })
                     }
                   />
@@ -334,11 +372,16 @@ export default function Configuracoes() {
                   <Label>Senha</Label>
                   <Input
                     type="password"
-                    value={emailConfig.smtp.password || ''}
+                    value={emailConfig?.smtp?.password || ''}
                     onChange={(e) =>
                       setEmailConfig({
                         ...emailConfig,
-                        smtp: { ...emailConfig.smtp, password: e.target.value },
+                        smtp: { 
+                          host: emailConfig?.smtp?.host || '',
+                          port: emailConfig?.smtp?.port || 587,
+                          user: emailConfig?.smtp?.user || '',
+                          password: e.target.value
+                        },
                       })
                     }
                   />
