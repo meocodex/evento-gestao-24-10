@@ -24,6 +24,7 @@ interface NovoEventoDialogProps {
 export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEventoDialogProps) {
   const { toast } = useToast();
   const { criarEvento } = useEventos();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [nome, setNome] = useState('');
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
@@ -63,6 +64,8 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (isSubmitting) return;
+    
     if (!clienteId || !comercialId) {
       toast({
         title: 'Campos obrigatórios',
@@ -81,29 +84,32 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
       return;
     }
 
-    await criarEvento({
-      nome,
-      dataInicio,
-      dataFim,
-      horaInicio,
-      horaFim,
-      local,
-      cidade,
-      estado,
-      endereco,
-      tipoEvento,
-      clienteId,
-      comercialId,
-      tags,
-      descricao,
-      observacoes,
-      contatosAdicionais,
-      redesSociais,
-      configuracaoIngresso: (tipoEvento === 'ingresso' || tipoEvento === 'hibrido') ? { setores } : undefined,
-      configuracaoBar: (tipoEvento === 'bar' || tipoEvento === 'hibrido') ? configuracaoBar : undefined,
-    });
-    
-    // Reset form
+    try {
+      setIsSubmitting(true);
+      
+      await criarEvento({
+        nome,
+        dataInicio,
+        dataFim,
+        horaInicio,
+        horaFim,
+        local,
+        cidade,
+        estado,
+        endereco,
+        tipoEvento,
+        clienteId,
+        comercialId,
+        tags,
+        descricao,
+        observacoes,
+        contatosAdicionais,
+        redesSociais,
+        configuracaoIngresso: (tipoEvento === 'ingresso' || tipoEvento === 'hibrido') ? { setores } : undefined,
+        configuracaoBar: (tipoEvento === 'bar' || tipoEvento === 'hibrido') ? configuracaoBar : undefined,
+      });
+      
+      // Reset form
     setNome('');
     setDataInicio('');
     setDataFim('');
@@ -124,8 +130,17 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
     setSetores([]);
     setConfiguracaoBar({ quantidadeMaquinas: 1, quantidadeBares: 1, temCardapio: false });
     
-    onOpenChange(false);
-    onEventoCreated();
+      onOpenChange(false);
+      onEventoCreated();
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao criar evento',
+        description: error.message || 'Ocorreu um erro ao criar o evento. Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -313,10 +328,12 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
           </div>
 
           <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button type="submit">Criar Evento</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Criando...' : 'Criar Evento'}
+            </Button>
           </div>
         </form>
       </DialogContent>

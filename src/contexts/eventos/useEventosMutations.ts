@@ -12,13 +12,21 @@ export function useEventosMutations() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
+      // Validações
+      if (!data.clienteId) throw new Error('Cliente é obrigatório');
+      if (!data.comercialId) throw new Error('Comercial é obrigatório');
+      
+      if (new Date(data.dataFim) < new Date(data.dataInicio)) {
+        throw new Error('Data de término não pode ser anterior à data de início');
+      }
+
       const { data: evento, error } = await supabase
         .from('eventos')
         .insert([{
           nome: data.nome,
           tipo_evento: data.tipoEvento,
           cliente_id: data.clienteId,
-          comercial_id: data.comercialId || user.id,
+          comercial_id: data.comercialId,
           data_inicio: data.dataInicio,
           data_fim: data.dataFim,
           hora_inicio: data.horaInicio,
@@ -74,6 +82,13 @@ export function useEventosMutations() {
     mutationFn: async ({ id, data }: { id: string; data: Partial<Evento> }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
+
+      // Validações de data
+      if (data.dataInicio && data.dataFim) {
+        if (new Date(data.dataFim) < new Date(data.dataInicio)) {
+          throw new Error('Data de término não pode ser anterior à data de início');
+        }
+      }
 
       const updateData: any = {};
       

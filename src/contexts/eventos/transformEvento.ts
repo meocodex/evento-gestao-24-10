@@ -35,15 +35,26 @@ export function transformEvento(data: any): Evento {
       email: data.cliente.email,
       whatsapp: data.cliente.whatsapp,
       endereco: data.cliente.endereco as any
-    } : undefined as any,
+    } : {
+      id: '',
+      nome: 'Cliente não encontrado',
+      tipo: 'cpf' as const,
+      documento: '',
+      telefone: '',
+      email: '',
+      whatsapp: '',
+      endereco: {} as any
+    },
     
     comercial: data.comercial ? {
       id: data.comercial.id,
       nome: data.comercial.nome,
-      email: data.comercial.email,
-      telefone: data.comercial.telefone,
-      avatarUrl: data.comercial.avatar_url
-    } : undefined as any,
+      email: data.comercial.email
+    } : {
+      id: '',
+      nome: 'Comercial não encontrado',
+      email: ''
+    },
     
     checklist: (data.checklist || []).map((item: any) => ({
       id: item.id,

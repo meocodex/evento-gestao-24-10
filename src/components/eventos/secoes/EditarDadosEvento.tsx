@@ -18,6 +18,7 @@ interface EditarDadosEventoProps {
 
 export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEventoProps) {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [nome, setNome] = useState(evento.nome);
   const [dataInicio, setDataInicio] = useState(evento.dataInicio);
   const [dataFim, setDataFim] = useState(evento.dataFim);
@@ -44,8 +45,10 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (isSubmitting) return;
     
     if (!clienteId || !comercialId) {
       toast({
@@ -56,26 +59,42 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
       return;
     }
 
-    const dadosAtualizados: Partial<Evento> = {
-      nome,
-      dataInicio,
-      dataFim,
-      horaInicio,
-      horaFim,
-      local,
-      cidade,
-      estado,
-      endereco,
-      descricao,
-      tags,
-    };
+    if (dataFim && dataInicio && dataFim < dataInicio) {
+      toast({
+        title: 'Data inválida',
+        description: 'A data de fim não pode ser anterior à data de início.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    toast({
-      title: 'Evento atualizado!',
-      description: 'As alterações foram salvas com sucesso.',
-    });
-    
-    onSave(dadosAtualizados);
+    try {
+      setIsSubmitting(true);
+
+      const dadosAtualizados: Partial<Evento> = {
+        nome,
+        dataInicio,
+        dataFim,
+        horaInicio,
+        horaFim,
+        local,
+        cidade,
+        estado,
+        endereco,
+        descricao,
+        tags,
+      };
+
+      await onSave(dadosAtualizados);
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao atualizar evento',
+        description: error.message || 'Ocorreu um erro ao atualizar o evento. Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -236,13 +255,13 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
       </div>
 
       <div className="flex justify-end gap-2 pt-4 border-t">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
           <XCircle className="h-4 w-4 mr-2" />
           Cancelar
         </Button>
-        <Button type="submit">
+        <Button type="submit" disabled={isSubmitting}>
           <Save className="h-4 w-4 mr-2" />
-          Salvar Alterações
+          {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
         </Button>
       </div>
     </form>
