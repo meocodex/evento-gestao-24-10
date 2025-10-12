@@ -1301,6 +1301,10 @@ export type Database = {
         Args: { p_evento_id: string; p_item_id: string }
         Returns: undefined
       }
+      decrement_estoque_disponivel: {
+        Args: { p_material_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1310,6 +1314,10 @@ export type Database = {
       }
       increment_checklist_alocado: {
         Args: { p_evento_id: string; p_item_id: string }
+        Returns: undefined
+      }
+      increment_estoque_disponivel: {
+        Args: { p_material_id: string }
         Returns: undefined
       }
       notificar_cobrancas_atrasadas: {

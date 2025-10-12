@@ -1,10 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useEstoqueValidation } from '@/hooks/useEstoqueValidation';
 
 export function useEventosMateriaisAlocados() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { verificarDisponibilidade, verificarConflitos, reservarMaterial, liberarMaterial } = useEstoqueValidation();
 
   const alocarMaterial = useMutation({
     mutationFn: async ({ 
@@ -16,6 +18,45 @@ export function useEventosMateriaisAlocados() {
       tipo: 'antecipado' | 'comTecnicos'; 
       material: any 
     }) => {
+      // Buscar dados do evento
+      const { data: evento, error: eventoError } = await supabase
+        .from('eventos')
+        .select('data_inicio, data_fim')
+        .eq('id', eventoId)
+        .single();
+
+      if (eventoError) throw eventoError;
+
+      // Verificar disponibilidade
+      const { disponivel, detalhes } = await verificarDisponibilidade(
+        material.itemId,
+        1,
+        eventoId
+      );
+
+      if (!disponivel) {
+        throw new Error(`Material indisponível: ${detalhes?.nome || material.nome}`);
+      }
+
+      // Verificar conflitos de agenda
+      const { temConflito, eventos } = await verificarConflitos(
+        material.itemId,
+        evento.data_inicio,
+        evento.data_fim,
+        eventoId
+      );
+
+      if (temConflito && eventos.length > 0) {
+        const nomeEventos = eventos.map(e => e.nome).join(', ');
+        throw new Error(`Material já alocado para: ${nomeEventos}`);
+      }
+
+      // Reservar material no estoque
+      const reservado = await reservarMaterial(material.itemId, material.serial, eventoId);
+      if (!reservado) {
+        throw new Error('Falha ao reservar material');
+      }
+
       const tipoEnvio = tipo === 'antecipado' ? 'antecipado' : 'com_tecnicos';
       
       const { data, error } = await supabase
@@ -80,13 +121,16 @@ export function useEventosMateriaisAlocados() {
       eventoId: string; 
       materialId: string 
     }) => {
-      // Buscar material antes de deletar para pegar o item_id
-      const { data: material } = await supabase
+      // Buscar dados do material antes de remover
+      const { data: materialAlocado, error: fetchError } = await supabase
         .from('eventos_materiais_alocados')
-        .select('item_id')
+        .select('item_id, serial')
         .eq('id', materialId)
         .single();
 
+      if (fetchError) throw fetchError;
+
+      // Remover alocação
       const { error } = await supabase
         .from('eventos_materiais_alocados')
         .delete()
@@ -94,22 +138,23 @@ export function useEventosMateriaisAlocados() {
 
       if (error) throw error;
 
-      // Decrementar quantidade alocada no checklist manualmente
-      if (material) {
-        const { data: checklistItem } = await supabase
-          .from('eventos_checklist')
-          .select('alocado')
-          .eq('evento_id', eventoId)
-          .eq('item_id', material.item_id)
-          .single();
+      // Liberar material no estoque
+      await liberarMaterial(materialAlocado.item_id, materialAlocado.serial);
 
-        if (checklistItem) {
-          await supabase
-            .from('eventos_checklist')
-            .update({ alocado: Math.max(0, checklistItem.alocado - 1) })
-            .eq('evento_id', eventoId)
-            .eq('item_id', material.item_id);
-        }
+      // Decrementar quantidade alocada no checklist
+      const { data: checklistItem } = await supabase
+        .from('eventos_checklist')
+        .select('alocado')
+        .eq('evento_id', eventoId)
+        .eq('item_id', materialAlocado.item_id)
+        .single();
+
+      if (checklistItem) {
+        await supabase
+          .from('eventos_checklist')
+          .update({ alocado: Math.max(0, checklistItem.alocado - 1) })
+          .eq('evento_id', eventoId)
+          .eq('item_id', materialAlocado.item_id);
       }
     },
     onSuccess: () => {

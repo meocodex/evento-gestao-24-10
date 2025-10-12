@@ -150,29 +150,27 @@ export function useEstoqueValidation() {
     eventoId: string
   ): Promise<boolean> => {
     try {
-      // Atualizar status do serial para reservado
+      // Atualizar status do serial para em-uso
       const { error: serialError } = await supabase
         .from('materiais_seriais')
-        .update({ status: 'reservado' })
+        .update({ status: 'em-uso' })
         .eq('numero', serial)
         .eq('status', 'disponivel');
 
       if (serialError) throw serialError;
 
-      // Decrementar quantidade disponível
-      const { error: estoqueError } = await supabase.rpc(
-        'decrement_estoque_disponivel',
-        { p_material_id: itemId }
-      );
+      // Decrementar quantidade disponível diretamente
+      const { data: material } = await supabase
+        .from('materiais_estoque')
+        .select('quantidade_disponivel')
+        .eq('id', itemId)
+        .single();
 
-      if (estoqueError) {
-        // Reverter mudança no serial se falhar
+      if (material && material.quantidade_disponivel > 0) {
         await supabase
-          .from('materiais_seriais')
-          .update({ status: 'disponivel' })
-          .eq('numero', serial);
-        
-        throw estoqueError;
+          .from('materiais_estoque')
+          .update({ quantidade_disponivel: material.quantidade_disponivel - 1 })
+          .eq('id', itemId);
       }
 
       return true;
@@ -199,13 +197,19 @@ export function useEstoqueValidation() {
 
       if (serialError) throw serialError;
 
-      // Incrementar quantidade disponível
-      const { error: estoqueError } = await supabase.rpc(
-        'increment_estoque_disponivel',
-        { p_material_id: itemId }
-      );
+      // Incrementar quantidade disponível diretamente
+      const { data: material } = await supabase
+        .from('materiais_estoque')
+        .select('quantidade_disponivel, quantidade_total')
+        .eq('id', itemId)
+        .single();
 
-      if (estoqueError) throw estoqueError;
+      if (material && material.quantidade_disponivel < material.quantidade_total) {
+        await supabase
+          .from('materiais_estoque')
+          .update({ quantidade_disponivel: material.quantidade_disponivel + 1 })
+          .eq('id', itemId);
+      }
 
       return true;
     } catch (error: any) {
