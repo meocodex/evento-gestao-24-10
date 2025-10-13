@@ -103,10 +103,9 @@ export const estados = [
 export const clienteSchema = z.object({
   nome: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100, 'Nome deve ter no máximo 100 caracteres'),
   tipo: z.enum(['CPF', 'CNPJ']),
-  documento: z.string().refine((val) => {
-    const limpo = val.replace(/\D/g, '');
-    return limpo.length === 11 || limpo.length === 14;
-  }, 'Documento inválido'),
+  documento: z.string()
+    .transform(val => val.replace(/\D/g, ''))
+    .refine((val) => val.length === 11 || val.length === 14, 'Documento inválido'),
   email: z.string().trim().email('Email inválido').max(255, 'Email muito longo'),
   telefone: z.string().min(10, 'Telefone inválido'),
   whatsapp: z.string().optional(),

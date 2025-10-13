@@ -31,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Setup auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session?.user?.email);
         setSession(session);
         
         if (session?.user) {
@@ -57,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 role: (roleData?.role as UserRole) || 'comercial',
               });
             } catch (error) {
-              console.error('Error fetching user data:', error);
+              // Silently fail in production - user will be set to null
             } finally {
               setLoading(false);
             }

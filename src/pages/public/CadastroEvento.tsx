@@ -38,6 +38,9 @@ export default function CadastroEvento() {
   const [produtorWhatsapp, setProdutorWhatsapp] = useState('');
   const [produtorEmail, setProdutorEmail] = useState('');
 
+  // Honeypot anti-bot (campo oculto que humanos não preenchem)
+  const [honeypot, setHoneypot] = useState('');
+
   // Configuração de Ingresso
   const [setores, setSetores] = useState<SetorEvento[]>([]);
 
@@ -47,6 +50,12 @@ export default function CadastroEvento() {
   const [temCardapio, setTemCardapio] = useState(false);
 
   const handleSubmit = async () => {
+    // Proteção anti-bot: se honeypot foi preenchido, é um bot
+    if (honeypot) {
+      console.warn('Bot detected - honeypot filled');
+      return; // Silently fail for bots
+    }
+
     setLoading(true);
     try {
       const protocolo = await criarCadastro({
@@ -263,6 +272,19 @@ export default function CadastroEvento() {
               <div>
                 <Label>E-mail</Label>
                 <Input type="email" value={produtorEmail} onChange={(e) => setProdutorEmail(e.target.value)} />
+              </div>
+
+              {/* Honeypot field - escondido do usuário, mas visível para bots */}
+              <div className="hidden" aria-hidden="true">
+                <label htmlFor="website">Website (não preencha)</label>
+                <Input
+                  id="website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                />
               </div>
             </CardContent>
           </Card>

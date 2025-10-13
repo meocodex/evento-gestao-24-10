@@ -46,7 +46,6 @@ export default function Auth() {
       }
     } catch (error: any) {
       toast.error("Erro ao fazer login");
-      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
@@ -95,8 +94,7 @@ export default function Auth() {
       }
     } catch (error: any) {
       toast.error("Erro ao criar conta");
-      console.error("Signup error:", error);
-    } finally {
+    } finally{
       setLoading(false);
     }
   };
