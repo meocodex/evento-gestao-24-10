@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { ClientesProvider } from "@/contexts/ClientesContext";
 import { EstoqueProvider } from "@/contexts/EstoqueContext";
 import { TransportadorasProvider } from "@/contexts/TransportadorasContext";
@@ -88,40 +89,42 @@ function AuthRoutes() {
 
 // Provider hierarchy fixed - QueryClient must be at the top level
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <CategoriasProvider>
-          <EventosProvider>
-            <DemandasProvider>
-              <ClientesProvider>
-                <EstoqueProvider>
-                  <ConfiguracoesProvider>
-                    <CadastrosPublicosProvider>
-                      <TransportadorasProvider>
-                        <ContratosProvider>
-                          <TooltipProvider>
-                          <Toaster />
-                          <Sonner />
-                          <Routes>
-                            <Route path="/auth" element={<AuthRoutes />} />
-                            <Route path="/cadastro-evento" element={<CadastroEvento />} />
-                            <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
-                            <Route path="/*" element={<ProtectedRoutes />} />
-                          </Routes>
-                          </TooltipProvider>
-                        </ContratosProvider>
-                      </TransportadorasProvider>
-                    </CadastrosPublicosProvider>
-                  </ConfiguracoesProvider>
-                </EstoqueProvider>
-              </ClientesProvider>
-            </DemandasProvider>
-          </EventosProvider>
-        </CategoriasProvider>
-      </AuthProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AuthProvider>
+          <CategoriasProvider>
+            <EventosProvider>
+              <DemandasProvider>
+                <ClientesProvider>
+                  <EstoqueProvider>
+                    <ConfiguracoesProvider>
+                      <CadastrosPublicosProvider>
+                        <TransportadorasProvider>
+                          <ContratosProvider>
+                            <TooltipProvider>
+                            <Toaster />
+                            <Sonner />
+                            <Routes>
+                              <Route path="/auth" element={<AuthRoutes />} />
+                              <Route path="/cadastro-evento" element={<CadastroEvento />} />
+                              <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
+                              <Route path="/*" element={<ProtectedRoutes />} />
+                            </Routes>
+                            </TooltipProvider>
+                          </ContratosProvider>
+                        </TransportadorasProvider>
+                      </CadastrosPublicosProvider>
+                    </ConfiguracoesProvider>
+                  </EstoqueProvider>
+                </ClientesProvider>
+              </DemandasProvider>
+            </EventosProvider>
+          </CategoriasProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
