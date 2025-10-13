@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Plus, Truck, Search, Filter, MapPin, Package } from 'lucide-react';
+import { Plus, Truck, Search, Filter, MapPin, Package, Trash2 } from 'lucide-react';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -24,6 +25,8 @@ export default function Transportadoras() {
   const [detalhesTransportadora, setDetalhesTransportadora] = useState<Transportadora | null>(null);
   const [gerenciarRotasTransportadora, setGerenciarRotasTransportadora] = useState<Transportadora | null>(null);
   const [novoEnvioOpen, setNovoEnvioOpen] = useState(false);
+  const [confirmExcluirTransportadora, setConfirmExcluirTransportadora] = useState(false);
+  const [transportadoraExcluir, setTransportadoraExcluir] = useState<Transportadora | null>(null);
 
   const transportadorasFiltradas = transportadoras.filter((t) => {
     const matchSearch = t.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -173,10 +176,20 @@ export default function Transportadoras() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="col-span-2"
                         onClick={() => setEditarTransportadora(transportadora)}
                       >
                         Editar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setTransportadoraExcluir(transportadora);
+                          setConfirmExcluirTransportadora(true);
+                        }}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </CardContent>
@@ -239,6 +252,22 @@ export default function Transportadoras() {
           />
         )}
         <NovoEnvioSheet open={novoEnvioOpen} onOpenChange={setNovoEnvioOpen} />
+
+        <ConfirmDialog
+          open={confirmExcluirTransportadora}
+          onOpenChange={setConfirmExcluirTransportadora}
+          onConfirm={() => {
+            if (transportadoraExcluir) {
+              excluirTransportadora(transportadoraExcluir.id);
+              setConfirmExcluirTransportadora(false);
+              setTransportadoraExcluir(null);
+            }
+          }}
+          title="Excluir Transportadora"
+          description={`Tem certeza que deseja excluir a transportadora "${transportadoraExcluir?.nome}"? Esta ação não pode ser desfeita.`}
+          variant="danger"
+          confirmText="Excluir"
+        />
       </div>
     </div>
   );

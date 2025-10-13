@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, MapPin, Calendar, TrendingUp, Edit, DollarSign } from 'lucide-react';
+import { Package, MapPin, Calendar, TrendingUp, Edit, DollarSign, Trash2 } from 'lucide-react';
 import { Envio } from '@/types/transportadoras';
 import { useTransportadoras } from '@/contexts/TransportadorasContext';
 import { useEventos } from '@/contexts/EventosContext';
 import { EditarEnvioSheet } from './EditarEnvioSheet';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -29,9 +30,10 @@ const statusLabels = {
 };
 
 export function EnvioCard({ envio }: EnvioCardProps) {
-  const { transportadoras, atualizarStatusEnvio } = useTransportadoras();
+  const { transportadoras, atualizarStatusEnvio, excluirEnvio } = useTransportadoras();
   const { eventos } = useEventos();
   const [editarOpen, setEditarOpen] = useState(false);
+  const [confirmExcluirOpen, setConfirmExcluirOpen] = useState(false);
   const transportadora = transportadoras.find((t) => t.id === envio.transportadoraId);
   const evento = eventos.find((e) => e.id === envio.eventoId);
 
@@ -114,6 +116,14 @@ export function EnvioCard({ envio }: EnvioCardProps) {
               <Button size="sm" variant="outline" onClick={() => setEditarOpen(true)}>
                 <Edit className="h-4 w-4" />
               </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => setConfirmExcluirOpen(true)}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -126,6 +136,19 @@ export function EnvioCard({ envio }: EnvioCardProps) {
           onOpenChange={setEditarOpen}
         />
       )}
+
+      <ConfirmDialog
+        open={confirmExcluirOpen}
+        onOpenChange={setConfirmExcluirOpen}
+        onConfirm={() => {
+          excluirEnvio(envio.id);
+          setConfirmExcluirOpen(false);
+        }}
+        title="Excluir Envio"
+        description={`Tem certeza que deseja excluir este envio? Esta ação não pode ser desfeita.`}
+        variant="danger"
+        confirmText="Excluir"
+      />
     </>
   );
 }

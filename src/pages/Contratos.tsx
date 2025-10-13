@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
-import { FileText, Plus, Search, Eye, Edit, MoreVertical, FileSignature, CheckCircle2, Clock } from 'lucide-react';
+import { FileText, Plus, Search, Eye, Edit, MoreVertical, FileSignature, CheckCircle2, Clock, Trash2 } from 'lucide-react';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,7 +22,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function Contratos() {
-  const { contratos, templates } = useContratos();
+  const { contratos, templates, excluirContrato, excluirTemplate } = useContratos();
   
   const [searchContratos, setSearchContratos] = useState('');
   const [searchTemplates, setSearchTemplates] = useState('');
@@ -36,6 +37,8 @@ export default function Contratos() {
   const [mostrarEditarTemplate, setMostrarEditarTemplate] = useState(false);
   const [mostrarSimularAssinatura, setMostrarSimularAssinatura] = useState(false);
   const [mostrarConverterContrato, setMostrarConverterContrato] = useState(false);
+  const [confirmExcluirContrato, setConfirmExcluirContrato] = useState(false);
+  const [confirmExcluirTemplate, setConfirmExcluirTemplate] = useState(false);
   const [contratoSelecionado, setContratoSelecionado] = useState<Contrato | null>(null);
   const [templateSelecionado, setTemplateSelecionado] = useState<ContratoTemplate | null>(null);
 
@@ -233,6 +236,18 @@ export default function Contratos() {
                                   Converter em Contrato
                                 </DropdownMenuItem>
                               )}
+                              {contrato.status !== 'assinado' && (
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setContratoSelecionado(contrato);
+                                    setConfirmExcluirContrato(true);
+                                  }}
+                                  className="text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Excluir
+                                </DropdownMenuItem>
+                              )}
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </div>
@@ -317,6 +332,16 @@ export default function Contratos() {
                             <Edit className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setTemplateSelecionado(template);
+                              setConfirmExcluirTemplate(true);
+                            }}
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Excluir
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
@@ -395,6 +420,38 @@ export default function Contratos() {
         open={mostrarConverterContrato}
         onOpenChange={setMostrarConverterContrato}
         contrato={contratoSelecionado}
+      />
+
+      <ConfirmDialog
+        open={confirmExcluirContrato}
+        onOpenChange={setConfirmExcluirContrato}
+        onConfirm={() => {
+          if (contratoSelecionado) {
+            excluirContrato(contratoSelecionado.id);
+            setConfirmExcluirContrato(false);
+            setContratoSelecionado(null);
+          }
+        }}
+        title="Excluir Contrato"
+        description={`Tem certeza que deseja excluir o contrato "${contratoSelecionado?.titulo}"? Esta ação não pode ser desfeita.`}
+        variant="danger"
+        confirmText="Excluir"
+      />
+
+      <ConfirmDialog
+        open={confirmExcluirTemplate}
+        onOpenChange={setConfirmExcluirTemplate}
+        onConfirm={() => {
+          if (templateSelecionado) {
+            excluirTemplate(templateSelecionado.id);
+            setConfirmExcluirTemplate(false);
+            setTemplateSelecionado(null);
+          }
+        }}
+        title="Excluir Template"
+        description={`Tem certeza que deseja excluir o template "${templateSelecionado?.nome}"? Esta ação não pode ser desfeita.`}
+        variant="danger"
+        confirmText="Excluir"
       />
     </div>
   );

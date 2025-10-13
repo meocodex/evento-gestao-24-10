@@ -123,9 +123,97 @@ export function useCategoriasMutations() {
     },
   });
 
+  const editarCategoria = useMutation({
+    mutationFn: async ({ tipo, value, novoLabel }: { tipo: TipoCategoria; value: string; novoLabel: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { data: config } = await supabase
+        .from('configuracoes_categorias')
+        .select('categorias')
+        .eq('user_id', user.id)
+        .eq('tipo', tipo)
+        .single();
+
+      const categorias = (config?.categorias as unknown as Categoria[]) || [];
+      const updated = categorias.map(c =>
+        c.value === value ? { ...c, label: novoLabel } : c
+      );
+
+      const { error } = await supabase
+        .from('configuracoes_categorias')
+        .update({ categorias: updated as any })
+        .eq('user_id', user.id)
+        .eq('tipo', tipo);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
+      toast({
+        title: 'Categoria editada',
+        description: 'O nome da categoria foi atualizado.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erro ao editar categoria',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const excluirCategoria = useMutation({
+    mutationFn: async ({ tipo, value }: { tipo: TipoCategoria; value: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { data: config } = await supabase
+        .from('configuracoes_categorias')
+        .select('categorias')
+        .eq('user_id', user.id)
+        .eq('tipo', tipo)
+        .single();
+
+      const categorias = (config?.categorias as unknown as Categoria[]) || [];
+      const categoriaExiste = categorias.find(c => c.value === value);
+      
+      if (!categoriaExiste) {
+        throw new Error('Categoria não encontrada');
+      }
+
+      const updated = categorias.filter(c => c.value !== value);
+
+      const { error } = await supabase
+        .from('configuracoes_categorias')
+        .update({ categorias: updated as any })
+        .eq('user_id', user.id)
+        .eq('tipo', tipo);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
+      toast({
+        title: 'Categoria excluída',
+        description: 'A categoria foi removida com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erro ao excluir categoria',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     atualizarCategorias,
     adicionarCategoria,
     toggleCategoria,
+    editarCategoria,
+    excluirCategoria,
   };
 }

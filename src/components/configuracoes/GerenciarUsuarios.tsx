@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserPlus, Settings } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { UserPlus, Settings, Eye, MoreVertical } from "lucide-react";
 import { useUsuarios, Usuario } from "@/hooks/useUsuarios";
 import { ConvidarUsuarioDialog } from "./ConvidarUsuarioDialog";
 import { EditarFuncaoUsuarioDialog } from "./EditarFuncaoUsuarioDialog";
+import { DetalhesUsuarioDialog } from "./DetalhesUsuarioDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -41,6 +43,7 @@ export function GerenciarUsuarios() {
   const { usuarios, isLoading } = useUsuarios();
   const [convidarOpen, setConvidarOpen] = useState(false);
   const [editarUsuario, setEditarUsuario] = useState<Usuario | null>(null);
+  const [detalhesUsuario, setDetalhesUsuario] = useState<Usuario | null>(null);
 
   if (isLoading) {
     return (
@@ -112,13 +115,23 @@ export function GerenciarUsuarios() {
                       {format(new Date(usuario.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditarUsuario(usuario)}
-                      >
-                        <Settings className="h-4 w-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => setDetalhesUsuario(usuario)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            Ver Detalhes
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setEditarUsuario(usuario)}>
+                            <Settings className="mr-2 h-4 w-4" />
+                            Editar Função
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -133,6 +146,11 @@ export function GerenciarUsuarios() {
         open={!!editarUsuario}
         onOpenChange={(open) => !open && setEditarUsuario(null)}
         usuario={editarUsuario}
+      />
+      <DetalhesUsuarioDialog
+        open={!!detalhesUsuario}
+        onOpenChange={(open) => !open && setDetalhesUsuario(null)}
+        usuario={detalhesUsuario}
       />
     </>
   );

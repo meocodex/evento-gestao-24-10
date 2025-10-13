@@ -15,6 +15,7 @@ interface TransportadorasContextData {
   excluirTransportadora: (id: string) => void;
   criarEnvio: (data: Omit<Envio, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
   editarEnvio: (id: string, data: Partial<Envio>) => void;
+  excluirEnvio: (id: string) => void;
   atualizarStatusEnvio: (id: string, status: Envio['status']) => void;
   buscarEnviosPorEvento: (eventoId: string) => Envio[];
   buscarEnviosPorTransportadora: (transportadoraId: string) => Envio[];
@@ -538,6 +539,42 @@ export function TransportadorasProvider({ children }: { children: ReactNode }) {
     removerRotaMutation.mutate(rotaId);
   };
 
+  const excluirEnvioMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const envio = envios?.find(e => e.id === id);
+      if (!envio) throw new Error('Envio não encontrado');
+      
+      if (envio.status === 'em_transito') {
+        throw new Error('Não é possível excluir envios em trânsito');
+      }
+
+      const { error } = await supabase
+        .from('envios')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['envios'] });
+      toast({
+        title: 'Envio excluído',
+        description: 'Envio removido com sucesso.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Não é possível excluir',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  });
+
+  const excluirEnvio = (id: string) => {
+    excluirEnvioMutation.mutate(id);
+  };
+
   return (
     <TransportadorasContext.Provider
       value={{
@@ -549,6 +586,7 @@ export function TransportadorasProvider({ children }: { children: ReactNode }) {
         excluirTransportadora,
         criarEnvio,
         editarEnvio,
+        excluirEnvio,
         atualizarStatusEnvio,
         buscarEnviosPorEvento,
         buscarEnviosPorTransportadora,
