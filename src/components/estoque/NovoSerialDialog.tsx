@@ -22,6 +22,10 @@ import {
 import { useEstoque } from '@/contexts/EstoqueContext';
 
 const serialSchema = z.object({
+  numero: z.string()
+    .min(1, 'Número de serial é obrigatório')
+    .max(50, 'Número de serial muito longo')
+    .regex(/^[A-Z0-9\-_]+$/i, 'Use apenas letras, números, hífens e underscores'),
   localizacao: z.string().min(1, 'Localização é obrigatória'),
   status: z.enum(['disponivel', 'em-uso', 'manutencao'] as const),
 });
@@ -65,6 +69,7 @@ export function NovoSerialDialog({
     setLoading(true);
     try {
       await adicionarSerial(materialId, {
+        numero: data.numero.toUpperCase(),
         status: data.status as 'disponivel' | 'em-uso' | 'manutencao',
         localizacao: data.localizacao,
       });
@@ -83,6 +88,22 @@ export function NovoSerialDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="numero">Número de Serial / Patrimônio *</Label>
+            <Input
+              id="numero"
+              placeholder="Ex: SN123456789 ou PATRIMONIO-2024-001"
+              {...register('numero')}
+              className="uppercase"
+            />
+            <p className="text-xs text-muted-foreground">
+              Digite o número de série do equipamento ou código de patrimônio
+            </p>
+            {errors.numero && (
+              <p className="text-sm text-destructive">{errors.numero.message}</p>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="localizacao">Localização *</Label>
             <Input

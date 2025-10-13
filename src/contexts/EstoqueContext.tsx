@@ -42,7 +42,7 @@ interface EstoqueContextData {
   adicionarMaterial: (material: Omit<MaterialEstoque, 'id' | 'seriais'>) => Promise<MaterialEstoque>;
   editarMaterial: (id: string, dados: Partial<MaterialEstoque>) => Promise<void>;
   excluirMaterial: (id: string) => Promise<void>;
-  adicionarSerial: (materialId: string, serial: Omit<SerialEstoque, 'numero'>) => Promise<void>;
+  adicionarSerial: (materialId: string, serial: SerialEstoque) => Promise<void>;
   editarSerial: (materialId: string, numeroSerial: string, dados: Partial<SerialEstoque>) => Promise<void>;
   excluirSerial: (materialId: string, numeroSerial: string) => Promise<void>;
   buscarMaterialPorId: (id: string) => MaterialEstoque | undefined;
@@ -239,18 +239,21 @@ export function EstoqueProvider({ children }: { children: ReactNode }) {
   };
 
   const adicionarSerialMutation = useMutation({
-    mutationFn: async ({ materialId, dados }: { materialId: string; dados: Omit<SerialEstoque, 'numero'> }) => {
+    mutationFn: async ({ materialId, dados }: { materialId: string; dados: SerialEstoque }) => {
       const material = materiais.find(m => m.id === materialId);
       if (!material) throw new Error('Material não encontrado');
 
-      const proximoNumero = material.seriais.length + 1;
-      const numero = `${material.id}-${String(proximoNumero).padStart(3, '0')}`;
+      // Verificar se o número de serial já existe para este material
+      const serialExistente = material.seriais.find(s => s.numero === dados.numero);
+      if (serialExistente) {
+        throw new Error('Este número de serial já está cadastrado para este material');
+      }
 
       const { error } = await supabase
         .from('materiais_seriais')
         .insert({
           material_id: materialId,
-          numero,
+          numero: dados.numero,
           status: dados.status,
           localizacao: dados.localizacao,
           data_aquisicao: dados.dataAquisicao,
@@ -285,7 +288,7 @@ export function EstoqueProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  const adicionarSerial = async (materialId: string, dados: Omit<SerialEstoque, 'numero'>) => {
+  const adicionarSerial = async (materialId: string, dados: SerialEstoque) => {
     await adicionarSerialMutation.mutateAsync({ materialId, dados });
   };
 
