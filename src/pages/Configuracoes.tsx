@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useConfiguracoes } from '@/contexts/ConfiguracoesContext';
 import { useToast } from '@/hooks/use-toast';
 import { GerenciarCategorias } from '@/components/configuracoes/GerenciarCategorias';
+import { GerenciarUsuarios } from '@/components/configuracoes/GerenciarUsuarios';
+import { MatrizPermissoes } from '@/components/configuracoes/MatrizPermissoes';
 
 export default function Configuracoes() {
   const { toast } = useToast();
@@ -96,6 +98,7 @@ export default function Configuracoes() {
             <TabsTrigger value="perfil">Perfil</TabsTrigger>
             <TabsTrigger value="empresa">Empresa</TabsTrigger>
             <TabsTrigger value="categorias">Categorias</TabsTrigger>
+            <TabsTrigger value="usuarios">Usuários</TabsTrigger>
             <TabsTrigger value="integracoes">Integrações</TabsTrigger>
             <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
             <TabsTrigger value="seguranca">Segurança</TabsTrigger>
@@ -178,6 +181,11 @@ export default function Configuracoes() {
                 descricao="Personalize as funções disponíveis para membros da equipe"
               />
             </div>
+          </TabsContent>
+
+          <TabsContent value="usuarios" className="space-y-4">
+            <GerenciarUsuarios />
+            <MatrizPermissoes />
           </TabsContent>
 
           <TabsContent value="integracoes" className="space-y-4">
