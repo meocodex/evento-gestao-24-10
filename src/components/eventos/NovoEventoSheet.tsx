@@ -13,7 +13,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ClienteSelect } from './ClienteSelect';
 import { ComercialSelect } from './ComercialSelect';
 import { Badge } from '@/components/ui/badge';
-import { X, ChevronLeft, ChevronRight, Search, CalendarIcon } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Search, Calendar as CalendarIcon } from 'lucide-react';
 import { useEventos } from '@/contexts/EventosContext';
 import { TipoEvento, SetorEvento, ConfiguracaoBar } from '@/types/eventos';
 import { ConfiguracaoBarForm } from './ConfiguracaoBarForm';
