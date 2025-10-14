@@ -14,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { X, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { useEventos } from '@/contexts/EventosContext';
 import { TipoEvento, SetorEvento, ConfiguracaoBar } from '@/types/eventos';
-import { SetoresIngressoForm } from './SetoresIngressoForm';
 import { ConfiguracaoBarForm } from './ConfiguracaoBarForm';
 import { cn } from '@/lib/utils';
 import { buscarCEP } from '@/lib/api/viacep';
@@ -53,7 +52,6 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tipoEvento, setTipoEvento] = useState<TipoEvento>('bar');
-  const [setores, setSetores] = useState<SetorEvento[]>([]);
   const [configuracaoBar, setConfiguracaoBar] = useState<ConfiguracaoBar>({
     quantidadeMaquinas: 1,
     quantidadeBares: 1,
@@ -127,7 +125,6 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
     setRedesSociais('');
     setTags([]);
     setTipoEvento('bar');
-    setSetores([]);
     setConfiguracaoBar({ quantidadeMaquinas: 1, quantidadeBares: 1, temCardapio: false });
     setCurrentStep(1);
   };
@@ -174,7 +171,6 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
         observacoes,
         contatosAdicionais,
         redesSociais,
-        configuracaoIngresso: (tipoEvento === 'ingresso' || tipoEvento === 'hibrido') ? { setores } : undefined,
         configuracaoBar: (tipoEvento === 'bar' || tipoEvento === 'hibrido') ? configuracaoBar : undefined,
       });
       
@@ -431,10 +427,6 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
             {/* Step 4: Configurações */}
             {currentStep === 4 && (
               <div className="space-y-4 animate-fade-in">
-                {(tipoEvento === 'ingresso' || tipoEvento === 'hibrido') && (
-                  <SetoresIngressoForm setores={setores} onChange={setSetores} />
-                )}
-
                 {(tipoEvento === 'bar' || tipoEvento === 'hibrido') && (
                   <ConfiguracaoBarForm configuracao={configuracaoBar} onChange={setConfiguracaoBar} />
                 )}

@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 import { useEventos } from '@/contexts/EventosContext';
 import { TipoEvento, SetorEvento, ConfiguracaoBar } from '@/types/eventos';
-import { SetoresIngressoForm } from './SetoresIngressoForm';
 import { ConfiguracaoBarForm } from './ConfiguracaoBarForm';
 
 interface NovoEventoDialogProps {
@@ -43,7 +42,6 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [tipoEvento, setTipoEvento] = useState<TipoEvento>('bar');
-  const [setores, setSetores] = useState<SetorEvento[]>([]);
   const [configuracaoBar, setConfiguracaoBar] = useState<ConfiguracaoBar>({
     quantidadeMaquinas: 1,
     quantidadeBares: 1,
@@ -105,7 +103,6 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
         observacoes,
         contatosAdicionais,
         redesSociais,
-        configuracaoIngresso: (tipoEvento === 'ingresso' || tipoEvento === 'hibrido') ? { setores } : undefined,
         configuracaoBar: (tipoEvento === 'bar' || tipoEvento === 'hibrido') ? configuracaoBar : undefined,
       });
       
@@ -127,7 +124,6 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
     setRedesSociais('');
     setTags([]);
     setTipoEvento('bar');
-    setSetores([]);
     setConfiguracaoBar({ quantidadeMaquinas: 1, quantidadeBares: 1, temCardapio: false });
     
       onOpenChange(false);
@@ -288,10 +284,6 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
                 placeholder="Detalhes sobre o evento..."
               />
             </div>
-
-            {(tipoEvento === 'ingresso' || tipoEvento === 'hibrido') && (
-              <SetoresIngressoForm setores={setores} onChange={setSetores} />
-            )}
 
             {(tipoEvento === 'bar' || tipoEvento === 'hibrido') && (
               <ConfiguracaoBarForm configuracao={configuracaoBar} onChange={setConfiguracaoBar} />
