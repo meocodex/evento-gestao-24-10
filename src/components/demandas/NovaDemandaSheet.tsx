@@ -8,8 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useDemandasContext } from '@/contexts/DemandasContext';
 import { CategoriaDemanda, PrioridadeDemanda } from '@/types/demandas';
 import { Plus } from 'lucide-react';
-import { mockUsuarios } from '@/lib/mock-data/demandas';
 import { useEventos } from '@/contexts/EventosContext';
+import { useUsuarios } from '@/hooks/useUsuarios';
+import { useAuth } from '@/contexts/AuthContext';
 import { useCategorias } from '@/contexts/CategoriasContext';
 
 const prioridades: { value: PrioridadeDemanda; label: string }[] = [
@@ -24,6 +25,8 @@ export function NovaDemandaSheet() {
   const { adicionarDemanda } = useDemandasContext();
   const { eventos } = useEventos();
   const { categoriasDemandas, isLoading: loadingCategorias } = useCategorias();
+  const { usuarios } = useUsuarios();
+  const { user } = useAuth();
 
   const eventosAtivos = eventos.filter(e => 
     ['orcamento', 'aprovado', 'em-preparacao', 'em-execucao'].includes(e.status)
@@ -44,17 +47,17 @@ export function NovaDemandaSheet() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Usuário atual mockado
-    const usuarioAtual = mockUsuarios[0];
+    if (!user) return;
     
+    const usuarioAtual = (usuarios || []).find(u => u.id === user.id);
     adicionarDemanda(
       {
         ...formData,
         responsavelId: formData.responsavelId || undefined,
         prazo: formData.prazo || undefined,
       },
-      usuarioAtual.nome,
-      usuarioAtual.id
+      usuarioAtual?.nome || user.email,
+      user.id
     );
 
     setFormData({
@@ -191,7 +194,7 @@ export function NovaDemandaSheet() {
                   <SelectValue placeholder="Selecione um responsável" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockUsuarios.map((usuario) => (
+                  {(usuarios || []).map((usuario) => (
                     <SelectItem key={usuario.id} value={usuario.id}>
                       {usuario.nome}
                     </SelectItem>

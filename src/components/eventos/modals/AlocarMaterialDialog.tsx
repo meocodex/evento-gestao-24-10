@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Package, Search, CheckCircle2, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { materiaisEstoque, SerialEstoque } from '@/lib/mock-data/estoque';
+import { useEstoque } from '@/contexts/EstoqueContext';
 
 interface AlocarMaterialDialogProps {
   open: boolean;
@@ -35,6 +35,7 @@ export function AlocarMaterialDialog({
   onAlocar 
 }: AlocarMaterialDialogProps) {
   const { toast } = useToast();
+  const { buscarMaterialPorId } = useEstoque();
   const [tipoEnvio, setTipoEnvio] = useState<'antecipado' | 'comTecnicos'>('comTecnicos');
   const [serial, setSerial] = useState('');
   const [transportadora, setTransportadora] = useState('');
@@ -43,8 +44,8 @@ export function AlocarMaterialDialog({
 
   // Buscar material no estoque
   const materialEstoque = useMemo(() => {
-    return materiaisEstoque.find(m => m.id === itemId);
-  }, [itemId]);
+    return buscarMaterialPorId(itemId);
+  }, [itemId, buscarMaterialPorId]);
 
   // Filtrar seriais disponíveis
   const serialsFiltrados = useMemo(() => {

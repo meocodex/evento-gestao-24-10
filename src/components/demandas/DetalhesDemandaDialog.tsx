@@ -8,8 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDemandasContext } from '@/contexts/DemandasContext';
 import { Demanda, StatusDemanda, TipoReembolso } from '@/types/demandas';
-import { mockUsuarios } from '@/lib/mock-data/demandas';
 import { format } from 'date-fns';
+import { useUsuarios } from '@/hooks/useUsuarios';
 import { MessageSquare, Paperclip, Send, CheckCircle2, AlertCircle, Link2, Repeat, DollarSign, FileText, Download, XCircle, Archive, Play, Ban } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEventosDespesas } from '@/hooks/useEventosDespesas';
@@ -64,6 +64,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   } = useDemandasContext();
   const { user } = useAuth();
   const { vincularReembolsoADespesa } = useEventosDespesas();
+  const { usuarios } = useUsuarios();
   const [novoComentario, setNovoComentario] = useState('');
   const [showAprovarDialog, setShowAprovarDialog] = useState(false);
   const [showPagoDialog, setShowPagoDialog] = useState(false);
@@ -78,21 +79,21 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   };
 
   const handleAtribuirResponsavel = (responsavelId: string) => {
-    const responsavel = mockUsuarios.find((u) => u.id === responsavelId);
+    const responsavel = (usuarios || []).find((u) => u.id === responsavelId);
     if (responsavel) {
       atribuirResponsavel(demanda.id, responsavelId, responsavel.nome);
     }
   };
 
   const handleEnviarComentario = () => {
-    if (!novoComentario.trim()) return;
+    if (!novoComentario.trim() || !user) return;
 
-    const usuarioAtual = mockUsuarios[0];
+    const usuarioAtual = (usuarios || []).find(u => u.id === user.id);
     adicionarComentario(
       demanda.id,
       novoComentario,
-      usuarioAtual.nome,
-      usuarioAtual.id
+      usuarioAtual?.nome || user.email,
+      user.id
     );
     setNovoComentario('');
   };
@@ -482,7 +483,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
                   <SelectValue placeholder="Selecione um responsável" />
                 </SelectTrigger>
                 <SelectContent>
-                  {mockUsuarios.map((usuario) => (
+                  {(usuarios || []).map((usuario) => (
                     <SelectItem key={usuario.id} value={usuario.id}>
                       {usuario.nome}
                     </SelectItem>

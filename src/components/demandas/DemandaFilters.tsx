@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { useDemandasContext } from '@/contexts/DemandasContext';
 import { StatusDemanda, PrioridadeDemanda, CategoriaDemanda, TipoReembolso } from '@/types/demandas';
 import { Search, X, DollarSign, Archive, AlertTriangle, Clock } from 'lucide-react';
-import { mockUsuarios } from '@/lib/mock-data/demandas';
 import { Badge } from '@/components/ui/badge';
+import { useUsuarios } from '@/hooks/useUsuarios';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useEventos } from '@/contexts/EventosContext';
 import { useState } from 'react';
@@ -17,6 +17,7 @@ export function DemandaFilters() {
   const { filtros, setFiltros } = useDemandasContext();
   const { eventos } = useEventos();
   const { categoriasDemandas, isLoading } = useCategorias();
+  const { usuarios } = useUsuarios();
   const [apenasReembolsos, setApenasReembolsos] = useState(false);
 
   const toggleStatus = (status: StatusDemanda) => {
@@ -323,7 +324,7 @@ export function DemandaFilters() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
-              {mockUsuarios.map((usuario) => (
+              {(usuarios || []).map((usuario) => (
                 <SelectItem key={usuario.id} value={usuario.id}>
                   {usuario.nome}
                 </SelectItem>
@@ -343,7 +344,7 @@ export function DemandaFilters() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="todos">Todos</SelectItem>
-              {mockUsuarios.map((usuario) => (
+              {(usuarios || []).map((usuario) => (
                 <SelectItem key={usuario.id} value={usuario.id}>
                   {usuario.nome}
                 </SelectItem>

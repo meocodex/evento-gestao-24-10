@@ -17,6 +17,7 @@ import { EditarMaterialDialog } from '@/components/estoque/EditarMaterialDialog'
 import { DetalhesMaterialDialog } from '@/components/estoque/DetalhesMaterialDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useEstoque } from '@/contexts/EstoqueContext';
+import type { MaterialEstoque } from '@/contexts/EstoqueContext';
 import {
   Package,
   PackageCheck,
@@ -29,7 +30,6 @@ import {
   LayoutGrid,
   List,
 } from 'lucide-react';
-import { MaterialEstoque } from '@/lib/mock-data/estoque';
 
 export default function Estoque() {
   const { materiaisFiltrados, getEstatisticas, excluirMaterial } = useEstoque();

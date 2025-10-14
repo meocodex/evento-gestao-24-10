@@ -7,8 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useDemandasContext } from '@/contexts/DemandasContext';
 import { Demanda, CategoriaDemanda, PrioridadeDemanda } from '@/types/demandas';
-import { mockUsuarios } from '@/lib/mock-data/demandas';
 import { useEventos } from '@/contexts/EventosContext';
+import { useUsuarios } from '@/hooks/useUsuarios';
 import { useCategorias } from '@/contexts/CategoriasContext';
 
 interface EditarDemandaDialogProps {
@@ -28,6 +28,7 @@ export function EditarDemandaDialog({ demanda, open, onOpenChange }: EditarDeman
   const { editarDemanda } = useDemandasContext();
   const { eventos } = useEventos();
   const { categoriasDemandas, isLoading } = useCategorias();
+  const { usuarios } = useUsuarios();
 
   const eventosAtivos = eventos.filter(e => 
     ['orcamento', 'aprovado', 'em-preparacao', 'em-execucao'].includes(e.status)
@@ -192,7 +193,7 @@ export function EditarDemandaDialog({ demanda, open, onOpenChange }: EditarDeman
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="sem-responsavel">Sem responsável</SelectItem>
-                  {mockUsuarios.map((usuario) => (
+                  {(usuarios || []).map((usuario) => (
                     <SelectItem key={usuario.id} value={usuario.id}>
                       {usuario.nome}
                     </SelectItem>
