@@ -15,7 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { mockComerciais } from '@/lib/mock-data/comerciais';
+import { useUsuarios } from '@/hooks/useUsuarios';
 
 interface ComercialSelectProps {
   value: string;
@@ -24,8 +24,10 @@ interface ComercialSelectProps {
 
 export function ComercialSelect({ value, onChange }: ComercialSelectProps) {
   const [open, setOpen] = useState(false);
-
-  const selectedComercial = mockComerciais.find(c => c.id === value);
+  const { usuarios } = useUsuarios();
+  
+  const comerciais = usuarios?.filter(u => u.role === 'comercial' || u.role === 'admin') || [];
+  const selectedComercial = comerciais.find(c => c.id === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -53,7 +55,7 @@ export function ComercialSelect({ value, onChange }: ComercialSelectProps) {
           <CommandList>
             <CommandEmpty>Nenhum comercial encontrado.</CommandEmpty>
             <CommandGroup>
-              {mockComerciais.map((comercial) => (
+              {comerciais.map((comercial) => (
                 <CommandItem
                   key={comercial.id}
                   value={comercial.nome}

@@ -15,7 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { mockClientes } from '@/lib/mock-data/clientes';
+import { useClientes } from '@/contexts/ClientesContext';
 
 interface ClienteSelectProps {
   value: string;
@@ -24,8 +24,9 @@ interface ClienteSelectProps {
 
 export function ClienteSelect({ value, onChange }: ClienteSelectProps) {
   const [open, setOpen] = useState(false);
+  const { clientes } = useClientes();
 
-  const selectedCliente = mockClientes.find(c => c.id === value);
+  const selectedCliente = clientes.find(c => c.id === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -57,7 +58,7 @@ export function ClienteSelect({ value, onChange }: ClienteSelectProps) {
           <CommandList>
             <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
             <CommandGroup>
-              {mockClientes.map((cliente) => (
+              {clientes.map((cliente) => (
                 <CommandItem
                   key={cliente.id}
                   value={cliente.nome}
