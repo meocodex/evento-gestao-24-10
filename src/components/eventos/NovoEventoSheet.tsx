@@ -6,17 +6,21 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { ClienteSelect } from './ClienteSelect';
 import { ComercialSelect } from './ComercialSelect';
 import { Badge } from '@/components/ui/badge';
-import { X, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Search, CalendarIcon } from 'lucide-react';
 import { useEventos } from '@/contexts/EventosContext';
 import { TipoEvento, SetorEvento, ConfiguracaoBar } from '@/types/eventos';
 import { ConfiguracaoBarForm } from './ConfiguracaoBarForm';
 import { cn } from '@/lib/utils';
 import { buscarCEP } from '@/lib/api/viacep';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface NovoEventoSheetProps {
   open: boolean;
@@ -34,8 +38,10 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
 
   // Form states
   const [nome, setNome] = useState('');
-  const [dataHoraInicio, setDataHoraInicio] = useState('');
-  const [dataHoraFim, setDataHoraFim] = useState('');
+  const [dataInicio, setDataInicio] = useState<Date>();
+  const [dataFim, setDataFim] = useState<Date>();
+  const [horaInicio, setHoraInicio] = useState('');
+  const [horaFim, setHoraFim] = useState('');
   const [local, setLocal] = useState('');
   const [cep, setCep] = useState('');
   const [logradouro, setLogradouro] = useState('');
@@ -108,8 +114,10 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
 
   const resetForm = () => {
     setNome('');
-    setDataHoraInicio('');
-    setDataHoraFim('');
+    setDataInicio(undefined);
+    setDataFim(undefined);
+    setHoraInicio('');
+    setHoraFim('');
     setLocal('');
     setCep('');
     setLogradouro('');
@@ -142,10 +150,19 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
       return;
     }
 
-    if (dataHoraFim && dataHoraInicio && dataHoraFim < dataHoraInicio) {
+    if (!dataInicio || !dataFim || !horaInicio || !horaFim) {
+      toast({
+        title: 'Campos obrigatórios',
+        description: 'Preencha data e hora de início e término.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (dataFim < dataInicio) {
       toast({
         title: 'Data inválida',
-        description: 'A data/hora de término não pode ser anterior à data/hora de início.',
+        description: 'A data de término não pode ser anterior à data de início.',
         variant: 'destructive',
       });
       return;
@@ -163,19 +180,17 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
     try {
       setIsSubmitting(true);
 
-      // Extrair data e hora dos inputs datetime-local
-      const dataInicio = dataHoraInicio.split('T')[0];
-      const dataFim = dataHoraFim.split('T')[0];
-      const horaInicio = dataHoraInicio.split('T')[1];
-      const horaFim = dataHoraFim.split('T')[1];
+      // Formatar datas para string YYYY-MM-DD
+      const dataInicioStr = format(dataInicio, 'yyyy-MM-dd');
+      const dataFimStr = format(dataFim, 'yyyy-MM-dd');
 
       // Montar endereço completo
       const endereco = `${logradouro}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}`;
       
       await criarEvento({
         nome,
-        dataInicio,
-        dataFim,
+        dataInicio: dataInicioStr,
+        dataFim: dataFimStr,
         horaInicio,
         horaFim,
         local,
@@ -209,7 +224,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
 
   const canGoNext = () => {
     if (currentStep === 1) {
-      return nome && dataHoraInicio && dataHoraFim && tipoEvento;
+      return nome && dataInicio && dataFim && horaInicio && horaFim && tipoEvento;
     }
     if (currentStep === 2) {
       return local && logradouro && numero && bairro && cidade && estado;
@@ -288,23 +303,78 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
                   />
                 </div>
                 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
-                    <Label htmlFor="dataHoraInicio">Data e Hora de Início *</Label>
+                    <Label>Data de Início *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !dataInicio && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {dataInicio ? format(dataInicio, "PPP", { locale: ptBR }) : "Selecione a data"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={dataInicio}
+                          onSelect={setDataInicio}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="horaInicio">Hora de Início *</Label>
                     <Input 
-                      id="dataHoraInicio" 
-                      type="datetime-local" 
-                      value={dataHoraInicio} 
-                      onChange={(e) => setDataHoraInicio(e.target.value)} 
+                      id="horaInicio" 
+                      type="time" 
+                      value={horaInicio} 
+                      onChange={(e) => setHoraInicio(e.target.value)} 
                     />
                   </div>
+
                   <div>
-                    <Label htmlFor="dataHoraFim">Data e Hora de Término *</Label>
+                    <Label>Data de Término *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !dataFim && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {dataFim ? format(dataFim, "PPP", { locale: ptBR }) : "Selecione a data"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={dataFim}
+                          onSelect={setDataFim}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="horaFim">Hora de Término *</Label>
                     <Input 
-                      id="dataHoraFim" 
-                      type="datetime-local" 
-                      value={dataHoraFim} 
-                      onChange={(e) => setDataHoraFim(e.target.value)} 
+                      id="horaFim" 
+                      type="time" 
+                      value={horaFim} 
+                      onChange={(e) => setHoraFim(e.target.value)} 
                     />
                   </div>
                 </div>
