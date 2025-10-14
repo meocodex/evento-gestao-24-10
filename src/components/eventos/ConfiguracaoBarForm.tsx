@@ -2,13 +2,27 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ConfiguracaoBar } from '@/types/eventos';
+import { UploadCardapio } from './UploadCardapio';
 
 interface ConfiguracaoBarFormProps {
   configuracao: ConfiguracaoBar;
   onChange: (config: ConfiguracaoBar) => void;
+  eventoId?: string;
+  cardapioArquivo?: string;
+  cardapioTipo?: string;
+  onCardapioChange?: (url: string, tipo: string) => void;
+  onCardapioRemove?: () => void;
 }
 
-export function ConfiguracaoBarForm({ configuracao, onChange }: ConfiguracaoBarFormProps) {
+export function ConfiguracaoBarForm({ 
+  configuracao, 
+  onChange, 
+  eventoId,
+  cardapioArquivo,
+  cardapioTipo,
+  onCardapioChange,
+  onCardapioRemove
+}: ConfiguracaoBarFormProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Configuração do Bar</h3>
@@ -42,14 +56,21 @@ export function ConfiguracaoBarForm({ configuracao, onChange }: ConfiguracaoBarF
       </div>
 
       {configuracao.temCardapio && (
-        <div>
-          <Label>URL do Cardápio (opcional)</Label>
-          <Input
-            value={configuracao.cardapioUrl || ''}
-            onChange={(e) => onChange({ ...configuracao, cardapioUrl: e.target.value })}
-            placeholder="https://..."
-          />
-        </div>
+        <UploadCardapio
+          eventoId={eventoId}
+          cardapioAtual={cardapioArquivo || configuracao.cardapioUrl}
+          cardapioTipo={cardapioTipo}
+          onUploadComplete={(url, tipo) => {
+            if (onCardapioChange) {
+              onCardapioChange(url, tipo);
+            }
+          }}
+          onRemove={() => {
+            if (onCardapioRemove) {
+              onCardapioRemove();
+            }
+          }}
+        />
       )}
     </div>
   );

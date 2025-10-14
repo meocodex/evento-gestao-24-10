@@ -7,8 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ClienteSelect } from '../ClienteSelect';
 import { ComercialSelect } from '../ComercialSelect';
-import { X, Save, XCircle } from 'lucide-react';
+import { X, Save, XCircle, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { buscarCEP } from '@/lib/api/viacep';
 
 interface EditarDadosEventoProps {
   evento: Evento;
@@ -19,15 +20,19 @@ interface EditarDadosEventoProps {
 export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEventoProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingCep, setLoadingCep] = useState(false);
   const [nome, setNome] = useState(evento.nome);
   const [dataInicio, setDataInicio] = useState(evento.dataInicio);
   const [dataFim, setDataFim] = useState(evento.dataFim);
   const [horaInicio, setHoraInicio] = useState(evento.horaInicio);
   const [horaFim, setHoraFim] = useState(evento.horaFim);
   const [local, setLocal] = useState(evento.local);
+  const [cep, setCep] = useState('');
   const [cidade, setCidade] = useState(evento.cidade);
   const [estado, setEstado] = useState(evento.estado);
   const [endereco, setEndereco] = useState(evento.endereco);
+  const [bairro, setBairro] = useState('');
+  const [logradouro, setLogradouro] = useState('');
   const [clienteId, setClienteId] = useState(evento.cliente.id);
   const [comercialId, setComercialId] = useState(evento.comercial.id);
   const [descricao, setDescricao] = useState(evento.descricao || '');
@@ -43,6 +48,46 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
 
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleBuscarCEP = async () => {
+    const cepLimpo = cep.replace(/\D/g, '');
+    
+    if (cepLimpo.length !== 8) {
+      toast({
+        title: 'CEP inválido',
+        description: 'O CEP deve ter 8 dígitos.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setLoadingCep(true);
+    try {
+      const dados = await buscarCEP(cepLimpo);
+      
+      setLogradouro(dados.logradouro);
+      setBairro(dados.bairro);
+      setCidade(dados.localidade);
+      setEstado(dados.uf);
+      
+      // Montar endereço completo
+      const enderecoCompleto = `${dados.logradouro}${dados.bairro ? ', ' + dados.bairro : ''}`;
+      setEndereco(enderecoCompleto);
+
+      toast({
+        title: 'CEP encontrado!',
+        description: 'Endereço preenchido automaticamente. Você pode editar se necessário.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao buscar CEP',
+        description: error.message || 'CEP não encontrado. Preencha o endereço manualmente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingCep(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -168,6 +213,41 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
           />
         </div>
 
+        <div>
+          <Label htmlFor="cep">CEP</Label>
+          <div className="flex gap-2">
+            <Input 
+              id="cep" 
+              value={cep}
+              onChange={(e) => {
+                const valor = e.target.value.replace(/\D/g, '');
+                const cepFormatado = valor.replace(/^(\d{5})(\d)/, '$1-$2');
+                setCep(cepFormatado);
+              }}
+              placeholder="00000-000"
+              maxLength={9}
+            />
+            <Button 
+              type="button"
+              variant="secondary"
+              onClick={handleBuscarCEP}
+              disabled={loadingCep || cep.replace(/\D/g, '').length !== 8}
+            >
+              {loadingCep ? (
+                <>Buscando...</>
+              ) : (
+                <>
+                  <Search className="h-4 w-4 mr-2" />
+                  Buscar
+                </>
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Busque o CEP para preencher automaticamente
+          </p>
+        </div>
+
         <div className="grid grid-cols-3 gap-4">
           <div className="col-span-2">
             <Label htmlFor="cidade">Cidade *</Label>
@@ -201,6 +281,9 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
             placeholder="Ex: Rua das Flores, 123 - Centro"
             required 
           />
+          <p className="text-xs text-muted-foreground mt-1">
+            Você pode editar o endereço mesmo após buscar o CEP
+          </p>
         </div>
 
         <div>

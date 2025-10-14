@@ -57,6 +57,36 @@ export function useEventosMateriaisAlocados() {
         throw new Error('Falha ao reservar material');
       }
 
+      // Buscar nome do evento para atualizar localização
+      const { data: eventoData } = await supabase
+        .from('eventos')
+        .select('nome')
+        .eq('id', eventoId)
+        .single();
+
+      // Atualizar localização do material para o nome do evento
+      await supabase
+        .from('materiais_seriais')
+        .update({ 
+          localizacao: eventoData?.nome || `Evento ${eventoId}`,
+          status: 'em-uso'
+        })
+        .eq('numero', material.serial);
+
+      // Registrar histórico de localização
+      const { data: userData } = await supabase.auth.getUser();
+      await supabase
+        .from('materiais_historico_localizacao')
+        .insert({
+          serial_numero: material.serial,
+          material_id: material.itemId,
+          evento_id: eventoId,
+          localizacao_anterior: 'Depósito',
+          localizacao_nova: eventoData?.nome || `Evento ${eventoId}`,
+          usuario_id: userData?.user?.id,
+          observacoes: `Material alocado para o evento (${tipo === 'antecipado' ? 'Envio Antecipado' : 'Com Técnicos'})`
+        });
+
       const tipoEnvio = tipo === 'antecipado' ? 'antecipado' : 'com_tecnicos';
       
       const { data, error } = await supabase
@@ -137,6 +167,35 @@ export function useEventosMateriaisAlocados() {
         .eq('id', materialId);
 
       if (error) throw error;
+
+      // Atualizar localização do material de volta para Depósito
+      await supabase
+        .from('materiais_seriais')
+        .update({ 
+          localizacao: 'Depósito',
+          status: 'disponivel'
+        })
+        .eq('numero', materialAlocado.serial);
+
+      // Registrar histórico de localização
+      const { data: userData } = await supabase.auth.getUser();
+      const { data: eventoData } = await supabase
+        .from('eventos')
+        .select('nome')
+        .eq('id', eventoId)
+        .single();
+
+      await supabase
+        .from('materiais_historico_localizacao')
+        .insert({
+          serial_numero: materialAlocado.serial,
+          material_id: materialAlocado.item_id,
+          evento_id: eventoId,
+          localizacao_anterior: eventoData?.nome || `Evento ${eventoId}`,
+          localizacao_nova: 'Depósito',
+          usuario_id: userData?.user?.id,
+          observacoes: 'Material devolvido ao depósito'
+        });
 
       // Liberar material no estoque
       await liberarMaterial(materialAlocado.item_id, materialAlocado.serial);

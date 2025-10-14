@@ -11,12 +11,13 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { ClienteSelect } from './ClienteSelect';
 import { ComercialSelect } from './ComercialSelect';
 import { Badge } from '@/components/ui/badge';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { useEventos } from '@/contexts/EventosContext';
 import { TipoEvento, SetorEvento, ConfiguracaoBar } from '@/types/eventos';
 import { SetoresIngressoForm } from './SetoresIngressoForm';
 import { ConfiguracaoBarForm } from './ConfiguracaoBarForm';
 import { cn } from '@/lib/utils';
+import { buscarCEP } from '@/lib/api/viacep';
 
 interface NovoEventoSheetProps {
   open: boolean;
@@ -30,6 +31,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
   const isMobile = useIsMobile();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [loadingCep, setLoadingCep] = useState(false);
 
   // Form states
   const [nome, setNome] = useState('');
@@ -38,6 +40,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
   const [horaInicio, setHoraInicio] = useState('');
   const [horaFim, setHoraFim] = useState('');
   const [local, setLocal] = useState('');
+  const [cep, setCep] = useState('');
   const [cidade, setCidade] = useState('');
   const [estado, setEstado] = useState('');
   const [endereco, setEndereco] = useState('');
@@ -66,6 +69,44 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
 
   const handleRemoveTag = (tagToRemove: string) => {
     setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleBuscarCEP = async () => {
+    const cepLimpo = cep.replace(/\D/g, '');
+    
+    if (cepLimpo.length !== 8) {
+      toast({
+        title: 'CEP inválido',
+        description: 'O CEP deve ter 8 dígitos.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setLoadingCep(true);
+    try {
+      const dados = await buscarCEP(cepLimpo);
+      
+      setCidade(dados.localidade);
+      setEstado(dados.uf);
+      
+      // Montar endereço completo
+      const enderecoCompleto = `${dados.logradouro}${dados.bairro ? ', ' + dados.bairro : ''}`;
+      setEndereco(enderecoCompleto);
+
+      toast({
+        title: 'CEP encontrado!',
+        description: 'Endereço preenchido automaticamente. Você pode editar se necessário.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao buscar CEP',
+        description: error.message || 'CEP não encontrado. Preencha o endereço manualmente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingCep(false);
+    }
   };
 
   const resetForm = () => {
@@ -289,6 +330,41 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
                   />
                 </div>
 
+                <div>
+                  <Label htmlFor="cep">CEP</Label>
+                  <div className="flex gap-2">
+                    <Input 
+                      id="cep" 
+                      value={cep}
+                      onChange={(e) => {
+                        const valor = e.target.value.replace(/\D/g, '');
+                        const cepFormatado = valor.replace(/^(\d{5})(\d)/, '$1-$2');
+                        setCep(cepFormatado);
+                      }}
+                      placeholder="00000-000"
+                      maxLength={9}
+                    />
+                    <Button 
+                      type="button"
+                      variant="secondary"
+                      onClick={handleBuscarCEP}
+                      disabled={loadingCep || cep.replace(/\D/g, '').length !== 8}
+                    >
+                      {loadingCep ? (
+                        <>Buscando...</>
+                      ) : (
+                        <>
+                          <Search className="h-4 w-4 mr-2" />
+                          Buscar
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Busque o CEP para preencher automaticamente
+                  </p>
+                </div>
+
                 <div className="grid grid-cols-3 gap-4">
                   <div className="col-span-2">
                     <Label htmlFor="cidade">Cidade *</Label>
@@ -319,6 +395,9 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
                     onChange={(e) => setEndereco(e.target.value)} 
                     placeholder="Ex: Rua das Flores, 123 - Centro"
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Você pode editar o endereço mesmo após buscar o CEP
+                  </p>
                 </div>
               </div>
             )}

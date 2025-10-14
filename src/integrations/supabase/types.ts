@@ -602,6 +602,8 @@ export type Database = {
       }
       eventos: {
         Row: {
+          cardapio_arquivo: string | null
+          cardapio_tipo: string | null
           cidade: string
           cliente_id: string | null
           comercial_id: string | null
@@ -631,6 +633,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          cardapio_arquivo?: string | null
+          cardapio_tipo?: string | null
           cidade: string
           cliente_id?: string | null
           comercial_id?: string | null
@@ -660,6 +664,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          cardapio_arquivo?: string | null
+          cardapio_tipo?: string | null
           cidade?: string
           cliente_id?: string | null
           comercial_id?: string | null
@@ -779,6 +785,57 @@ export type Database = {
             columns: ["evento_id"]
             isOneToOne: false
             referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      eventos_configuracao_historico: {
+        Row: {
+          campo_alterado: string
+          created_at: string | null
+          data_alteracao: string | null
+          evento_id: string
+          id: string
+          motivo: string
+          usuario_id: string | null
+          valor_anterior: string | null
+          valor_novo: string
+        }
+        Insert: {
+          campo_alterado: string
+          created_at?: string | null
+          data_alteracao?: string | null
+          evento_id: string
+          id?: string
+          motivo: string
+          usuario_id?: string | null
+          valor_anterior?: string | null
+          valor_novo: string
+        }
+        Update: {
+          campo_alterado?: string
+          created_at?: string | null
+          data_alteracao?: string | null
+          evento_id?: string
+          id?: string
+          motivo?: string
+          usuario_id?: string | null
+          valor_anterior?: string | null
+          valor_novo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eventos_configuracao_historico_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_configuracao_historico_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1071,6 +1128,60 @@ export type Database = {
           valor_unitario?: number | null
         }
         Relationships: []
+      }
+      materiais_historico_localizacao: {
+        Row: {
+          created_at: string | null
+          data_movimentacao: string | null
+          evento_id: string | null
+          id: string
+          localizacao_anterior: string | null
+          localizacao_nova: string
+          material_id: string
+          observacoes: string | null
+          serial_numero: string
+          usuario_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_movimentacao?: string | null
+          evento_id?: string | null
+          id?: string
+          localizacao_anterior?: string | null
+          localizacao_nova: string
+          material_id: string
+          observacoes?: string | null
+          serial_numero: string
+          usuario_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_movimentacao?: string | null
+          evento_id?: string | null
+          id?: string
+          localizacao_anterior?: string | null
+          localizacao_nova?: string
+          material_id?: string
+          observacoes?: string | null
+          serial_numero?: string
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materiais_historico_localizacao_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "materiais_historico_localizacao_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       materiais_seriais: {
         Row: {
