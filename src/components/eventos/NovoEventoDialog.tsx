@@ -25,14 +25,16 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
   const { criarEvento } = useEventos();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [nome, setNome] = useState('');
-  const [dataInicio, setDataInicio] = useState('');
-  const [dataFim, setDataFim] = useState('');
-  const [horaInicio, setHoraInicio] = useState('');
-  const [horaFim, setHoraFim] = useState('');
+  const [dataHoraInicio, setDataHoraInicio] = useState('');
+  const [dataHoraFim, setDataHoraFim] = useState('');
   const [local, setLocal] = useState('');
+  const [cep, setCep] = useState('');
+  const [logradouro, setLogradouro] = useState('');
+  const [numero, setNumero] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [complemento, setComplemento] = useState('');
   const [cidade, setCidade] = useState('');
   const [estado, setEstado] = useState('');
-  const [endereco, setEndereco] = useState('');
   const [clienteId, setClienteId] = useState('');
   const [comercialId, setComercialId] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -41,6 +43,7 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
   const [redesSociais, setRedesSociais] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [loadingCep, setLoadingCep] = useState(false);
   const [tipoEvento, setTipoEvento] = useState<TipoEvento>('bar');
   const [configuracaoBar, setConfiguracaoBar] = useState<ConfiguracaoBar>({
     quantidadeMaquinas: 1,
@@ -59,6 +62,43 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
+  const handleBuscarCEP = async () => {
+    const cepLimpo = cep.replace(/\D/g, '');
+    
+    if (cepLimpo.length !== 8) {
+      toast({
+        title: 'CEP inválido',
+        description: 'O CEP deve ter 8 dígitos.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setLoadingCep(true);
+    try {
+      const { buscarCEP: buscarCepApi } = await import('@/lib/api/viacep');
+      const dados = await buscarCepApi(cepLimpo);
+      
+      setLogradouro(dados.logradouro);
+      setBairro(dados.bairro);
+      setCidade(dados.localidade);
+      setEstado(dados.uf);
+
+      toast({
+        title: 'CEP encontrado!',
+        description: 'Endereço preenchido automaticamente.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao buscar CEP',
+        description: error.message || 'CEP não encontrado.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingCep(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -73,10 +113,19 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
       return;
     }
 
-    if (dataFim && dataInicio && dataFim < dataInicio) {
+    if (dataHoraFim && dataHoraInicio && dataHoraFim < dataHoraInicio) {
       toast({
         title: 'Data inválida',
-        description: 'A data de fim não pode ser anterior à data de início.',
+        description: 'A data/hora de término não pode ser anterior à data/hora de início.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!logradouro || !numero || !bairro) {
+      toast({
+        title: 'Campos obrigatórios',
+        description: 'Preencha logradouro, número e bairro.',
         variant: 'destructive',
       });
       return;
@@ -84,6 +133,15 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
 
     try {
       setIsSubmitting(true);
+
+      // Extrair data e hora dos inputs datetime-local
+      const dataInicio = dataHoraInicio.split('T')[0];
+      const dataFim = dataHoraFim.split('T')[0];
+      const horaInicio = dataHoraInicio.split('T')[1];
+      const horaFim = dataHoraFim.split('T')[1];
+
+      // Montar endereço completo
+      const endereco = `${logradouro}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}`;
       
       await criarEvento({
         nome,
@@ -108,14 +166,16 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
       
       // Reset form
     setNome('');
-    setDataInicio('');
-    setDataFim('');
-    setHoraInicio('');
-    setHoraFim('');
+    setDataHoraInicio('');
+    setDataHoraFim('');
     setLocal('');
+    setCep('');
+    setLogradouro('');
+    setNumero('');
+    setBairro('');
+    setComplemento('');
     setCidade('');
     setEstado('');
-    setEndereco('');
     setClienteId('');
     setComercialId('');
     setDescricao('');
@@ -174,45 +234,22 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
             
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="dataInicio">Data de Início *</Label>
+                <Label htmlFor="dataHoraInicio">Data e Hora de Início *</Label>
                 <Input 
-                  id="dataInicio" 
-                  type="date" 
-                  value={dataInicio} 
-                  onChange={(e) => setDataInicio(e.target.value)} 
+                  id="dataHoraInicio" 
+                  type="datetime-local" 
+                  value={dataHoraInicio} 
+                  onChange={(e) => setDataHoraInicio(e.target.value)} 
                   required 
                 />
               </div>
               <div>
-                <Label htmlFor="dataFim">Data de Término *</Label>
+                <Label htmlFor="dataHoraFim">Data e Hora de Término *</Label>
                 <Input 
-                  id="dataFim" 
-                  type="date" 
-                  value={dataFim} 
-                  onChange={(e) => setDataFim(e.target.value)} 
-                  required 
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="horaInicio">Hora de Início *</Label>
-                <Input 
-                  id="horaInicio" 
-                  type="time" 
-                  value={horaInicio} 
-                  onChange={(e) => setHoraInicio(e.target.value)} 
-                  required 
-                />
-              </div>
-              <div>
-                <Label htmlFor="horaFim">Hora de Término *</Label>
-                <Input 
-                  id="horaFim" 
-                  type="time" 
-                  value={horaFim} 
-                  onChange={(e) => setHoraFim(e.target.value)} 
+                  id="dataHoraFim" 
+                  type="datetime-local" 
+                  value={dataHoraFim} 
+                  onChange={(e) => setDataHoraFim(e.target.value)} 
                   required 
                 />
               </div>
@@ -225,6 +262,75 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
                 value={local} 
                 onChange={(e) => setLocal(e.target.value)} 
                 placeholder="Ex: Buffet Estrela Dourada"
+                required 
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="cep">CEP</Label>
+              <div className="flex gap-2">
+                <Input 
+                  id="cep" 
+                  value={cep}
+                  onChange={(e) => {
+                    const valor = e.target.value.replace(/\D/g, '');
+                    const cepFormatado = valor.replace(/^(\d{5})(\d)/, '$1-$2');
+                    setCep(cepFormatado);
+                  }}
+                  placeholder="00000-000"
+                  maxLength={9}
+                />
+                <Button 
+                  type="button"
+                  variant="secondary"
+                  onClick={handleBuscarCEP}
+                  disabled={loadingCep || cep.replace(/\D/g, '').length !== 8}
+                >
+                  {loadingCep ? 'Buscando...' : 'Buscar'}
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="logradouro">Logradouro/Rua *</Label>
+              <Input 
+                id="logradouro" 
+                value={logradouro} 
+                onChange={(e) => setLogradouro(e.target.value)} 
+                placeholder="Ex: Rua das Flores"
+                required 
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="col-span-2">
+                <Label htmlFor="numero">Número *</Label>
+                <Input 
+                  id="numero" 
+                  value={numero} 
+                  onChange={(e) => setNumero(e.target.value)} 
+                  placeholder="Ex: 123"
+                  required 
+                />
+              </div>
+              <div>
+                <Label htmlFor="complemento">Complemento</Label>
+                <Input 
+                  id="complemento" 
+                  value={complemento} 
+                  onChange={(e) => setComplemento(e.target.value)} 
+                  placeholder="Ex: Apt 45"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="bairro">Bairro *</Label>
+              <Input 
+                id="bairro" 
+                value={bairro} 
+                onChange={(e) => setBairro(e.target.value)} 
+                placeholder="Ex: Centro"
                 required 
               />
             </div>
@@ -246,22 +352,11 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
                   id="estado" 
                   value={estado} 
                   onChange={(e) => setEstado(e.target.value.toUpperCase())} 
-                  placeholder="Ex: MT"
+                  placeholder="MT"
                   maxLength={2}
                   required 
                 />
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="endereco">Endereço Completo *</Label>
-              <Input 
-                id="endereco" 
-                value={endereco} 
-                onChange={(e) => setEndereco(e.target.value)} 
-                placeholder="Ex: Rua das Flores, 123 - Centro"
-                required 
-              />
             </div>
 
             <div>
