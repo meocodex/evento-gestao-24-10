@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Grid3x3, List, ArrowUpDown } from 'lucide-react';
+import { Plus, Search, Grid3x3, List, ArrowUpDown, Kanban, Sparkles } from 'lucide-react';
 import { Evento } from '@/types/eventos';
 import { EventosList } from '@/components/eventos/EventosList';
+import { EventosListAccordion } from '@/components/eventos/EventosListAccordion';
+import { EventosKanbanView } from '@/components/eventos/EventosKanbanView';
+import { QuickCreateEventDialog } from '@/components/eventos/QuickCreateEventDialog';
 import { EventoFilters, EventoFiltersType } from '@/components/eventos/EventoFilters';
 import { NovoEventoSheet } from '@/components/eventos/NovoEventoSheet';
 import { EventoDetailsSheet } from '@/components/eventos/EventoDetailsSheet';
@@ -11,7 +14,6 @@ import { useEventoPermissions } from '@/hooks/useEventoPermissions';
 import { useEventos } from '@/contexts/EventosContext';
 import { EventosStats } from '@/components/eventos/EventosStats';
 import { EventosQuickFilters } from '@/components/eventos/EventosQuickFilters';
-import { EventosTableView } from '@/components/eventos/EventosTableView';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { differenceInDays, parseISO, startOfMonth, endOfMonth, addMonths, isWithinInterval } from 'date-fns';
@@ -20,13 +22,14 @@ export default function Eventos() {
   const { eventos } = useEventos();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [] });
+  const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const [novoEventoOpen, setNovoEventoOpen] = useState(false);
   const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const permissions = useEventoPermissions();
   const [activeTab, setActiveTab] = useState<string>('todos');
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'kanban'>('grid');
   const [sortBy, setSortBy] = useState<string>('dataProxima');
 
   const availableCities = useMemo(() => {
@@ -225,7 +228,20 @@ export default function Eventos() {
                 >
                   <List className="h-4 w-4" />
                 </Button>
+                <Button
+                  variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="rounded-none h-10 w-10 hover:bg-primary/10"
+                  onClick={() => setViewMode('kanban')}
+                >
+                  <Kanban className="h-4 w-4" />
+                </Button>
               </div>
+              
+              <Button onClick={() => setQuickCreateOpen(true)} className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                Criação Rápida
+              </Button>
 
             </div>
           </div>
@@ -242,8 +258,8 @@ export default function Eventos() {
           </div>
         </div>
 
-        {/* Events List or Table View */}
-        {viewMode === 'grid' ? (
+        {/* Events Views */}
+        {viewMode === 'grid' && (
           <EventosList
             eventos={sortedEventos}
             onViewDetails={handleViewDetails}
@@ -251,12 +267,26 @@ export default function Eventos() {
             onDelete={handleDeletarEvento}
             onChangeStatus={handleAlterarStatus}
           />
-        ) : (
-          <EventosTableView
+        )}
+        
+        {viewMode === 'list' && (
+          <EventosListAccordion
             eventos={sortedEventos}
             onViewDetails={handleViewDetails}
           />
         )}
+        
+        {viewMode === 'kanban' && (
+          <EventosKanbanView
+            eventos={sortedEventos}
+            onViewDetails={handleViewDetails}
+          />
+        )}
+
+        <QuickCreateEventDialog
+          open={quickCreateOpen}
+          onOpenChange={setQuickCreateOpen}
+        />
 
         <NovoEventoSheet
           open={novoEventoOpen}

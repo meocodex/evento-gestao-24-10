@@ -2,7 +2,7 @@ import { Evento } from '@/types/eventos';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, MapPin, Building, MoreVertical, Pencil, Trash2, ChevronRight } from 'lucide-react';
+import { Calendar, Clock, MapPin, Building, MoreVertical, Pencil, Trash2, ChevronRight, Tag } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { StatusBadge } from '@/components/shared/StatusBadge';
@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 interface EventoCardProps {
   evento: Evento;
@@ -41,7 +42,11 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
   };
 
   return (
-    <Card className="group bg-white border-2 border-navy-100 hover:border-navy-400 hover:shadow-2xl transition-all duration-300 rounded-2xl overflow-hidden min-h-[280px] flex flex-col relative cursor-pointer"
+    <Card className={cn(
+      "group bg-white border-2 border-navy-100 rounded-2xl overflow-hidden min-h-[280px] flex flex-col relative cursor-pointer",
+      "transition-all duration-300",
+      "hover:border-navy-400 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1"
+    )}
       onClick={() => onClick(evento)}
     >
       {/* Status indicator top */}
@@ -150,6 +155,26 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
         )}
         
         <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} />
+
+        {/* Tags */}
+        {evento.tags && evento.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-navy-100">
+            {evento.tags.slice(0, 2).map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-1 px-2 py-1 bg-navy-50 text-navy-700 rounded-md text-xs font-medium"
+              >
+                <Tag className="h-3 w-3" />
+                {tag}
+              </span>
+            ))}
+            {evento.tags.length > 2 && (
+              <span className="px-2 py-1 bg-muted rounded-md text-xs text-navy-600">
+                +{evento.tags.length - 2}
+              </span>
+            )}
+          </div>
+        )}
       </CardContent>
       
       <CardFooter className="border-t border-navy-100 pt-4">
