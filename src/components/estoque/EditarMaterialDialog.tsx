@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useEstoque } from '@/contexts/EstoqueContext';
-import { MaterialEstoque } from '@/lib/mock-data/estoque';
+import { MaterialEstoque } from '@/contexts/EstoqueContext';
 import { useCategorias } from '@/contexts/CategoriasContext';
 
 const materialSchema = z.object({

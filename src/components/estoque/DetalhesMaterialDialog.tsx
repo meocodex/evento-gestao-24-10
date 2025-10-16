@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { MaterialEstoque, SerialEstoque } from '@/lib/mock-data/estoque';
+import { MaterialEstoque, SerialEstoque } from '@/contexts/EstoqueContext';
 import { Package, MapPin, Plus, Trash2, Edit } from 'lucide-react';
 import { useState } from 'react';
 import { NovoSerialDialog } from './NovoSerialDialog';

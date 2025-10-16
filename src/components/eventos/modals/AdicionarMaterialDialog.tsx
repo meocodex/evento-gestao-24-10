@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { materiaisEstoque } from '@/lib/mock-data/estoque';
+import { useEstoque } from '@/contexts/EstoqueContext';
 import { Package, Search } from 'lucide-react';
 
 interface AdicionarMaterialDialogProps {
@@ -16,16 +16,17 @@ interface AdicionarMaterialDialogProps {
 
 export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: AdicionarMaterialDialogProps) {
   const { toast } = useToast();
+  const { materiais } = useEstoque();
   const [materialId, setMaterialId] = useState('');
   const [quantidade, setQuantidade] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const materiaisFiltrados = materiaisEstoque.filter(m => 
+  const materiaisFiltrados = materiais.filter(m => 
     m.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     m.categoria.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const materialSelecionado = materiaisEstoque.find(m => m.id === materialId);
+  const materialSelecionado = materiais.find(m => m.id === materialId);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
