@@ -407,21 +407,18 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
                       }}
                       placeholder="00000-000"
                       maxLength={9}
+                      className="flex-1"
                     />
                     <Button 
                       type="button"
                       variant="secondary"
+                      size="icon"
                       onClick={handleBuscarCEP}
                       disabled={loadingCep || cep.replace(/\D/g, '').length !== 8}
+                      className="shrink-0 h-10 w-10"
+                      title="Buscar CEP"
                     >
-                      {loadingCep ? (
-                        <>Buscando...</>
-                      ) : (
-                        <>
-                          <Search className="h-4 w-4 mr-2" />
-                          Buscar
-                        </>
-                      )}
+                      <Search className="h-4 w-4" />
                     </Button>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -429,24 +426,37 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
                   </p>
                 </div>
 
-                <div>
-                  <Label htmlFor="logradouro">Logradouro/Rua *</Label>
-                  <Input 
-                    id="logradouro" 
-                    value={logradouro} 
-                    onChange={(e) => setLogradouro(e.target.value)} 
-                    placeholder="Ex: Rua das Flores"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-2">
+                {/* Logradouro + Número */}
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_120px] gap-3">
+                  <div>
+                    <Label htmlFor="logradouro">Logradouro *</Label>
+                    <Input 
+                      id="logradouro" 
+                      value={logradouro} 
+                      onChange={(e) => setLogradouro(e.target.value)} 
+                      placeholder="Rua, Avenida..."
+                    />
+                  </div>
+                  <div>
                     <Label htmlFor="numero">Número *</Label>
                     <Input 
                       id="numero" 
                       value={numero} 
                       onChange={(e) => setNumero(e.target.value)} 
-                      placeholder="Ex: 123"
+                      placeholder="123"
+                    />
+                  </div>
+                </div>
+
+                {/* Bairro + Complemento */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="bairro">Bairro *</Label>
+                    <Input 
+                      id="bairro" 
+                      value={bairro} 
+                      onChange={(e) => setBairro(e.target.value)} 
+                      placeholder="Centro"
                     />
                   </div>
                   <div>
@@ -455,38 +465,29 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
                       id="complemento" 
                       value={complemento} 
                       onChange={(e) => setComplemento(e.target.value)} 
-                      placeholder="Apt 45"
+                      placeholder="Apt, Sala..."
                     />
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="bairro">Bairro *</Label>
-                  <Input 
-                    id="bairro" 
-                    value={bairro} 
-                    onChange={(e) => setBairro(e.target.value)} 
-                    placeholder="Ex: Centro"
-                  />
-                </div>
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-2">
+                {/* Cidade + Estado */}
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_100px] gap-3">
+                  <div>
                     <Label htmlFor="cidade">Cidade *</Label>
                     <Input 
                       id="cidade" 
                       value={cidade} 
                       onChange={(e) => setCidade(e.target.value)} 
-                      placeholder="Ex: Cuiabá"
+                      placeholder="São Paulo"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="estado">Estado *</Label>
+                    <Label htmlFor="estado">UF *</Label>
                     <Input 
                       id="estado" 
                       value={estado} 
                       onChange={(e) => setEstado(e.target.value.toUpperCase())} 
-                      placeholder="MT"
+                      placeholder="SP"
                       maxLength={2}
                     />
                   </div>

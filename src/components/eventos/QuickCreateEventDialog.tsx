@@ -7,8 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useEventos } from '@/contexts/EventosContext';
 import { useClientes } from '@/contexts/ClientesContext';
+import { ComercialSelect } from './ComercialSelect';
 import { toast } from 'sonner';
-import { ChevronDown, Calendar, MapPin, Tag, Sparkles } from 'lucide-react';
+import { ChevronDown, Calendar, MapPin, Tag, Sparkles, Search } from 'lucide-react';
 import { TipoEvento } from '@/types/eventos';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +33,7 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
   const [clienteId, setClienteId] = useState('');
+  const [comercialId, setComercialId] = useState('');
 
   // Localização
   const [local, setLocal] = useState('');
@@ -59,6 +61,7 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
         setDataInicio(data.dataInicio || '');
         setDataFim(data.dataFim || '');
         setClienteId(data.clienteId || '');
+        setComercialId(data.comercialId || '');
         setLocal(data.local || '');
         setCep(data.cep || '');
         setEndereco(data.endereco || '');
@@ -75,29 +78,37 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
 
   useEffect(() => {
     const rascunho = {
-      nome, tipoEvento, dataInicio, dataFim, clienteId,
+      nome, tipoEvento, dataInicio, dataFim, clienteId, comercialId,
       local, cep, endereco, numero, complemento, bairro, cidade, estado,
       tags, descricao
     };
     localStorage.setItem('eventoRascunho', JSON.stringify(rascunho));
-  }, [nome, tipoEvento, dataInicio, dataFim, clienteId, local, cep, endereco, numero, complemento, bairro, cidade, estado, tags, descricao]);
+  }, [nome, tipoEvento, dataInicio, dataFim, clienteId, comercialId, local, cep, endereco, numero, complemento, bairro, cidade, estado, tags, descricao]);
 
   const handleBuscarCEP = async () => {
-    if (cep.length !== 8) return;
+    const cepLimpo = cep.replace(/\D/g, '');
+    
+    if (cepLimpo.length !== 8) {
+      toast.error('CEP deve ter 8 dígitos');
+      return;
+    }
     
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
       const data = await response.json();
       
-      if (!data.erro) {
-        setEndereco(data.logradouro || '');
-        setBairro(data.bairro || '');
-        setCidade(data.localidade || '');
-        setEstado(data.uf || '');
-        toast.success('CEP encontrado!');
+      if (data.erro) {
+        toast.error('CEP não encontrado');
+        return;
       }
+      
+      setEndereco(data.logradouro || '');
+      setBairro(data.bairro || '');
+      setCidade(data.localidade || '');
+      setEstado(data.uf || '');
+      toast.success('Endereço preenchido automaticamente!');
     } catch (error) {
-      toast.error('Erro ao buscar CEP');
+      toast.error('Erro ao buscar CEP. Verifique sua conexão.');
     }
   };
 
@@ -113,7 +124,7 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
   };
 
   const handleSubmit = async () => {
-    if (!nome || !dataInicio || !clienteId) {
+    if (!nome || !dataInicio || !clienteId || !comercialId) {
       toast.error('Preencha os campos obrigatórios');
       return;
     }
@@ -134,7 +145,7 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
         horaInicio,
         horaFim,
         clienteId,
-        comercialId: '', // Você pode adicionar um campo para isso se necessário
+        comercialId,
         local,
         endereco,
         cidade,
@@ -160,6 +171,7 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
     setDataInicio('');
     setDataFim('');
     setClienteId('');
+    setComercialId('');
     setLocal('');
     setCep('');
     setEndereco('');
@@ -172,8 +184,8 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
     setDescricao('');
   };
 
-  const isValid = nome && dataInicio && clienteId;
-  const filledFields = [nome, dataInicio, clienteId, local, cidade, tags.length > 0].filter(Boolean).length;
+  const isValid = nome && dataInicio && clienteId && comercialId;
+  const filledFields = [nome, dataInicio, clienteId, comercialId, local, cidade, tags.length > 0].filter(Boolean).length;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -274,6 +286,16 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
                   ))}
                 </select>
               </div>
+
+              <div>
+                <Label htmlFor="comercial" className="text-sm font-medium">Comercial Responsável *</Label>
+                <div className="mt-1.5">
+                  <ComercialSelect
+                    value={comercialId}
+                    onChange={setComercialId}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -300,46 +322,41 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="sm:col-span-1">
-                    <Label htmlFor="cep" className="text-sm font-medium">CEP</Label>
-                    <div className="flex gap-2 mt-1.5">
-                      <Input
-                        id="cep"
-                        value={cep}
-                        onChange={(e) => setCep(e.target.value.replace(/\D/g, ''))}
-                        placeholder="00000000"
-                        maxLength={8}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleBuscarCEP}
-                        disabled={cep.length !== 8}
-                      >
-                        Buscar
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <Label htmlFor="cidade" className="text-sm font-medium">Cidade</Label>
+                {/* CEP - Campo dedicado com busca */}
+                <div>
+                  <Label htmlFor="cep" className="text-sm font-medium">CEP</Label>
+                  <div className="flex gap-2 mt-1.5">
                     <Input
-                      id="cidade"
-                      value={cidade}
-                      onChange={(e) => setCidade(e.target.value)}
-                      className="mt-1.5"
+                      id="cep"
+                      value={cep}
+                      onChange={(e) => setCep(e.target.value.replace(/\D/g, ''))}
+                      placeholder="00000-000"
+                      maxLength={9}
+                      className="flex-1"
                     />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon"
+                      onClick={handleBuscarCEP}
+                      disabled={cep.replace(/\D/g, '').length !== 8}
+                      className="shrink-0 h-10 w-10"
+                      title="Buscar CEP"
+                    >
+                      <Search className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="sm:col-span-2">
-                    <Label htmlFor="endereco" className="text-sm font-medium">Endereço</Label>
+                {/* Logradouro + Número */}
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_120px] gap-3">
+                  <div>
+                    <Label htmlFor="endereco" className="text-sm font-medium">Logradouro</Label>
                     <Input
                       id="endereco"
                       value={endereco}
                       onChange={(e) => setEndereco(e.target.value)}
+                      placeholder="Rua, Avenida..."
                       className="mt-1.5"
                     />
                   </div>
@@ -349,6 +366,56 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
                       id="numero"
                       value={numero}
                       onChange={(e) => setNumero(e.target.value)}
+                      placeholder="123"
+                      className="mt-1.5"
+                    />
+                  </div>
+                </div>
+
+                {/* Bairro + Complemento */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="bairro" className="text-sm font-medium">Bairro</Label>
+                    <Input
+                      id="bairro"
+                      value={bairro}
+                      onChange={(e) => setBairro(e.target.value)}
+                      placeholder="Centro"
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="complemento" className="text-sm font-medium">Complemento</Label>
+                    <Input
+                      id="complemento"
+                      value={complemento}
+                      onChange={(e) => setComplemento(e.target.value)}
+                      placeholder="Apt, Sala..."
+                      className="mt-1.5"
+                    />
+                  </div>
+                </div>
+
+                {/* Cidade + Estado */}
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_100px] gap-3">
+                  <div>
+                    <Label htmlFor="cidade" className="text-sm font-medium">Cidade</Label>
+                    <Input
+                      id="cidade"
+                      value={cidade}
+                      onChange={(e) => setCidade(e.target.value)}
+                      placeholder="São Paulo"
+                      className="mt-1.5"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="estado" className="text-sm font-medium">UF</Label>
+                    <Input
+                      id="estado"
+                      value={estado}
+                      onChange={(e) => setEstado(e.target.value.toUpperCase())}
+                      placeholder="SP"
+                      maxLength={2}
                       className="mt-1.5"
                     />
                   </div>
