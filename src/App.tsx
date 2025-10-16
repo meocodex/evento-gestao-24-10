@@ -18,6 +18,7 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Eventos from "./pages/Eventos";
+import EventoDetalhes from "./pages/EventoDetalhes";
 import Clientes from "./pages/Clientes";
 import Estoque from "./pages/Estoque";
 import Demandas from "./pages/Demandas";
@@ -54,6 +55,7 @@ function ProtectedRoutes() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="eventos" element={<Eventos />} />
+        <Route path="eventos/:id" element={<EventoDetalhes />} />
         <Route path="clientes" element={<Clientes />} />
         <Route path="demandas" element={<Demandas />} />
         <Route path="estoque" element={<Estoque />} />

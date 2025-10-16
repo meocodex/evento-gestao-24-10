@@ -9,7 +9,7 @@ import { EventosKanbanView } from '@/components/eventos/EventosKanbanView';
 import { EventosCalendarView } from '@/components/eventos/EventosCalendarView';
 import { QuickCreateEventSheet } from '@/components/eventos/QuickCreateEventDialog';
 import { EventoFilters, EventoFiltersType } from '@/components/eventos/EventoFilters';
-import { EventoDetailsSheet } from '@/components/eventos/EventoDetailsSheet';
+import { useNavigate } from 'react-router-dom';
 import { useEventoPermissions } from '@/hooks/useEventoPermissions';
 import { useEventos } from '@/contexts/EventosContext';
 import { EventosStats } from '@/components/eventos/EventosStats';
@@ -20,11 +20,10 @@ import { differenceInDays, parseISO, startOfMonth, endOfMonth, addMonths, isWith
 
 export default function Eventos() {
   const { eventos } = useEventos();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [] });
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
-  const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const permissions = useEventoPermissions();
   const [activeTab, setActiveTab] = useState<string>('todos');
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
@@ -107,23 +106,19 @@ export default function Eventos() {
   }, [filteredEventos, sortBy]);
 
   const handleViewDetails = (evento: Evento) => {
-    setSelectedEvento(evento);
-    setDetailsOpen(true);
+    navigate(`/eventos/${evento.id}`);
   };
 
   const handleEditarEvento = (evento: Evento) => {
-    setSelectedEvento(evento);
-    setDetailsOpen(true);
+    navigate(`/eventos/${evento.id}`);
   };
 
   const handleDeletarEvento = (evento: Evento) => {
-    setSelectedEvento(evento);
-    setDetailsOpen(true);
+    navigate(`/eventos/${evento.id}`);
   };
 
   const handleAlterarStatus = (evento: Evento) => {
-    setSelectedEvento(evento);
-    setDetailsOpen(true);
+    navigate(`/eventos/${evento.id}`);
   };
 
   return (
@@ -288,12 +283,6 @@ export default function Eventos() {
         <QuickCreateEventSheet
           open={quickCreateOpen}
           onOpenChange={setQuickCreateOpen}
-        />
-
-        <EventoDetailsSheet
-          evento={selectedEvento}
-          open={detailsOpen}
-          onOpenChange={setDetailsOpen}
         />
       </div>
     </div>

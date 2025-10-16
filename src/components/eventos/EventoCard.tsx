@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 interface EventoCardProps {
   evento: Evento;
@@ -27,6 +28,7 @@ interface EventoCardProps {
 
 export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }: EventoCardProps) {
   const { canEdit, canDeleteEvent } = useEventoPermissions(evento);
+  const navigate = useNavigate();
 
   const statusColors = {
     orcamento_enviado: 'bg-amber-500',
@@ -47,7 +49,7 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
       "transition-all duration-300",
       "hover:border-navy-400 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1"
     )}
-      onClick={() => onClick(evento)}
+      onClick={() => navigate(`/eventos/${evento.id}`)}
     >
       {/* Status indicator top */}
       <div className={`absolute top-0 left-0 right-0 h-1 ${statusColors[evento.status]}`} />
@@ -83,7 +85,7 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={(e) => {
                   e.stopPropagation();
-                  onEdit(evento);
+                  navigate(`/eventos/${evento.id}`);
                 }}>
                   <Pencil className="h-4 w-4 mr-2" />
                   Editar
@@ -183,7 +185,7 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
           className="w-full"
           onClick={(e) => {
             e.stopPropagation();
-            onClick(evento);
+            navigate(`/eventos/${evento.id}`);
           }}
         >
           Ver Detalhes
