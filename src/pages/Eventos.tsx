@@ -8,7 +8,6 @@ import { EventosListAccordion } from '@/components/eventos/EventosListAccordion'
 import { EventosKanbanView } from '@/components/eventos/EventosKanbanView';
 import { QuickCreateEventSheet } from '@/components/eventos/QuickCreateEventDialog';
 import { EventoFilters, EventoFiltersType } from '@/components/eventos/EventoFilters';
-import { NovoEventoSheet } from '@/components/eventos/NovoEventoSheet';
 import { EventoDetailsSheet } from '@/components/eventos/EventoDetailsSheet';
 import { useEventoPermissions } from '@/hooks/useEventoPermissions';
 import { useEventos } from '@/contexts/EventosContext';
@@ -23,7 +22,6 @@ export default function Eventos() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [] });
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
-  const [novoEventoOpen, setNovoEventoOpen] = useState(false);
   const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const permissions = useEventoPermissions();
@@ -132,25 +130,13 @@ export default function Eventos() {
       {/* Container with premium max-width and spacing */}
       <div className="mx-auto max-w-[1600px] px-6 py-6 space-y-4 animate-fade-in bg-navy-50 dark:bg-navy-950">
         {/* Navy Hero Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-900 dark:text-navy-50">
-              Eventos
-            </h1>
-            <p className="text-navy-600 dark:text-navy-400 mt-1">
-              Gerencie todos os eventos da sua empresa com eficiência e profissionalismo
-            </p>
-          </div>
-          {permissions.canCreateEvent && (
-            <Button 
-              onClick={() => setNovoEventoOpen(true)}
-              size="lg"
-              className="bg-navy-600 hover:bg-navy-700 text-white shadow-navy-sm"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Novo Evento
-            </Button>
-          )}
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-900 dark:text-navy-50">
+            Eventos
+          </h1>
+          <p className="text-navy-600 dark:text-navy-400 mt-1">
+            Gerencie todos os eventos da sua empresa com eficiência e profissionalismo
+          </p>
         </div>
 
         {/* Stats Cards */}
@@ -286,12 +272,6 @@ export default function Eventos() {
         <QuickCreateEventSheet
           open={quickCreateOpen}
           onOpenChange={setQuickCreateOpen}
-        />
-
-        <NovoEventoSheet
-          open={novoEventoOpen}
-          onOpenChange={setNovoEventoOpen}
-          onEventoCreated={() => {}}
         />
 
         <EventoDetailsSheet
