@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Grid3x3, List, ArrowUpDown, Kanban, Sparkles } from 'lucide-react';
+import { Plus, Search, Grid3x3, List, ArrowUpDown, Kanban, Sparkles, Calendar } from 'lucide-react';
 import { Evento } from '@/types/eventos';
 import { EventosList } from '@/components/eventos/EventosList';
 import { EventosListAccordion } from '@/components/eventos/EventosListAccordion';
 import { EventosKanbanView } from '@/components/eventos/EventosKanbanView';
+import { EventosCalendarView } from '@/components/eventos/EventosCalendarView';
 import { QuickCreateEventSheet } from '@/components/eventos/QuickCreateEventDialog';
 import { EventoFilters, EventoFiltersType } from '@/components/eventos/EventoFilters';
 import { EventoDetailsSheet } from '@/components/eventos/EventoDetailsSheet';
@@ -27,7 +28,7 @@ export default function Eventos() {
   const permissions = useEventoPermissions();
   const [activeTab, setActiveTab] = useState<string>('todos');
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'kanban'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'kanban' | 'calendar'>('grid');
   const [sortBy, setSortBy] = useState<string>('dataProxima');
 
   const availableCities = useMemo(() => {
@@ -222,6 +223,14 @@ export default function Eventos() {
                 >
                   <Kanban className="h-4 w-4" />
                 </Button>
+                <Button
+                  variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="rounded-none h-10 w-10 hover:bg-primary/10"
+                  onClick={() => setViewMode('calendar')}
+                >
+                  <Calendar className="h-4 w-4" />
+                </Button>
               </div>
               
               <Button onClick={() => setQuickCreateOpen(true)} className="gap-2">
@@ -266,6 +275,13 @@ export default function Eventos() {
           <EventosKanbanView
             eventos={sortedEventos}
             onViewDetails={handleViewDetails}
+          />
+        )}
+        
+        {viewMode === 'calendar' && (
+          <EventosCalendarView
+            eventos={sortedEventos}
+            onEventoClick={handleViewDetails}
           />
         )}
 
