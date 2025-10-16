@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,12 +12,12 @@ import { ChevronDown, Calendar, MapPin, Tag, Sparkles } from 'lucide-react';
 import { TipoEvento } from '@/types/eventos';
 import { cn } from '@/lib/utils';
 
-interface QuickCreateEventDialogProps {
+interface QuickCreateEventSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function QuickCreateEventDialog({ open, onOpenChange }: QuickCreateEventDialogProps) {
+export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSheetProps) {
   const { criarEvento } = useEventos();
   const { clientes } = useClientes();
   const [loading, setLoading] = useState(false);
@@ -176,22 +176,24 @@ export function QuickCreateEventDialog({ open, onOpenChange }: QuickCreateEventD
   const filledFields = [nome, dataInicio, clienteId, local, cidade, tags.length > 0].filter(Boolean).length;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto max-w-full sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-xl sm:text-2xl">
-            <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-            Criar Evento Rápido
-          </DialogTitle>
-          <DialogDescription>
-            Preencha as informações essenciais. Você pode completar os detalhes depois.
-            <span className="block text-xs text-muted-foreground mt-1">
-              {filledFields} de 6 campos recomendados preenchidos
-            </span>
-          </DialogDescription>
-        </DialogHeader>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right" className="w-full sm:w-[500px] lg:w-[650px] overflow-y-auto p-0">
+        <div className="sticky top-0 z-10 bg-background border-b px-6 py-4">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              Criar Evento Rápido
+            </SheetTitle>
+            <SheetDescription>
+              Preencha as informações essenciais. Você pode completar os detalhes depois.
+              <span className="block text-xs text-muted-foreground mt-1">
+                {filledFields} de 6 campos recomendados preenchidos
+              </span>
+            </SheetDescription>
+          </SheetHeader>
+        </div>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4 px-6">
           {/* SEÇÃO ESSENCIAL */}
           <div className="space-y-4 p-4 rounded-lg border bg-card">
             <h3 className="font-semibold flex items-center gap-2">
@@ -416,23 +418,25 @@ export function QuickCreateEventDialog({ open, onOpenChange }: QuickCreateEventD
           </Collapsible>
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!isValid || loading}
-            className="relative"
-          >
-            {loading ? 'Criando...' : 'Criar Evento'}
-          </Button>
+        <div className="sticky bottom-0 z-10 bg-background border-t px-6 py-4 mt-6">
+          <div className="flex flex-col-reverse sm:flex-row gap-3 justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!isValid || loading}
+              className="relative"
+            >
+              {loading ? 'Criando...' : 'Criar Evento'}
+            </Button>
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

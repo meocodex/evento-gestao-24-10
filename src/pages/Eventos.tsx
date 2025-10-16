@@ -6,7 +6,7 @@ import { Evento } from '@/types/eventos';
 import { EventosList } from '@/components/eventos/EventosList';
 import { EventosListAccordion } from '@/components/eventos/EventosListAccordion';
 import { EventosKanbanView } from '@/components/eventos/EventosKanbanView';
-import { QuickCreateEventDialog } from '@/components/eventos/QuickCreateEventDialog';
+import { QuickCreateEventSheet } from '@/components/eventos/QuickCreateEventDialog';
 import { EventoFilters, EventoFiltersType } from '@/components/eventos/EventoFilters';
 import { NovoEventoSheet } from '@/components/eventos/NovoEventoSheet';
 import { EventoDetailsSheet } from '@/components/eventos/EventoDetailsSheet';
@@ -283,7 +283,7 @@ export default function Eventos() {
           />
         )}
 
-        <QuickCreateEventDialog
+        <QuickCreateEventSheet
           open={quickCreateOpen}
           onOpenChange={setQuickCreateOpen}
         />
