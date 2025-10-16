@@ -51,8 +51,8 @@ export default function Demandas() {
         {/* Hero Section */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-navy-900 dark:text-navy-50">Demandas</h1>
-            <p className="text-navy-600 dark:text-navy-400 mt-1">Gerencie todas as solicitações e tarefas da equipe</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-900 dark:text-navy-50">Demandas</h1>
+            <p className="text-sm sm:text-base text-navy-600 dark:text-navy-400 mt-1">Gerencie todas as solicitações e tarefas da equipe</p>
           </div>
           <div className="flex gap-2">
             <NovaDemandaSheet />

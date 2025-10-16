@@ -144,4 +144,13 @@ All colors MUST be HSL.
   .glow-active {
     @apply shadow-[0_0_20px_rgba(245,158,11,0.3)];
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

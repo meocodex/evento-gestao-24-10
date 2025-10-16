@@ -62,7 +62,7 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity min-h-[44px] min-w-[44px]"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <MoreVertical className="h-5 w-5" />

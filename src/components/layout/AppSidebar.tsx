@@ -28,6 +28,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { useSidebar } from '@/components/ui/sidebar';
 
 const menuItems = [
   { title: 'Dashboard', url: '/dashboard', icon: Home, roles: ['admin', 'comercial', 'suporte'] },
@@ -42,29 +43,32 @@ const menuItems = [
   { title: 'Configurações', url: '/configuracoes', icon: Settings, roles: ['admin'] },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, logout } = useAuth();
+  const { state } = useSidebar();
 
   const filteredItems = menuItems.filter((item) =>
     user?.role ? item.roles.includes(user.role) : false
   );
 
   return (
-    <Sidebar className="border-r-0 bg-sidebar">
-      <SidebarHeader className="border-b border-sidebar-border/30 p-6">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-accent/20 backdrop-blur-sm rounded-xl shadow-lg shadow-accent/30 ring-2 ring-accent/50">
-            <Calendar className="h-6 w-6 text-accent" />
+    <Sidebar className="border-r-0 bg-sidebar" {...props}>
+      <SidebarHeader className="border-b border-sidebar-border/30 p-4 md:p-6">
+        <div className="flex items-center gap-3 md:gap-4">
+          <div className="p-2 md:p-3 bg-accent/20 backdrop-blur-sm rounded-xl shadow-lg shadow-accent/30 ring-2 ring-accent/50">
+            <Calendar className="h-5 w-5 md:h-6 md:w-6 text-accent" />
           </div>
           
-          <div className="data-[collapsed=true]:hidden">
-            <p className="text-base font-display font-bold text-sidebar-foreground">
-              Gestão Eventos
-            </p>
-            <p className="text-xs text-sidebar-foreground/70">
-              {user?.name}
-            </p>
-          </div>
+          {state !== 'collapsed' && (
+            <div>
+              <p className="text-sm md:text-base font-display font-bold text-sidebar-foreground">
+                Gestão Eventos
+              </p>
+              <p className="text-xs text-sidebar-foreground/70 truncate max-w-[150px]">
+                {user?.name}
+              </p>
+            </div>
+          )}
         </div>
       </SidebarHeader>
 
@@ -82,7 +86,7 @@ export function AppSidebar() {
                       to={item.url}
                       className={({ isActive }) =>
                         cn(
-                          "group relative flex items-center gap-3 px-4 py-3 rounded-xl mx-0 transition-all duration-200",
+                          "group relative flex items-center gap-3 px-3 md:px-4 py-3 rounded-xl mx-0 transition-all duration-200 min-h-[44px]",
                           isActive
                             ? "bg-sidebar-accent border-l-4 border-accent text-sidebar-foreground shadow-md"
                             : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -91,12 +95,14 @@ export function AppSidebar() {
                     >
                       {({ isActive }) => (
                         <>
-                          <item.icon className="h-5 w-5" />
-                          <span className="font-medium data-[collapsed=true]:hidden">
-                            {item.title}
-                          </span>
+                          <item.icon className="h-5 w-5 flex-shrink-0" />
+                          {state !== 'collapsed' && (
+                            <span className="font-medium">
+                              {item.title}
+                            </span>
+                          )}
                           
-                          {isActive && (
+                          {isActive && state !== 'collapsed' && (
                             <div className="absolute right-3 w-2 h-2 rounded-full bg-accent animate-pulse" />
                           )}
                         </>
@@ -110,26 +116,30 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border/30 p-4">
+      <SidebarFooter className="border-t border-sidebar-border/30 p-3 md:p-4">
         <div className="space-y-3">
-          <div className="px-4 py-3 bg-sidebar-accent/50 backdrop-blur-sm rounded-xl border border-sidebar-border/30">
-            <p className="text-xs text-sidebar-foreground/60 font-medium uppercase tracking-wide">
-              Perfil
-            </p>
-            <p className="text-sm font-semibold text-sidebar-foreground capitalize mt-1">
-              {user?.role}
-            </p>
-          </div>
-          
-          <Separator className="bg-sidebar-border/30" />
+          {state !== 'collapsed' && (
+            <>
+              <div className="px-3 md:px-4 py-2 md:py-3 bg-sidebar-accent/50 backdrop-blur-sm rounded-xl border border-sidebar-border/30">
+                <p className="text-xs text-sidebar-foreground/60 font-medium uppercase tracking-wide">
+                  Perfil
+                </p>
+                <p className="text-sm font-semibold text-sidebar-foreground capitalize mt-1 truncate">
+                  {user?.role}
+                </p>
+              </div>
+              
+              <Separator className="bg-sidebar-border/30" />
+            </>
+          )}
           
           <Button
             variant="ghost"
             onClick={logout}
-            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-destructive transition-all duration-200 group"
+            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-destructive transition-all duration-200 group min-h-[44px]"
           >
-            <LogOut className="h-4 w-4 mr-3 group-hover:rotate-12 transition-transform" />
-            <span className="data-[collapsed=true]:hidden">Sair</span>
+            <LogOut className="h-4 w-4 md:mr-3 group-hover:rotate-12 transition-transform" />
+            {state !== 'collapsed' && <span>Sair</span>}
           </Button>
         </div>
       </SidebarFooter>

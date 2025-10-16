@@ -4,10 +4,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { NotificationCenter } from './NotificationCenter';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export function MainLayout() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -20,9 +22,9 @@ export function MainLayout() {
   }
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full bg-background">
-        <AppSidebar />
+        <AppSidebar collapsible="offcanvas" />
         
         <div className="flex-1 flex flex-col">
           <header className="sticky top-0 z-50 h-16 bg-white border-b border-navy-100 shadow-sm backdrop-blur-sm bg-white/95">

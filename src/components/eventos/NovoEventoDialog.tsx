@@ -201,7 +201,7 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-full sm:max-w-2xl md:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Novo Evento</DialogTitle>
         </DialogHeader>
@@ -232,7 +232,7 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="dataHoraInicio">Data e Hora de Início *</Label>
                 <Input 
@@ -302,8 +302,8 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="sm:col-span-2">
                 <Label htmlFor="numero">Número *</Label>
                 <Input 
                   id="numero" 
@@ -335,8 +335,8 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="sm:col-span-2">
                 <Label htmlFor="cidade">Cidade *</Label>
                 <Input 
                   id="cidade" 

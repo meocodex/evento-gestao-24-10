@@ -51,15 +51,15 @@ export function ClienteCard({ cliente, onView, onEdit, onDelete }: ClienteCardPr
       </CardContent>
 
       <CardFooter className="pt-3 flex gap-2">
-        <Button variant="outline" size="sm" className="flex-1" onClick={() => onView(cliente)}>
+        <Button variant="outline" size="sm" className="flex-1 min-h-[44px]" onClick={() => onView(cliente)}>
           <Eye className="mr-2 h-4 w-4" />
           Ver
         </Button>
-        <Button variant="outline" size="sm" className="flex-1" onClick={() => onEdit(cliente)}>
+        <Button variant="outline" size="sm" className="flex-1 min-h-[44px]" onClick={() => onEdit(cliente)}>
           <Pencil className="mr-2 h-4 w-4" />
           Editar
         </Button>
-        <Button variant="outline" size="sm" onClick={() => onDelete(cliente)}>
+        <Button variant="outline" size="sm" className="min-h-[44px] min-w-[44px]" onClick={() => onDelete(cliente)}>
           <Trash2 className="h-4 w-4" />
         </Button>
       </CardFooter>

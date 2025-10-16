@@ -131,7 +131,7 @@ export default function Eventos() {
         {/* Navy Hero Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-4xl font-bold text-navy-900 dark:text-navy-50">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-900 dark:text-navy-50">
               Eventos
             </h1>
             <p className="text-navy-600 dark:text-navy-400 mt-1">
@@ -156,12 +156,12 @@ export default function Eventos() {
         {/* Navigation Tabs - Premium style */}
         <div className="relative">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full justify-start overflow-x-auto bg-card/60 backdrop-blur-xl border border-border/40 p-1">
-              <TabsTrigger value="todos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
-              <TabsTrigger value="proximos7" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Próximos 7 Dias</TabsTrigger>
-              <TabsTrigger value="esteMes" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Este Mês</TabsTrigger>
-              <TabsTrigger value="proximoMes" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Próximo Mês</TabsTrigger>
-              <TabsTrigger value="finalizados" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Finalizados</TabsTrigger>
+            <TabsList className="w-full justify-start overflow-x-auto scrollbar-hide snap-x snap-mandatory bg-card/60 backdrop-blur-xl border border-border/40 p-1">
+              <TabsTrigger value="todos" className="snap-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
+              <TabsTrigger value="proximos7" className="snap-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap">Próximos 7 Dias</TabsTrigger>
+              <TabsTrigger value="esteMes" className="snap-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap">Este Mês</TabsTrigger>
+              <TabsTrigger value="proximoMes" className="snap-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap">Próximo Mês</TabsTrigger>
+              <TabsTrigger value="finalizados" className="snap-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Finalizados</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
