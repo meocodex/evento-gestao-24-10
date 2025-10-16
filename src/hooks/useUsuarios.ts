@@ -6,6 +6,7 @@ export interface Usuario {
   id: string;
   nome: string;
   email: string;
+  cpf?: string;
   avatar_url?: string;
   telefone?: string;
   role: 'admin' | 'comercial' | 'suporte';
@@ -98,14 +99,24 @@ export function useUsuarios() {
     },
   });
 
-  const convidarUsuario = useMutation({
-    mutationFn: async (data: { email: string; nome: string; role: 'admin' | 'comercial' | 'suporte' }) => {
-      // Criar usuário via Supabase Auth
+  const criarOperador = useMutation({
+    mutationFn: async (data: { 
+      nome: string; 
+      email: string; 
+      cpf: string;
+      telefone: string;
+      senha: string;
+      role: 'admin' | 'comercial' | 'suporte' 
+    }) => {
+      // Criar usuário no Supabase Auth com senha
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: data.email,
+        password: data.senha,
         email_confirm: true,
         user_metadata: {
           nome: data.nome,
+          cpf: data.cpf,
+          telefone: data.telefone
         },
       });
 
@@ -129,13 +140,13 @@ export function useUsuarios() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] });
       toast({
-        title: 'Usuário convidado',
-        description: 'O convite foi enviado com sucesso.',
+        title: 'Operador criado com sucesso',
+        description: 'O operador já pode acessar o sistema.',
       });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Erro ao convidar usuário',
+        title: 'Erro ao criar operador',
         description: error.message,
         variant: 'destructive',
       });
@@ -147,6 +158,6 @@ export function useUsuarios() {
     isLoading,
     error,
     alterarFuncao,
-    convidarUsuario,
+    criarOperador,
   };
 }

@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { UserPlus, Settings, Eye, MoreVertical } from "lucide-react";
 import { useUsuarios, Usuario } from "@/hooks/useUsuarios";
-import { ConvidarUsuarioDialog } from "./ConvidarUsuarioDialog";
+import { CriarOperadorDialog } from "./CriarOperadorDialog";
 import { EditarFuncaoUsuarioDialog } from "./EditarFuncaoUsuarioDialog";
 import { DetalhesUsuarioDialog } from "./DetalhesUsuarioDialog";
 import { format } from "date-fns";
@@ -41,7 +41,7 @@ function getRoleLabel(role: string) {
 
 export function GerenciarUsuarios() {
   const { usuarios, isLoading } = useUsuarios();
-  const [convidarOpen, setConvidarOpen] = useState(false);
+  const [criarOpen, setCriarOpen] = useState(false);
   const [editarUsuario, setEditarUsuario] = useState<Usuario | null>(null);
   const [detalhesUsuario, setDetalhesUsuario] = useState<Usuario | null>(null);
 
@@ -66,10 +66,10 @@ export function GerenciarUsuarios() {
                 Visualize e gerencie as funções dos usuários do sistema
               </CardDescription>
             </div>
-            <Button onClick={() => setConvidarOpen(true)}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Convidar Usuário
-            </Button>
+          <Button onClick={() => setCriarOpen(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Criar Operador
+          </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -79,6 +79,7 @@ export function GerenciarUsuarios() {
                 <TableRow>
                   <TableHead>Usuário</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>CPF</TableHead>
                   <TableHead>Telefone</TableHead>
                   <TableHead>Função</TableHead>
                   <TableHead>Cadastrado em</TableHead>
@@ -105,6 +106,11 @@ export function GerenciarUsuarios() {
                       </div>
                     </TableCell>
                     <TableCell>{usuario.email}</TableCell>
+                    <TableCell>
+                      {usuario.cpf ? 
+                        usuario.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') 
+                        : '-'}
+                    </TableCell>
                     <TableCell>{usuario.telefone || '-'}</TableCell>
                     <TableCell>
                       <Badge variant={getRoleBadgeVariant(usuario.role)}>
@@ -141,7 +147,7 @@ export function GerenciarUsuarios() {
         </CardContent>
       </Card>
 
-      <ConvidarUsuarioDialog open={convidarOpen} onOpenChange={setConvidarOpen} />
+      <CriarOperadorDialog open={criarOpen} onOpenChange={setCriarOpen} />
       <EditarFuncaoUsuarioDialog
         open={!!editarUsuario}
         onOpenChange={(open) => !open && setEditarUsuario(null)}
