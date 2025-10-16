@@ -51,9 +51,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
               setUser({
                 id: session.user.id,
-                name: profile?.nome || 'Usuário',
+                name: profile?.nome ?? 'Usuário',
                 email: session.user.email || '',
-                role: (roleData?.role as UserRole) || 'comercial',
+                role: (roleData?.role as UserRole) ?? 'comercial',
               });
             } catch (error) {
               // Silently fail in production - user will be set to null
