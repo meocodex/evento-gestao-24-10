@@ -36,6 +36,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
 
   // Form states
   const [nome, setNome] = useState('');
+  const [tipoEvento, setTipoEvento] = useState<'bar' | 'ingresso' | 'hibrido'>('bar');
   const [dataInicio, setDataInicio] = useState<Date>();
   const [dataFim, setDataFim] = useState<Date>();
   const [horaInicio, setHoraInicio] = useState('');
@@ -106,6 +107,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
 
   const resetForm = () => {
     setNome('');
+    setTipoEvento('bar');
     setDataInicio(undefined);
     setDataFim(undefined);
     setHoraInicio('');
@@ -179,6 +181,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
       
       await criarEvento({
         nome,
+        tipoEvento,
         dataInicio: dataInicioStr,
         dataFim: dataFimStr,
         horaInicio,
@@ -274,6 +277,27 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
                     onChange={(e) => setNome(e.target.value)} 
                     placeholder="Ex: Casamento João e Maria"
                   />
+                </div>
+
+                <div>
+                  <Label>Tipo de Evento *</Label>
+                  <div className="flex gap-2 mt-2">
+                    {(['bar', 'ingresso', 'hibrido'] as const).map((tipo) => (
+                      <button
+                        key={tipo}
+                        type="button"
+                        onClick={() => setTipoEvento(tipo)}
+                        className={cn(
+                          "flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-all border-2",
+                          tipoEvento === tipo
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background border-border hover:border-primary/50"
+                        )}
+                      >
+                        {tipo === 'bar' ? '🍺 Bar' : tipo === 'ingresso' ? '🎫 Ingresso' : '🎭 Híbrido'}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 
                 <div className="space-y-4">

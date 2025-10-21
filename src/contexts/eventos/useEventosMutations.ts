@@ -24,7 +24,7 @@ export function useEventosMutations() {
         .from('eventos')
         .insert([{
           nome: data.nome,
-          tipo_evento: data.tipoEvento,
+          tipo_evento: data.tipoEvento || 'bar',
           cliente_id: data.clienteId,
           comercial_id: data.comercialId,
           data_inicio: data.dataInicio,
@@ -35,7 +35,7 @@ export function useEventosMutations() {
           endereco: data.endereco,
           cidade: data.cidade,
           estado: data.estado,
-          status: 'orcamento_enviado',
+          status: 'orcamento',
           descricao: data.descricao,
           observacoes: data.observacoes,
           tags: data.tags || [],
@@ -174,7 +174,7 @@ export function useEventosMutations() {
   });
 
   const alterarStatus = useMutation({
-    mutationFn: async ({ id, novoStatus }: { id: string; novoStatus: StatusEvento }) => {
+    mutationFn: async ({ id, novoStatus, observacao }: { id: string; novoStatus: StatusEvento; observacao?: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
@@ -186,10 +186,14 @@ export function useEventosMutations() {
       if (error) throw error;
 
       // Adicionar à timeline
+      const descricaoTimeline = observacao 
+        ? `Status alterado para: ${novoStatus} - ${observacao}`
+        : `Status alterado para: ${novoStatus}`;
+
       await supabase.from('eventos_timeline').insert([{
         evento_id: id,
         tipo: 'edicao',
-        descricao: `Status alterado para: ${novoStatus}`,
+        descricao: descricaoTimeline,
         usuario: user.email || 'Sistema'
       }]);
 
@@ -214,6 +218,6 @@ export function useEventosMutations() {
     criarEvento: (data: EventoFormData) => criarEvento.mutateAsync(data),
     editarEvento: (id: string, data: Partial<Evento>) => editarEvento.mutateAsync({ id, data }),
     excluirEvento: (id: string) => excluirEvento.mutateAsync(id),
-    alterarStatus: (id: string, novoStatus: StatusEvento) => alterarStatus.mutateAsync({ id, novoStatus })
+    alterarStatus: (id: string, novoStatus: StatusEvento, observacao?: string) => alterarStatus.mutateAsync({ id, novoStatus, observacao })
   };
 }

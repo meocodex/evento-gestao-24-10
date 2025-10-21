@@ -9,6 +9,8 @@ import { Plus, Trash2, Send } from 'lucide-react';
 import { AdicionarMembroEquipeDialog } from '../modals/AdicionarMembroEquipeDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface OperacaoEventoProps {
   evento: Evento;
@@ -70,15 +72,26 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
               Nenhum membro alocado
             </p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {evento.equipe.map((membro) => (
-                <div key={membro.id} className="flex justify-between items-center p-3 border rounded">
-                  <div className="flex-1">
-                    <p className="font-medium">{membro.nome}</p>
-                    <p className="text-sm text-muted-foreground">{membro.funcao}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm">{membro.telefone}</p>
+                <div key={membro.id} className="p-4 border rounded-lg space-y-2">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-base">{membro.nome}</p>
+                        {membro.operacionalId && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 px-2 text-xs"
+                            onClick={() => window.open(`/equipe?id=${membro.operacionalId}`, '_blank')}
+                          >
+                            Ver perfil
+                          </Button>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">{membro.funcao}</p>
+                    </div>
                     {permissions.canEditOperations && (
                       <Button 
                         size="sm" 
@@ -89,6 +102,48 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
                       </Button>
                     )}
                   </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Telefone:</span>{' '}
+                      <span className="font-medium">{membro.telefone}</span>
+                    </div>
+                    {membro.whatsapp && (
+                      <div className="flex items-center gap-1">
+                        <span className="text-muted-foreground">WhatsApp:</span>{' '}
+                        <span className="font-medium">{membro.whatsapp}</span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-5 w-5 p-0"
+                          onClick={() => {
+                            navigator.clipboard.writeText(membro.whatsapp!);
+                            toast({ title: 'WhatsApp copiado!' });
+                          }}
+                        >
+                          📋
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
+                  {(membro.dataInicio || membro.dataFim) && (
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Período:</span>{' '}
+                      <span className="font-medium">
+                        {membro.dataInicio && format(new Date(membro.dataInicio), 'dd/MM/yyyy', { locale: ptBR })}
+                        {membro.dataInicio && membro.dataFim && ' até '}
+                        {membro.dataFim && format(new Date(membro.dataFim), 'dd/MM/yyyy', { locale: ptBR })}
+                      </span>
+                    </div>
+                  )}
+
+                  {membro.observacoes && (
+                    <div className="text-sm p-2 bg-muted rounded">
+                      <span className="text-muted-foreground">Obs:</span>{' '}
+                      {membro.observacoes}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -145,6 +200,7 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
             // Erro já tratado pelo hook
           }
         }}
+        eventoId={evento.id}
       />
 
       <ConfirmDialog

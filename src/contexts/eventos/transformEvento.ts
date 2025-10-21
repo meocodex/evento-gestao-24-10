@@ -133,7 +133,12 @@ export function transformEvento(data: any): Evento {
       id: e.id,
       nome: e.nome,
       funcao: e.funcao,
-      telefone: e.telefone
+      telefone: e.telefone,
+      whatsapp: e.whatsapp,
+      dataInicio: e.data_inicio,
+      dataFim: e.data_fim,
+      observacoes: e.observacoes,
+      operacionalId: e.operacional_id
     })),
     
     timeline: (data.timeline || []).map((t: any) => ({

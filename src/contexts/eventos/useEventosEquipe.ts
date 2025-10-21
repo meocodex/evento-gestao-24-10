@@ -21,7 +21,12 @@ export function useEventosEquipe() {
           evento_id: eventoId,
           nome: membro.nome,
           funcao: membro.funcao,
-          telefone: membro.telefone
+          telefone: membro.telefone,
+          whatsapp: membro.whatsapp,
+          data_inicio: membro.dataInicio,
+          data_fim: membro.dataFim,
+          observacoes: membro.observacoes,
+          operacional_id: membro.operacionalId
         }])
         .select()
         .single();

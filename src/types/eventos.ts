@@ -164,6 +164,11 @@ export interface MembroEquipe {
   nome: string;
   funcao: string;
   telefone: string;
+  whatsapp?: string;
+  dataInicio?: string;
+  dataFim?: string;
+  observacoes?: string;
+  operacionalId?: string;
 }
 
 export interface Evento {
