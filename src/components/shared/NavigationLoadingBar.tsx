@@ -1,32 +1,37 @@
-import { useEffect, useState } from 'react';
-import { useNavigation } from 'react-router-dom';
+import { useEffect, useState, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export function NavigationLoadingBar() {
-  const navigation = useNavigation();
+  const location = useLocation();
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
+  const prevLocationRef = useRef(location.pathname);
   
   useEffect(() => {
-    if (navigation.state === 'loading') {
+    // Detecta mudança de rota
+    if (prevLocationRef.current !== location.pathname) {
       setVisible(true);
       setProgress(30);
       
       const timer1 = setTimeout(() => setProgress(60), 100);
       const timer2 = setTimeout(() => setProgress(80), 300);
+      const timer3 = setTimeout(() => {
+        setProgress(100);
+        setTimeout(() => {
+          setVisible(false);
+          setProgress(0);
+        }, 200);
+      }, 500);
+      
+      prevLocationRef.current = location.pathname;
       
       return () => {
         clearTimeout(timer1);
         clearTimeout(timer2);
+        clearTimeout(timer3);
       };
-    } else if (navigation.state === 'idle' && visible) {
-      setProgress(100);
-      const timer = setTimeout(() => {
-        setVisible(false);
-        setProgress(0);
-      }, 200);
-      return () => clearTimeout(timer);
     }
-  }, [navigation.state, visible]);
+  }, [location.pathname]);
   
   if (!visible) return null;
   
