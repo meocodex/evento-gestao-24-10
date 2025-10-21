@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { optimizeImage, isImageFile } from '@/lib/imageOptimization';
 
 export function useEventosArquivos() {
   const { toast } = useToast();
@@ -16,14 +17,32 @@ export function useEventosArquivos() {
       tipo: 'plantaBaixa' | 'documentos' | 'fotosEvento';
       arquivo: File 
     }) => {
+      let fileToUpload = arquivo;
+      
+      // Otimizar imagens automaticamente
+      if (isImageFile(arquivo) && tipo === 'fotosEvento') {
+        console.log('🖼️ Otimizando imagem para WebP...');
+        try {
+          const { optimizedFile } = await optimizeImage(arquivo);
+          fileToUpload = optimizedFile;
+          console.log('✅ Imagem otimizada:', {
+            original: `${(arquivo.size / 1024).toFixed(2)} KB`,
+            optimized: `${(optimizedFile.size / 1024).toFixed(2)} KB`,
+            reduction: `${(((arquivo.size - optimizedFile.size) / arquivo.size) * 100).toFixed(1)}%`
+          });
+        } catch (error) {
+          console.warn('⚠️ Falha na otimização, usando arquivo original:', error);
+        }
+      }
+      
       // 1. Upload para Supabase Storage
       const timestamp = Date.now();
-      const fileName = `${timestamp}-${arquivo.name}`;
+      const fileName = `${timestamp}-${fileToUpload.name}`;
       const filePath = `${eventoId}/${tipo}/${fileName}`;
 
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('eventos')
-        .upload(filePath, arquivo, {
+        .upload(filePath, fileToUpload, {
           cacheControl: '3600',
           upsert: false
         });
