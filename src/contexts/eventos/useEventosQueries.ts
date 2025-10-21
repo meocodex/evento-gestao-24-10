@@ -30,8 +30,8 @@ export function useEventosQueries(page = 1, pageSize = 50) {
           tags,
           cliente_id,
           comercial_id,
-          cliente:clientes(id, nome),
-          comercial:profiles!eventos_comercial_id_fkey(id, nome)
+          cliente:clientes(id, nome, email),
+          comercial:profiles!eventos_comercial_id_fkey(id, nome, email)
         `, { count: 'exact' })
         .order('data_inicio', { ascending: false })
         .range(from, to);

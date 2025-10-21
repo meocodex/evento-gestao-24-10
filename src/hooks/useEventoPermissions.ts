@@ -52,7 +52,7 @@ export function useEventoPermissions(evento?: Evento): EventoPermissions {
   const isAdmin = user.role === 'admin';
   const isComercial = user.role === 'comercial';
   const isSuporte = user.role === 'suporte';
-  const isOwner = evento?.comercial.id === user.id;
+  const isOwner = evento?.comercial?.id === user.id;
 
   // IMPORTANTE: Estas flags controlam apenas a UI. A segurança real está nas políticas RLS do banco.
   return {
