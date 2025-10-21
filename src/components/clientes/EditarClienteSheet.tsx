@@ -52,23 +52,34 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
     }
   }, [cliente, reset]);
 
-  const handleBuscarCEP = async () => {
-    if (!cep || cep.replace(/\D/g, '').length !== 8) return;
-
-    setBuscandoCEP(true);
-    try {
-      const endereco = await buscarEnderecoPorCEP(cep);
-      setValue('endereco.logradouro', endereco.logradouro);
-      setValue('endereco.bairro', endereco.bairro);
-      setValue('endereco.cidade', endereco.localidade);
-      setValue('endereco.estado', endereco.uf);
-      setValue('endereco.complemento', endereco.complemento);
-    } catch (error) {
-      // Erro já tratado no contexto
-    } finally {
-      setBuscandoCEP(false);
+  // Busca automática de CEP com debounce
+  useEffect(() => {
+    const cepLimpo = cep?.replace(/\D/g, '') || '';
+    
+    if (cepLimpo.length !== 8) {
+      return;
     }
-  };
+
+    const timeoutId = setTimeout(async () => {
+      setBuscandoCEP(true);
+      try {
+        const endereco = await buscarEnderecoPorCEP(cep);
+        setValue('endereco.logradouro', endereco.logradouro);
+        setValue('endereco.bairro', endereco.bairro);
+        setValue('endereco.cidade', endereco.localidade);
+        setValue('endereco.estado', endereco.uf);
+        if (endereco.complemento) {
+          setValue('endereco.complemento', endereco.complemento);
+        }
+      } catch (error) {
+        // Erro já tratado no contexto
+      } finally {
+        setBuscandoCEP(false);
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [cep, buscarEnderecoPorCEP, setValue]);
 
   const onSubmit = async (data: ClienteFormData) => {
     try {
@@ -175,7 +186,7 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
 
           <div className="space-y-2">
             <Label htmlFor="cep-edit" className="text-navy-700">CEP</Label>
-            <div className="flex gap-2">
+            <div className="relative">
               <Input
                 id="cep-edit"
                 {...register('endereco.cep')}
@@ -184,13 +195,16 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
                   const formatted = formatarCEP(e.target.value);
                   setValue('endereco.cep', formatted);
                 }}
-                className="border-navy-200"
+                className={buscandoCEP ? "border-navy-200 pr-10" : "border-navy-200"}
               />
-              <Button type="button" variant="outline" onClick={handleBuscarCEP} disabled={buscandoCEP}>
-                {buscandoCEP ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-              </Button>
+              {buscandoCEP && (
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+              )}
             </div>
             {errors.endereco?.cep && <p className="text-sm text-destructive">{errors.endereco.cep.message}</p>}
+            <p className="text-xs text-muted-foreground">
+              Digite o CEP para buscar automaticamente
+            </p>
           </div>
 
           <div className="grid grid-cols-4 gap-4">

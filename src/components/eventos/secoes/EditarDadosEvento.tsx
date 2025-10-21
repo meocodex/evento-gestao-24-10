@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Evento } from '@/types/eventos';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { ClienteSelect } from '../ClienteSelect';
 import { ComercialSelect } from '../ComercialSelect';
-import { X, Save, XCircle, Search } from 'lucide-react';
+import { X, Save, XCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { buscarCEP } from '@/lib/api/viacep';
 
@@ -50,45 +50,44 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleBuscarCEP = async () => {
+  // Busca automática de CEP com debounce
+  useEffect(() => {
     const cepLimpo = cep.replace(/\D/g, '');
     
     if (cepLimpo.length !== 8) {
-      toast({
-        title: 'CEP inválido',
-        description: 'O CEP deve ter 8 dígitos.',
-        variant: 'destructive',
-      });
       return;
     }
 
-    setLoadingCep(true);
-    try {
-      const dados = await buscarCEP(cepLimpo);
-      
-      setLogradouro(dados.logradouro);
-      setBairro(dados.bairro);
-      setCidade(dados.localidade);
-      setEstado(dados.uf);
-      
-      // Montar endereço completo
-      const enderecoCompleto = `${dados.logradouro}${dados.bairro ? ', ' + dados.bairro : ''}`;
-      setEndereco(enderecoCompleto);
+    const timeoutId = setTimeout(async () => {
+      setLoadingCep(true);
+      try {
+        const dados = await buscarCEP(cepLimpo);
+        
+        setLogradouro(dados.logradouro);
+        setBairro(dados.bairro);
+        setCidade(dados.localidade);
+        setEstado(dados.uf);
+        
+        const enderecoCompleto = `${dados.logradouro}${dados.bairro ? ', ' + dados.bairro : ''}`;
+        setEndereco(enderecoCompleto);
 
-      toast({
-        title: 'CEP encontrado!',
-        description: 'Endereço preenchido automaticamente. Você pode editar se necessário.',
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Erro ao buscar CEP',
-        description: error.message || 'CEP não encontrado. Preencha o endereço manualmente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoadingCep(false);
-    }
-  };
+        toast({
+          title: 'CEP encontrado!',
+          description: 'Endereço preenchido automaticamente.',
+        });
+      } catch (error: any) {
+        toast({
+          title: 'CEP não encontrado',
+          description: 'Preencha o endereço manualmente.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoadingCep(false);
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [cep, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -215,7 +214,7 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
 
         <div>
           <Label htmlFor="cep">CEP</Label>
-          <div className="flex gap-2">
+          <div className="relative">
             <Input 
               id="cep" 
               value={cep}
@@ -226,25 +225,14 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
               }}
               placeholder="00000-000"
               maxLength={9}
+              className={loadingCep ? "pr-10" : ""}
             />
-            <Button 
-              type="button"
-              variant="secondary"
-              onClick={handleBuscarCEP}
-              disabled={loadingCep || cep.replace(/\D/g, '').length !== 8}
-            >
-              {loadingCep ? (
-                <>Buscando...</>
-              ) : (
-                <>
-                  <Search className="h-4 w-4 mr-2" />
-                  Buscar
-                </>
-              )}
-            </Button>
+            {loadingCep && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+            )}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Busque o CEP para preencher automaticamente
+            Digite o CEP para buscar automaticamente
           </p>
         </div>
 
