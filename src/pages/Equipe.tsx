@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,15 +6,32 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, UserCog, Calendar, Search, Plus } from 'lucide-react';
 import { useEquipe } from '@/contexts/EquipeContext';
-import { OperacionalCard } from '@/components/equipe/operacional/OperacionalCard';
+import { OperacionalVirtualList } from '@/components/equipe/operacional/OperacionalVirtualList';
 import { NovoOperacionalDialog } from '@/components/equipe/operacional/NovoOperacionalDialog';
 import { DetalhesOperacionalDialog } from '@/components/equipe/operacional/DetalhesOperacionalDialog';
 import { EditarOperacionalDialog } from '@/components/equipe/operacional/EditarOperacionalDialog';
 import { OperacionalEquipe } from '@/types/equipe';
 import { GerenciarUsuarios } from '@/components/configuracoes/GerenciarUsuarios';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 export default function Equipe() {
-  const { operacionais, loading } = useEquipe();
+  const { 
+    operacionais, 
+    loading, 
+    page, 
+    setPage, 
+    pageSize, 
+    totalCount,
+    setFiltros 
+  } = useEquipe();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [funcaoFilter, setFuncaoFilter] = useState<string>('todos');
   const [tipoFilter, setTipoFilter] = useState<string>('todos');
@@ -24,20 +41,25 @@ export default function Equipe() {
   const [detalhesOperacional, setDetalhesOperacional] = useState<OperacionalEquipe | null>(null);
   const [editarOperacional, setEditarOperacional] = useState<OperacionalEquipe | null>(null);
 
-  // Filtrar operacionais
-  const operacionaisFiltrados = operacionais.filter((op) => {
-    const matchSearch = op.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       op.telefone.includes(searchTerm) ||
-                       (op.cpf && op.cpf.includes(searchTerm));
-    const matchFuncao = funcaoFilter === 'todos' || op.funcao_principal === funcaoFilter;
-    const matchTipo = tipoFilter === 'todos' || op.tipo_vinculo === tipoFilter;
-    const matchStatus = statusFilter === 'todos' || op.status === statusFilter;
+  // Debounce para aplicar filtros server-side
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFiltros({
+        searchTerm: searchTerm || undefined,
+        funcao: funcaoFilter !== 'todos' ? funcaoFilter : undefined,
+        tipo: tipoFilter !== 'todos' ? tipoFilter : undefined,
+        status: statusFilter !== 'todos' ? statusFilter : undefined,
+      });
+      setPage(1); // Reset para primeira página ao filtrar
+    }, 300);
 
-    return matchSearch && matchFuncao && matchTipo && matchStatus;
-  });
+    return () => clearTimeout(timer);
+  }, [searchTerm, funcaoFilter, tipoFilter, statusFilter, setFiltros, setPage]);
 
   // Obter funções únicas para o filtro
   const funcoesUnicas = Array.from(new Set(operacionais.map(op => op.funcao_principal))).sort();
+
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
     <div className="space-y-6">
@@ -124,25 +146,59 @@ export default function Equipe() {
                   </Select>
                 </div>
 
-                {/* Grid de Cards */}
-                {loading ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Carregando...
-                  </div>
-                ) : operacionaisFiltrados.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    Nenhum membro encontrado
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {operacionaisFiltrados.map((operacional) => (
-                      <OperacionalCard
-                        key={operacional.id}
-                        operacional={operacional}
-                        onDetalhes={() => setDetalhesOperacional(operacional)}
-                        onEditar={() => setEditarOperacional(operacional)}
-                      />
-                    ))}
+                {/* Lista Virtualizada */}
+                <OperacionalVirtualList
+                  operacionais={operacionais}
+                  loading={loading}
+                  onDetalhes={setDetalhesOperacional}
+                  onEditar={setEditarOperacional}
+                />
+
+                {/* Paginação */}
+                {totalPages > 1 && (
+                  <div className="mt-6 flex justify-center">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => setPage(Math.max(1, page - 1))}
+                            className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                          />
+                        </PaginationItem>
+                        
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum: number;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (page <= 3) {
+                            pageNum = i + 1;
+                          } else if (page >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = page - 2 + i;
+                          }
+                          
+                          return (
+                            <PaginationItem key={pageNum}>
+                              <PaginationLink
+                                onClick={() => setPage(pageNum)}
+                                isActive={page === pageNum}
+                                className="cursor-pointer"
+                              >
+                                {pageNum}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        })}
+                        
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() => setPage(Math.min(totalPages, page + 1))}
+                            className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
                   </div>
                 )}
               </CardContent>

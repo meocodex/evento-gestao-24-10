@@ -1,15 +1,26 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useState } from 'react';
 import { useOperacionalQueries } from './equipe/useOperacionalQueries';
 import { useOperacionalMutations } from './equipe/useOperacionalMutations';
 import { useConflitosEquipe } from './equipe/useConflitosEquipe';
 import { OperacionalEquipe, ConflitoDatas } from '@/types/equipe';
+import { FiltrosOperacional } from './equipe/types';
 
 interface EquipeContextType {
   // Operacionais
   operacionais: OperacionalEquipe[];
+  totalCount: number;
   loading: boolean;
   error: any;
   refetch: () => void;
+  
+  // Paginação
+  page: number;
+  setPage: (page: number) => void;
+  pageSize: number;
+  
+  // Filtros
+  filtros: FiltrosOperacional;
+  setFiltros: (filtros: FiltrosOperacional) => void;
   
   // Mutations
   criarOperacional: any;
@@ -30,12 +41,17 @@ interface EquipeContextType {
 const EquipeContext = createContext<EquipeContextType | undefined>(undefined);
 
 export function EquipeProvider({ children }: { children: ReactNode }) {
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(50);
+  const [filtros, setFiltros] = useState<FiltrosOperacional>({});
+
   const {
     operacionais,
+    totalCount,
     loading,
     error,
     refetch
-  } = useOperacionalQueries();
+  } = useOperacionalQueries(page, pageSize, filtros);
 
   const {
     criarOperacional,
@@ -47,9 +63,15 @@ export function EquipeProvider({ children }: { children: ReactNode }) {
 
   const value: EquipeContextType = {
     operacionais,
+    totalCount,
     loading,
     error,
     refetch,
+    page,
+    setPage,
+    pageSize,
+    filtros,
+    setFiltros,
     criarOperacional,
     editarOperacional,
     deletarOperacional,

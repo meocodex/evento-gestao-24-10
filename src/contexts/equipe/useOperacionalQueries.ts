@@ -1,28 +1,59 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { OperacionalEquipe } from '@/types/equipe';
+import { FiltrosOperacional } from './types';
 
-export function useOperacionalQueries() {
-  const { data: operacionais, isLoading, error, refetch } = useQuery({
-    queryKey: ['equipe-operacional'],
+export function useOperacionalQueries(
+  page = 1,
+  pageSize = 50,
+  filtros?: FiltrosOperacional
+) {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['equipe-operacional', page, pageSize, filtros],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('equipe_operacional')
-        .select('*')
-        .order('nome', { ascending: true });
-      
+        .select('*', { count: 'exact' });
+
+      // Filtros server-side
+      if (filtros?.searchTerm) {
+        query = query.or(
+          `nome.ilike.%${filtros.searchTerm}%,telefone.ilike.%${filtros.searchTerm}%,cpf.ilike.%${filtros.searchTerm}%`
+        );
+      }
+
+      if (filtros?.funcao && filtros.funcao !== 'todos') {
+        query = query.eq('funcao_principal', filtros.funcao);
+      }
+
+      if (filtros?.tipo && filtros.tipo !== 'todos') {
+        query = query.eq('tipo_vinculo', filtros.tipo);
+      }
+
+      if (filtros?.status && filtros.status !== 'todos') {
+        query = query.eq('status', filtros.status);
+      }
+
+      const { data, error, count } = await query
+        .order('nome', { ascending: true })
+        .range((page - 1) * pageSize, page * pageSize - 1);
+
       if (error) throw error;
-      
-      return (data || []) as OperacionalEquipe[];
+
+      return {
+        operacionais: (data || []) as OperacionalEquipe[],
+        totalCount: count || 0,
+      };
     },
-    staleTime: 1000 * 60 * 30, // 30 minutos (equipe muda raramente)
+    staleTime: 1000 * 60 * 30, // 30 minutos
     gcTime: 1000 * 60 * 60, // 1 hora
   });
 
   return {
-    operacionais: operacionais || [],
+    operacionais: data?.operacionais || [],
+    totalCount: data?.totalCount || 0,
     loading: isLoading,
     error,
-    refetch
+    refetch,
   };
 }
