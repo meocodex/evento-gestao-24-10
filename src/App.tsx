@@ -1,10 +1,15 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+import { GlobalErrorBoundary } from "@/components/shared/GlobalErrorBoundary";
+import { CardSkeleton } from "@/components/shared/LoadingSkeleton";
 import { ClientesProvider } from "@/contexts/ClientesContext";
 import { EstoqueProvider } from "@/contexts/EstoqueContext";
 import { TransportadorasProvider } from "@/contexts/TransportadorasContext";
@@ -16,24 +21,27 @@ import { DemandasProvider } from "@/contexts/DemandasContext";
 import { CategoriasProvider } from "@/contexts/CategoriasContext";
 import { EquipeProvider } from "@/contexts/EquipeContext";
 import { MainLayout } from "@/components/layout/MainLayout";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import Eventos from "./pages/Eventos";
-import EventoDetalhes from "./pages/EventoDetalhes";
-import Clientes from "./pages/Clientes";
-import Estoque from "./pages/Estoque";
-import Demandas from "./pages/Demandas";
-import Transportadoras from "./pages/Transportadoras";
-import Financeiro from "./pages/Financeiro";
-import Contratos from "./pages/Contratos";
-import Relatorios from "./pages/Relatorios";
-import Configuracoes from "./pages/Configuracoes";
-import Equipe from "./pages/Equipe";
-import CadastrosPendentes from "./pages/CadastrosPendentes";
-import NotFound from "./pages/NotFound";
-import CadastroEvento from "./pages/public/CadastroEvento";
-import AcompanharCadastro from "./pages/public/AcompanharCadastro";
 
+// Lazy loading de páginas para code splitting
+const Auth = lazy(() => import("./pages/Auth"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Eventos = lazy(() => import("./pages/Eventos"));
+const EventoDetalhes = lazy(() => import("./pages/EventoDetalhes"));
+const Clientes = lazy(() => import("./pages/Clientes"));
+const Estoque = lazy(() => import("./pages/Estoque"));
+const Demandas = lazy(() => import("./pages/Demandas"));
+const Transportadoras = lazy(() => import("./pages/Transportadoras"));
+const Financeiro = lazy(() => import("./pages/Financeiro"));
+const Contratos = lazy(() => import("./pages/Contratos"));
+const Relatorios = lazy(() => import("./pages/Relatorios"));
+const Configuracoes = lazy(() => import("./pages/Configuracoes"));
+const Equipe = lazy(() => import("./pages/Equipe"));
+const CadastrosPendentes = lazy(() => import("./pages/CadastrosPendentes"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const CadastroEvento = lazy(() => import("./pages/public/CadastroEvento"));
+const AcompanharCadastro = lazy(() => import("./pages/public/AcompanharCadastro"));
+
+// QueryClient com cache otimizado
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -45,6 +53,25 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+// Persister para cache local
+const persister = createSyncStoragePersister({
+  storage: window.localStorage,
+  key: 'gercao-cache',
+});
+
+// Componente de loading para Suspense
+function PageLoader() {
+  return (
+    <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 lg:py-8">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
+      </div>
+    </div>
+  );
+}
 
 function ProtectedRoutes() {
   const { isAuthenticated, loading } = useAuth();
@@ -62,25 +89,27 @@ function ProtectedRoutes() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<MainLayout />}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="eventos" element={<Eventos />} />
-        <Route path="eventos/:id" element={<EventoDetalhes />} />
-        <Route path="clientes" element={<Clientes />} />
-        <Route path="demandas" element={<Demandas />} />
-        <Route path="estoque" element={<Estoque />} />
-        <Route path="contratos" element={<Contratos />} />
-        <Route path="transportadoras" element={<Transportadoras />} />
-        <Route path="financeiro" element={<Financeiro />} />
-        <Route path="relatorios" element={<Relatorios />} />
-        <Route path="configuracoes" element={<Configuracoes />} />
-        <Route path="equipe" element={<Equipe />} />
-        <Route path="cadastros-pendentes" element={<CadastrosPendentes />} />
-        <Route path="*" element={<NotFound />} />
-      </Route>
-    </Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="eventos" element={<Eventos />} />
+          <Route path="eventos/:id" element={<EventoDetalhes />} />
+          <Route path="clientes" element={<Clientes />} />
+          <Route path="demandas" element={<Demandas />} />
+          <Route path="estoque" element={<Estoque />} />
+          <Route path="contratos" element={<Contratos />} />
+          <Route path="transportadoras" element={<Transportadoras />} />
+          <Route path="financeiro" element={<Financeiro />} />
+          <Route path="relatorios" element={<Relatorios />} />
+          <Route path="configuracoes" element={<Configuracoes />} />
+          <Route path="equipe" element={<Equipe />} />
+          <Route path="cadastros-pendentes" element={<CadastrosPendentes />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }
 
@@ -99,49 +128,60 @@ function AuthRoutes() {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <Auth />;
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Auth />
+    </Suspense>
+  );
 }
 
-// Provider hierarchy fixed - QueryClient must be at the top level
+// App com todas as otimizações
 const App = () => (
-  <ErrorBoundary>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <CategoriasProvider>
-            <EquipeProvider>
-              <EventosProvider>
-                <DemandasProvider>
-                  <ClientesProvider>
-                    <EstoqueProvider>
-                      <ConfiguracoesProvider>
-                        <CadastrosPublicosProvider>
-                          <TransportadorasProvider>
-                            <ContratosProvider>
-                            <TooltipProvider>
-                            <Toaster />
-                            <Sonner />
-                            <Routes>
-                              <Route path="/auth" element={<AuthRoutes />} />
-                              <Route path="/cadastro-evento" element={<CadastroEvento />} />
-                              <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
-                              <Route path="/*" element={<ProtectedRoutes />} />
-                            </Routes>
-                            </TooltipProvider>
-                          </ContratosProvider>
-                        </TransportadorasProvider>
-                      </CadastrosPublicosProvider>
-                    </ConfiguracoesProvider>
-                  </EstoqueProvider>
-                </ClientesProvider>
-              </DemandasProvider>
-            </EventosProvider>
-            </EquipeProvider>
-          </CategoriasProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  </ErrorBoundary>
+  <GlobalErrorBoundary>
+    <ErrorBoundary>
+      <PersistQueryClientProvider 
+        client={queryClient} 
+        persistOptions={{ persister }}
+      >
+        <BrowserRouter>
+          <AuthProvider>
+            <CategoriasProvider>
+              <EquipeProvider>
+                <EventosProvider>
+                  <DemandasProvider>
+                    <ClientesProvider>
+                      <EstoqueProvider>
+                        <ConfiguracoesProvider>
+                          <CadastrosPublicosProvider>
+                            <TransportadorasProvider>
+                              <ContratosProvider>
+                                <TooltipProvider>
+                                  <Toaster />
+                                  <Sonner />
+                                  <Suspense fallback={<PageLoader />}>
+                                    <Routes>
+                                      <Route path="/auth" element={<AuthRoutes />} />
+                                      <Route path="/cadastro-evento" element={<CadastroEvento />} />
+                                      <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
+                                      <Route path="/*" element={<ProtectedRoutes />} />
+                                    </Routes>
+                                  </Suspense>
+                                </TooltipProvider>
+                              </ContratosProvider>
+                            </TransportadorasProvider>
+                          </CadastrosPublicosProvider>
+                        </ConfiguracoesProvider>
+                      </EstoqueProvider>
+                    </ClientesProvider>
+                  </DemandasProvider>
+                </EventosProvider>
+              </EquipeProvider>
+            </CategoriasProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </PersistQueryClientProvider>
+    </ErrorBoundary>
+  </GlobalErrorBoundary>
 );
 
 export default App;

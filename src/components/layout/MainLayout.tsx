@@ -5,11 +5,15 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { NotificationCenter } from './NotificationCenter';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { usePrefetchPages } from '@/hooks/usePrefetchPages';
 
 export function MainLayout() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  
+  // Prefetch inteligente de páginas relacionadas
+  usePrefetchPages();
 
   useEffect(() => {
     if (!isAuthenticated) {
