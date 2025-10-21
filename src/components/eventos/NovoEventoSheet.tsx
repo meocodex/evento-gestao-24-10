@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { buscarCEP } from '@/lib/api/viacep';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { eventoSchema } from '@/lib/validations/evento';
 
 interface NovoEventoSheetProps {
   open: boolean;
@@ -132,91 +133,80 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
 
   const handleSubmit = async () => {
     if (isSubmitting) return;
-    
-    if (!tipoEvento) {
-      toast({
-        title: 'Campo obrigatório',
-        description: 'Selecione o tipo de evento.',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    if (!clienteId || !comercialId) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Por favor, selecione um cliente e um comercial.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!dataInicio || !dataFim || !horaInicio || !horaFim) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Preencha data e hora de início e término.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (dataFim < dataInicio) {
-      toast({
-        title: 'Data inválida',
-        description: 'A data de término não pode ser anterior à data de início.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!logradouro || !numero || !bairro) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Preencha logradouro, número e bairro.',
-        variant: 'destructive',
-      });
-      return;
-    }
 
     try {
       setIsSubmitting(true);
 
-      // Formatar datas para string YYYY-MM-DD
-      const dataInicioStr = format(dataInicio, 'yyyy-MM-dd');
-      const dataFimStr = format(dataFim, 'yyyy-MM-dd');
-
-      // Montar endereço completo
+      // Validar dados com Zod
       const endereco = `${logradouro}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}`;
       
-      await criarEvento({
+      const validatedData = eventoSchema.parse({
         nome,
         tipoEvento,
-        dataInicio: dataInicioStr,
-        dataFim: dataFimStr,
+        dataInicio,
+        dataFim,
         horaInicio,
         horaFim,
         local,
         cidade,
-        estado,
+        estado: estado.toUpperCase(),
         endereco,
         clienteId,
         comercialId,
         tags,
-        descricao,
-        observacoes,
-        contatosAdicionais,
-        redesSociais,
+        descricao: descricao || '',
+        observacoes: observacoes || '',
+        contatosAdicionais: contatosAdicionais || '',
+        redesSociais: redesSociais || '',
+      });
+
+      // Formatar datas para string YYYY-MM-DD
+      const dataInicioStr = format(validatedData.dataInicio, 'yyyy-MM-dd');
+      const dataFimStr = format(validatedData.dataFim, 'yyyy-MM-dd');
+      
+      await criarEvento({
+        nome: validatedData.nome,
+        tipoEvento: validatedData.tipoEvento,
+        dataInicio: dataInicioStr,
+        dataFim: dataFimStr,
+        horaInicio: validatedData.horaInicio,
+        horaFim: validatedData.horaFim,
+        local: validatedData.local,
+        cidade: validatedData.cidade,
+        estado: validatedData.estado,
+        endereco: validatedData.endereco,
+        clienteId: validatedData.clienteId,
+        comercialId: validatedData.comercialId,
+        tags: validatedData.tags,
+        descricao: validatedData.descricao,
+        observacoes: validatedData.observacoes,
+        contatosAdicionais: validatedData.contatosAdicionais,
+        redesSociais: validatedData.redesSociais,
+      });
+      
+      toast({
+        title: 'Sucesso',
+        description: 'Evento criado com sucesso!',
       });
       
       resetForm();
       onOpenChange(false);
       onEventoCreated();
     } catch (error: any) {
-      toast({
-        title: 'Erro ao criar evento',
-        description: error.message || 'Ocorreu um erro ao criar o evento. Tente novamente.',
-        variant: 'destructive',
-      });
+      if (error.name === 'ZodError') {
+        const firstError = error.errors[0];
+        toast({
+          title: 'Erro de validação',
+          description: firstError.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Erro ao criar evento',
+          description: error.message || 'Ocorreu um erro ao criar o evento. Tente novamente.',
+          variant: 'destructive',
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }

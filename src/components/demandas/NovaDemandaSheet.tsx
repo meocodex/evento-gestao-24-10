@@ -12,6 +12,8 @@ import { useEventos } from '@/contexts/EventosContext';
 import { useUsuarios } from '@/hooks/useUsuarios';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCategorias } from '@/contexts/CategoriasContext';
+import { demandaSchema } from '@/lib/validations/demanda';
+import { useToast } from '@/hooks/use-toast';
 
 const prioridades: { value: PrioridadeDemanda; label: string }[] = [
   { value: 'baixa', label: 'Baixa' },
@@ -27,6 +29,7 @@ export function NovaDemandaSheet() {
   const { categoriasDemandas, isLoading: loadingCategorias } = useCategorias();
   const { usuarios } = useUsuarios();
   const { user } = useAuth();
+  const { toast } = useToast();
 
   const eventosAtivos = eventos.filter(e => 
     ['orcamento', 'aprovado', 'em-preparacao', 'em-execucao'].includes(e.status)
@@ -48,30 +51,69 @@ export function NovaDemandaSheet() {
     e.preventDefault();
     
     if (!user) return;
-    
-    const usuarioAtual = (usuarios || []).find(u => u.id === user.id);
-    adicionarDemanda(
-      {
-        ...formData,
-        responsavelId: formData.responsavelId || undefined,
-        prazo: formData.prazo || undefined,
-      },
-      usuarioAtual?.nome || user.email,
-      user.id
-    );
 
-    setFormData({
-      titulo: '',
-      descricao: '',
-      categoria: 'tecnica',
-      prioridade: 'media',
-      responsavelId: '',
-      prazo: '',
-      eventoRelacionado: '',
-      eventoNome: '',
-      tags: [],
-    });
-    setOpen(false);
+    try {
+      // Validar dados com Zod
+      const validatedData = demandaSchema.parse({
+        titulo: formData.titulo,
+        descricao: formData.descricao,
+        categoria: formData.categoria,
+        prioridade: formData.prioridade,
+        responsavelId: formData.responsavelId || '',
+        prazo: formData.prazo || '',
+        eventoRelacionado: formData.eventoRelacionado || '',
+        tags: formData.tags,
+      });
+
+      const usuarioAtual = (usuarios || []).find(u => u.id === user.id);
+      adicionarDemanda(
+        {
+          titulo: validatedData.titulo,
+          descricao: validatedData.descricao,
+          categoria: validatedData.categoria,
+          prioridade: validatedData.prioridade,
+          responsavelId: validatedData.responsavelId || undefined,
+          prazo: validatedData.prazo || undefined,
+          eventoRelacionado: validatedData.eventoRelacionado || undefined,
+          tags: validatedData.tags,
+        },
+        usuarioAtual?.nome || user.email,
+        user.id
+      );
+
+      toast({
+        title: 'Sucesso',
+        description: 'Demanda criada com sucesso!',
+      });
+
+      setFormData({
+        titulo: '',
+        descricao: '',
+        categoria: 'tecnica',
+        prioridade: 'media',
+        responsavelId: '',
+        prazo: '',
+        eventoRelacionado: '',
+        eventoNome: '',
+        tags: [],
+      });
+      setOpen(false);
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        const firstError = error.errors[0];
+        toast({
+          title: 'Erro de validação',
+          description: firstError.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Erro',
+          description: 'Ocorreu um erro ao criar a demanda.',
+          variant: 'destructive',
+        });
+      }
+    }
   };
 
   const handleEventoChange = (eventoId: string) => {
