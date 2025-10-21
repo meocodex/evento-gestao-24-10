@@ -20,7 +20,6 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
@@ -83,34 +82,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu className="space-y-1 px-2">
               {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <NavLink
-                      to={item.url}
-                      className={({ isActive }) =>
-                        cn(
-                          "group relative flex items-center gap-3 px-3 md:px-4 py-3 rounded-xl mx-0 transition-all duration-200 min-h-[44px]",
-                          isActive
-                            ? "bg-sidebar-accent border-l-4 border-accent text-sidebar-foreground shadow-md"
-                            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                        )
-                      }
-                    >
-                      {({ isActive }) => (
-                        <>
-                          <item.icon className="h-5 w-5 flex-shrink-0" />
-                          {state !== 'collapsed' && (
+                  <NavLink
+                    to={item.url}
+                    end
+                    className={({ isActive }) =>
+                      cn(
+                        "group relative flex items-center gap-3 px-3 md:px-4 py-3 rounded-xl mx-2 transition-all duration-200 min-h-[44px]",
+                        isActive
+                          ? "bg-sidebar-accent border-l-4 border-accent text-sidebar-foreground shadow-md"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      )
+                    }
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <item.icon className="h-5 w-5 flex-shrink-0" />
+                        {state !== 'collapsed' && (
+                          <>
                             <span className="font-medium">
                               {item.title}
                             </span>
-                          )}
-                          
-                          {isActive && state !== 'collapsed' && (
-                            <div className="absolute right-3 w-2 h-2 rounded-full bg-accent animate-pulse" />
-                          )}
-                        </>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
+                            {isActive && (
+                              <div className="absolute right-3 w-2 h-2 rounded-full bg-accent animate-pulse" />
+                            )}
+                          </>
+                        )}
+                      </>
+                    )}
+                  </NavLink>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
