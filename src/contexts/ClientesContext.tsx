@@ -36,7 +36,6 @@ interface ClientesContextData {
 const ClientesContext = createContext<ClientesContextData>({} as ClientesContextData);
 
 export function ClientesProvider({ children }: { children: ReactNode }) {
-  const queryClient = useQueryClient();
   const [filtros, setFiltros] = useState<FiltrosClientes>({
     busca: '',
     tipo: 'todos',
@@ -44,156 +43,19 @@ export function ClientesProvider({ children }: { children: ReactNode }) {
     cidade: '',
     status: 'todos',
   });
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
 
-  // Query para buscar clientes
-  const { data: clientes = [], isLoading: loading } = useQuery({
-    queryKey: ['clientes'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clientes')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      
-      return (data || []).map(c => ({
-        id: c.id,
-        nome: c.nome,
-        tipo: c.tipo as 'CPF' | 'CNPJ',
-        documento: c.documento,
-        telefone: c.telefone,
-        whatsapp: c.whatsapp || undefined,
-        email: c.email,
-        endereco: c.endereco as Cliente['endereco'],
-      }));
-    },
-  });
-
-  // Mutation para criar cliente
-  const criarClienteMutation = useMutation({
-    mutationFn: async (data: ClienteFormData) => {
-      // Validar documento duplicado
-      const documentoLimpo = data.documento.replace(/\D/g, '');
-      const { data: existente } = await supabase
-        .from('clientes')
-        .select('id')
-        .ilike('documento', `%${documentoLimpo}%`)
-        .maybeSingle();
-
-      if (existente) {
-        throw new Error('Documento já cadastrado');
-      }
-
-      const { data: novoCliente, error } = await supabase
-        .from('clientes')
-        .insert({
-          nome: data.nome,
-          tipo: data.tipo,
-          documento: data.documento,
-          telefone: data.telefone,
-          whatsapp: data.whatsapp,
-          email: data.email,
-          endereco: data.endereco,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      return novoCliente;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
-      toast({
-        title: 'Cliente criado com sucesso!',
-        description: `${data.nome} foi adicionado ao sistema.`,
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Erro ao criar cliente',
-        description: error.message || 'Tente novamente',
-        variant: 'destructive',
-      });
-    },
-  });
+  const { clientes, totalCount, loading } = useClientesQueries(page, pageSize);
+  const { criarCliente: criarClienteMutation, editarCliente: editarClienteMutation, excluirCliente: excluirClienteMutation } = useClientesMutations();
 
   const criarCliente = useCallback(async (data: ClienteFormData): Promise<Cliente> => {
-    const result = await criarClienteMutation.mutateAsync(data);
-    return {
-      id: result.id,
-      nome: result.nome,
-      tipo: result.tipo as 'CPF' | 'CNPJ',
-      documento: result.documento,
-      telefone: result.telefone,
-      whatsapp: result.whatsapp || undefined,
-      email: result.email,
-      endereco: result.endereco as Cliente['endereco'],
-    };
+    return await criarClienteMutation.mutateAsync(data);
   }, [criarClienteMutation]);
-
-  // Mutation para editar cliente
-  const editarClienteMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<ClienteFormData> }) => {
-      const cliente = clientes.find(c => c.id === id);
-      if (!cliente) throw new Error('Cliente não encontrado');
-
-      const { error } = await supabase
-        .from('clientes')
-        .update({
-          ...data,
-          endereco: data.endereco ? { ...cliente.endereco, ...data.endereco } : undefined,
-        })
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
-      toast({
-        title: 'Cliente atualizado!',
-        description: 'As alterações foram salvas com sucesso.',
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Erro ao editar cliente',
-        description: 'Tente novamente',
-        variant: 'destructive',
-      });
-    },
-  });
 
   const editarCliente = useCallback(async (id: string, data: Partial<ClienteFormData>): Promise<void> => {
     await editarClienteMutation.mutateAsync({ id, data });
   }, [editarClienteMutation]);
-
-  // Mutation para excluir cliente
-  const excluirClienteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('clientes')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      return id;
-    },
-    onSuccess: (id) => {
-      const cliente = clientes.find((c) => c.id === id);
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
-      toast({
-        title: 'Cliente excluído',
-        description: `${cliente?.nome} foi removido do sistema.`,
-      });
-    },
-    onError: () => {
-      toast({
-        title: 'Erro ao excluir cliente',
-        description: 'Tente novamente',
-        variant: 'destructive',
-      });
-    },
-  });
 
   const excluirCliente = useCallback(async (id: string): Promise<void> => {
     await excluirClienteMutation.mutateAsync(id);

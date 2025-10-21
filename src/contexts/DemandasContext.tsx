@@ -66,9 +66,11 @@ export const useDemandasContext = () => {
 
 export const DemandasProvider = ({ children }: { children: ReactNode }) => {
   const [filtros, setFiltros] = useState<FiltroDemandas>({});
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
   
   // Hooks do Supabase
-  const { demandas } = useDemandasQueries();
+  const { demandas, totalCount } = useDemandasQueries(page, pageSize);
   const mutations = useDemandasMutations();
   const comentarios = useDemandasComentarios();
   const anexos = useDemandasAnexos();
