@@ -14,84 +14,124 @@ export function usePrefetchPages() {
   const location = useLocation();
 
   useEffect(() => {
-    // Funções de fetch para cada tipo de recurso
+    // Funções de fetch para cada tipo de recurso com tratamento de erros
     const fetchFunctions = {
       eventos: async () => {
-        const { data, error, count } = await supabase
-          .from('eventos')
-          .select(`
-            *,
-            cliente:clientes(*),
-            comercial:usuarios_perfis(*)
-          `, { count: 'exact' })
-          .order('data_inicio', { ascending: false })
-          .range(0, 49);
-        
-        if (error) throw error;
-        return {
-          eventos: (data || []).map(transformEvento),
-          totalCount: count || 0
-        };
+        try {
+          const { data, error, count } = await supabase
+            .from('eventos')
+            .select(`
+              id,
+              nome,
+              status,
+              data_inicio,
+              data_fim,
+              hora_inicio,
+              hora_fim,
+              local,
+              endereco,
+              cidade,
+              estado,
+              tipo_evento,
+              tags,
+              cliente_id,
+              comercial_id,
+              cliente:clientes(id, nome, email, tipo, documento, telefone, whatsapp, endereco),
+              comercial:profiles!eventos_comercial_id_fkey(id, nome, email)
+            `, { count: 'exact' })
+            .order('data_inicio', { ascending: false })
+            .range(0, 49);
+          
+          if (error) throw error;
+          
+          return {
+            eventos: (data || []).map(transformEvento),
+            totalCount: count || 0
+          };
+        } catch (error) {
+          console.error('Erro ao fazer prefetch de eventos:', error);
+          return { eventos: [], totalCount: 0 };
+        }
       },
       
       clientes: async () => {
-        const { data, error, count } = await supabase
-          .from('clientes')
-          .select('*', { count: 'exact' })
-          .order('created_at', { ascending: false })
-          .range(0, 19);
-        
-        if (error) throw error;
-        return { 
-          clientes: data || [], 
-          totalCount: count || 0 
-        };
+        try {
+          const { data, error, count } = await supabase
+            .from('clientes')
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(0, 19);
+          
+          if (error) throw error;
+          return { 
+            clientes: data || [], 
+            totalCount: count || 0 
+          };
+        } catch (error) {
+          console.error('Erro ao fazer prefetch de clientes:', error);
+          return { clientes: [], totalCount: 0 };
+        }
       },
       
       demandas: async () => {
-        const { data, error, count } = await supabase
-          .from('demandas')
-          .select(`
-            *,
-            comentarios:demandas_comentarios(*),
-            anexos:demandas_anexos(*)
-          `, { count: 'exact' })
-          .order('created_at', { ascending: false })
-          .range(0, 19);
-        
-        if (error) throw error;
-        return {
-          demandas: (data || []).map(transformDemanda),
-          totalCount: count || 0
-        };
+        try {
+          const { data, error, count } = await supabase
+            .from('demandas')
+            .select(`
+              *,
+              comentarios:demandas_comentarios(*),
+              anexos:demandas_anexos(*)
+            `, { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(0, 19);
+          
+          if (error) throw error;
+          return {
+            demandas: (data || []).map(transformDemanda),
+            totalCount: count || 0
+          };
+        } catch (error) {
+          console.error('Erro ao fazer prefetch de demandas:', error);
+          return { demandas: [], totalCount: 0 };
+        }
       },
       
       estoque: async () => {
-        const { data, error, count } = await supabase
-          .from('materiais_estoque')
-          .select('*', { count: 'exact' })
-          .order('nome')
-          .range(0, 49);
-        
-        if (error) throw error;
-        return {
-          materiais: data || [],
-          totalCount: count || 0
-        };
+        try {
+          const { data, error, count } = await supabase
+            .from('materiais_estoque')
+            .select('*', { count: 'exact' })
+            .order('nome')
+            .range(0, 49);
+          
+          if (error) throw error;
+          return {
+            materiais: data || [],
+            totalCount: count || 0
+          };
+        } catch (error) {
+          console.error('Erro ao fazer prefetch de estoque:', error);
+          return { materiais: [], totalCount: 0 };
+        }
       },
       
       equipe: async () => {
-        const { data, error, count } = await supabase
-          .from('equipe_operacional')
-          .select('*', { count: 'exact' })
-          .order('nome', { ascending: true })
-          .range(0, 49);
-        
-        if (error) throw error;
-        return {
-          operacionais: data || [],
-          totalCount: count || 0
-        };
+        try {
+          const { data, error, count } = await supabase
+            .from('equipe_operacional')
+            .select('*', { count: 'exact' })
+            .order('nome', { ascending: true })
+            .range(0, 49);
+          
+          if (error) throw error;
+          return {
+            operacionais: data || [],
+            totalCount: count || 0
+          };
+        } catch (error) {
+          console.error('Erro ao fazer prefetch de equipe:', error);
+          return { operacionais: [], totalCount: 0 };
+        }
       }
     };
 
@@ -117,19 +157,19 @@ export function usePrefetchPages() {
           queryClient.prefetchQuery({
             queryKey: ['eventos', 1, 50],
             queryFn: fetchFunctions.eventos,
-            staleTime: 1000 * 60 * 5,
+            staleTime: 1000 * 60 * 10,
           });
         } else if (resource === 'clientes') {
           queryClient.prefetchQuery({
             queryKey: ['clientes', 1, 20],
             queryFn: fetchFunctions.clientes,
-            staleTime: 1000 * 60 * 5,
+            staleTime: 1000 * 60 * 10,
           });
         } else if (resource === 'demandas') {
           queryClient.prefetchQuery({
             queryKey: ['demandas', 1, 20],
             queryFn: fetchFunctions.demandas,
-            staleTime: 1000 * 60 * 5,
+            staleTime: 1000 * 60 * 10,
           });
         } else if (resource === 'estoque') {
           queryClient.prefetchQuery({
@@ -141,7 +181,7 @@ export function usePrefetchPages() {
           queryClient.prefetchQuery({
             queryKey: ['equipe-operacional', 1, 50, undefined],
             queryFn: fetchFunctions.equipe,
-            staleTime: 1000 * 60 * 5,
+            staleTime: 1000 * 60 * 30,
           });
         }
       });
