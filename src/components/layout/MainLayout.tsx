@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { Navigate, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
@@ -6,6 +6,8 @@ import { AppSidebar } from './AppSidebar';
 import { NotificationCenter } from './NotificationCenter';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePrefetchPages } from '@/hooks/usePrefetchPages';
+import { NavigationLoadingBar } from '@/components/shared/NavigationLoadingBar';
+import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
 
 export function MainLayout() {
   const { isAuthenticated } = useAuth();
@@ -27,6 +29,7 @@ export function MainLayout() {
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
+      <NavigationLoadingBar />
       <div className="flex min-h-screen w-full bg-background">
         <AppSidebar collapsible="offcanvas" />
         
@@ -45,7 +48,20 @@ export function MainLayout() {
           
           <main className="flex-1 overflow-auto bg-background">
             <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 lg:py-8">
-              <Outlet />
+              <Suspense fallback={
+                <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+                  <div className="space-y-4 w-full max-w-4xl">
+                    <LoadingSkeleton variant="text" className="h-8 w-64" />
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      <LoadingSkeleton variant="card" className="h-32" />
+                      <LoadingSkeleton variant="card" className="h-32" />
+                      <LoadingSkeleton variant="card" className="h-32" />
+                    </div>
+                  </div>
+                </div>
+              }>
+                <Outlet />
+              </Suspense>
             </div>
           </main>
         </div>

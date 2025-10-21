@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { transformEvento } from '@/contexts/eventos/transformEvento';
 import { transformDemanda } from '@/contexts/demandas/transformDemanda';
@@ -12,8 +12,13 @@ import { transformDemanda } from '@/contexts/demandas/transformDemanda';
 export function usePrefetchPages() {
   const queryClient = useQueryClient();
   const location = useLocation();
+  const navigation = useNavigation();
 
   useEffect(() => {
+    // Não fazer prefetch durante navegação
+    if (navigation.state === 'loading') {
+      return;
+    }
     // Funções de fetch para cada tipo de recurso com tratamento de erros
     const fetchFunctions = {
       eventos: async () => {
@@ -185,8 +190,8 @@ export function usePrefetchPages() {
           });
         }
       });
-    }, 500);
+    }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [location.pathname, queryClient]);
+  }, [location.pathname, queryClient, navigation.state]);
 }

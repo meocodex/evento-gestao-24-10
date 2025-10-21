@@ -89,27 +89,25 @@ function ProtectedRoutes() {
   }
 
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="eventos" element={<Eventos />} />
-          <Route path="eventos/:id" element={<EventoDetalhes />} />
-          <Route path="clientes" element={<Clientes />} />
-          <Route path="demandas" element={<Demandas />} />
-          <Route path="estoque" element={<Estoque />} />
-          <Route path="contratos" element={<Contratos />} />
-          <Route path="transportadoras" element={<Transportadoras />} />
-          <Route path="financeiro" element={<Financeiro />} />
-          <Route path="relatorios" element={<Relatorios />} />
-          <Route path="configuracoes" element={<Configuracoes />} />
-          <Route path="equipe" element={<Equipe />} />
-          <Route path="cadastros-pendentes" element={<CadastrosPendentes />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
-      </Routes>
-    </Suspense>
+    <Routes>
+      <Route path="/" element={<MainLayout />}>
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="eventos" element={<Eventos />} />
+        <Route path="eventos/:id" element={<EventoDetalhes />} />
+        <Route path="clientes" element={<Clientes />} />
+        <Route path="demandas" element={<Demandas />} />
+        <Route path="estoque" element={<Estoque />} />
+        <Route path="contratos" element={<Contratos />} />
+        <Route path="transportadoras" element={<Transportadoras />} />
+        <Route path="financeiro" element={<Financeiro />} />
+        <Route path="relatorios" element={<Relatorios />} />
+        <Route path="configuracoes" element={<Configuracoes />} />
+        <Route path="equipe" element={<Equipe />} />
+        <Route path="cadastros-pendentes" element={<CadastrosPendentes />} />
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
   );
 }
 
