@@ -114,6 +114,8 @@ export function useEventosMutations() {
       if (data.plantaBaixa !== undefined) updateData.planta_baixa = data.plantaBaixa;
       if (data.configuracaoBar !== undefined) updateData.configuracao_bar = data.configuracaoBar;
       if (data.configuracaoIngresso !== undefined) updateData.configuracao_ingresso = data.configuracaoIngresso;
+      if ((data as any).clienteId !== undefined) updateData.cliente_id = (data as any).clienteId;
+      if ((data as any).comercialId !== undefined) updateData.comercial_id = (data as any).comercialId;
 
       const { error } = await supabase
         .from('eventos')

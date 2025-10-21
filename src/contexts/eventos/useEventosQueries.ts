@@ -25,8 +25,23 @@ export function useEventosQueries() {
       
       if (error) throw error;
       
-      // Transformar dados do Supabase para o tipo Evento
-      return (data || []).map(transformEvento);
+      // Transformar dados do Supabase para o tipo Evento com tratamento de erros
+      return (data || []).map((eventoData) => {
+        try {
+          return transformEvento(eventoData);
+        } catch (transformError) {
+          console.error('Erro ao transformar evento:', eventoData.id, transformError);
+          // Retornar evento com dados mínimos em caso de erro
+          return {
+            id: eventoData.id,
+            nome: eventoData.nome || 'Evento sem nome',
+            data_inicio: eventoData.data_inicio,
+            data_fim: eventoData.data_fim,
+            status: eventoData.status || 'orcamento',
+            // ... outros campos essenciais com fallbacks
+          } as any;
+        }
+      }).filter(Boolean);
     },
     staleTime: 1000 * 60 * 5, // 5 minutos
   });

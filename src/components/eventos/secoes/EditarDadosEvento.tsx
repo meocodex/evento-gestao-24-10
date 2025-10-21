@@ -127,9 +127,9 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
         endereco,
         descricao,
         tags,
-        cliente: { ...evento.cliente, id: clienteId } as any,
-        comercial: { ...evento.comercial, id: comercialId } as any,
-      };
+        clienteId,
+        comercialId,
+      } as any;
 
       await onSave(dadosAtualizados);
     } catch (error: any) {

@@ -29,7 +29,7 @@ export function transformEvento(data: any): Evento {
     cliente: data.cliente ? {
       id: data.cliente.id,
       nome: data.cliente.nome,
-      tipo: data.cliente.tipo,
+      tipo: (data.cliente.tipo?.toUpperCase() === 'CNPJ' ? 'CNPJ' : 'CPF') as 'CPF' | 'CNPJ',
       documento: data.cliente.documento,
       telefone: data.cliente.telefone,
       email: data.cliente.email,
@@ -38,7 +38,7 @@ export function transformEvento(data: any): Evento {
     } : {
       id: '',
       nome: 'Cliente não encontrado',
-      tipo: 'cpf' as const,
+      tipo: 'CPF' as const,
       documento: '',
       telefone: '',
       email: '',

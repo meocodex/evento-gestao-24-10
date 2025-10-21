@@ -133,6 +133,15 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
   const handleSubmit = async () => {
     if (isSubmitting) return;
     
+    if (!tipoEvento) {
+      toast({
+        title: 'Campo obrigatório',
+        description: 'Selecione o tipo de evento.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     if (!clienteId || !comercialId) {
       toast({
         title: 'Campos obrigatórios',

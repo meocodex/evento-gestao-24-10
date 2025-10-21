@@ -108,23 +108,31 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
                       <span className="text-muted-foreground">Telefone:</span>{' '}
                       <span className="font-medium">{membro.telefone}</span>
                     </div>
-                    {membro.whatsapp && (
-                      <div className="flex items-center gap-1">
-                        <span className="text-muted-foreground">WhatsApp:</span>{' '}
-                        <span className="font-medium">{membro.whatsapp}</span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-5 w-5 p-0"
-                          onClick={() => {
-                            navigator.clipboard.writeText(membro.whatsapp!);
-                            toast({ title: 'WhatsApp copiado!' });
-                          }}
-                        >
-                          📋
-                        </Button>
-                      </div>
-                    )}
+                      {membro.whatsapp && (
+                        <div className="flex items-center gap-1">
+                          <span className="text-muted-foreground">WhatsApp:</span>{' '}
+                          <span className="font-medium">{membro.whatsapp}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-5 w-5 p-0"
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(membro.whatsapp!);
+                                toast({ title: 'WhatsApp copiado!' });
+                              } catch (error) {
+                                toast({ 
+                                  title: 'Erro ao copiar',
+                                  description: 'Não foi possível copiar o WhatsApp',
+                                  variant: 'destructive'
+                                });
+                              }
+                            }}
+                          >
+                            📋
+                          </Button>
+                        </div>
+                      )}
                   </div>
 
                   {(membro.dataInicio || membro.dataFim) && (

@@ -331,9 +331,10 @@ export function AdicionarMembroEquipeDialog({
           <Button 
             onClick={handleSubmit} 
             disabled={
-              !nome || !funcao || !telefone || 
-              conflitos.length > 0 || 
-              verificandoConflitos
+              verificandoConflitos ||
+              conflitos.length > 0 ||
+              (modo === 'selecionar' && !operacionalId) ||
+              (modo === 'novo' && (!nome || !funcao || !telefone))
             }
           >
             Adicionar

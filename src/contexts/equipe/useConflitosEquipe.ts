@@ -27,10 +27,8 @@ export function useConflitosEquipe() {
           funcao,
           data_inicio,
           data_fim,
-          eventos!inner(id, nome, data_inicio, data_fim)
-        `)
-        .not('data_inicio', 'is', null)
-        .not('data_fim', 'is', null);
+          eventos!inner(id, nome, data_inicio, data_fim, status)
+        `);
 
       // Se tiver operacional_id, busca por ele
       if (operacionalId) {
@@ -56,8 +54,12 @@ export function useConflitosEquipe() {
       const conflitos: ConflitoDatas[] = [];
 
       for (const alocacao of data) {
-        const inicioAlocacao = new Date(alocacao.data_inicio!);
-        const fimAlocacao = new Date(alocacao.data_fim!);
+        const evento = alocacao.eventos as any;
+        if (!evento) continue;
+
+        // Usar datas da alocação se existirem, senão usar datas do evento
+        const inicioAlocacao = new Date(alocacao.data_inicio || evento.data_inicio);
+        const fimAlocacao = new Date(alocacao.data_fim || evento.data_fim);
         const inicioNovo = new Date(dataInicio);
         const fimNovo = new Date(dataFim);
 
@@ -65,12 +67,12 @@ export function useConflitosEquipe() {
         const temConflito = 
           (inicioNovo <= fimAlocacao && fimNovo >= inicioAlocacao);
 
-        if (temConflito && alocacao.eventos) {
+        if (temConflito) {
           conflitos.push({
             eventoId: alocacao.evento_id,
-            eventoNome: (alocacao.eventos as any).nome,
-            dataInicio: alocacao.data_inicio!,
-            dataFim: alocacao.data_fim!
+            eventoNome: evento.nome,
+            dataInicio: alocacao.data_inicio || evento.data_inicio,
+            dataFim: alocacao.data_fim || evento.data_fim
           });
         }
       }
