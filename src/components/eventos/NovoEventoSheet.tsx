@@ -15,8 +15,6 @@ import { ComercialSelect } from './ComercialSelect';
 import { Badge } from '@/components/ui/badge';
 import { X, ChevronLeft, ChevronRight, Search, Calendar as CalendarIcon } from 'lucide-react';
 import { useEventos } from '@/contexts/EventosContext';
-import { TipoEvento, SetorEvento, ConfiguracaoBar } from '@/types/eventos';
-import { ConfiguracaoBarForm } from './ConfiguracaoBarForm';
 import { cn } from '@/lib/utils';
 import { buscarCEP } from '@/lib/api/viacep';
 import { format } from 'date-fns';
@@ -58,12 +56,6 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
   const [redesSociais, setRedesSociais] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
-  const [tipoEvento, setTipoEvento] = useState<TipoEvento>('bar');
-  const [configuracaoBar, setConfiguracaoBar] = useState<ConfiguracaoBar>({
-    quantidadeMaquinas: 1,
-    quantidadeBares: 1,
-    temCardapio: false,
-  });
 
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
@@ -133,8 +125,6 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
     setContatosAdicionais('');
     setRedesSociais('');
     setTags([]);
-    setTipoEvento('bar');
-    setConfiguracaoBar({ quantidadeMaquinas: 1, quantidadeBares: 1, temCardapio: false });
     setCurrentStep(1);
   };
 
@@ -197,7 +187,6 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
         cidade,
         estado,
         endereco,
-        tipoEvento,
         clienteId,
         comercialId,
         tags,
@@ -205,7 +194,6 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
         observacoes,
         contatosAdicionais,
         redesSociais,
-        configuracaoBar: (tipoEvento === 'bar' || tipoEvento === 'hibrido') ? configuracaoBar : undefined,
       });
       
       resetForm();
@@ -224,7 +212,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
 
   const canGoNext = () => {
     if (currentStep === 1) {
-      return nome && dataInicio && dataFim && horaInicio && horaFim && tipoEvento;
+      return nome && dataInicio && dataFim && horaInicio && horaFim;
     }
     if (currentStep === 2) {
       return local && logradouro && numero && bairro && cidade && estado;
@@ -246,7 +234,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
           
           {/* Stepper */}
           <div className="flex items-center gap-2 mt-4">
-            {[1, 2, 3, 4].map((step) => (
+            {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center flex-1">
                 <div className={cn(
                   "flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium transition-colors",
@@ -256,7 +244,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
                 )}>
                   {step}
                 </div>
-                {step < 4 && (
+                {step < 3 && (
                   <div className={cn(
                     "flex-1 h-0.5 mx-2 transition-colors",
                     currentStep > step ? "bg-primary" : "bg-muted"
@@ -270,7 +258,6 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
             <span>Dados Básicos</span>
             <span>Localização</span>
             <span>Responsáveis</span>
-            <span>Configurações</span>
           </div>
         </SheetHeader>
 
@@ -279,20 +266,6 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
             {/* Step 1: Dados Básicos */}
             {currentStep === 1 && (
               <div className="space-y-4 animate-fade-in">
-                <div>
-                  <Label htmlFor="tipoEvento">Tipo de Evento *</Label>
-                  <Select value={tipoEvento} onValueChange={(value: TipoEvento) => setTipoEvento(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ingresso">Evento com Ingresso</SelectItem>
-                      <SelectItem value="bar">Evento de Bar</SelectItem>
-                      <SelectItem value="hibrido">Híbrido (Ingresso + Bar)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div>
                   <Label htmlFor="nome">Nome do Evento *</Label>
                   <Input 
@@ -518,15 +491,6 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
                     placeholder="Detalhes sobre o evento..."
                   />
                 </div>
-              </div>
-            )}
-
-            {/* Step 4: Configurações */}
-            {currentStep === 4 && (
-              <div className="space-y-4 animate-fade-in">
-                {(tipoEvento === 'bar' || tipoEvento === 'hibrido') && (
-                  <ConfiguracaoBarForm configuracao={configuracaoBar} onChange={setConfiguracaoBar} />
-                )}
 
                 <div>
                   <Label htmlFor="tags">Tags</Label>
@@ -558,6 +522,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
                 </div>
               </div>
             )}
+
           </div>
         </ScrollArea>
 
@@ -578,7 +543,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
             )}
           </Button>
           
-          {currentStep < 4 ? (
+          {currentStep < 3 ? (
             <Button 
               onClick={() => setCurrentStep(currentStep + 1)}
               disabled={!canGoNext()}

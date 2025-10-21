@@ -224,7 +224,7 @@ export interface EventoFormData {
   endereco: string;
   clienteId: string;
   comercialId: string;
-  tipoEvento: TipoEvento;
+  tipoEvento?: TipoEvento;
   tags: string[];
   plantaBaixa?: File;
   descricao?: string;

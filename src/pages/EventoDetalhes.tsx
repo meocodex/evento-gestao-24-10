@@ -9,8 +9,6 @@ import { MateriaisEvento } from '@/components/eventos/secoes/MateriaisEvento';
 import { OperacaoEvento } from '@/components/eventos/secoes/OperacaoEvento';
 import { FinanceiroEvento } from '@/components/eventos/secoes/FinanceiroEvento';
 import { DemandasEvento } from '@/components/eventos/secoes/DemandasEvento';
-import { VendasEvento } from '@/components/eventos/secoes/VendasEvento';
-import { ConfiguracaoBarEvento } from '@/components/eventos/secoes/ConfiguracaoBarEvento';
 import { ContratosEvento } from '@/components/eventos/secoes/ContratosEvento';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
@@ -92,16 +90,6 @@ export default function EventoDetalhes() {
             <TabsTrigger value="contratos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               Contratos
             </TabsTrigger>
-            {(evento.tipoEvento === 'ingresso' || evento.tipoEvento === 'hibrido') && (
-              <TabsTrigger value="vendas" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Vendas
-              </TabsTrigger>
-            )}
-            {(evento.tipoEvento === 'bar' || evento.tipoEvento === 'hibrido') && (
-              <TabsTrigger value="bar" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Bar
-              </TabsTrigger>
-            )}
           </TabsList>
           
           <TabsContent value="dados" className="mt-0">
@@ -127,18 +115,6 @@ export default function EventoDetalhes() {
           <TabsContent value="contratos" className="mt-0">
             <ContratosEvento evento={evento} />
           </TabsContent>
-
-          {(evento.tipoEvento === 'ingresso' || evento.tipoEvento === 'hibrido') && (
-            <TabsContent value="vendas" className="mt-0">
-              <VendasEvento evento={evento} />
-            </TabsContent>
-          )}
-
-          {(evento.tipoEvento === 'bar' || evento.tipoEvento === 'hibrido') && (
-            <TabsContent value="bar" className="mt-0">
-              <ConfiguracaoBarEvento evento={evento} />
-            </TabsContent>
-          )}
         </Tabs>
       </div>
     </div>

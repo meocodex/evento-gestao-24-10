@@ -11,8 +11,6 @@ import { ComercialSelect } from './ComercialSelect';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 import { useEventos } from '@/contexts/EventosContext';
-import { TipoEvento, SetorEvento, ConfiguracaoBar } from '@/types/eventos';
-import { ConfiguracaoBarForm } from './ConfiguracaoBarForm';
 
 interface NovoEventoDialogProps {
   open: boolean;
@@ -44,12 +42,6 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [loadingCep, setLoadingCep] = useState(false);
-  const [tipoEvento, setTipoEvento] = useState<TipoEvento>('bar');
-  const [configuracaoBar, setConfiguracaoBar] = useState<ConfiguracaoBar>({
-    quantidadeMaquinas: 1,
-    quantidadeBares: 1,
-    temCardapio: false,
-  });
 
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
@@ -153,7 +145,6 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
         cidade,
         estado,
         endereco,
-        tipoEvento,
         clienteId,
         comercialId,
         tags,
@@ -161,7 +152,6 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
         observacoes,
         contatosAdicionais,
         redesSociais,
-        configuracaoBar: (tipoEvento === 'bar' || tipoEvento === 'hibrido') ? configuracaoBar : undefined,
       });
       
       // Reset form
@@ -183,8 +173,6 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
     setContatosAdicionais('');
     setRedesSociais('');
     setTags([]);
-    setTipoEvento('bar');
-    setConfiguracaoBar({ quantidadeMaquinas: 1, quantidadeBares: 1, temCardapio: false });
     
       onOpenChange(false);
       onEventoCreated();
@@ -207,20 +195,6 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="tipoEvento">Tipo de Evento *</Label>
-              <Select value={tipoEvento} onValueChange={(value: TipoEvento) => setTipoEvento(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ingresso">Evento com Ingresso</SelectItem>
-                  <SelectItem value="bar">Evento de Bar</SelectItem>
-                  <SelectItem value="hibrido">Híbrido (Ingresso + Bar)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             <div>
               <Label htmlFor="nome">Nome do Evento *</Label>
               <Input 
@@ -379,10 +353,6 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
                 placeholder="Detalhes sobre o evento..."
               />
             </div>
-
-            {(tipoEvento === 'bar' || tipoEvento === 'hibrido') && (
-              <ConfiguracaoBarForm configuracao={configuracaoBar} onChange={setConfiguracaoBar} />
-            )}
 
             <div>
               <Label htmlFor="tags">Tags</Label>

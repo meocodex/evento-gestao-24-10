@@ -9,8 +9,6 @@ import { MateriaisEvento } from './secoes/MateriaisEvento';
 import { OperacaoEvento } from './secoes/OperacaoEvento';
 import { FinanceiroEvento } from './secoes/FinanceiroEvento';
 import { DemandasEvento } from './secoes/DemandasEvento';
-import { VendasEvento } from './secoes/VendasEvento';
-import { ConfiguracaoBarEvento } from './secoes/ConfiguracaoBarEvento';
 import { ContratosEvento } from './secoes/ContratosEvento';
 import { StatusBadge } from '../shared/StatusBadge';
 
@@ -69,16 +67,6 @@ export function EventoDetailsSheet({ evento, open, onOpenChange }: EventoDetails
             <TabsTrigger value="contratos" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
               Contratos
             </TabsTrigger>
-            {(evento.tipoEvento === 'ingresso' || evento.tipoEvento === 'hibrido') && (
-              <TabsTrigger value="vendas" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
-                Vendas
-              </TabsTrigger>
-            )}
-            {(evento.tipoEvento === 'bar' || evento.tipoEvento === 'hibrido') && (
-              <TabsTrigger value="bar" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
-                Bar
-              </TabsTrigger>
-            )}
           </TabsList>
 
           <ScrollArea className="flex-1 px-6">
@@ -106,18 +94,6 @@ export function EventoDetailsSheet({ evento, open, onOpenChange }: EventoDetails
               <TabsContent value="contratos" className="mt-0">
                 <ContratosEvento evento={evento} />
               </TabsContent>
-
-              {(evento.tipoEvento === 'ingresso' || evento.tipoEvento === 'hibrido') && (
-                <TabsContent value="vendas" className="mt-0">
-                  <VendasEvento evento={evento} />
-                </TabsContent>
-              )}
-
-              {(evento.tipoEvento === 'bar' || evento.tipoEvento === 'hibrido') && (
-                <TabsContent value="bar" className="mt-0">
-                  <ConfiguracaoBarEvento evento={evento} />
-                </TabsContent>
-              )}
             </div>
           </ScrollArea>
         </Tabs>
