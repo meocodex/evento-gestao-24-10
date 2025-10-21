@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, ReactNode, useState } from 'react';
 import { Evento, EventoFormData, MaterialChecklist, MaterialAntecipado, MaterialComTecnicos, Receita, Despesa, MembroEquipe, StatusEvento } from '@/types/eventos';
 import { useToast } from '@/hooks/use-toast';
 import { useEventosQueries } from './eventos/useEventosQueries';
@@ -13,6 +13,10 @@ import { useEventosPropostas } from './eventos/useEventosPropostas';
 
 interface EventosContextType {
   eventos: Evento[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  setPage: (page: number) => void;
   criarEvento: (data: EventoFormData) => Promise<Evento>;
   editarEvento: (id: string, data: Partial<Evento>) => Promise<void>;
   deletarEvento: (id: string) => Promise<void>;
@@ -39,9 +43,11 @@ const EventosContext = createContext<EventosContextType | undefined>(undefined);
 
 export function EventosProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
   
   // Usar hooks do Supabase
-  const { eventos, loading, refetch } = useEventosQueries();
+  const { eventos, totalCount, loading, refetch } = useEventosQueries(page, pageSize);
   const { 
     criarEvento: criarEventoMutation, 
     editarEvento: editarEventoMutation, 
@@ -64,9 +70,13 @@ export function EventosProvider({ children }: { children: ReactNode }) {
 
   // Wrapping mutations para manter a interface do contexto
   const criarEvento = criarEventoMutation;
-  const editarEvento = editarEventoMutation;
+  const editarEvento = async (id: string, data: Partial<Evento>): Promise<void> => {
+    await editarEventoMutation(id, data);
+  };
   const deletarEvento = excluirEventoMutation;
-  const alterarStatus = alterarStatusMutation;
+  const alterarStatus = async (id: string, novoStatus: StatusEvento, observacao?: string): Promise<void> => {
+    await alterarStatusMutation(id, novoStatus, observacao);
+  };
 
   const adicionarMaterialChecklist = async (eventoId: string, material: Omit<MaterialChecklist, 'id' | 'alocado'>): Promise<void> => {
     await addMaterialChecklist.mutateAsync({ eventoId, material });
@@ -147,6 +157,10 @@ export function EventosProvider({ children }: { children: ReactNode }) {
   return (
     <EventosContext.Provider value={{
       eventos,
+      totalCount,
+      page,
+      pageSize,
+      setPage,
       criarEvento,
       editarEvento,
       deletarEvento,

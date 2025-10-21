@@ -3,51 +3,75 @@ import { supabase } from '@/integrations/supabase/client';
 import { transformEvento } from './transformEvento';
 import { Evento } from '@/types/eventos';
 
-export function useEventosQueries() {
-  const { data: eventos, isLoading, error, refetch } = useQuery({
-    queryKey: ['eventos'],
+interface EventosQueryResult {
+  eventos: Evento[];
+  totalCount: number;
+}
+
+export function useEventosQueries(page = 1, pageSize = 50) {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['eventos', page, pageSize],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+      
+      // Query otimizada - carregar apenas dados essenciais
+      const { data, error, count } = await supabase
         .from('eventos')
         .select(`
-          *,
-          cliente:clientes(*),
-          comercial:profiles!eventos_comercial_id_fkey(*),
-          timeline:eventos_timeline(*),
-          checklist:eventos_checklist(*),
-          materiais_alocados:eventos_materiais_alocados(*),
-          equipe:eventos_equipe(*),
-          receitas:eventos_receitas(*),
-          despesas:eventos_despesas(*),
-          cobrancas:eventos_cobrancas(*)
-        `)
-        .order('data_inicio', { ascending: false });
+          id,
+          nome,
+          status,
+          data_inicio,
+          data_fim,
+          local,
+          cidade,
+          estado,
+          tags,
+          cliente_id,
+          comercial_id,
+          cliente:clientes(id, nome),
+          comercial:profiles!eventos_comercial_id_fkey(id, nome)
+        `, { count: 'exact' })
+        .order('data_inicio', { ascending: false })
+        .range(from, to);
       
       if (error) throw error;
       
-      // Transformar dados do Supabase para o tipo Evento com tratamento de erros
-      return (data || []).map((eventoData) => {
-        try {
-          return transformEvento(eventoData);
-        } catch (transformError) {
-          console.error('Erro ao transformar evento:', eventoData.id, transformError);
-          // Retornar evento com dados mínimos em caso de erro
-          return {
-            id: eventoData.id,
-            nome: eventoData.nome || 'Evento sem nome',
-            data_inicio: eventoData.data_inicio,
-            data_fim: eventoData.data_fim,
-            status: eventoData.status || 'orcamento',
-            // ... outros campos essenciais com fallbacks
-          } as any;
-        }
-      }).filter(Boolean);
+      // Transformar dados básicos
+      const eventos = (data || []).map((eventoData) => ({
+        id: eventoData.id,
+        nome: eventoData.nome,
+        status: eventoData.status,
+        data_inicio: eventoData.data_inicio,
+        data_fim: eventoData.data_fim,
+        local: eventoData.local,
+        cidade: eventoData.cidade,
+        estado: eventoData.estado,
+        tags: eventoData.tags || [],
+        cliente_id: eventoData.cliente_id,
+        comercial_id: eventoData.comercial_id,
+        cliente: eventoData.cliente,
+        comercial: eventoData.comercial,
+        // Dados que serão carregados sob demanda
+        timeline: [],
+        checklist: [],
+        materiais_alocados: [],
+        equipe: [],
+        receitas: [],
+        despesas: [],
+        cobrancas: [],
+      })) as Evento[];
+      
+      return { eventos, totalCount: count || 0 };
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 10, // 10 minutos
+    gcTime: 1000 * 60 * 30, // 30 minutos
   });
 
   return {
-    eventos: (eventos || []) as Evento[],
+    eventos: (data?.eventos || []) as Evento[],
+    totalCount: data?.totalCount || 0,
     loading: isLoading,
     error,
     refetch

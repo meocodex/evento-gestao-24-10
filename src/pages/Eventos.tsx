@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Grid3x3, List, ArrowUpDown, Kanban, Sparkles, Calendar } from 'lucide-react';
+import { Plus, Search, Grid3x3, List, ArrowUpDown, Kanban, Sparkles, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Evento } from '@/types/eventos';
 import { EventosList } from '@/components/eventos/EventosList';
 import { EventosListAccordion } from '@/components/eventos/EventosListAccordion';
@@ -17,9 +17,17 @@ import { EventosQuickFilters } from '@/components/eventos/EventosQuickFilters';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { differenceInDays, parseISO, startOfMonth, endOfMonth, addMonths, isWithinInterval } from 'date-fns';
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from '@/components/ui/pagination';
 
 export default function Eventos() {
-  const { eventos } = useEventos();
+  const { eventos, totalCount, page, pageSize, setPage } = useEventos();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [] });
@@ -237,14 +245,61 @@ export default function Eventos() {
           </div>
 
           {/* Results counter with premium styling */}
-          <div className="flex items-center gap-2 px-1">
+          <div className="flex items-center justify-between gap-2 px-1">
             <div className="flex items-center gap-2 text-sm">
               <span className="text-muted-foreground">Mostrando</span>
               <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-base">{sortedEventos.length}</span>
               <span className="text-muted-foreground">de</span>
-              <span className="px-2 py-1 rounded-lg bg-muted/50 font-semibold">{eventos.length}</span>
+              <span className="px-2 py-1 rounded-lg bg-muted/50 font-semibold">{totalCount}</span>
               <span className="text-muted-foreground">eventos</span>
             </div>
+
+            {/* Pagination */}
+            {totalCount > pageSize && (
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(Math.max(1, page - 1))}
+                      disabled={page === 1}
+                      className="gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      Anterior
+                    </Button>
+                  </PaginationItem>
+                  
+                  {Array.from({ length: Math.min(5, Math.ceil(totalCount / pageSize)) }, (_, i) => {
+                    const pageNum = i + 1;
+                    return (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink 
+                          onClick={() => setPage(pageNum)} 
+                          isActive={page === pageNum}
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+                  
+                  <PaginationItem>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage(Math.min(Math.ceil(totalCount / pageSize), page + 1))}
+                      disabled={page >= Math.ceil(totalCount / pageSize)}
+                      className="gap-1"
+                    >
+                      Próxima
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
           </div>
         </div>
 

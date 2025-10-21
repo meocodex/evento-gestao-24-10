@@ -132,15 +132,41 @@ export function useEventosMutations() {
         usuario: user.email || 'Sistema'
       }]);
 
+      return { id, data };
+    },
+    onMutate: async ({ id, data }) => {
+      // Cancelar refetches em andamento
+      await queryClient.cancelQueries({ queryKey: ['eventos'] });
+      
+      // Snapshot do valor anterior
+      const previousEventos = queryClient.getQueryData(['eventos']);
+      
+      // Update otimista - atualizar cache com novos dados
+      queryClient.setQueriesData({ queryKey: ['eventos'] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          eventos: old.eventos?.map((e: Evento) => 
+            e.id === id ? { ...e, ...data } : e
+          )
+        };
+      });
+      
+      return { previousEventos };
+    },
+    onSuccess: () => {
       toast({
         title: 'Evento atualizado!',
         description: 'As alterações foram salvas com sucesso.'
       });
+      // Invalidar apenas evento-detalhes para recarregar dados completos
+      queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['eventos'] });
-    },
-    onError: (error: any) => {
+    onError: (error: any, variables, context) => {
+      // Rollback em caso de erro
+      if (context?.previousEventos) {
+        queryClient.setQueryData(['eventos'], context.previousEventos);
+      }
       toast({
         title: 'Erro ao atualizar evento',
         description: error.message,
@@ -199,15 +225,40 @@ export function useEventosMutations() {
         usuario: user.email || 'Sistema'
       }]);
 
+      return { id, novoStatus };
+    },
+    onMutate: async ({ id, novoStatus }) => {
+      // Cancelar refetches em andamento
+      await queryClient.cancelQueries({ queryKey: ['eventos'] });
+      
+      // Snapshot do valor anterior
+      const previousEventos = queryClient.getQueryData(['eventos']);
+      
+      // Update otimista
+      queryClient.setQueriesData({ queryKey: ['eventos'] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          eventos: old.eventos?.map((e: Evento) => 
+            e.id === id ? { ...e, status: novoStatus } : e
+          )
+        };
+      });
+      
+      return { previousEventos };
+    },
+    onSuccess: (_, { novoStatus }) => {
       toast({
         title: 'Status atualizado!',
         description: `O status foi alterado para ${novoStatus}.`
       });
+      queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['eventos'] });
-    },
-    onError: (error: any) => {
+    onError: (error: any, variables, context) => {
+      // Rollback em caso de erro
+      if (context?.previousEventos) {
+        queryClient.setQueryData(['eventos'], context.previousEventos);
+      }
       toast({
         title: 'Erro ao alterar status',
         description: error.message,

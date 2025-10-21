@@ -34,7 +34,17 @@ import NotFound from "./pages/NotFound";
 import CadastroEvento from "./pages/public/CadastroEvento";
 import AcompanharCadastro from "./pages/public/AcompanharCadastro";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutos
+      gcTime: 1000 * 60 * 30, // 30 minutos
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+      retry: 1,
+    },
+  },
+});
 
 function ProtectedRoutes() {
   const { isAuthenticated, loading } = useAuth();
