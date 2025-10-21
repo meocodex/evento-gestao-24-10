@@ -57,7 +57,7 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
       <CardHeader className="pb-3 pt-5">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-navy-800 leading-tight mb-2 line-clamp-2">
+            <h3 className="text-base font-bold text-navy-800 leading-tight mb-2 line-clamp-2">
               {evento.nome}
             </h3>
             <StatusBadge status={evento.status} />
