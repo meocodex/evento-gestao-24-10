@@ -338,13 +338,6 @@ export default function Contratos() {
             )}
           </TabsContent>
         </Tabs>
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhum template encontrado</p>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
       </div>
 
       {/* Dialogs */}

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Truck, Search, Filter } from 'lucide-react';
+import { Plus, Truck, Search, Filter, Package } from 'lucide-react';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -133,81 +133,6 @@ export default function Transportadoras() {
                 setTransportadoraExcluir(t);
                 setConfirmExcluirTransportadora(true);
               }}
-                <Card key={transportadora.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <Truck className="h-5 w-5 text-primary" />
-                        <div>
-                          <CardTitle className="text-lg">{transportadora.nome}</CardTitle>
-                          <CardDescription>{transportadora.cnpj}</CardDescription>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-1 items-end">
-                        <Badge variant={transportadora.status === 'ativa' ? 'default' : 'secondary'}>
-                          {transportadora.status}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {transportadora.rotasAtendidas.filter(r => r.ativa).length} rotas
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Responsável:</span>{' '}
-                        {transportadora.responsavel}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Telefone:</span>{' '}
-                        {transportadora.telefone}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Email:</span>{' '}
-                        {transportadora.email}
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Cidade:</span>{' '}
-                        {transportadora.endereco.cidade} - {transportadora.endereco.estado}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 mt-4">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setDetalhesTransportadora(transportadora)}
-                      >
-                        Detalhes
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setGerenciarRotasTransportadora(transportadora)}
-                      >
-                        <MapPin className="h-4 w-4 mr-1" />
-                        Rotas
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setEditarTransportadora(transportadora)}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setTransportadoraExcluir(transportadora);
-                          setConfirmExcluirTransportadora(true);
-                        }}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
             />
           </TabsContent>
 
