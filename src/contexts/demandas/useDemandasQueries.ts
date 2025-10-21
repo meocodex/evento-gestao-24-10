@@ -3,28 +3,37 @@ import { supabase } from '@/integrations/supabase/client';
 import { transformDemanda } from './transformDemanda';
 import { Demanda } from '@/types/demandas';
 
-export function useDemandasQueries() {
-  const { data: demandas, isLoading, error, refetch } = useQuery({
-    queryKey: ['demandas'],
+export function useDemandasQueries(page = 1, pageSize = 20) {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['demandas', page, pageSize],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+      
+      const { data, error, count } = await supabase
         .from('demandas')
         .select(`
           *,
           comentarios:demandas_comentarios(*),
           anexos:demandas_anexos(*)
-        `)
-        .order('created_at', { ascending: false });
+        `, { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(from, to);
       
       if (error) throw error;
       
-      return (data || []).map(transformDemanda);
+      return {
+        demandas: (data || []).map(transformDemanda),
+        totalCount: count || 0
+      };
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 10, // 10 minutos
+    gcTime: 1000 * 60 * 30,
   });
 
   return {
-    demandas: (demandas || []) as Demanda[],
+    demandas: data?.demandas || [],
+    totalCount: data?.totalCount || 0,
     loading: isLoading,
     error,
     refetch

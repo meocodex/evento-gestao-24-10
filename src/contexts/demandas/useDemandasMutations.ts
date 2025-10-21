@@ -65,14 +65,36 @@ export function useDemandasMutations() {
         .eq('id', id);
 
       if (error) throw error;
+      return { id, data: updateData };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
-      toast({ title: 'Demanda atualizada!', description: 'As alterações foram salvas.' });
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['demandas'] });
+      const previousDemandas = queryClient.getQueryData(['demandas']);
+      
+      queryClient.setQueriesData({ queryKey: ['demandas'] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          demandas: old.demandas.map((d: any) => 
+            d.id === id ? { ...d, ...data } : d
+          )
+        };
+      });
+      
+      return { previousDemandas };
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      if (context?.previousDemandas) {
+        queryClient.setQueryData(['demandas'], context.previousDemandas);
+      }
       console.error('Erro ao editar demanda:', error);
       toast({ title: 'Erro ao editar demanda', variant: 'destructive' });
+    },
+    onSuccess: () => {
+      toast({ title: 'Demanda atualizada!', description: 'As alterações foram salvas.' });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['demandas'] });
     },
   });
 
@@ -84,14 +106,35 @@ export function useDemandasMutations() {
         .eq('id', id);
 
       if (error) throw error;
+      return id;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
-      toast({ title: 'Demanda excluída!', description: 'A demanda foi removida.' });
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['demandas'] });
+      const previousDemandas = queryClient.getQueryData(['demandas']);
+      
+      queryClient.setQueriesData({ queryKey: ['demandas'] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          demandas: old.demandas.filter((d: any) => d.id !== id),
+          totalCount: old.totalCount - 1
+        };
+      });
+      
+      return { previousDemandas };
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      if (context?.previousDemandas) {
+        queryClient.setQueryData(['demandas'], context.previousDemandas);
+      }
       console.error('Erro ao excluir demanda:', error);
       toast({ title: 'Erro ao excluir demanda', variant: 'destructive' });
+    },
+    onSuccess: () => {
+      toast({ title: 'Demanda excluída!', description: 'A demanda foi removida.' });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['demandas'] });
     },
   });
 

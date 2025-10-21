@@ -8,6 +8,10 @@ import { useDemandasReembolsos } from './demandas/useDemandasReembolsos';
 
 interface DemandasContextData {
   demandas: Demanda[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  setPage: (page: number) => void;
   filtros: FiltroDemandas;
   setFiltros: (filtros: FiltroDemandas) => void;
   adicionarDemanda: (data: DemandaFormData, solicitante: string, solicitanteId: string) => void;
@@ -268,6 +272,10 @@ export const DemandasProvider = ({ children }: { children: ReactNode }) => {
     <DemandasContext.Provider
       value={{
         demandas,
+        totalCount,
+        page,
+        pageSize,
+        setPage,
         filtros,
         setFiltros,
         adicionarDemanda,

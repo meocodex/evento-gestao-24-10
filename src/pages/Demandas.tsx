@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useDemandasContext } from '@/contexts/DemandasContext';
 import { Demanda } from '@/types/demandas';
 import { DemandaCard } from '@/components/demandas/DemandaCard';
+import { DemandasVirtualList } from '@/components/demandas/DemandasVirtualList';
 import { DemandaFilters } from '@/components/demandas/DemandaFilters';
 import { NovaDemandaSheet } from '@/components/demandas/NovaDemandaSheet';
 import { NovaDemandaReembolsoDialog } from '@/components/demandas/NovaDemandaReembolsoDialog';
@@ -10,11 +11,13 @@ import { DetalhesDemandaDialog } from '@/components/demandas/DetalhesDemandaDial
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { Card } from '@/components/ui/card';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Bell, Clock, AlertTriangle, Archive, XCircle } from 'lucide-react';
 
 export default function Demandas() {
-  const { getDemandasFiltradas, getEstatisticas, excluirDemanda } = useDemandasContext();
+  const { getDemandasFiltradas, getEstatisticas, excluirDemanda, totalCount, page, setPage, pageSize } = useDemandasContext();
   const demandasFiltradas = getDemandasFiltradas();
+  const totalPages = Math.ceil(totalCount / pageSize);
   const estatisticas = getEstatisticas();
 
   const [demandaSelecionada, setDemandaSelecionada] = useState<Demanda | null>(null);
@@ -117,17 +120,48 @@ export default function Demandas() {
                 </div>
               </Card>
             ) : (
-              <div className="grid gap-4">
-                {demandasFiltradas.map((demanda) => (
-                  <DemandaCard
-                    key={demanda.id}
-                    demanda={demanda}
-                    onDetalhes={() => handleDetalhes(demanda)}
-                    onEditar={() => handleEditar(demanda)}
-                    onExcluir={() => handleExcluir(demanda)}
-                  />
-                ))}
-              </div>
+              <>
+                <DemandasVirtualList
+                  demandas={demandasFiltradas}
+                  onDetalhes={handleDetalhes}
+                  onEditar={handleEditar}
+                  onExcluir={handleExcluir}
+                />
+                
+                {/* Paginação */}
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => setPage(Math.max(1, page - 1))}
+                        className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                    
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      const pageNumber = i + 1;
+                      return (
+                        <PaginationItem key={pageNumber}>
+                          <PaginationLink
+                            onClick={() => setPage(pageNumber)}
+                            isActive={page === pageNumber}
+                            className="cursor-pointer"
+                          >
+                            {pageNumber}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => setPage(Math.min(totalPages, page + 1))}
+                        className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </>
             )}
           </div>
         </div>

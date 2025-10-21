@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Cliente, ClienteFormData } from '@/types/eventos';
 import { buscarCEP, EnderecoViaCEP } from '@/lib/api/viacep';
 import { validarCPF, validarCNPJ } from '@/lib/validations/cliente';
 import { toast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useClientesQueries } from './clientes/useClientesQueries';
+import { useClientesMutations } from './clientes/useClientesMutations';
 
 interface FiltrosClientes {
   busca: string;
@@ -16,9 +16,13 @@ interface FiltrosClientes {
 
 interface ClientesContextData {
   clientes: Cliente[];
+  totalCount: number;
   clientesFiltrados: Cliente[];
   loading: boolean;
   filtros: FiltrosClientes;
+  page: number;
+  pageSize: number;
+  setPage: (page: number) => void;
   criarCliente: (data: ClienteFormData) => Promise<Cliente>;
   editarCliente: (id: string, data: Partial<ClienteFormData>) => Promise<void>;
   excluirCliente: (id: string) => Promise<void>;
@@ -273,9 +277,13 @@ export function ClientesProvider({ children }: { children: ReactNode }) {
     <ClientesContext.Provider
       value={{
         clientes,
+        totalCount,
         clientesFiltrados,
         loading,
         filtros,
+        page,
+        pageSize,
+        setPage,
         criarCliente,
         editarCliente,
         excluirCliente,

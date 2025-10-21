@@ -16,19 +16,14 @@ import { Cliente } from '@/types/eventos';
 import { Users, User, Building2, Grid3x3, List, Eye, Pencil, Trash2 } from 'lucide-react';
 
 export default function Clientes() {
-  const { clientesFiltrados, excluirCliente, clientes } = useClientes();
+  const { clientesFiltrados, excluirCliente, clientes, totalCount, page, setPage, pageSize } = useClientes();
   const [visualizacao, setVisualizacao] = useState<'tabela' | 'cards'>('tabela');
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
   const [dialogAberto, setDialogAberto] = useState<'detalhes' | 'editar' | 'excluir' | null>(null);
-  const [paginaAtual, setPaginaAtual] = useState(1);
-  const itensPorPagina = 12;
 
-  const totalPaginas = Math.ceil(clientesFiltrados.length / itensPorPagina);
-  const indiceInicio = (paginaAtual - 1) * itensPorPagina;
-  const indiceFim = indiceInicio + itensPorPagina;
-  const clientesPaginados = clientesFiltrados.slice(indiceInicio, indiceFim);
+  const totalPages = Math.ceil(totalCount / pageSize);
 
-  const totalClientes = clientes.length;
+  const totalClientes = totalCount;
   const totalCPF = clientes.filter((c) => c.tipo === 'CPF').length;
   const totalCNPJ = clientes.filter((c) => c.tipo === 'CNPJ').length;
 
@@ -85,7 +80,7 @@ export default function Clientes() {
       {/* Controles de Visualização */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-navy-600">
-          Mostrando {indiceInicio + 1}-{Math.min(indiceFim, clientesFiltrados.length)} de {clientesFiltrados.length} clientes
+          Mostrando {((page - 1) * pageSize) + 1}-{Math.min(page * pageSize, totalCount)} de {totalCount} clientes
         </p>
         <div className="flex gap-2">
           <Button
@@ -121,7 +116,7 @@ export default function Clientes() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clientesPaginados.map((cliente) => (
+              {clientesFiltrados.map((cliente) => (
                 <TableRow key={cliente.id}>
                   <TableCell className="font-medium">{cliente.nome}</TableCell>
                   <TableCell>
@@ -177,7 +172,7 @@ export default function Clientes() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {clientesPaginados.map((cliente) => (
+          {clientesFiltrados.map((cliente) => (
             <ClienteCard
               key={cliente.id}
               cliente={cliente}
@@ -199,30 +194,30 @@ export default function Clientes() {
       )}
 
       {/* Paginação */}
-      {totalPaginas > 1 && (
+      {totalPages > 1 && (
         <Pagination>
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
-                onClick={() => setPaginaAtual((prev) => Math.max(prev - 1, 1))}
-                className={paginaAtual === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                onClick={() => setPage(Math.max(page - 1, 1))}
+                className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
               />
             </PaginationItem>
-            {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pagina) => (
-              <PaginationItem key={pagina}>
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => i + 1).map((pageNum) => (
+              <PaginationItem key={pageNum}>
                 <PaginationLink
-                  onClick={() => setPaginaAtual(pagina)}
-                  isActive={paginaAtual === pagina}
+                  onClick={() => setPage(pageNum)}
+                  isActive={page === pageNum}
                   className="cursor-pointer"
                 >
-                  {pagina}
+                  {pageNum}
                 </PaginationLink>
               </PaginationItem>
             ))}
             <PaginationItem>
               <PaginationNext
-                onClick={() => setPaginaAtual((prev) => Math.min(prev + 1, totalPaginas))}
-                className={paginaAtual === totalPaginas ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                onClick={() => setPage(Math.min(page + 1, totalPages))}
+                className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
               />
             </PaginationItem>
           </PaginationContent>
