@@ -115,7 +115,9 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
           <div>
             <p className="text-xs text-navy-400 font-medium">Data</p>
             <p className="text-sm font-semibold text-navy-800">
-              {format(parseISO(evento.dataInicio), "dd/MM/yyyy", { locale: ptBR })}
+              {evento.dataInicio && evento.dataInicio !== '' 
+                ? format(parseISO(evento.dataInicio), "dd/MM/yyyy", { locale: ptBR })
+                : 'Data não definida'}
             </p>
           </div>
         </div>

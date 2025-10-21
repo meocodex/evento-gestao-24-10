@@ -24,13 +24,17 @@ export function useEventosQueries(page = 1, pageSize = 50) {
           status,
           data_inicio,
           data_fim,
+          hora_inicio,
+          hora_fim,
           local,
+          endereco,
           cidade,
           estado,
+          tipo_evento,
           tags,
           cliente_id,
           comercial_id,
-          cliente:clientes(id, nome, email),
+          cliente:clientes(id, nome, email, tipo, documento, telefone, whatsapp, endereco),
           comercial:profiles!eventos_comercial_id_fkey(id, nome, email)
         `, { count: 'exact' })
         .order('data_inicio', { ascending: false })
@@ -38,30 +42,20 @@ export function useEventosQueries(page = 1, pageSize = 50) {
       
       if (error) throw error;
       
-      // Transformar dados básicos
-      const eventos = (data || []).map((eventoData) => ({
-        id: eventoData.id,
-        nome: eventoData.nome,
-        status: eventoData.status,
-        data_inicio: eventoData.data_inicio,
-        data_fim: eventoData.data_fim,
-        local: eventoData.local,
-        cidade: eventoData.cidade,
-        estado: eventoData.estado,
-        tags: eventoData.tags || [],
-        cliente_id: eventoData.cliente_id,
-        comercial_id: eventoData.comercial_id,
-        cliente: eventoData.cliente,
-        comercial: eventoData.comercial,
-        // Dados que serão carregados sob demanda
-        timeline: [],
-        checklist: [],
-        materiais_alocados: [],
-        equipe: [],
-        receitas: [],
-        despesas: [],
-        cobrancas: [],
-      })) as Evento[];
+      // Transformar dados usando transformEvento para garantir nomenclatura consistente
+      const eventos = (data || []).map((eventoData) => {
+        const eventoTransformado = transformEvento(eventoData);
+        
+        // Manter dados vazios para campos não carregados (otimização)
+        return {
+          ...eventoTransformado,
+          checklist: [],
+          materiaisAlocados: { antecipado: [], comTecnicos: [] },
+          financeiro: { receitas: [], despesas: [], cobrancas: [] },
+          equipe: [],
+          timeline: [],
+        };
+      });
       
       return { eventos, totalCount: count || 0 };
     },
