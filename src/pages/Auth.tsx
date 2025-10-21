@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Calendar, Loader2 } from "lucide-react";
+import { Calendar, Loader2, ShieldAlert } from "lucide-react";
+import { loginSchema, signupSchema } from "@/lib/validations/auth";
+import { ZodError } from "zod";
 
 export default function Auth() {
   const navigate = useNavigate();
@@ -17,25 +19,33 @@ export default function Auth() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!loginData.email || !loginData.password) {
-      toast.error("Preencha todos os campos");
-      return;
-    }
-
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      // Validar input com Zod
+      const validatedData = loginSchema.parse({
         email: loginData.email,
         password: loginData.password,
       });
 
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: validatedData.email,
+        password: validatedData.password,
+      });
+
       if (error) {
+        // Rate limiting do Supabase
+        if (error.message.includes("Email rate limit exceeded")) {
+          toast.error("Muitas tentativas. Aguarde alguns minutos.", {
+            icon: <ShieldAlert className="h-4 w-4" />,
+          });
+          return;
+        }
+        
         if (error.message.includes("Invalid login credentials")) {
           toast.error("Email ou senha incorretos");
         } else {
-          toast.error(error.message);
+          toast.error("Erro ao fazer login");
         }
         return;
       }
@@ -44,8 +54,13 @@ export default function Auth() {
         toast.success("Login realizado com sucesso!");
         navigate("/dashboard");
       }
-    } catch (error: any) {
-      toast.error("Erro ao fazer login");
+    } catch (error) {
+      if (error instanceof ZodError) {
+        // Mostrar primeiro erro de validação
+        toast.error(error.errors[0].message);
+      } else {
+        toast.error("Erro ao fazer login");
+      }
     } finally {
       setLoading(false);
     }
@@ -53,48 +68,70 @@ export default function Auth() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!signupData.nome || !signupData.email || !signupData.password) {
-      toast.error("Preencha todos os campos");
-      return;
-    }
-
-    if (signupData.password.length < 6) {
-      toast.error("A senha deve ter no mínimo 6 caracteres");
-      return;
-    }
-
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // Validar input com Zod (inclui validação robusta de senha)
+      const validatedData = signupSchema.parse({
+        nome: signupData.nome,
         email: signupData.email,
         password: signupData.password,
+      });
+
+      const { data, error } = await supabase.auth.signUp({
+        email: validatedData.email,
+        password: validatedData.password,
         options: {
           data: {
-            nome: signupData.nome,
+            nome: validatedData.nome,
           },
           emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
       if (error) {
+        // Rate limiting do Supabase
+        if (error.message.includes("Email rate limit exceeded")) {
+          toast.error("Muitas tentativas. Aguarde alguns minutos.", {
+            icon: <ShieldAlert className="h-4 w-4" />,
+          });
+          return;
+        }
+        
+        // Senha vazada detectada pelo Supabase
+        if (error.message.includes("Password is too weak") || 
+            error.message.includes("breached password")) {
+          toast.error("Esta senha foi encontrada em vazamentos de dados. Escolha uma senha mais segura.", {
+            icon: <ShieldAlert className="h-4 w-4" />,
+            duration: 5000,
+          });
+          return;
+        }
+        
         if (error.message.includes("already registered")) {
           toast.error("Este email já está cadastrado");
         } else {
-          toast.error(error.message);
+          toast.error("Erro ao criar conta");
         }
         return;
       }
 
       if (data.user) {
-        toast.success("Conta criada com sucesso! Você já pode fazer login.");
-        // Redirecionar automaticamente após signup
+        toast.success("Conta criada com sucesso!");
         navigate("/dashboard");
       }
-    } catch (error: any) {
-      toast.error("Erro ao criar conta");
-    } finally{
+    } catch (error) {
+      if (error instanceof ZodError) {
+        // Mostrar primeiro erro de validação de forma clara
+        const firstError = error.errors[0];
+        toast.error(firstError.message, {
+          description: firstError.path.join('.'),
+          duration: 4000,
+        });
+      } else {
+        toast.error("Erro ao criar conta");
+      }
+    } finally {
       setLoading(false);
     }
   };
@@ -209,18 +246,24 @@ export default function Auth() {
                     <Input
                       id="signup-password"
                       type="password"
-                      placeholder="••••••"
+                      placeholder="••••••••"
                       value={signupData.password}
                       onChange={(e) =>
                         setSignupData({ ...signupData, password: e.target.value })
                       }
                       disabled={loading}
                       required
-                      minLength={6}
+                      minLength={8}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Mínimo de 6 caracteres
-                    </p>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <p className="font-medium">A senha deve conter:</p>
+                      <ul className="list-disc list-inside space-y-0.5 ml-1">
+                        <li>Mínimo 8 caracteres</li>
+                        <li>Letras maiúsculas e minúsculas</li>
+                        <li>Pelo menos um número</li>
+                        <li>Pelo menos um caractere especial</li>
+                      </ul>
+                    </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? (

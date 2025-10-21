@@ -101,22 +101,63 @@ export const estados = [
 ];
 
 export const clienteSchema = z.object({
-  nome: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres').max(100, 'Nome deve ter no máximo 100 caracteres'),
+  nome: z.string()
+    .trim()
+    .min(3, 'Nome deve ter no mínimo 3 caracteres')
+    .max(100, 'Nome deve ter no máximo 100 caracteres')
+    .regex(/^[a-zA-ZÀ-ÿ\s\-'&.,0-9]+$/, 'Nome contém caracteres inválidos'),
   tipo: z.enum(['CPF', 'CNPJ']),
   documento: z.string()
     .transform(val => val.replace(/\D/g, ''))
     .refine((val) => val.length === 11 || val.length === 14, 'Documento inválido'),
-  email: z.string().trim().email('Email inválido').max(255, 'Email muito longo'),
-  telefone: z.string().min(10, 'Telefone inválido'),
-  whatsapp: z.string().optional(),
+  email: z.string()
+    .trim()
+    .toLowerCase()
+    .email('Email inválido')
+    .max(255, 'Email muito longo'),
+  telefone: z.string()
+    .min(10, 'Telefone inválido')
+    .max(15, 'Telefone muito longo')
+    .refine((tel) => {
+      const limpo = tel.replace(/\D/g, '');
+      return limpo.length >= 10 && limpo.length <= 11;
+    }, 'Telefone inválido'),
+  whatsapp: z.string()
+    .optional()
+    .transform(val => val ? val.replace(/\D/g, '') : val)
+    .refine((val) => {
+      if (!val) return true;
+      return val.length >= 10 && val.length <= 11;
+    }, 'WhatsApp inválido'),
   endereco: z.object({
-    cep: z.string().min(8, 'CEP inválido'),
-    logradouro: z.string().min(3, 'Logradouro deve ter no mínimo 3 caracteres'),
-    numero: z.string().min(1, 'Número é obrigatório'),
-    complemento: z.string().optional(),
-    bairro: z.string().min(2, 'Bairro deve ter no mínimo 2 caracteres'),
-    cidade: z.string().min(2, 'Cidade deve ter no mínimo 2 caracteres'),
-    estado: z.string().length(2, 'Estado deve ter 2 letras'),
+    cep: z.string()
+      .min(8, 'CEP inválido')
+      .max(9, 'CEP inválido')
+      .transform(val => val.replace(/\D/g, '')),
+    logradouro: z.string()
+      .trim()
+      .min(3, 'Logradouro deve ter no mínimo 3 caracteres')
+      .max(200, 'Logradouro muito longo'),
+    numero: z.string()
+      .trim()
+      .min(1, 'Número é obrigatório')
+      .max(10, 'Número muito longo'),
+    complemento: z.string()
+      .trim()
+      .max(100, 'Complemento muito longo')
+      .optional(),
+    bairro: z.string()
+      .trim()
+      .min(2, 'Bairro deve ter no mínimo 2 caracteres')
+      .max(100, 'Bairro muito longo'),
+    cidade: z.string()
+      .trim()
+      .min(2, 'Cidade deve ter no mínimo 2 caracteres')
+      .max(100, 'Cidade muito longa'),
+    estado: z.string()
+      .length(2, 'Estado deve ter 2 letras')
+      .toUpperCase()
+      .refine((val) => estados.includes(val), 'Estado inválido'),
   }),
 }).superRefine((data, ctx) => {
   const docLimpo = data.documento.replace(/\D/g, '');
