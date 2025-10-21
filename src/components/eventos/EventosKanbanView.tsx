@@ -14,15 +14,11 @@ interface EventosKanbanViewProps {
 }
 
 const statusColumns: { id: StatusEvento; label: string; color: string }[] = [
-  { id: 'orcamento_enviado', label: 'Orçamento Enviado', color: 'bg-yellow-500/10 border-yellow-500/20' },
-  { id: 'confirmado', label: 'Confirmado', color: 'bg-blue-500/10 border-blue-500/20' },
-  { id: 'aguardando_alocacao', label: 'Aguardando Alocação', color: 'bg-orange-500/10 border-orange-500/20' },
-  { id: 'materiais_alocados', label: 'Materiais Alocados', color: 'bg-indigo-500/10 border-indigo-500/20' },
+  { id: 'orcamento', label: 'Orçamento', color: 'bg-amber-500/10 border-amber-500/20' },
+  { id: 'confirmado', label: 'Confirmado', color: 'bg-emerald-500/10 border-emerald-500/20' },
   { id: 'em_preparacao', label: 'Em Preparação', color: 'bg-purple-500/10 border-purple-500/20' },
-  { id: 'em_andamento', label: 'Em Andamento', color: 'bg-green-500/10 border-green-500/20' },
-  { id: 'aguardando_retorno', label: 'Aguardando Retorno', color: 'bg-cyan-500/10 border-cyan-500/20' },
-  { id: 'aguardando_fechamento', label: 'Aguardando Fechamento', color: 'bg-teal-500/10 border-teal-500/20' },
-  { id: 'finalizado', label: 'Finalizado', color: 'bg-gray-500/10 border-gray-500/20' },
+  { id: 'em_execucao', label: 'Em Execução', color: 'bg-blue-500/10 border-blue-500/20' },
+  { id: 'concluido', label: 'Concluído', color: 'bg-green-500/10 border-green-500/20' },
   { id: 'cancelado', label: 'Cancelado', color: 'bg-red-500/10 border-red-500/20' },
 ];
 
@@ -40,15 +36,11 @@ export function EventosKanbanView({ eventos, onViewDetails }: EventosKanbanViewP
 
   const eventosPorStatus = useMemo(() => {
     const grouped: Record<StatusEvento, Evento[]> = {
-      orcamento_enviado: [],
+      orcamento: [],
       confirmado: [],
-      aguardando_alocacao: [],
-      materiais_alocados: [],
       em_preparacao: [],
-      em_andamento: [],
-      aguardando_retorno: [],
-      aguardando_fechamento: [],
-      finalizado: [],
+      em_execucao: [],
+      concluido: [],
       cancelado: [],
     };
 

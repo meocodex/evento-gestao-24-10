@@ -9,15 +9,15 @@ interface EventosStatsProps {
 
 export function EventosStats({ eventos }: EventosStatsProps) {
   const stats = useMemo(() => {
-    const confirmados = eventos.filter(e => e.status === 'confirmado' || e.status === 'materiais_alocados' || e.status === 'em_preparacao').length;
-    const emAndamento = eventos.filter(e => e.status === 'em_andamento').length;
-    const finalizados = eventos.filter(e => e.status === 'finalizado').length;
+    const confirmados = eventos.filter(e => e.status === 'confirmado' || e.status === 'em_preparacao').length;
+    const emExecucao = eventos.filter(e => e.status === 'em_execucao').length;
+    const concluidos = eventos.filter(e => e.status === 'concluido').length;
 
     return {
       total: eventos.length,
       confirmados,
-      emAndamento,
-      finalizados,
+      emExecucao,
+      concluidos,
     };
   }, [eventos]);
 
@@ -43,8 +43,8 @@ export function EventosStats({ eventos }: EventosStatsProps) {
       </div>
       <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
         <StatCard
-          title="Em Andamento"
-          value={stats.emAndamento.toString()}
+          title="Em Execução"
+          value={stats.emExecucao.toString()}
           subtitle="Acontecendo agora"
           icon={Clock}
           variant="default"
@@ -52,9 +52,9 @@ export function EventosStats({ eventos }: EventosStatsProps) {
       </div>
       <div className="animate-slide-up" style={{ animationDelay: '300ms' }}>
         <StatCard
-          title="Finalizados"
-          value={stats.finalizados.toString()}
-          subtitle="Concluídos"
+          title="Concluídos"
+          value={stats.concluidos.toString()}
+          subtitle="Finalizados"
           icon={TrendingUp}
           variant="default"
         />

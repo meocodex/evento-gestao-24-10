@@ -31,16 +31,12 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
   const navigate = useNavigate();
 
   const statusColors = {
-    orcamento_enviado: 'bg-amber-500',
+    orcamento: 'bg-amber-500',
     confirmado: 'bg-emerald-500',
-    materiais_alocados: 'bg-navy-600',
     em_preparacao: 'bg-purple-500',
-    em_andamento: 'bg-slate-700',
-    aguardando_retorno: 'bg-orange-500',
-    aguardando_fechamento: 'bg-gray-400',
-    finalizado: 'bg-green-600',
+    em_execucao: 'bg-blue-600',
+    concluido: 'bg-green-600',
     cancelado: 'bg-red-500',
-    aguardando_alocacao: 'bg-yellow-600',
   };
 
   return (

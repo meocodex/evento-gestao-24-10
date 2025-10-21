@@ -627,7 +627,7 @@ export type Database = {
           observacoes_operacionais: string[] | null
           planta_baixa: string | null
           redes_sociais: string | null
-          status: Database["public"]["Enums"]["status_evento"]
+          status: Database["public"]["Enums"]["status_evento"] | null
           tags: string[] | null
           tipo_evento: Database["public"]["Enums"]["tipo_evento"]
           updated_at: string | null
@@ -658,7 +658,7 @@ export type Database = {
           observacoes_operacionais?: string[] | null
           planta_baixa?: string | null
           redes_sociais?: string | null
-          status?: Database["public"]["Enums"]["status_evento"]
+          status?: Database["public"]["Enums"]["status_evento"] | null
           tags?: string[] | null
           tipo_evento: Database["public"]["Enums"]["tipo_evento"]
           updated_at?: string | null
@@ -689,7 +689,7 @@ export type Database = {
           observacoes_operacionais?: string[] | null
           planta_baixa?: string | null
           redes_sociais?: string | null
-          status?: Database["public"]["Enums"]["status_evento"]
+          status?: Database["public"]["Enums"]["status_evento"] | null
           tags?: string[] | null
           tipo_evento?: Database["public"]["Enums"]["tipo_evento"]
           updated_at?: string | null
@@ -1506,16 +1506,12 @@ export type Database = {
         | "expirado"
       status_demanda: "aberta" | "em-andamento" | "concluida" | "cancelada"
       status_evento:
-        | "orcamento_enviado"
+        | "orcamento"
         | "confirmado"
-        | "materiais_alocados"
         | "em_preparacao"
-        | "em_andamento"
-        | "aguardando_retorno"
-        | "aguardando_fechamento"
-        | "finalizado"
+        | "em_execucao"
+        | "concluido"
         | "cancelado"
-        | "aguardando_alocacao"
       status_financeiro: "pendente" | "pago" | "cancelado" | "em_negociacao"
       status_material:
         | "reservado"
@@ -1699,16 +1695,12 @@ export const Constants = {
       ],
       status_demanda: ["aberta", "em-andamento", "concluida", "cancelada"],
       status_evento: [
-        "orcamento_enviado",
+        "orcamento",
         "confirmado",
-        "materiais_alocados",
         "em_preparacao",
-        "em_andamento",
-        "aguardando_retorno",
-        "aguardando_fechamento",
-        "finalizado",
+        "em_execucao",
+        "concluido",
         "cancelado",
-        "aguardando_alocacao",
       ],
       status_financeiro: ["pendente", "pago", "cancelado", "em_negociacao"],
       status_material: [

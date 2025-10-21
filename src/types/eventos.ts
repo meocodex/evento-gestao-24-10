@@ -1,14 +1,10 @@
 export type StatusEvento =
-  | 'orcamento_enviado'
+  | 'orcamento'
   | 'confirmado'
-  | 'materiais_alocados'
   | 'em_preparacao'
-  | 'em_andamento'
-  | 'aguardando_retorno'
-  | 'aguardando_fechamento'
-  | 'finalizado'
-  | 'cancelado'
-  | 'aguardando_alocacao';
+  | 'em_execucao'
+  | 'concluido'
+  | 'cancelado';
 
 export type TipoEnvio = 'antecipado' | 'com_tecnicos';
 

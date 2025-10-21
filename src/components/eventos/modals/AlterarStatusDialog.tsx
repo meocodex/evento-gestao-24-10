@@ -15,15 +15,11 @@ interface AlterarStatusDialogProps {
 }
 
 const statusOptions: { value: StatusEvento; label: string }[] = [
-  { value: 'orcamento_enviado', label: 'Orçamento Enviado' },
+  { value: 'orcamento', label: 'Orçamento' },
   { value: 'confirmado', label: 'Confirmado' },
-  { value: 'aguardando_alocacao', label: 'Aguardando Alocação' },
-  { value: 'materiais_alocados', label: 'Materiais Alocados' },
   { value: 'em_preparacao', label: 'Em Preparação' },
-  { value: 'em_andamento', label: 'Em Andamento' },
-  { value: 'aguardando_retorno', label: 'Aguardando Retorno' },
-  { value: 'aguardando_fechamento', label: 'Aguardando Fechamento' },
-  { value: 'finalizado', label: 'Finalizado' },
+  { value: 'em_execucao', label: 'Em Execução' },
+  { value: 'concluido', label: 'Concluído' },
   { value: 'cancelado', label: 'Cancelado' }
 ];
 

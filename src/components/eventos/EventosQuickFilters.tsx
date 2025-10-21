@@ -18,7 +18,7 @@ export function EventosQuickFilters({ eventos, activeFilter, onFilterChange }: E
       urgentes: eventos.filter(e => {
         const dataEvento = parseISO(e.dataInicio);
         const diasAteEvento = differenceInDays(dataEvento, hoje);
-        return diasAteEvento >= 0 && diasAteEvento < 7 && e.status !== 'finalizado' && e.status !== 'cancelado';
+        return diasAteEvento >= 0 && diasAteEvento < 7 && e.status !== 'concluido' && e.status !== 'cancelado';
       }).length,
       confirmados: eventos.filter(e => e.status === 'confirmado').length,
       emPreparacao: eventos.filter(e => e.status === 'em_preparacao').length,

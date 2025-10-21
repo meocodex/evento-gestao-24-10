@@ -46,7 +46,7 @@ export function NovaDemandaReembolsoDialog({ eventoId }: NovaDemandaReembolsoDia
   const [itemAnexos, setItemAnexos] = useState<string[]>([]);
 
   const eventosAtivos = eventos.filter(e => 
-    ['orcamento_enviado', 'confirmado', 'materiais_alocados', 'em_preparacao', 'em_andamento'].includes(e.status)
+    ['orcamento', 'confirmado', 'em_preparacao', 'em_execucao'].includes(e.status)
   );
 
   const valorTotal = itens.reduce((sum, item) => sum + item.valor, 0);

@@ -65,7 +65,7 @@ export default function Eventos() {
         const dataEvento = parseISO(evento.dataInicio);
         matchTab = isWithinInterval(dataEvento, { start: startOfMonth(proximoMes), end: endOfMonth(proximoMes) });
       } else if (activeTab === 'finalizados') {
-        matchTab = evento.status === 'finalizado';
+        matchTab = evento.status === 'concluido';
       }
       
       // Quick filter
@@ -73,7 +73,7 @@ export default function Eventos() {
       if (quickFilter === 'urgentes') {
         const dataEvento = parseISO(evento.dataInicio);
         const diasAteEvento = differenceInDays(dataEvento, hoje);
-        matchQuickFilter = diasAteEvento >= 0 && diasAteEvento < 7 && evento.status !== 'finalizado' && evento.status !== 'cancelado';
+        matchQuickFilter = diasAteEvento >= 0 && diasAteEvento < 7 && evento.status !== 'concluido' && evento.status !== 'cancelado';
       } else if (quickFilter === 'confirmados') {
         matchQuickFilter = evento.status === 'confirmado';
       } else if (quickFilter === 'emPreparacao') {

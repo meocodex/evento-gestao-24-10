@@ -41,15 +41,11 @@ export function EventoKanbanCard({ evento, onViewDetails }: EventoKanbanCardProp
         className={cn(
           "cursor-pointer hover:shadow-md transition-all hover:scale-[1.02]",
           "border-l-4",
-          evento.status === 'orcamento_enviado' && "border-l-yellow-500",
-          evento.status === 'confirmado' && "border-l-blue-500",
-          evento.status === 'aguardando_alocacao' && "border-l-orange-500",
-          evento.status === 'materiais_alocados' && "border-l-indigo-500",
+          evento.status === 'orcamento' && "border-l-amber-500",
+          evento.status === 'confirmado' && "border-l-emerald-500",
           evento.status === 'em_preparacao' && "border-l-purple-500",
-          evento.status === 'em_andamento' && "border-l-green-500",
-          evento.status === 'aguardando_retorno' && "border-l-cyan-500",
-          evento.status === 'aguardando_fechamento' && "border-l-teal-500",
-          evento.status === 'finalizado' && "border-l-gray-500",
+          evento.status === 'em_execucao' && "border-l-blue-500",
+          evento.status === 'concluido' && "border-l-green-500",
           evento.status === 'cancelado' && "border-l-red-500"
         )}
         onClick={() => onViewDetails(evento)}
