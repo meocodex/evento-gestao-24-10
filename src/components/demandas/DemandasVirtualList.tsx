@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Demanda } from '@/types/demandas';
 import { DemandaCard } from './DemandaCard';
+import { CardSkeleton } from '@/components/shared/LoadingSkeleton';
 
 interface DemandasVirtualListProps {
   demandas: Demanda[];
@@ -25,8 +26,19 @@ export function DemandasVirtualList({
     overscan: 3,
   });
 
+  if (demandas.length === 0) {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <CardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
+
   return (
-    <div ref={parentRef} className="h-[calc(100vh-500px)] overflow-auto">
+    <div ref={parentRef} className="h-[calc(100vh-500px)] overflow-auto"
+      style={{ contain: 'strict' }}>
       <div 
         style={{ 
           height: `${rowVirtualizer.getTotalSize()}px`, 

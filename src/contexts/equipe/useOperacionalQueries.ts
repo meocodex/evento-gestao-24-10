@@ -15,7 +15,8 @@ export function useOperacionalQueries() {
       
       return (data || []) as OperacionalEquipe[];
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos
+    staleTime: 1000 * 60 * 30, // 30 minutos (equipe muda raramente)
+    gcTime: 1000 * 60 * 60, // 1 hora
   });
 
   return {

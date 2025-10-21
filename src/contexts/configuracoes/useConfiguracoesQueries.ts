@@ -37,7 +37,8 @@ export function useConfiguracoesQueries() {
       
       return data;
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 60, // 60 minutos (configurações mudam raramente)
+    gcTime: 1000 * 60 * 120, // 2 horas
   });
 
   return {

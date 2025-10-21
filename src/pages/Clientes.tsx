@@ -5,6 +5,7 @@ import { EditarClienteDialog } from '@/components/clientes/EditarClienteDialog';
 import { DetalhesClienteDialog } from '@/components/clientes/DetalhesClienteDialog';
 import { ClienteFilters } from '@/components/clientes/ClienteFilters';
 import { ClienteCard } from '@/components/clientes/ClienteCard';
+import { ClientesVirtualList } from '@/components/clientes/ClientesVirtualList';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { Button } from '@/components/ui/button';
@@ -171,26 +172,21 @@ export default function Clientes() {
           </Table>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {clientesFiltrados.map((cliente) => (
-            <ClienteCard
-              key={cliente.id}
-              cliente={cliente}
-              onView={(c) => {
-                setClienteSelecionado(c);
-                setDialogAberto('detalhes');
-              }}
-              onEdit={(c) => {
-                setClienteSelecionado(c);
-                setDialogAberto('editar');
-              }}
-              onDelete={(c) => {
-                setClienteSelecionado(c);
-                setDialogAberto('excluir');
-              }}
-            />
-          ))}
-        </div>
+        <ClientesVirtualList
+          clientes={clientesFiltrados}
+          onView={(c) => {
+            setClienteSelecionado(c);
+            setDialogAberto('detalhes');
+          }}
+          onEdit={(c) => {
+            setClienteSelecionado(c);
+            setDialogAberto('editar');
+          }}
+          onDelete={(c) => {
+            setClienteSelecionado(c);
+            setDialogAberto('excluir');
+          }}
+        />
       )}
 
       {/* Paginação */}

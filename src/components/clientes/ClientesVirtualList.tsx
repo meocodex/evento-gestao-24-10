@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Cliente } from '@/types/eventos';
 import { ClienteCard } from './ClienteCard';
+import { CardSkeleton } from '@/components/shared/LoadingSkeleton';
 
 interface ClientesVirtualListProps {
   clientes: Cliente[];
@@ -25,39 +26,37 @@ export function ClientesVirtualList({
     overscan: 5,
   });
 
-  return (
-    <div ref={parentRef} className="h-[calc(100vh-400px)] overflow-auto">
-      <div 
-        style={{ 
-          height: `${rowVirtualizer.getTotalSize()}px`, 
-          position: 'relative',
-          width: '100%'
-        }}
-      >
-        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-          const cliente = clientes[virtualRow.index];
-          return (
-            <div
-              key={cliente.id}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: `${virtualRow.size}px`,
-                transform: `translateY(${virtualRow.start}px)`,
-              }}
-            >
-              <ClienteCard
-                cliente={cliente}
-                onView={() => onView(cliente)}
-                onEdit={() => onEdit(cliente)}
-                onDelete={() => onDelete(cliente)}
-              />
-            </div>
-          );
-        })}
+  if (clientes.length === 0) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <CardSkeleton key={i} />
+        ))}
       </div>
+    );
+  }
+
+  return (
+    <div ref={parentRef} className="h-[calc(100vh-400px)] overflow-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+      style={{ contain: 'strict' }}>
+      {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+        const cliente = clientes[virtualRow.index];
+        return (
+          <div
+            key={cliente.id}
+            style={{
+              height: `${virtualRow.size}px`,
+            }}
+          >
+            <ClienteCard
+              cliente={cliente}
+              onView={() => onView(cliente)}
+              onEdit={() => onEdit(cliente)}
+              onDelete={() => onDelete(cliente)}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 }
