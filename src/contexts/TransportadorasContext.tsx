@@ -1,15 +1,28 @@
-import { createContext, useContext, ReactNode, useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { createContext, useContext, ReactNode, useMemo, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Transportadora, Envio, RotaAtendida } from '@/types/transportadoras';
 import { toast } from '@/hooks/use-toast';
 import { useEventos } from './EventosContext';
 import { Despesa } from '@/types/eventos';
+import { useTransportadorasQueries, useEnviosQueries, FiltrosTransportadora, FiltrosEnvio } from './transportadoras/useTransportadorasQueries';
 
 interface TransportadorasContextData {
   transportadoras: Transportadora[];
   envios: Envio[];
   loading: boolean;
+  totalTransportadoras: number;
+  totalEnvios: number;
+  pageTransportadoras: number;
+  pageEnvios: number;
+  pageSizeTransportadoras: number;
+  pageSizeEnvios: number;
+  filtrosTransportadoras: FiltrosTransportadora;
+  filtrosEnvios: FiltrosEnvio;
+  setPageTransportadoras: (page: number) => void;
+  setPageEnvios: (page: number) => void;
+  setFiltrosTransportadoras: (filtros: FiltrosTransportadora) => void;
+  setFiltrosEnvios: (filtros: FiltrosEnvio) => void;
   criarTransportadora: (data: Omit<Transportadora, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
   editarTransportadora: (id: string, data: Partial<Transportadora>) => void;
   excluirTransportadora: (id: string) => void;
@@ -31,36 +44,27 @@ export function TransportadorasProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const eventosContext = useEventos();
 
-  // Query para transportadoras com rotas
-  const { data: transportadorasRaw, isLoading: loadingTransportadoras } = useQuery({
-    queryKey: ['transportadoras'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('transportadoras')
-        .select(`
-          *,
-          rotas:transportadoras_rotas(*)
-        `)
-        .order('nome');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
+  const [pageTransportadoras, setPageTransportadoras] = useState(1);
+  const [pageEnvios, setPageEnvios] = useState(1);
+  const [pageSizeTransportadoras] = useState(50);
+  const [pageSizeEnvios] = useState(50);
+  const [filtrosTransportadoras, setFiltrosTransportadoras] = useState<FiltrosTransportadora>({});
+  const [filtrosEnvios, setFiltrosEnvios] = useState<FiltrosEnvio>({});
 
-  // Query para envios
-  const { data: enviosRaw, isLoading: loadingEnvios } = useQuery({
-    queryKey: ['envios'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('envios')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data;
-    }
-  });
+  const { data: transportadorasData, isLoading: loadingTransportadoras } = useTransportadorasQueries(
+    pageTransportadoras,
+    pageSizeTransportadoras,
+    filtrosTransportadoras
+  );
+
+  const { data: enviosData, isLoading: loadingEnvios } = useEnviosQueries(
+    pageEnvios,
+    pageSizeEnvios,
+    filtrosEnvios
+  );
+
+  const transportadorasRaw = transportadorasData?.transportadoras;
+  const enviosRaw = enviosData?.envios;
 
   // Mapeamento de dados
   const transportadoras = useMemo(() => {
@@ -117,6 +121,8 @@ export function TransportadorasProvider({ children }: { children: ReactNode }) {
   }, [enviosRaw]);
 
   const loading = loadingTransportadoras || loadingEnvios;
+  const totalTransportadoras = transportadorasData?.totalCount || 0;
+  const totalEnvios = enviosData?.totalCount || 0;
 
   // Mutations
   const criarTransportadoraMutation = useMutation({
@@ -581,6 +587,18 @@ export function TransportadorasProvider({ children }: { children: ReactNode }) {
         transportadoras,
         envios,
         loading,
+        totalTransportadoras,
+        totalEnvios,
+        pageTransportadoras,
+        pageEnvios,
+        pageSizeTransportadoras,
+        pageSizeEnvios,
+        filtrosTransportadoras,
+        filtrosEnvios,
+        setPageTransportadoras,
+        setPageEnvios,
+        setFiltrosTransportadoras,
+        setFiltrosEnvios,
         criarTransportadora,
         editarTransportadora,
         excluirTransportadora,

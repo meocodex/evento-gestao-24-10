@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { FileText, Plus, Search, Eye, Edit, MoreVertical, FileSignature, CheckCircle2, Clock, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { Button } from '@/components/ui/button';
@@ -18,11 +18,29 @@ import { SimularAssinaturaDialog } from '@/components/contratos/SimularAssinatur
 import { NovaPropostaDialog } from '@/components/propostas/NovaPropostaDialog';
 import { ConverterContratoDialog } from '@/components/propostas/ConverterContratoDialog';
 import { Contrato, ContratoTemplate, StatusContrato } from '@/types/contratos';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ContratosVirtualList } from '@/components/contratos/ContratosVirtualList';
+import { TemplatesVirtualGrid } from '@/components/contratos/TemplatesVirtualGrid';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 export default function Contratos() {
-  const { contratos, templates, excluirContrato, excluirTemplate } = useContratos();
+  const {
+    contratos,
+    templates,
+    loading,
+    totalContratos,
+    totalTemplates,
+    pageContratos,
+    pageTemplates,
+    pageSizeContratos,
+    pageSizeTemplates,
+    setPageContratos,
+    setPageTemplates,
+    setFiltrosContratos,
+    setFiltrosTemplates,
+    excluirContrato,
+    excluirTemplate,
+  } = useContratos();
   
   const [searchContratos, setSearchContratos] = useState('');
   const [searchTemplates, setSearchTemplates] = useState('');
@@ -42,29 +60,27 @@ export default function Contratos() {
   const [contratoSelecionado, setContratoSelecionado] = useState<Contrato | null>(null);
   const [templateSelecionado, setTemplateSelecionado] = useState<ContratoTemplate | null>(null);
 
-  const contratosFiltrados = useMemo(() => {
-    let filtered = contratos.filter(c => 
-      c.titulo.toLowerCase().includes(searchContratos.toLowerCase()) ||
-      c.numero.toLowerCase().includes(searchContratos.toLowerCase())
-    );
+  // Debounce para filtros
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFiltrosContratos({
+        searchTerm: searchContratos,
+        status: filtroStatus,
+      });
+      setPageContratos(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchContratos, filtroStatus]);
 
-    if (filtroStatus === 'propostas') {
-      filtered = filtered.filter(c => ['proposta', 'em_negociacao', 'aprovada'].includes(c.status));
-    } else if (filtroStatus === 'contratos') {
-      filtered = filtered.filter(c => ['rascunho', 'em_revisao', 'aguardando_assinatura', 'assinado'].includes(c.status));
-    } else if (filtroStatus !== 'todos') {
-      filtered = filtered.filter(c => c.status === filtroStatus);
-    }
-
-    return filtered;
-  }, [contratos, searchContratos, filtroStatus]);
-
-  const templatesFiltrados = useMemo(() => {
-    return templates.filter(t => 
-      t.nome.toLowerCase().includes(searchTemplates.toLowerCase()) ||
-      t.descricao.toLowerCase().includes(searchTemplates.toLowerCase())
-    );
-  }, [templates, searchTemplates]);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFiltrosTemplates({
+        searchTerm: searchTemplates,
+      });
+      setPageTemplates(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTemplates]);
 
   const statusColors: Record<StatusContrato, string> = {
     proposta: 'bg-blue-500',
@@ -91,6 +107,8 @@ export default function Contratos() {
   };
 
   const totalPropostas = contratos.filter(c => ['proposta', 'em_negociacao', 'aprovada'].includes(c.status)).length;
+  const totalPagesContratos = Math.ceil(totalContratos / pageSizeContratos);
+  const totalPagesTemplates = Math.ceil(totalTemplates / pageSizeTemplates);
 
   return (
     <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
@@ -184,110 +202,69 @@ export default function Contratos() {
               </Select>
             </div>
 
-            <div className="grid gap-4">
-              {contratosFiltrados.map((contrato) => {
-                const isProposta = ['proposta', 'em_negociacao', 'aprovada'].includes(contrato.status);
-                const Icon = isProposta ? FileText : FileSignature;
-                
-                return (
-                  <Card key={contrato.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-2">
-                          <Icon className="h-5 w-5" />
-                          <div>
-                            <CardTitle className="text-lg">{contrato.titulo}</CardTitle>
-                            <p className="text-sm text-muted-foreground">{contrato.numero}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className={statusColors[contrato.status]}>
-                            {statusLabels[contrato.status]}
-                          </Badge>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => {
-                                setContratoSelecionado(contrato);
-                                setMostrarDetalhesContrato(true);
-                              }}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                Ver Detalhes
-                              </DropdownMenuItem>
-                              {(contrato.status === 'rascunho' || contrato.status === 'em_revisao' || contrato.status === 'proposta') && (
-                                <DropdownMenuItem onClick={() => {
-                                  setContratoSelecionado(contrato);
-                                  setMostrarEditarContrato(true);
-                                }}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Editar
-                                </DropdownMenuItem>
-                              )}
-                              {contrato.status === 'aprovada' && (
-                                <DropdownMenuItem onClick={() => {
-                                  setContratoSelecionado(contrato);
-                                  setMostrarConverterContrato(true);
-                                }}>
-                                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                                  Converter em Contrato
-                                </DropdownMenuItem>
-                              )}
-                              {contrato.status !== 'assinado' && (
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setContratoSelecionado(contrato);
-                                    setConfirmExcluirContrato(true);
-                                  }}
-                                  className="text-destructive"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Excluir
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-3 gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Tipo:</span>{' '}
-                          <span className="capitalize">{contrato.tipo}</span>
-                        </div>
-                        {contrato.valor && (
-                          <div>
-                            <span className="text-muted-foreground">Valor:</span>{' '}
-                            {contrato.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                          </div>
-                        )}
-                        {isProposta && contrato.itens && (
-                          <div>
-                            <span className="text-muted-foreground">Itens:</span> {contrato.itens.length}
-                          </div>
-                        )}
-                        {!isProposta && (
-                          <div>
-                            <span className="text-muted-foreground">Assinaturas:</span>{' '}
-                            {contrato.assinaturas.filter(a => a.assinado).length}/{contrato.assinaturas.length}
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-              {contratosFiltrados.length === 0 && (
-                <div className="text-center py-12 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhum contrato ou proposta encontrado</p>
-                </div>
-              )}
-            </div>
+            <ContratosVirtualList
+              contratos={contratos}
+              loading={loading}
+              statusColors={statusColors}
+              statusLabels={statusLabels}
+              onDetalhes={(contrato) => {
+                setContratoSelecionado(contrato);
+                setMostrarDetalhesContrato(true);
+              }}
+              onEditar={(contrato) => {
+                setContratoSelecionado(contrato);
+                setMostrarEditarContrato(true);
+              }}
+              onConverter={(contrato) => {
+                setContratoSelecionado(contrato);
+                setMostrarConverterContrato(true);
+              }}
+              onExcluir={(contrato) => {
+                setContratoSelecionado(contrato);
+                setConfirmExcluirContrato(true);
+              }}
+            />
+
+            {totalPagesContratos > 1 && (
+              <Pagination className="mt-6">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setPageContratos(Math.max(1, pageContratos - 1))}
+                      className={pageContratos === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: Math.min(5, totalPagesContratos) }, (_, i) => {
+                    let pageNum = i + 1;
+                    if (totalPagesContratos > 5) {
+                      if (pageContratos > 3) {
+                        pageNum = pageContratos - 2 + i;
+                      }
+                      if (pageNum > totalPagesContratos - 2) {
+                        pageNum = totalPagesContratos - 4 + i;
+                      }
+                    }
+                    return (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink
+                          onClick={() => setPageContratos(pageNum)}
+                          isActive={pageContratos === pageNum}
+                          className="cursor-pointer"
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setPageContratos(Math.min(totalPagesContratos, pageContratos + 1))}
+                      className={pageContratos === totalPagesContratos ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
           </TabsContent>
 
           <TabsContent value="templates" className="space-y-4">
@@ -302,70 +279,65 @@ export default function Contratos() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {templatesFiltrados.map((template) => (
-                <Card key={template.id} className="hover:shadow-md transition-shadow cursor-pointer">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle>{template.nome}</CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">{template.descricao}</p>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => {
-                            setTemplateSelecionado(template);
-                            setMostrarDetalhesTemplate(true);
-                          }}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Ver Detalhes
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => {
-                            setTemplateSelecionado(template);
-                            setMostrarEditarTemplate(true);
-                          }}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setTemplateSelecionado(template);
-                              setConfirmExcluirTemplate(true);
-                            }}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-2">
-                      <Badge className="capitalize">{template.tipo}</Badge>
-                      <Badge variant={template.status === 'ativo' ? 'default' : 'secondary'}>
-                        {template.status}
-                      </Badge>
-                      {template.papelTimbrado && (
-                        <Badge variant="outline">
-                          📄 Com Timbrado
-                        </Badge>
-                      )}
-                      <span className="text-xs text-muted-foreground ml-auto">
-                        v{template.versao}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-              {templatesFiltrados.length === 0 && (
-                <div className="col-span-2 text-center py-12 text-muted-foreground">
+            <TemplatesVirtualGrid
+              templates={templates}
+              loading={loading}
+              onDetalhes={(template) => {
+                setTemplateSelecionado(template);
+                setMostrarDetalhesTemplate(true);
+              }}
+              onEditar={(template) => {
+                setTemplateSelecionado(template);
+                setMostrarEditarTemplate(true);
+              }}
+              onExcluir={(template) => {
+                setTemplateSelecionado(template);
+                setConfirmExcluirTemplate(true);
+              }}
+            />
+
+            {totalPagesTemplates > 1 && (
+              <Pagination className="mt-6">
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => setPageTemplates(Math.max(1, pageTemplates - 1))}
+                      className={pageTemplates === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                  {Array.from({ length: Math.min(5, totalPagesTemplates) }, (_, i) => {
+                    let pageNum = i + 1;
+                    if (totalPagesTemplates > 5) {
+                      if (pageTemplates > 3) {
+                        pageNum = pageTemplates - 2 + i;
+                      }
+                      if (pageNum > totalPagesTemplates - 2) {
+                        pageNum = totalPagesTemplates - 4 + i;
+                      }
+                    }
+                    return (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink
+                          onClick={() => setPageTemplates(pageNum)}
+                          isActive={pageTemplates === pageNum}
+                          className="cursor-pointer"
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => setPageTemplates(Math.min(totalPagesTemplates, pageTemplates + 1))}
+                      className={pageTemplates === totalPagesTemplates ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            )}
+          </TabsContent>
+        </Tabs>
                   <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>Nenhum template encontrado</p>
                 </div>

@@ -2,7 +2,7 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 import { ContratoTemplate, Contrato } from '@/types/contratos';
 import { toast } from '@/hooks/use-toast';
 import { gerarPDFComTimbrado } from '@/utils/pdfGenerator';
-import { useContratosQueries } from './contratos/useContratosQueries';
+import { useContratosQueries, FiltrosContrato, FiltrosTemplate } from './contratos/useContratosQueries';
 import { useContratosMutations } from './contratos/useContratosMutations';
 import { useTemplatesMutations } from './contratos/useTemplatesMutations';
 import { useContratosWorkflow } from './contratos/useContratosWorkflow';
@@ -11,6 +11,18 @@ interface ContratosContextData {
   templates: ContratoTemplate[];
   contratos: Contrato[];
   loading: boolean;
+  totalContratos: number;
+  totalTemplates: number;
+  pageContratos: number;
+  pageTemplates: number;
+  pageSizeContratos: number;
+  pageSizeTemplates: number;
+  filtrosContratos: FiltrosContrato;
+  filtrosTemplates: FiltrosTemplate;
+  setPageContratos: (page: number) => void;
+  setPageTemplates: (page: number) => void;
+  setFiltrosContratos: (filtros: FiltrosContrato) => void;
+  setFiltrosTemplates: (filtros: FiltrosTemplate) => void;
   criarTemplate: (data: Omit<ContratoTemplate, 'id' | 'criadoEm' | 'atualizadoEm'>) => void;
   editarTemplate: (id: string, data: Partial<ContratoTemplate>) => void;
   excluirTemplate: (id: string) => void;
@@ -26,8 +38,28 @@ interface ContratosContextData {
 const ContratosContext = createContext<ContratosContextData>({} as ContratosContextData);
 
 export function ContratosProvider({ children }: { children: ReactNode }) {
-  // Hooks do Supabase
-  const { templates, contratos, loading } = useContratosQueries();
+  const [pageContratos, setPageContratos] = useState(1);
+  const [pageTemplates, setPageTemplates] = useState(1);
+  const [pageSizeContratos] = useState(50);
+  const [pageSizeTemplates] = useState(50);
+  const [filtrosContratos, setFiltrosContratos] = useState<FiltrosContrato>({});
+  const [filtrosTemplates, setFiltrosTemplates] = useState<FiltrosTemplate>({});
+
+  const {
+    templates,
+    contratos,
+    loading,
+    totalContratos,
+    totalTemplates,
+  } = useContratosQueries(
+    pageContratos,
+    pageSizeContratos,
+    filtrosContratos,
+    pageTemplates,
+    pageSizeTemplates,
+    filtrosTemplates
+  );
+
   const contratosMutations = useContratosMutations();
   const templatesMutations = useTemplatesMutations();
   const workflow = useContratosWorkflow();
@@ -116,6 +148,18 @@ export function ContratosProvider({ children }: { children: ReactNode }) {
         templates,
         contratos,
         loading,
+        totalContratos,
+        totalTemplates,
+        pageContratos,
+        pageTemplates,
+        pageSizeContratos,
+        pageSizeTemplates,
+        filtrosContratos,
+        filtrosTemplates,
+        setPageContratos,
+        setPageTemplates,
+        setFiltrosContratos,
+        setFiltrosTemplates,
         criarTemplate,
         editarTemplate,
         excluirTemplate,

@@ -1,10 +1,8 @@
-import { useState } from 'react';
-import { Plus, Truck, Search, Filter, MapPin, Package, Trash2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Plus, Truck, Search, Filter } from 'lucide-react';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { useTransportadoras } from '@/contexts/TransportadorasContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,11 +11,18 @@ import { EditarTransportadoraSheet } from '@/components/transportadoras/EditarTr
 import { DetalhesTransportadoraSheet } from '@/components/transportadoras/DetalhesTransportadoraSheet';
 import { GerenciarRotasSheet } from '@/components/transportadoras/GerenciarRotasSheet';
 import { NovoEnvioSheet } from '@/components/transportadoras/NovoEnvioSheet';
-import { EnvioCard } from '@/components/transportadoras/EnvioCard';
 import { Transportadora } from '@/types/transportadoras';
+import { TransportadorasVirtualGrid } from '@/components/transportadoras/TransportadorasVirtualGrid';
+import { EnviosVirtualList } from '@/components/transportadoras/EnviosVirtualList';
 
 export default function Transportadoras() {
-  const { transportadoras, envios, excluirTransportadora } = useTransportadoras();
+  const {
+    transportadoras,
+    envios,
+    loading,
+    setFiltrosTransportadoras,
+    excluirTransportadora,
+  } = useTransportadoras();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todas' | 'ativa' | 'inativa'>('todas');
   const [novaTransportadoraOpen, setNovaTransportadoraOpen] = useState(false);
@@ -28,15 +33,18 @@ export default function Transportadoras() {
   const [confirmExcluirTransportadora, setConfirmExcluirTransportadora] = useState(false);
   const [transportadoraExcluir, setTransportadoraExcluir] = useState<Transportadora | null>(null);
 
-  const transportadorasFiltradas = transportadoras.filter((t) => {
-    const matchSearch = t.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.cnpj.includes(searchTerm);
-    const matchStatus = statusFilter === 'todas' || t.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFiltrosTransportadoras({
+        searchTerm,
+        status: statusFilter,
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm, statusFilter]);
 
-  const enviosAtivos = envios.filter(e => e.status === 'em_transito' || e.status === 'pendente');
-  const enviosFinalizados = envios.filter(e => e.status === 'entregue' || e.status === 'cancelado');
+  const enviosAtivos = useMemo(() => envios.filter(e => e.status === 'em_transito' || e.status === 'pendente'), [envios]);
+  const enviosFinalizados = useMemo(() => envios.filter(e => e.status === 'entregue' || e.status === 'cancelado'), [envios]);
 
   return (
     <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
@@ -115,8 +123,16 @@ export default function Transportadoras() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {transportadorasFiltradas.map((transportadora) => (
+            <TransportadorasVirtualGrid
+              transportadoras={transportadoras}
+              loading={loading}
+              onDetalhes={setDetalhesTransportadora}
+              onRotas={setGerenciarRotasTransportadora}
+              onEditar={setEditarTransportadora}
+              onExcluir={(t) => {
+                setTransportadoraExcluir(t);
+                setConfirmExcluirTransportadora(true);
+              }}
                 <Card key={transportadora.id} className="hover:shadow-md transition-shadow">
                   <CardHeader>
                     <div className="flex items-start justify-between">
@@ -192,39 +208,23 @@ export default function Transportadoras() {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            />
           </TabsContent>
 
           {/* Envios Tab */}
           <TabsContent value="envios" className="space-y-4">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Envios Ativos</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {enviosAtivos.map((envio) => (
-                    <EnvioCard key={envio.id} envio={envio} />
-                  ))}
-                  {enviosAtivos.length === 0 && (
-                    <p className="text-muted-foreground col-span-2">Nenhum envio ativo no momento</p>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h3 className="text-lg font-semibold mb-3">Envios Finalizados</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {enviosFinalizados.map((envio) => (
-                    <EnvioCard key={envio.id} envio={envio} />
-                  ))}
-                  {enviosFinalizados.length === 0 && (
-                    <p className="text-muted-foreground col-span-2">Nenhum envio finalizado</p>
-                  )}
-                </div>
-              </div>
-            </div>
+            <EnviosVirtualList
+              envios={enviosAtivos}
+              loading={loading}
+              title="Envios Ativos"
+              emptyMessage="Nenhum envio ativo no momento"
+            />
+            <EnviosVirtualList
+              envios={enviosFinalizados}
+              loading={loading}
+              title="Envios Finalizados"
+              emptyMessage="Nenhum envio finalizado"
+            />
           </TabsContent>
         </Tabs>
 
