@@ -148,6 +148,7 @@ export type Database = {
           endereco: Json
           id: string
           nome: string
+          search_vector: unknown | null
           telefone: string
           tipo: Database["public"]["Enums"]["tipo_cliente"]
           updated_at: string | null
@@ -161,6 +162,7 @@ export type Database = {
           endereco?: Json
           id?: string
           nome: string
+          search_vector?: unknown | null
           telefone: string
           tipo: Database["public"]["Enums"]["tipo_cliente"]
           updated_at?: string | null
@@ -174,6 +176,7 @@ export type Database = {
           endereco?: Json
           id?: string
           nome?: string
+          search_vector?: unknown | null
           telefone?: string
           tipo?: Database["public"]["Enums"]["tipo_cliente"]
           updated_at?: string | null
@@ -1571,6 +1574,26 @@ export type Database = {
         Args: { p_material_id: string }
         Returns: undefined
       }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1597,6 +1620,18 @@ export type Database = {
       notificar_materiais_atrasados: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
       }
     }
     Enums: {

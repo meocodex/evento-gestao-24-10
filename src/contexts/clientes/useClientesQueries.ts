@@ -2,16 +2,26 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Cliente } from '@/types/eventos';
 
-export function useClientesQueries(page = 1, pageSize = 20) {
+export function useClientesQueries(page = 1, pageSize = 20, searchTerm?: string) {
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['clientes', page, pageSize],
+    queryKey: ['clientes', page, pageSize, searchTerm],
     queryFn: async () => {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
       
-      const { data, error, count } = await supabase
+      let query = supabase
         .from('clientes')
-        .select('*', { count: 'exact' })
+        .select('*', { count: 'exact' });
+
+      // Usar full-text search nativo quando houver termo de busca
+      if (searchTerm && searchTerm.trim().length > 0) {
+        query = query.textSearch('search_vector', searchTerm.trim(), {
+          type: 'websearch',
+          config: 'portuguese'
+        });
+      }
+
+      const { data, error, count } = await query
         .order('created_at', { ascending: false })
         .range(from, to);
       

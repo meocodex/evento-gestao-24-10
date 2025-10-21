@@ -46,7 +46,8 @@ export function ClientesProvider({ children }: { children: ReactNode }) {
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
-  const { clientes, totalCount, loading } = useClientesQueries(page, pageSize);
+  // Usar full-text search nativo para busca de texto
+  const { clientes, totalCount, loading } = useClientesQueries(page, pageSize, filtros.busca);
   const { criarCliente: criarClienteMutation, editarCliente: editarClienteMutation, excluirCliente: excluirClienteMutation } = useClientesMutations();
 
   const criarCliente = useCallback(async (data: ClienteFormData): Promise<Cliente> => {
@@ -101,21 +102,10 @@ export function ClientesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Filtrar clientes (memoizado)
+  // Busca de texto agora usa full-text search nativo do banco
+  // Filtros adicionais (tipo, estado, cidade) são aplicados no frontend
   const clientesFiltrados = useMemo(() => {
     return clientes.filter((cliente) => {
-      // Filtro de busca
-      if (filtros.busca) {
-        const busca = filtros.busca.toLowerCase();
-        const matchNome = cliente.nome.toLowerCase().includes(busca);
-        const matchDocumento = cliente.documento.replace(/\D/g, '').includes(busca.replace(/\D/g, ''));
-        const matchEmail = cliente.email?.toLowerCase().includes(busca);
-        const matchTelefone = cliente.telefone.replace(/\D/g, '').includes(busca.replace(/\D/g, ''));
-        
-        if (!matchNome && !matchDocumento && !matchEmail && !matchTelefone) {
-          return false;
-        }
-      }
-
       // Filtro de tipo
       if (filtros.tipo !== 'todos' && cliente.tipo !== filtros.tipo) {
         return false;
