@@ -14,6 +14,7 @@ import { CadastrosPublicosProvider } from "@/contexts/CadastrosPublicosContext";
 import { EventosProvider } from "@/contexts/EventosContext";
 import { DemandasProvider } from "@/contexts/DemandasContext";
 import { CategoriasProvider } from "@/contexts/CategoriasContext";
+import { EquipeProvider } from "@/contexts/EquipeContext";
 import { MainLayout } from "@/components/layout/MainLayout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -27,6 +28,7 @@ import Financeiro from "./pages/Financeiro";
 import Contratos from "./pages/Contratos";
 import Relatorios from "./pages/Relatorios";
 import Configuracoes from "./pages/Configuracoes";
+import Equipe from "./pages/Equipe";
 import CadastrosPendentes from "./pages/CadastrosPendentes";
 import NotFound from "./pages/NotFound";
 import CadastroEvento from "./pages/public/CadastroEvento";
@@ -64,6 +66,7 @@ function ProtectedRoutes() {
         <Route path="financeiro" element={<Financeiro />} />
         <Route path="relatorios" element={<Relatorios />} />
         <Route path="configuracoes" element={<Configuracoes />} />
+        <Route path="equipe" element={<Equipe />} />
         <Route path="cadastros-pendentes" element={<CadastrosPendentes />} />
         <Route path="*" element={<NotFound />} />
       </Route>
@@ -96,14 +99,15 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <CategoriasProvider>
-            <EventosProvider>
-              <DemandasProvider>
-                <ClientesProvider>
-                  <EstoqueProvider>
-                    <ConfiguracoesProvider>
-                      <CadastrosPublicosProvider>
-                        <TransportadorasProvider>
-                          <ContratosProvider>
+            <EquipeProvider>
+              <EventosProvider>
+                <DemandasProvider>
+                  <ClientesProvider>
+                    <EstoqueProvider>
+                      <ConfiguracoesProvider>
+                        <CadastrosPublicosProvider>
+                          <TransportadorasProvider>
+                            <ContratosProvider>
                             <TooltipProvider>
                             <Toaster />
                             <Sonner />
@@ -122,6 +126,7 @@ const App = () => (
                 </ClientesProvider>
               </DemandasProvider>
             </EventosProvider>
+            </EquipeProvider>
           </CategoriasProvider>
         </AuthProvider>
       </BrowserRouter>

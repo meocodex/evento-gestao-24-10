@@ -600,6 +600,63 @@ export type Database = {
           },
         ]
       }
+      equipe_operacional: {
+        Row: {
+          avaliacao: number | null
+          cpf: string | null
+          created_at: string | null
+          documentos: string[] | null
+          email: string | null
+          foto: string | null
+          funcao_principal: string
+          funcoes_secundarias: string[] | null
+          id: string
+          nome: string
+          observacoes: string | null
+          status: string | null
+          telefone: string
+          tipo_vinculo: string
+          updated_at: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          avaliacao?: number | null
+          cpf?: string | null
+          created_at?: string | null
+          documentos?: string[] | null
+          email?: string | null
+          foto?: string | null
+          funcao_principal: string
+          funcoes_secundarias?: string[] | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          status?: string | null
+          telefone: string
+          tipo_vinculo: string
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          avaliacao?: number | null
+          cpf?: string | null
+          created_at?: string | null
+          documentos?: string[] | null
+          email?: string | null
+          foto?: string | null
+          funcao_principal?: string
+          funcoes_secundarias?: string[] | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          status?: string | null
+          telefone?: string
+          tipo_vinculo?: string
+          updated_at?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       eventos: {
         Row: {
           cardapio_arquivo: string | null
@@ -915,30 +972,45 @@ export type Database = {
       eventos_equipe: {
         Row: {
           created_at: string | null
+          data_fim: string | null
+          data_inicio: string | null
           evento_id: string
           funcao: string
           id: string
           nome: string
+          observacoes: string | null
+          operacional_id: string | null
           telefone: string
           updated_at: string | null
+          whatsapp: string | null
         }
         Insert: {
           created_at?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
           evento_id: string
           funcao: string
           id?: string
           nome: string
+          observacoes?: string | null
+          operacional_id?: string | null
           telefone: string
           updated_at?: string | null
+          whatsapp?: string | null
         }
         Update: {
           created_at?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
           evento_id?: string
           funcao?: string
           id?: string
           nome?: string
+          observacoes?: string | null
+          operacional_id?: string | null
           telefone?: string
           updated_at?: string | null
+          whatsapp?: string | null
         }
         Relationships: [
           {
@@ -946,6 +1018,13 @@ export type Database = {
             columns: ["evento_id"]
             isOneToOne: false
             referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_equipe_operacional_id_fkey"
+            columns: ["operacional_id"]
+            isOneToOne: false
+            referencedRelation: "equipe_operacional"
             referencedColumns: ["id"]
           },
         ]

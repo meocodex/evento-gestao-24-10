@@ -11,6 +11,7 @@ import {
   Settings,
   Home,
   LogOut,
+  UserCog,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -40,6 +41,7 @@ const menuItems = [
   { title: 'Financeiro', url: '/financeiro', icon: DollarSign, roles: ['admin'] },
   { title: 'Contratos', url: '/contratos', icon: FileText, roles: ['admin', 'comercial'] },
   { title: 'Relatórios', url: '/relatorios', icon: BarChart3, roles: ['admin', 'comercial', 'suporte'] },
+  { title: 'Equipe', url: '/equipe', icon: UserCog, roles: ['admin', 'suporte'] },
   { title: 'Configurações', url: '/configuracoes', icon: Settings, roles: ['admin'] },
 ];
 
