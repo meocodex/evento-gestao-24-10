@@ -58,9 +58,6 @@ export function NovoMaterialDialog({ open, onOpenChange }: NovoMaterialDialogPro
       await adicionarMaterial({
         nome: data.nome,
         categoria: data.categoria,
-        quantidadeTotal: 0,
-        quantidadeDisponivel: 0,
-        unidade: 'un',
       });
       reset();
       onOpenChange(false);
