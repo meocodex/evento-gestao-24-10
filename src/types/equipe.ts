@@ -35,6 +35,24 @@ export interface MembroEquipeEvento {
   updated_at: string;
 }
 
+export interface MembroEquipeUnificado {
+  id: string;
+  nome: string;
+  email: string;
+  telefone: string | null;
+  cpf: string | null;
+  avatar_url: string | null;
+  tipo_membro: 'sistema' | 'operacional' | 'ambos';
+  funcao_principal: string;
+  tipo_vinculo?: string;
+  status?: string;
+  avaliacao?: number;
+  permissions?: string[];
+  whatsapp?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ConflitoDatas {
   eventoId: string;
   eventoNome: string;

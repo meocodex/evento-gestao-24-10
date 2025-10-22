@@ -1,255 +1,248 @@
-import { useState, useEffect } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Users, UserCog, Calendar, Search, Plus } from 'lucide-react';
+import { Users, Search, Plus } from 'lucide-react';
 import { useEquipe } from '@/contexts/EquipeContext';
-import { OperacionalVirtualList } from '@/components/equipe/operacional/OperacionalVirtualList';
+import { MembrosUnificadosVirtualList } from '@/components/equipe/MembrosUnificadosVirtualList';
 import { NovoOperacionalDialog } from '@/components/equipe/operacional/NovoOperacionalDialog';
 import { DetalhesOperacionalDialog } from '@/components/equipe/operacional/DetalhesOperacionalDialog';
 import { EditarOperacionalDialog } from '@/components/equipe/operacional/EditarOperacionalDialog';
-import { OperacionalEquipe } from '@/types/equipe';
-import { GerenciarUsuarios } from '@/components/configuracoes/GerenciarUsuarios';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-
+import { OperacionalEquipe, MembroEquipeUnificado } from '@/types/equipe';
+import { Badge } from '@/components/ui/badge';
 export default function Equipe() {
   const { 
-    operacionais, 
-    loading, 
-    page, 
-    setPage, 
-    pageSize, 
-    totalCount,
-    setFiltros 
+    membrosUnificados,
+    loadingMembros,
   } = useEquipe();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [funcaoFilter, setFuncaoFilter] = useState<string>('todos');
-  const [tipoFilter, setTipoFilter] = useState<string>('todos');
-  const [statusFilter, setStatusFilter] = useState<string>('ativo');
+  const [tipoMembroFilter, setTipoMembroFilter] = useState<string>('todos');
+  const [statusFilter, setStatusFilter] = useState<string>('todos');
   
   const [novoDialogOpen, setNovoDialogOpen] = useState(false);
-  const [detalhesOperacional, setDetalhesOperacional] = useState<OperacionalEquipe | null>(null);
-  const [editarOperacional, setEditarOperacional] = useState<OperacionalEquipe | null>(null);
+  const [membroSelecionado, setMembroSelecionado] = useState<MembroEquipeUnificado | null>(null);
+  const [editarMembro, setEditarMembro] = useState<MembroEquipeUnificado | null>(null);
 
-  // Debounce para aplicar filtros server-side
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setFiltros({
-        searchTerm: searchTerm || undefined,
-        funcao: funcaoFilter !== 'todos' ? funcaoFilter : undefined,
-        tipo: tipoFilter !== 'todos' ? tipoFilter : undefined,
-        status: statusFilter !== 'todos' ? statusFilter : undefined,
-      });
-      setPage(1); // Reset para primeira página ao filtrar
-    }, 300);
+  // Filtrar membros localmente
+  const membrosFiltrados = useMemo(() => {
+    return membrosUnificados.filter(membro => {
+      // Filtro de busca
+      if (searchTerm) {
+        const termLower = searchTerm.toLowerCase();
+        const matchNome = membro.nome.toLowerCase().includes(termLower);
+        const matchEmail = membro.email?.toLowerCase().includes(termLower);
+        const matchTelefone = membro.telefone?.includes(searchTerm);
+        const matchCPF = membro.cpf?.includes(searchTerm);
+        
+        if (!matchNome && !matchEmail && !matchTelefone && !matchCPF) {
+          return false;
+        }
+      }
 
-    return () => clearTimeout(timer);
-  }, [searchTerm, funcaoFilter, tipoFilter, statusFilter, setFiltros, setPage]);
+      // Filtro de função
+      if (funcaoFilter !== 'todos' && membro.funcao_principal !== funcaoFilter) {
+        return false;
+      }
+
+      // Filtro de tipo de membro
+      if (tipoMembroFilter !== 'todos' && membro.tipo_membro !== tipoMembroFilter) {
+        return false;
+      }
+
+      // Filtro de status
+      if (statusFilter !== 'todos' && membro.status !== statusFilter) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [membrosUnificados, searchTerm, funcaoFilter, tipoMembroFilter, statusFilter]);
 
   // Obter funções únicas para o filtro
-  const funcoesUnicas = Array.from(new Set(operacionais.map(op => op.funcao_principal))).sort();
+  const funcoesUnicas = useMemo(() => {
+    return Array.from(new Set(membrosUnificados.map(m => m.funcao_principal))).sort();
+  }, [membrosUnificados]);
 
-  const totalPages = Math.ceil(totalCount / pageSize);
+  // Estatísticas
+  const stats = useMemo(() => {
+    return {
+      total: membrosUnificados.length,
+      sistema: membrosUnificados.filter(m => m.tipo_membro === 'sistema').length,
+      operacional: membrosUnificados.filter(m => m.tipo_membro === 'operacional').length,
+      ambos: membrosUnificados.filter(m => m.tipo_membro === 'ambos').length,
+    };
+  }, [membrosUnificados]);
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Equipe</h1>
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Users className="h-8 w-8" />
+            Membros da Equipe
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Gestão unificada de equipe operacional e usuários do sistema
+          </p>
+        </div>
       </div>
-        <Tabs defaultValue="operacional" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="operacional" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Operacional
-            </TabsTrigger>
-            <TabsTrigger value="usuarios" className="flex items-center gap-2">
-              <UserCog className="h-4 w-4" />
-              Usuários do Sistema
-            </TabsTrigger>
-            <TabsTrigger value="calendario" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Calendário
-            </TabsTrigger>
-          </TabsList>
 
-          {/* Aba Operacional */}
-          <TabsContent value="operacional" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Equipe Operacional</CardTitle>
-                  <Button onClick={() => setNovoDialogOpen(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Cadastrar
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Filtros */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="relative md:col-span-2">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar por nome, telefone ou CPF..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
+      {/* Estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">Total de Membros</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-blue-600">{stats.sistema}</div>
+            <p className="text-xs text-muted-foreground">Apenas Sistema</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-green-600">{stats.operacional}</div>
+            <p className="text-xs text-muted-foreground">Apenas Operacional</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-purple-600">{stats.ambos}</div>
+            <p className="text-xs text-muted-foreground">Sistema + Operacional</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Card Principal */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Todos os Membros</CardTitle>
+            <Button onClick={() => setNovoDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Cadastrar Operacional
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Filtros */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Busca */}
+            <div className="relative md:col-span-2">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome, email, telefone ou CPF..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Filtro por Tipo de Membro */}
+            <Select value={tipoMembroFilter} onValueChange={setTipoMembroFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Tipo de Membro" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os Tipos</SelectItem>
+                <SelectItem value="sistema">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="default" className="text-xs">Sistema</Badge>
                   </div>
-
-                  <Select value={funcaoFilter} onValueChange={setFuncaoFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Função" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todas as Funções</SelectItem>
-                      {funcoesUnicas.map(funcao => (
-                        <SelectItem key={funcao} value={funcao}>
-                          {funcao}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={tipoFilter} onValueChange={setTipoFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="todos">Todos os Tipos</SelectItem>
-                      <SelectItem value="clt">CLT</SelectItem>
-                      <SelectItem value="freelancer">Freelancer</SelectItem>
-                      <SelectItem value="pj">PJ</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ativo">Ativos</SelectItem>
-                      <SelectItem value="inativo">Inativos</SelectItem>
-                      <SelectItem value="bloqueado">Bloqueados</SelectItem>
-                      <SelectItem value="todos">Todos</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Lista Virtualizada */}
-                <OperacionalVirtualList
-                  operacionais={operacionais}
-                  loading={loading}
-                  onDetalhes={setDetalhesOperacional}
-                  onEditar={setEditarOperacional}
-                />
-
-                {/* Paginação */}
-                {totalPages > 1 && (
-                  <div className="mt-6 flex justify-center">
-                    <Pagination>
-                      <PaginationContent>
-                        <PaginationItem>
-                          <PaginationPrevious
-                            onClick={() => setPage(Math.max(1, page - 1))}
-                            className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                          />
-                        </PaginationItem>
-                        
-                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                          let pageNum: number;
-                          if (totalPages <= 5) {
-                            pageNum = i + 1;
-                          } else if (page <= 3) {
-                            pageNum = i + 1;
-                          } else if (page >= totalPages - 2) {
-                            pageNum = totalPages - 4 + i;
-                          } else {
-                            pageNum = page - 2 + i;
-                          }
-                          
-                          return (
-                            <PaginationItem key={pageNum}>
-                              <PaginationLink
-                                onClick={() => setPage(pageNum)}
-                                isActive={page === pageNum}
-                                className="cursor-pointer"
-                              >
-                                {pageNum}
-                              </PaginationLink>
-                            </PaginationItem>
-                          );
-                        })}
-                        
-                        <PaginationItem>
-                          <PaginationNext
-                            onClick={() => setPage(Math.min(totalPages, page + 1))}
-                            className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                          />
-                        </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
+                </SelectItem>
+                <SelectItem value="operacional">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs">Operacional</Badge>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </SelectItem>
+                <SelectItem value="ambos">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">Ambos</Badge>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
 
-          {/* Aba Usuários do Sistema */}
-          <TabsContent value="usuarios">
-            <GerenciarUsuarios />
-          </TabsContent>
+            {/* Filtro por Função */}
+            <Select value={funcaoFilter} onValueChange={setFuncaoFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Função" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todas as Funções</SelectItem>
+                {funcoesUnicas.map(funcao => (
+                  <SelectItem key={funcao} value={funcao}>
+                    {funcao}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          {/* Aba Calendário */}
-          <TabsContent value="calendario">
-            <Card>
-              <CardHeader>
-                <CardTitle>Calendário de Alocações</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-12 text-muted-foreground">
-                  Em desenvolvimento...
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          {/* Filtro de Status (segunda linha) */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos os Status</SelectItem>
+                <SelectItem value="ativo">Ativos</SelectItem>
+                <SelectItem value="inativo">Inativos</SelectItem>
+                <SelectItem value="bloqueado">Bloqueados</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-        {/* Dialogs */}
-        <NovoOperacionalDialog
-          open={novoDialogOpen}
-          onOpenChange={setNovoDialogOpen}
+          {/* Contagem de Resultados */}
+          <div className="flex items-center justify-between py-2 border-t">
+            <p className="text-sm text-muted-foreground">
+              Mostrando <span className="font-medium">{membrosFiltrados.length}</span> de{' '}
+              <span className="font-medium">{stats.total}</span> membros
+            </p>
+          </div>
+
+          {/* Lista Virtualizada Unificada */}
+          <MembrosUnificadosVirtualList
+            membros={membrosFiltrados}
+            loading={loadingMembros}
+            onDetalhes={setMembroSelecionado}
+            onEditar={setEditarMembro}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Dialogs */}
+      <NovoOperacionalDialog
+        open={novoDialogOpen}
+        onOpenChange={setNovoDialogOpen}
+      />
+
+      {membroSelecionado?.tipo_membro !== 'sistema' && membroSelecionado && (
+        <DetalhesOperacionalDialog
+          operacional={membroSelecionado as any}
+          open={!!membroSelecionado}
+          onOpenChange={(open) => !open && setMembroSelecionado(null)}
+          onEditar={() => {
+            setEditarMembro(membroSelecionado);
+            setMembroSelecionado(null);
+          }}
         />
+      )}
 
-        {detalhesOperacional && (
-          <DetalhesOperacionalDialog
-            operacional={detalhesOperacional}
-            open={!!detalhesOperacional}
-            onOpenChange={(open) => !open && setDetalhesOperacional(null)}
-            onEditar={() => {
-              setEditarOperacional(detalhesOperacional);
-              setDetalhesOperacional(null);
-            }}
-          />
-        )}
-
-        {editarOperacional && (
-          <EditarOperacionalDialog
-            operacional={editarOperacional}
-            open={!!editarOperacional}
-            onOpenChange={(open) => !open && setEditarOperacional(null)}
-          />
-        )}
+      {editarMembro?.tipo_membro !== 'sistema' && editarMembro && (
+        <EditarOperacionalDialog
+          operacional={editarMembro as any}
+          open={!!editarMembro}
+          onOpenChange={(open) => !open && setEditarMembro(null)}
+        />
+      )}
     </div>
   );
 }

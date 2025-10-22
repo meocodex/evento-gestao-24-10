@@ -1,8 +1,9 @@
-import React, { createContext, useContext, ReactNode, useState } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useMemo } from 'react';
 import { useOperacionalQueries } from './equipe/useOperacionalQueries';
 import { useOperacionalMutations } from './equipe/useOperacionalMutations';
 import { useConflitosEquipe } from './equipe/useConflitosEquipe';
-import { OperacionalEquipe, ConflitoDatas } from '@/types/equipe';
+import { useProfilesQueries } from './equipe/useProfilesQueries';
+import { OperacionalEquipe, ConflitoDatas, MembroEquipeUnificado } from '@/types/equipe';
 import { FiltrosOperacional } from './equipe/types';
 
 interface EquipeContextType {
@@ -12,6 +13,10 @@ interface EquipeContextType {
   loading: boolean;
   error: any;
   refetch: () => void;
+  
+  // Membros Unificados (operacionais + profiles)
+  membrosUnificados: MembroEquipeUnificado[];
+  loadingMembros: boolean;
   
   // Paginação
   page: number;
@@ -53,6 +58,8 @@ export function EquipeProvider({ children }: { children: ReactNode }) {
     refetch
   } = useOperacionalQueries(page, pageSize, filtros);
 
+  const { data: profiles = [], isLoading: loadingProfiles } = useProfilesQueries();
+
   const {
     criarOperacional,
     editarOperacional,
@@ -61,12 +68,72 @@ export function EquipeProvider({ children }: { children: ReactNode }) {
 
   const { verificarConflitos } = useConflitosEquipe();
 
+  // Unificar operacionais e profiles
+  const membrosUnificados = useMemo(() => {
+    const membros: MembroEquipeUnificado[] = [];
+
+    // Adicionar operacionais
+    operacionais.forEach(op => {
+      // Verificar se existe profile com mesmo CPF ou email
+      const profileCorrespondente = profiles.find(
+        p => (p.cpf && op.cpf && p.cpf === op.cpf) || 
+             (p.email && op.email && p.email.toLowerCase() === op.email.toLowerCase())
+      );
+
+      membros.push({
+        id: op.id,
+        nome: op.nome,
+        email: op.email || '',
+        telefone: op.telefone,
+        cpf: op.cpf || null,
+        avatar_url: op.foto || null,
+        tipo_membro: profileCorrespondente ? 'ambos' : 'operacional',
+        funcao_principal: op.funcao_principal,
+        tipo_vinculo: op.tipo_vinculo,
+        status: op.status,
+        avaliacao: op.avaliacao,
+        whatsapp: op.whatsapp,
+        permissions: profileCorrespondente?.permissions,
+        created_at: op.created_at,
+        updated_at: op.updated_at,
+      });
+    });
+
+    // Adicionar profiles que não estão em operacionais
+    profiles.forEach(profile => {
+      const jaAdicionado = membros.some(
+        m => (m.cpf && profile.cpf && m.cpf === profile.cpf) ||
+             (m.email && profile.email && m.email.toLowerCase() === profile.email.toLowerCase())
+      );
+
+      if (!jaAdicionado) {
+        membros.push({
+          id: profile.id,
+          nome: profile.nome,
+          email: profile.email,
+          telefone: profile.telefone,
+          cpf: profile.cpf,
+          avatar_url: profile.avatar_url,
+          tipo_membro: 'sistema',
+          funcao_principal: 'Usuário do Sistema',
+          permissions: profile.permissions,
+          created_at: profile.created_at,
+          updated_at: profile.updated_at,
+        });
+      }
+    });
+
+    return membros.sort((a, b) => a.nome.localeCompare(b.nome));
+  }, [operacionais, profiles]);
+
   const value: EquipeContextType = {
     operacionais,
     totalCount,
     loading,
     error,
     refetch,
+    membrosUnificados,
+    loadingMembros: loading || loadingProfiles,
     page,
     setPage,
     pageSize,
