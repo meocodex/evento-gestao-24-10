@@ -27,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hydrating, setHydrating] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,15 +38,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         
         if (session?.user) {
-          // Set minimal user immediately to allow redirect
-          setUser(prev => ({
+          // Only set minimal user if there's no existing user (first time)
+          setUser(prev => prev ?? {
             id: session.user.id,
-            name: prev?.name || session.user.email?.split('@')[0] || 'Usuário',
+            name: session.user.email?.split('@')[0] || 'Usuário',
             email: session.user.email || '',
-            tipo: prev?.tipo || 'sistema',
-            role: 'comercial', // Temporário até hidratação correta
-            permissions: prev?.permissions || [],
-          }));
+            tipo: 'sistema',
+            role: 'comercial',
+            permissions: [],
+          });
         } else {
           setUser(null);
         }
@@ -71,6 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!session?.user?.id) return;
     
     let isCancelled = false;
+    setHydrating(true);
+    
     const timeoutId = setTimeout(async () => {
       console.log('💧 Hydrating user profile for:', session.user.id);
       
@@ -98,6 +101,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!isCancelled) {
           console.warn('⚠️ Não foi possível hidratar perfil/roles/permissões:', e);
         }
+      } finally {
+        if (!isCancelled) {
+          setHydrating(false);
+        }
       }
     }, 50); // Debounce reduzido para 50ms (mais responsivo)
     
@@ -115,7 +122,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, logout, isAuthenticated: !!session, loading }}>
+    <AuthContext.Provider value={{ user, logout, isAuthenticated: !!session, loading: loading || hydrating }}>
       {children}
     </AuthContext.Provider>
   );

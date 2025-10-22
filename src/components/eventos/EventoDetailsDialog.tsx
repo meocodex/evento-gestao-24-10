@@ -33,7 +33,7 @@ export function EventoDetailsDialog({ evento, open, onOpenChange }: EventoDetail
             <TabsTrigger value="materiais">Materiais</TabsTrigger>
             <TabsTrigger value="operacao">Operação</TabsTrigger>
             <TabsTrigger value="demandas">Demandas</TabsTrigger>
-            <TabsTrigger value="financeiro" disabled={!permissions.canViewFinancial}>
+            <TabsTrigger value="financeiro" disabled={!permissions.isLoading && !permissions.canViewFinancial}>
               Financeiro
             </TabsTrigger>
             <TabsTrigger value="contratos">Contratos</TabsTrigger>

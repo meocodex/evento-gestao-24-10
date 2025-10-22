@@ -17,16 +17,6 @@ export function MainLayout() {
   // Prefetch inteligente de páginas relacionadas
   usePrefetchPages();
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <NavigationLoadingBar />

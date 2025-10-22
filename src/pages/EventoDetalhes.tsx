@@ -82,7 +82,7 @@ export default function EventoDetalhes() {
             </TabsTrigger>
             <TabsTrigger 
               value="financeiro" 
-              disabled={!permissions.canViewFinancial}
+              disabled={!permissions.isLoading && !permissions.canViewFinancial}
               className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Financeiro

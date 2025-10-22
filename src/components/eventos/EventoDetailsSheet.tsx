@@ -59,7 +59,7 @@ export function EventoDetailsSheet({ evento, open, onOpenChange }: EventoDetails
             </TabsTrigger>
             <TabsTrigger 
               value="financeiro" 
-              disabled={!permissions.canViewFinancial}
+              disabled={!permissions.isLoading && !permissions.canViewFinancial}
               className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent"
             >
               Financeiro
