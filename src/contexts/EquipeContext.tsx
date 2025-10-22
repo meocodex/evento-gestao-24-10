@@ -115,6 +115,7 @@ export function EquipeProvider({ children }: { children: ReactNode }) {
         avaliacao: op.avaliacao,
         whatsapp: op.whatsapp,
         permissions: profileCorrespondente?.permissions,
+        role: profileCorrespondente?.role,
         created_at: op.created_at,
         updated_at: op.updated_at,
       });
@@ -138,6 +139,7 @@ export function EquipeProvider({ children }: { children: ReactNode }) {
           tipo_membro: 'sistema',
           funcao_principal: 'Usuário do Sistema',
           permissions: profile.permissions,
+          role: profile.role,
           created_at: profile.created_at,
           updated_at: profile.updated_at,
         });

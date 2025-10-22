@@ -14,6 +14,7 @@ export interface ProfileMembro {
   // Campos para compatibilidade com interface unificada
   funcao_principal?: string;
   permissions?: string[];
+  role?: 'admin' | 'comercial' | 'suporte';
 }
 
 export function useProfilesQueries(enabled = true) {
@@ -23,10 +24,15 @@ export function useProfilesQueries(enabled = true) {
     queryFn: async () => {
       console.log('🔍 Buscando profiles...');
       
-      // Buscar profiles
+      // Buscar profiles com roles
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          user_roles (
+            role
+          )
+        `)
         .order('nome', { ascending: true });
 
       if (profilesError) throw profilesError;
@@ -47,9 +53,10 @@ export function useProfilesQueries(enabled = true) {
         return acc;
       }, {} as Record<string, string[]>);
 
-      // Transformar para incluir permissões
+      // Transformar para incluir permissões e role
       return (profilesData || []).map(profile => ({
         ...profile,
+        role: (profile as any).user_roles?.[0]?.role || 'comercial',
         permissions: permsByUser[profile.id] || [],
         funcao_principal: 'Usuário do Sistema',
       })) as ProfileMembro[];

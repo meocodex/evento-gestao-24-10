@@ -77,6 +77,32 @@ export function MembroEquipeCard({
     return labels[status || ''] || status || 'Ativo';
   };
 
+  const getRoleBadgeVariant = (role?: string) => {
+    switch (role) {
+      case 'admin':
+        return 'destructive';
+      case 'comercial':
+        return 'default';
+      case 'suporte':
+        return 'secondary';
+      default:
+        return 'outline';
+    }
+  };
+
+  const getRoleLabel = (role?: string) => {
+    switch (role) {
+      case 'admin':
+        return 'Administrador';
+      case 'comercial':
+        return 'Comercial';
+      case 'suporte':
+        return 'Suporte';
+      default:
+        return null;
+    }
+  };
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
@@ -100,6 +126,14 @@ export function MembroEquipeCard({
                 <Badge variant={getTipoBadgeVariant(membro.tipo_membro)}>
                   {getTipoMembroLabel(membro.tipo_membro)}
                 </Badge>
+                
+                {/* Badge de Nível de Acesso - só para membros com acesso ao sistema */}
+                {(membro.tipo_membro === 'sistema' || membro.tipo_membro === 'ambos') && membro.role && (
+                  <Badge variant={getRoleBadgeVariant(membro.role) as any}>
+                    {getRoleLabel(membro.role)}
+                  </Badge>
+                )}
+                
                 {membro.tipo_membro === 'sistema' && membro.permissions && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Shield className="h-3 w-3" />

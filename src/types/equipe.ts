@@ -48,6 +48,7 @@ export interface MembroEquipeUnificado {
   status?: string;
   avaliacao?: number;
   permissions?: string[];
+  role?: 'admin' | 'comercial' | 'suporte';
   whatsapp?: string;
   created_at: string;
   updated_at: string;
