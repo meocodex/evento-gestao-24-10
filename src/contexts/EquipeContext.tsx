@@ -1,4 +1,4 @@
-import React, { createContext, useContext, ReactNode, useState, useMemo } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useMemo, useEffect } from 'react';
 import { useOperacionalQueries } from './equipe/useOperacionalQueries';
 import { useOperacionalMutations } from './equipe/useOperacionalMutations';
 import { useConflitosEquipe } from './equipe/useConflitosEquipe';
@@ -51,14 +51,24 @@ export function EquipeProvider({ children }: { children: ReactNode }) {
   const [filtros, setFiltros] = useState<FiltrosOperacional>({});
 
   const {
-    operacionais,
-    totalCount,
+    operacionais = [],
+    totalCount = 0,
     loading,
     error,
     refetch
   } = useOperacionalQueries(page, pageSize, filtros);
 
-  const { data: profiles = [], isLoading: loadingProfiles } = useProfilesQueries();
+  const { 
+    data: profiles = [], 
+    isLoading: loadingProfiles,
+    error: profilesError 
+  } = useProfilesQueries();
+
+  // Logs temporários para debugging
+  useEffect(() => {
+    if (error) console.error('❌ Erro em operacionais:', error);
+    if (profilesError) console.error('❌ Erro em profiles:', profilesError);
+  }, [error, profilesError]);
 
   const {
     criarOperacional,

@@ -11,6 +11,7 @@ export function useOperacionalQueries(
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['equipe-operacional', page, pageSize, filtros],
     queryFn: async () => {
+      console.log('🔍 Buscando operacionais...', { page, pageSize, filtros });
       let query = supabase
         .from('equipe_operacional')
         .select('*', { count: 'exact' });

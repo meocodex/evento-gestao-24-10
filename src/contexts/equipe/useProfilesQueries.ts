@@ -20,6 +20,7 @@ export function useProfilesQueries() {
   return useQuery({
     queryKey: ['profiles-equipe'],
     queryFn: async () => {
+      console.log('🔍 Buscando profiles...');
       const { data, error } = await supabase
         .from('profiles')
         .select(`
