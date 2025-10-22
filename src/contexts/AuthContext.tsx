@@ -37,15 +37,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         
         if (session?.user) {
-          // Set minimal user immediately to allow redirect
-          setUser({
+          // Set minimal user immediately to allow redirect, preserving previous role
+          setUser(prev => ({
             id: session.user.id,
-            name: session.user.email?.split('@')[0] || 'Usuário',
+            name: prev?.name || session.user.email?.split('@')[0] || 'Usuário',
             email: session.user.email || '',
-            tipo: 'sistema',
-            role: 'comercial',
-            permissions: [],
-          });
+            tipo: prev?.tipo || 'sistema',
+            role: prev?.role || 'comercial', // Preserva role anterior
+            permissions: prev?.permissions || [],
+          }));
         } else {
           setUser(null);
         }
@@ -66,13 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Hydrate user profile, roles, and permissions separately
+  // Hydrate user profile, roles, and permissions separately with debouncing
   useEffect(() => {
     if (!session?.user?.id) return;
     
-    console.log('💧 Hydrating user profile for:', session.user.id);
-    
-    (async () => {
+    let isCancelled = false;
+    const timeoutId = setTimeout(async () => {
+      console.log('💧 Hydrating user profile for:', session.user.id);
+      
       try {
         const userId = session.user.id;
         const [{ data: profile }, { data: roles }, { data: perms }] = await Promise.all([
@@ -81,21 +82,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           supabase.from('user_permissions').select('permission_id').eq('user_id', userId),
         ]);
         
+        if (isCancelled) return;
+        
         console.log('✅ Profile hydrated:', { profile, roles: roles?.length, perms: perms?.length });
         
         setUser(prev => ({
           id: userId,
-          name: profile?.nome ?? prev?.name ?? 'Usuário',
+          name: profile?.nome || prev?.name || 'Usuário',
           email: session.user.email || prev?.email || '',
           tipo: (profile?.tipo as 'sistema' | 'operacional' | 'ambos') || prev?.tipo || 'sistema',
-          role: (roles?.[0]?.role as UserRole) ?? prev?.role ?? 'comercial',
+          role: (roles?.[0]?.role as UserRole) || prev?.role || 'comercial',
           permissions: (perms || []).map(p => p.permission_id),
         }));
       } catch (e) {
-        console.warn('⚠️ Não foi possível hidratar perfil/roles/permissões, usando defaults:', e);
+        if (!isCancelled) {
+          console.warn('⚠️ Não foi possível hidratar perfil/roles/permissões:', e);
+        }
       }
-    })();
-  }, [session?.user?.id]);
+    }, 100); // Debounce de 100ms
+    
+    return () => {
+      isCancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [session?.user?.id, session?.user?.email]);
 
   const logout = async () => {
     await supabase.auth.signOut();
