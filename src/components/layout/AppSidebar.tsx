@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Calendar,
   Users,
@@ -47,10 +47,14 @@ const menuItems = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, logout } = useAuth();
   const { state } = useSidebar();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const filteredItems = menuItems.filter((item) =>
     user?.role ? item.roles.includes(user.role) : false
   );
+
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <Sidebar className="border-r-0 bg-sidebar" {...props}>
@@ -82,34 +86,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu className="space-y-1 px-2">
               {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <NavLink
-                    to={item.url}
-                    end
-                    className={({ isActive }) =>
-                      cn(
-                        "group relative flex items-center gap-3 px-3 md:px-4 py-3 rounded-xl mx-2 transition-all duration-200 min-h-[44px]",
-                        isActive
-                          ? "bg-sidebar-accent border-l-4 border-accent text-sidebar-foreground shadow-md"
-                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
-                      )
-                    }
+                  <button
+                    type="button"
+                    role="link"
+                    aria-current={isActive(item.url) ? 'page' : undefined}
+                    onClick={() => navigate(item.url)}
+                    className={cn(
+                      "group relative flex items-center gap-3 px-3 md:px-4 py-3 rounded-xl mx-2 transition-all duration-200 min-h-[44px] w-full text-left",
+                      isActive(item.url)
+                        ? "bg-sidebar-accent border-l-4 border-accent text-sidebar-foreground shadow-md"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                    )}
                   >
-                    {({ isActive }) => (
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    {state !== 'collapsed' && (
                       <>
-                        <item.icon className="h-5 w-5 flex-shrink-0" />
-                        {state !== 'collapsed' && (
-                          <>
-                            <span className="font-medium">
-                              {item.title}
-                            </span>
-                            {isActive && (
-                              <div className="absolute right-3 w-2 h-2 rounded-full bg-accent animate-pulse" />
-                            )}
-                          </>
+                        <span className="font-medium">
+                          {item.title}
+                        </span>
+                        {isActive(item.url) && (
+                          <div className="absolute right-3 w-2 h-2 rounded-full bg-accent animate-pulse" />
                         )}
                       </>
                     )}
-                  </NavLink>
+                  </button>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
