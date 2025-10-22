@@ -108,34 +108,15 @@ export function useUsuarios() {
       senha: string;
       role: 'admin' | 'comercial' | 'suporte' 
     }) => {
-      // Criar usuário no Supabase Auth com senha
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: data.email,
-        password: data.senha,
-        email_confirm: true,
-        user_metadata: {
-          nome: data.nome,
-          cpf: data.cpf,
-          telefone: data.telefone
-        },
+      // Chamar Edge Function para criar usuário de forma segura
+      const { data: result, error } = await supabase.functions.invoke('criar-operador', {
+        body: data,
       });
 
-      if (authError) throw authError;
+      if (error) throw error;
+      if (result?.error) throw new Error(result.error);
 
-      // A role será criada automaticamente pelo trigger handle_new_user
-      // Mas vamos atualizar para a role desejada se não for comercial
-      if (data.role !== 'comercial' && authData.user) {
-        await supabase
-          .from('user_roles')
-          .delete()
-          .eq('user_id', authData.user.id);
-
-        await supabase
-          .from('user_roles')
-          .insert({ user_id: authData.user.id, role: data.role });
-      }
-
-      return authData.user;
+      return result.user;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] });
