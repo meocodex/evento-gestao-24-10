@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (session?.user) {
           // Fetch user profile and role
-          setTimeout(async () => {
+          (async () => {
             try {
               const { data: profile } = await supabase
                 .from('profiles')
@@ -63,11 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 });
               }
             } catch (error) {
-              // Silently fail in production - user will be set to null
+              console.error('Erro ao carregar perfil:', error);
+              setUser(null);
             } finally {
               setLoading(false);
             }
-          }, 0);
+          })();
         } else {
           setUser(null);
           setLoading(false);

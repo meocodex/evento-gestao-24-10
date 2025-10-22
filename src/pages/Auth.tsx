@@ -52,7 +52,7 @@ export default function Auth() {
 
       if (data.user) {
         toast.success("Login realizado com sucesso!");
-        navigate("/dashboard");
+        // Redirecionamento automático via AuthRoutes
       }
     } catch (error) {
       if (error instanceof ZodError) {
@@ -118,7 +118,7 @@ export default function Auth() {
 
       if (data.user) {
         toast.success("Conta criada com sucesso!");
-        navigate("/dashboard");
+        // Redirecionamento automático via AuthRoutes
       }
     } catch (error) {
       if (error instanceof ZodError) {
