@@ -32,52 +32,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Setup auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        console.log('🔐 Auth state changed:', event, '| Session:', !!session);
         setSession(session);
         
         if (session?.user) {
-          // Fetch user profile and role
-          (async () => {
-            try {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select(`
-                  nome,
-                  tipo,
-                  user_roles(role),
-                  user_permissions(permission_id)
-                `)
-                .eq('id', session.user.id)
-                .single();
-
-              if (profile) {
-                const permissions = profile.user_permissions?.map((up: any) => up.permission_id) || [];
-                
-                setUser({
-                  id: session.user.id,
-                  name: profile.nome ?? 'Usuário',
-                  email: session.user.email || '',
-                  tipo: profile.tipo || 'sistema',
-                  role: (profile.user_roles?.[0]?.role as UserRole) ?? 'comercial',
-                  permissions,
-                });
-              }
-            } catch (error) {
-              console.error('Erro ao carregar perfil:', error);
-              setUser(null);
-            } finally {
-              setLoading(false);
-            }
-          })();
+          // Set minimal user immediately to allow redirect
+          setUser({
+            id: session.user.id,
+            name: session.user.email?.split('@')[0] || 'Usuário',
+            email: session.user.email || '',
+            tipo: 'sistema',
+            role: 'comercial',
+            permissions: [],
+          });
         } else {
           setUser(null);
-          setLoading(false);
         }
+        
+        setLoading(false);
       }
     );
 
     // THEN check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔍 Initial session check:', !!session);
       setSession(session);
       if (!session) {
         setLoading(false);
@@ -87,6 +66,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Hydrate user profile, roles, and permissions separately
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    
+    console.log('💧 Hydrating user profile for:', session.user.id);
+    
+    (async () => {
+      try {
+        const userId = session.user.id;
+        const [{ data: profile }, { data: roles }, { data: perms }] = await Promise.all([
+          supabase.from('profiles').select('nome, tipo').eq('id', userId).single(),
+          supabase.from('user_roles').select('role').eq('user_id', userId),
+          supabase.from('user_permissions').select('permission_id').eq('user_id', userId),
+        ]);
+        
+        console.log('✅ Profile hydrated:', { profile, roles: roles?.length, perms: perms?.length });
+        
+        setUser(prev => ({
+          id: userId,
+          name: profile?.nome ?? prev?.name ?? 'Usuário',
+          email: session.user.email || prev?.email || '',
+          tipo: (profile?.tipo as 'sistema' | 'operacional' | 'ambos') || prev?.tipo || 'sistema',
+          role: (roles?.[0]?.role as UserRole) ?? prev?.role ?? 'comercial',
+          permissions: (perms || []).map(p => p.permission_id),
+        }));
+      } catch (e) {
+        console.warn('⚠️ Não foi possível hidratar perfil/roles/permissões, usando defaults:', e);
+      }
+    })();
+  }, [session?.user?.id]);
+
   const logout = async () => {
     await supabase.auth.signOut();
     setSession(null);
@@ -95,7 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, logout, isAuthenticated: !!user, loading }}>
+    <AuthContext.Provider value={{ user, logout, isAuthenticated: !!session, loading }}>
       {children}
     </AuthContext.Provider>
   );
