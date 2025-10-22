@@ -19,10 +19,10 @@ export function EditarFuncaoUsuarioDialog({ open, onOpenChange, usuario }: Edita
   const [showWarning, setShowWarning] = useState(false);
 
   useEffect(() => {
-    if (usuario) {
+    if (open && usuario?.role) {
       setNovaRole(usuario.role);
     }
-  }, [usuario]);
+  }, [open, usuario?.id, usuario?.role]);
 
   useEffect(() => {
     // Mostrar aviso se estiver mudando de admin para outra role

@@ -8,6 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Settings, Eye, MoreVertical, Shield } from "lucide-react";
 import { useUsuarios, Usuario } from "@/hooks/useUsuarios";
 import { EditarPermissoesUsuarioDialog } from "./EditarPermissoesUsuarioDialog";
+import { EditarFuncaoUsuarioDialog } from "./EditarFuncaoUsuarioDialog";
 import { DetalhesUsuarioDialog } from "./DetalhesUsuarioDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -41,6 +42,7 @@ function getRoleLabel(role: string) {
 export function GerenciarUsuarios() {
   const { usuarios, isLoading } = useUsuarios();
   const [editarUsuario, setEditarUsuario] = useState<Usuario | null>(null);
+  const [editarFuncaoUsuario, setEditarFuncaoUsuario] = useState<Usuario | null>(null);
   const [detalhesUsuario, setDetalhesUsuario] = useState<Usuario | null>(null);
 
   if (isLoading) {
@@ -73,6 +75,7 @@ export function GerenciarUsuarios() {
                 <TableRow>
                   <TableHead>Usuário</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Nível de Acesso</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Permissões</TableHead>
                   <TableHead>Cadastrado em</TableHead>
@@ -99,6 +102,11 @@ export function GerenciarUsuarios() {
                       </div>
                     </TableCell>
                     <TableCell>{usuario.email}</TableCell>
+                    <TableCell>
+                      <Badge variant={getRoleBadgeVariant(usuario.role || 'comercial')}>
+                        {getRoleLabel(usuario.role || 'comercial')}
+                      </Badge>
+                    </TableCell>
                     <TableCell>
                       <Badge variant="outline">
                         {usuario.tipo === 'sistema' ? 'Sistema' : 
@@ -129,6 +137,10 @@ export function GerenciarUsuarios() {
                             <Eye className="mr-2 h-4 w-4" />
                             Ver Detalhes
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setEditarFuncaoUsuario(usuario)}>
+                            <Shield className="mr-2 h-4 w-4" />
+                            Editar Função
+                          </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setEditarUsuario(usuario)}>
                             <Settings className="mr-2 h-4 w-4" />
                             Editar Permissões
@@ -144,6 +156,13 @@ export function GerenciarUsuarios() {
         </CardContent>
       </Card>
 
+      {editarFuncaoUsuario && (
+        <EditarFuncaoUsuarioDialog
+          open={true}
+          onOpenChange={(open) => !open && setEditarFuncaoUsuario(null)}
+          usuario={editarFuncaoUsuario}
+        />
+      )}
       {editarUsuario && (
         <EditarPermissoesUsuarioDialog
           open={true}
