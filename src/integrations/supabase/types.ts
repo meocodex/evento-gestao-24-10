@@ -148,7 +148,7 @@ export type Database = {
           endereco: Json
           id: string
           nome: string
-          search_vector: unknown | null
+          search_vector: unknown
           telefone: string
           tipo: Database["public"]["Enums"]["tipo_cliente"]
           updated_at: string | null
@@ -162,7 +162,7 @@ export type Database = {
           endereco?: Json
           id?: string
           nome: string
-          search_vector?: unknown | null
+          search_vector?: unknown
           telefone: string
           tipo: Database["public"]["Enums"]["tipo_cliente"]
           updated_at?: string | null
@@ -176,7 +176,7 @@ export type Database = {
           endereco?: Json
           id?: string
           nome?: string
-          search_vector?: unknown | null
+          search_vector?: unknown
           telefone?: string
           tipo?: Database["public"]["Enums"]["tipo_cliente"]
           updated_at?: string | null
@@ -1607,14 +1607,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      cleanup_auth_rate_limits: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_old_rate_limits: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_auth_rate_limits: { Args: never; Returns: undefined }
+      cleanup_old_rate_limits: { Args: never; Returns: undefined }
       criar_notificacao: {
         Args: {
           p_link?: string
@@ -1632,26 +1626,6 @@ export type Database = {
       decrement_estoque_disponivel: {
         Args: { p_material_id: string }
         Returns: undefined
-      }
-      gtrgm_compress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_decompress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_options: {
-        Args: { "": unknown }
-        Returns: undefined
-      }
-      gtrgm_out: {
-        Args: { "": unknown }
-        Returns: unknown
       }
       has_permission: {
         Args: { _permission_id: string; _user_id: string }
@@ -1672,30 +1646,11 @@ export type Database = {
         Args: { p_material_id: string }
         Returns: undefined
       }
-      notificar_cobrancas_atrasadas: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      notificar_demandas_urgentes: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      notificar_materiais_atrasados: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      set_limit: {
-        Args: { "": number }
-        Returns: number
-      }
-      show_limit: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      show_trgm: {
-        Args: { "": string }
-        Returns: string[]
-      }
+      notificar_cobrancas_atrasadas: { Args: never; Returns: undefined }
+      notificar_demandas_urgentes: { Args: never; Returns: undefined }
+      notificar_materiais_atrasados: { Args: never; Returns: undefined }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       app_role: "admin" | "comercial" | "suporte"
