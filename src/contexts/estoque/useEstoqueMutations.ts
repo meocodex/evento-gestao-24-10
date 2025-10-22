@@ -33,6 +33,21 @@ export const useEstoqueMutations = () => {
         description: `${data.nome} foi adicionado ao estoque.`,
       });
     },
+    onError: (error: Error) => {
+      let mensagem = 'Não foi possível cadastrar o material.';
+      
+      if (error.message.includes('permission') || error.message.includes('policy')) {
+        mensagem = 'Você não tem permissão para cadastrar materiais.';
+      } else if (error.message.includes('duplicate') || error.message.includes('unique')) {
+        mensagem = 'Já existe um material com estas informações.';
+      }
+      
+      toast({
+        title: 'Erro ao cadastrar',
+        description: mensagem,
+        variant: 'destructive',
+      });
+    },
   });
 
   const editarMaterial = useMutation({
