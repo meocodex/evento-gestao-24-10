@@ -2,9 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Cliente } from '@/types/eventos';
 
-export function useClientesQueries(page = 1, pageSize = 20, searchTerm?: string) {
+export function useClientesQueries(page = 1, pageSize = 20, searchTerm?: string, enabled = true) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['clientes', page, pageSize, searchTerm],
+    enabled,
     queryFn: async () => {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;

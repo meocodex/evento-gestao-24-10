@@ -16,28 +16,42 @@ export interface ProfileMembro {
   permissions?: string[];
 }
 
-export function useProfilesQueries() {
+export function useProfilesQueries(enabled = true) {
   return useQuery({
     queryKey: ['profiles-equipe'],
+    enabled,
     queryFn: async () => {
       console.log('🔍 Buscando profiles...');
-      const { data, error } = await supabase
+      
+      // Buscar profiles
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_permissions (
-            permission_id
-          )
-        `)
+        .select('*')
         .order('nome', { ascending: true });
 
-      if (error) throw error;
+      if (profilesError) throw profilesError;
+
+      // Buscar permissões separadamente
+      const { data: permsData, error: permsError } = await supabase
+        .from('user_permissions')
+        .select('user_id, permission_id');
+
+      if (permsError) {
+        console.warn('⚠️ Erro ao buscar permissões:', permsError);
+      }
+
+      // Mapear permissões por usuário
+      const permsByUser = (permsData || []).reduce((acc, perm) => {
+        if (!acc[perm.user_id]) acc[perm.user_id] = [];
+        acc[perm.user_id].push(perm.permission_id);
+        return acc;
+      }, {} as Record<string, string[]>);
 
       // Transformar para incluir permissões
-      return (data || []).map(profile => ({
+      return (profilesData || []).map(profile => ({
         ...profile,
-        permissions: profile.user_permissions?.map((up: any) => up.permission_id) || [],
-        funcao_principal: 'Usuário do Sistema', // Placeholder
+        permissions: permsByUser[profile.id] || [],
+        funcao_principal: 'Usuário do Sistema',
       })) as ProfileMembro[];
     },
     staleTime: 1000 * 60 * 5, // 5 minutos

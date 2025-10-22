@@ -8,9 +8,10 @@ interface EventosQueryResult {
   totalCount: number;
 }
 
-export function useEventosQueries(page = 1, pageSize = 50) {
+export function useEventosQueries(page = 1, pageSize = 50, enabled = true) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['eventos', page, pageSize],
+    enabled,
     queryFn: async () => {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;

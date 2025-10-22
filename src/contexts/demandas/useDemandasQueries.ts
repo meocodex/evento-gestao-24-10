@@ -3,9 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { transformDemanda } from './transformDemanda';
 import { Demanda } from '@/types/demandas';
 
-export function useDemandasQueries(page = 1, pageSize = 20) {
+export function useDemandasQueries(page = 1, pageSize = 20, enabled = true) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['demandas', page, pageSize],
+    enabled,
     queryFn: async () => {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;

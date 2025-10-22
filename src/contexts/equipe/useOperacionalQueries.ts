@@ -6,10 +6,12 @@ import { FiltrosOperacional } from './types';
 export function useOperacionalQueries(
   page = 1,
   pageSize = 50,
-  filtros?: FiltrosOperacional
+  filtros?: FiltrosOperacional,
+  enabled = true
 ) {
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['equipe-operacional', page, pageSize, filtros],
+    enabled,
     queryFn: async () => {
       console.log('🔍 Buscando operacionais...', { page, pageSize, filtros });
       let query = supabase

@@ -143,38 +143,58 @@ const App = () => (
       >
         <BrowserRouter>
           <AuthProvider>
-            <CategoriasProvider>
-              <EquipeProvider>
-                <EventosProvider>
-                  <DemandasProvider>
-                    <ClientesProvider>
-                      <EstoqueProvider>
-                        <ConfiguracoesProvider>
-                          <CadastrosPublicosProvider>
-                            <TransportadorasProvider>
-                              <ContratosProvider>
-                                <TooltipProvider>
-                                  <Toaster />
-                                  <Sonner />
-                                  <Suspense fallback={<PageLoader />}>
-                                    <Routes>
-                                      <Route path="/auth" element={<AuthRoutes />} />
-                                      <Route path="/cadastro-evento" element={<CadastroEvento />} />
-                                      <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
-                                      <Route path="/*" element={<ProtectedRoutes />} />
-                                    </Routes>
-                                  </Suspense>
-                                </TooltipProvider>
-                              </ContratosProvider>
-                            </TransportadorasProvider>
-                          </CadastrosPublicosProvider>
-                        </ConfiguracoesProvider>
-                      </EstoqueProvider>
-                    </ClientesProvider>
-                  </DemandasProvider>
-                </EventosProvider>
-              </EquipeProvider>
-            </CategoriasProvider>
+            <ErrorBoundary>
+              <CategoriasProvider>
+                <ErrorBoundary>
+                  <EquipeProvider>
+                    <ErrorBoundary>
+                      <EventosProvider>
+                        <ErrorBoundary>
+                          <DemandasProvider>
+                            <ErrorBoundary>
+                              <ClientesProvider>
+                                <ErrorBoundary>
+                                  <EstoqueProvider>
+                                    <ErrorBoundary>
+                                      <ConfiguracoesProvider>
+                                        <ErrorBoundary>
+                                          <CadastrosPublicosProvider>
+                                            <ErrorBoundary>
+                                              <TransportadorasProvider>
+                                                <ErrorBoundary>
+                                                  <ContratosProvider>
+                                                    <TooltipProvider>
+                                                      <Toaster />
+                                                      <Sonner />
+                                                      <Suspense fallback={<PageLoader />}>
+                                                        <Routes>
+                                                          <Route path="/auth" element={<AuthRoutes />} />
+                                                          <Route path="/cadastro-evento" element={<CadastroEvento />} />
+                                                          <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
+                                                          <Route path="/*" element={<ProtectedRoutes />} />
+                                                        </Routes>
+                                                      </Suspense>
+                                                    </TooltipProvider>
+                                                  </ContratosProvider>
+                                                </ErrorBoundary>
+                                              </TransportadorasProvider>
+                                            </ErrorBoundary>
+                                          </CadastrosPublicosProvider>
+                                        </ErrorBoundary>
+                                      </ConfiguracoesProvider>
+                                    </ErrorBoundary>
+                                  </EstoqueProvider>
+                                </ErrorBoundary>
+                              </ClientesProvider>
+                            </ErrorBoundary>
+                          </DemandasProvider>
+                        </ErrorBoundary>
+                      </EventosProvider>
+                    </ErrorBoundary>
+                  </EquipeProvider>
+                </ErrorBoundary>
+              </CategoriasProvider>
+            </ErrorBoundary>
           </AuthProvider>
         </BrowserRouter>
       </PersistQueryClientProvider>

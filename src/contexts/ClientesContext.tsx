@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useMemo, useCallback, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Cliente, ClienteFormData } from '@/types/eventos';
 import { buscarCEP, EnderecoViaCEP } from '@/lib/api/viacep';
 import { validarCPF, validarCNPJ } from '@/lib/validations/cliente';
@@ -36,6 +37,7 @@ interface ClientesContextData {
 const ClientesContext = createContext<ClientesContextData>({} as ClientesContextData);
 
 export function ClientesProvider({ children }: { children: ReactNode }) {
+  const location = useLocation();
   const [filtros, setFiltros] = useState<FiltrosClientes>({
     busca: '',
     tipo: 'todos',
@@ -46,8 +48,17 @@ export function ClientesProvider({ children }: { children: ReactNode }) {
   const [page, setPage] = useState(1);
   const pageSize = 20;
 
+  // Log de montagem
+  useEffect(() => {
+    console.log('📦 ClientesProvider montado');
+    return () => console.log('📦 ClientesProvider desmontado');
+  }, []);
+
+  // Só carregar dados quando estiver na rota /clientes
+  const shouldLoadClientes = location.pathname.includes('/clientes');
+
   // Usar full-text search nativo para busca de texto
-  const { clientes, totalCount, loading } = useClientesQueries(page, pageSize, filtros.busca);
+  const { clientes, totalCount, loading } = useClientesQueries(page, pageSize, filtros.busca, shouldLoadClientes);
   const { criarCliente: criarClienteMutation, editarCliente: editarClienteMutation, excluirCliente: excluirClienteMutation } = useClientesMutations();
 
   const criarCliente = useCallback(async (data: ClienteFormData): Promise<Cliente> => {

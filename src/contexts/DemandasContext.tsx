@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Demanda, DemandaFormData, FiltroDemandas, StatusDemanda, ItemReembolso } from '@/types/demandas';
 import { useDemandasQueries } from './demandas/useDemandasQueries';
 import { useDemandasMutations } from './demandas/useDemandasMutations';
@@ -65,12 +66,22 @@ export const useDemandasContext = () => {
 };
 
 export const DemandasProvider = ({ children }: { children: ReactNode }) => {
+  const location = useLocation();
   const [filtros, setFiltros] = useState<FiltroDemandas>({});
   const [page, setPage] = useState(1);
   const pageSize = 20;
+
+  // Log de montagem
+  useEffect(() => {
+    console.log('📦 DemandasProvider montado');
+    return () => console.log('📦 DemandasProvider desmontado');
+  }, []);
+
+  // Só carregar dados quando estiver em rotas de demandas ou dashboard
+  const shouldLoadDemandas = location.pathname.includes('/demandas') || location.pathname === '/dashboard';
   
   // Hooks do Supabase
-  const { demandas, totalCount } = useDemandasQueries(page, pageSize);
+  const { demandas, totalCount } = useDemandasQueries(page, pageSize, shouldLoadDemandas);
   const mutations = useDemandasMutations();
   const comentarios = useDemandasComentarios();
   const anexos = useDemandasAnexos();

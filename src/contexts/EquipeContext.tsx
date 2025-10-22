@@ -1,4 +1,5 @@
 import React, { createContext, useContext, ReactNode, useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useOperacionalQueries } from './equipe/useOperacionalQueries';
 import { useOperacionalMutations } from './equipe/useOperacionalMutations';
 import { useConflitosEquipe } from './equipe/useConflitosEquipe';
@@ -46,9 +47,19 @@ interface EquipeContextType {
 const EquipeContext = createContext<EquipeContextType | undefined>(undefined);
 
 export function EquipeProvider({ children }: { children: ReactNode }) {
+  const location = useLocation();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(50);
   const [filtros, setFiltros] = useState<FiltrosOperacional>({});
+
+  // Log de montagem
+  useEffect(() => {
+    console.log('📦 EquipeProvider montado');
+    return () => console.log('📦 EquipeProvider desmontado');
+  }, []);
+
+  // Só carregar dados quando estiver na rota /equipe
+  const shouldLoadEquipe = location.pathname.includes('/equipe');
 
   const {
     operacionais = [],
@@ -56,13 +67,13 @@ export function EquipeProvider({ children }: { children: ReactNode }) {
     loading,
     error,
     refetch
-  } = useOperacionalQueries(page, pageSize, filtros);
+  } = useOperacionalQueries(page, pageSize, filtros, shouldLoadEquipe);
 
   const { 
     data: profiles = [], 
     isLoading: loadingProfiles,
     error: profilesError 
-  } = useProfilesQueries();
+  } = useProfilesQueries(shouldLoadEquipe);
 
   // Logs temporários para debugging
   useEffect(() => {

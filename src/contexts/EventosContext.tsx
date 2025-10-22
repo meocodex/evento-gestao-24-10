@@ -1,4 +1,5 @@
-import React, { createContext, useContext, ReactNode, useState } from 'react';
+import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Evento, EventoFormData, MaterialChecklist, MaterialAntecipado, MaterialComTecnicos, Receita, Despesa, MembroEquipe, StatusEvento } from '@/types/eventos';
 import { useToast } from '@/hooks/use-toast';
 import { useEventosQueries } from './eventos/useEventosQueries';
@@ -43,11 +44,21 @@ const EventosContext = createContext<EventosContextType | undefined>(undefined);
 
 export function EventosProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
+  const location = useLocation();
   const [page, setPage] = useState(1);
   const pageSize = 50;
+
+  // Log de montagem
+  useEffect(() => {
+    console.log('📦 EventosProvider montado');
+    return () => console.log('📦 EventosProvider desmontado');
+  }, []);
+
+  // Só carregar dados quando estiver em rotas de eventos
+  const shouldLoadEventos = location.pathname.includes('/eventos') || location.pathname === '/dashboard';
   
   // Usar hooks do Supabase
-  const { eventos, totalCount, loading, refetch } = useEventosQueries(page, pageSize);
+  const { eventos, totalCount, loading, refetch } = useEventosQueries(page, pageSize, shouldLoadEventos);
   const { 
     criarEvento: criarEventoMutation, 
     editarEvento: editarEventoMutation, 
