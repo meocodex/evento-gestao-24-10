@@ -9,7 +9,9 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  tipo?: 'sistema' | 'operacional' | 'ambos';
   role: UserRole;
+  permissions: string[];
 }
 
 interface AuthContextType {
@@ -39,22 +41,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             try {
               const { data: profile } = await supabase
                 .from('profiles')
-                .select('nome')
+                .select(`
+                  nome,
+                  tipo,
+                  user_roles(role),
+                  user_permissions(permission_id)
+                `)
                 .eq('id', session.user.id)
                 .single();
 
-              const { data: roleData } = await supabase
-                .from('user_roles')
-                .select('role')
-                .eq('user_id', session.user.id)
-                .single();
-
-              setUser({
-                id: session.user.id,
-                name: profile?.nome ?? 'Usuário',
-                email: session.user.email || '',
-                role: (roleData?.role as UserRole) ?? 'comercial',
-              });
+              if (profile) {
+                const permissions = profile.user_permissions?.map((up: any) => up.permission_id) || [];
+                
+                setUser({
+                  id: session.user.id,
+                  name: profile.nome ?? 'Usuário',
+                  email: session.user.email || '',
+                  tipo: profile.tipo || 'sistema',
+                  role: (profile.user_roles?.[0]?.role as UserRole) ?? 'comercial',
+                  permissions,
+                });
+              }
             } catch (error) {
               // Silently fail in production - user will be set to null
             } finally {

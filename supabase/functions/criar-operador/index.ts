@@ -23,17 +23,17 @@ Deno.serve(async (req) => {
       }
     );
 
-    const { nome, email, cpf, telefone, senha, role } = await req.json();
+    const { nome, email, cpf, telefone, senha, tipo, permissions } = await req.json();
 
     // Validações básicas
-    if (!nome || !email || !senha || !role) {
+    if (!nome || !email || !senha || !permissions || !Array.isArray(permissions)) {
       return new Response(
         JSON.stringify({ error: 'Dados obrigatórios faltando' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Criando usuário:', { email, nome, role });
+    console.log('Criando usuário:', { email, nome, tipo, permissions: permissions.length });
 
     // Criar usuário no Supabase Auth com senha
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -44,6 +44,7 @@ Deno.serve(async (req) => {
         nome,
         cpf,
         telefone,
+        tipo: tipo || 'sistema',
       },
     });
 
@@ -57,27 +58,35 @@ Deno.serve(async (req) => {
 
     console.log('Usuário criado com sucesso:', authData.user?.id);
 
-    // Atualizar role se não for comercial (que é o padrão criado pelo trigger)
-    if (role !== 'comercial' && authData.user) {
-      console.log('Atualizando role para:', role);
+    // Atualizar tipo no profile
+    if (tipo && authData.user) {
+      const { error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .update({ tipo })
+        .eq('id', authData.user.id);
 
-      const { error: deleteError } = await supabaseAdmin
-        .from('user_roles')
-        .delete()
-        .eq('user_id', authData.user.id);
-
-      if (deleteError) {
-        console.error('Erro ao deletar role padrão:', deleteError);
+      if (profileError) {
+        console.error('Erro ao atualizar tipo do perfil:', profileError);
       }
+    }
 
-      const { error: insertError } = await supabaseAdmin
-        .from('user_roles')
-        .insert({ user_id: authData.user.id, role });
+    // Inserir permissões do usuário
+    if (authData.user && permissions.length > 0) {
+      console.log('Inserindo permissões:', permissions.length);
 
-      if (insertError) {
-        console.error('Erro ao inserir nova role:', insertError);
+      const permissionsData = permissions.map((permission_id: string) => ({
+        user_id: authData.user!.id,
+        permission_id,
+      }));
+
+      const { error: permissionsError } = await supabaseAdmin
+        .from('user_permissions')
+        .insert(permissionsData);
+
+      if (permissionsError) {
+        console.error('Erro ao inserir permissões:', permissionsError);
         return new Response(
-          JSON.stringify({ error: 'Erro ao definir função do usuário' }),
+          JSON.stringify({ error: 'Erro ao definir permissões do usuário' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }

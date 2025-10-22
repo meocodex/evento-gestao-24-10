@@ -9,7 +9,9 @@ export interface Usuario {
   cpf?: string;
   avatar_url?: string;
   telefone?: string;
-  role: 'admin' | 'comercial' | 'suporte';
+  tipo?: 'sistema' | 'operacional' | 'ambos';
+  role?: 'admin' | 'comercial' | 'suporte';
+  permissions?: string[];
   created_at: string;
 }
 
@@ -22,28 +24,24 @@ export function useUsuarios() {
     queryFn: async () => {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select(`
+          *,
+          user_roles (
+            role
+          ),
+          user_permissions (
+            permission_id
+          )
+        `)
         .order('nome');
 
       if (profilesError) throw profilesError;
 
-      // Buscar roles de cada usuário
-      const usuariosComRoles = await Promise.all(
-        profiles.map(async (profile) => {
-          const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', profile.id)
-            .single();
-
-          return {
-            ...profile,
-            role: roleData?.role || 'comercial',
-          };
-        })
-      );
-
-      return usuariosComRoles as Usuario[];
+      return profiles.map(profile => ({
+        ...profile,
+        role: profile.user_roles?.[0]?.role || 'comercial',
+        permissions: profile.user_permissions?.map((up: any) => up.permission_id) || []
+      })) as Usuario[];
     },
   });
 
@@ -103,10 +101,11 @@ export function useUsuarios() {
     mutationFn: async (data: { 
       nome: string; 
       email: string; 
-      cpf: string;
-      telefone: string;
+      cpf?: string;
+      telefone?: string;
       senha: string;
-      role: 'admin' | 'comercial' | 'suporte' 
+      tipo?: 'sistema' | 'operacional' | 'ambos';
+      permissions: string[];
     }) => {
       // Chamar Edge Function para criar usuário de forma segura
       const { data: result, error } = await supabase.functions.invoke('criar-operador', {

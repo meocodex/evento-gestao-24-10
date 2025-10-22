@@ -1387,6 +1387,33 @@ export type Database = {
           },
         ]
       }
+      permissions: {
+        Row: {
+          acao: string
+          categoria: string
+          created_at: string | null
+          descricao: string
+          id: string
+          modulo: string
+        }
+        Insert: {
+          acao: string
+          categoria: string
+          created_at?: string | null
+          descricao: string
+          id: string
+          modulo: string
+        }
+        Update: {
+          acao?: string
+          categoria?: string
+          created_at?: string | null
+          descricao?: string
+          id?: string
+          modulo?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1396,6 +1423,7 @@ export type Database = {
           id: string
           nome: string
           telefone: string | null
+          tipo: string | null
           updated_at: string | null
         }
         Insert: {
@@ -1406,6 +1434,7 @@ export type Database = {
           id: string
           nome: string
           telefone?: string | null
+          tipo?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -1416,6 +1445,7 @@ export type Database = {
           id?: string
           nome?: string
           telefone?: string | null
+          tipo?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -1512,6 +1542,35 @@ export type Database = {
           },
         ]
       }
+      user_permissions: {
+        Row: {
+          created_at: string | null
+          id: string
+          permission_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          permission_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          permission_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -1593,6 +1652,10 @@ export type Database = {
       gtrgm_out: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      has_permission: {
+        Args: { _permission_id: string; _user_id: string }
+        Returns: boolean
       }
       has_role: {
         Args: {

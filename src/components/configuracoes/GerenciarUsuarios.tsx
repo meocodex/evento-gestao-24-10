@@ -5,10 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { UserPlus, Settings, Eye, MoreVertical } from "lucide-react";
+import { UserPlus, Settings, Eye, MoreVertical, Shield } from "lucide-react";
 import { useUsuarios, Usuario } from "@/hooks/useUsuarios";
 import { CriarOperadorDialog } from "./CriarOperadorDialog";
-import { EditarFuncaoUsuarioDialog } from "./EditarFuncaoUsuarioDialog";
+import { EditarPermissoesUsuarioDialog } from "./EditarPermissoesUsuarioDialog";
 import { DetalhesUsuarioDialog } from "./DetalhesUsuarioDialog";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -79,9 +79,8 @@ export function GerenciarUsuarios() {
                 <TableRow>
                   <TableHead>Usuário</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>CPF</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead>Função</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Permissões</TableHead>
                   <TableHead>Cadastrado em</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -107,15 +106,19 @@ export function GerenciarUsuarios() {
                     </TableCell>
                     <TableCell>{usuario.email}</TableCell>
                     <TableCell>
-                      {usuario.cpf ? 
-                        usuario.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') 
-                        : '-'}
-                    </TableCell>
-                    <TableCell>{usuario.telefone || '-'}</TableCell>
-                    <TableCell>
-                      <Badge variant={getRoleBadgeVariant(usuario.role)}>
-                        {getRoleLabel(usuario.role)}
+                      <Badge variant="outline">
+                        {usuario.tipo === 'sistema' ? 'Sistema' : 
+                         usuario.tipo === 'operacional' ? 'Operacional' : 
+                         usuario.tipo === 'ambos' ? 'Ambos' : 'Sistema'}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {usuario.permissions?.length || 0} permissões
+                        </span>
+                      </div>
                     </TableCell>
                     <TableCell>
                       {format(new Date(usuario.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
@@ -134,7 +137,7 @@ export function GerenciarUsuarios() {
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setEditarUsuario(usuario)}>
                             <Settings className="mr-2 h-4 w-4" />
-                            Editar Função
+                            Editar Permissões
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -148,10 +151,10 @@ export function GerenciarUsuarios() {
       </Card>
 
       <CriarOperadorDialog open={criarOpen} onOpenChange={setCriarOpen} />
-      <EditarFuncaoUsuarioDialog
+      <EditarPermissoesUsuarioDialog
         open={!!editarUsuario}
         onOpenChange={(open) => !open && setEditarUsuario(null)}
-        usuario={editarUsuario}
+        usuario={editarUsuario!}
       />
       <DetalhesUsuarioDialog
         open={!!detalhesUsuario}
