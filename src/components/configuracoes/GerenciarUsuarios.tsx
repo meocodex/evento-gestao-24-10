@@ -144,16 +144,20 @@ export function GerenciarUsuarios() {
         </CardContent>
       </Card>
 
-      <EditarPermissoesUsuarioDialog
-        open={!!editarUsuario}
-        onOpenChange={(open) => !open && setEditarUsuario(null)}
-        usuario={editarUsuario!}
-      />
-      <DetalhesUsuarioDialog
-        open={!!detalhesUsuario}
-        onOpenChange={(open) => !open && setDetalhesUsuario(null)}
-        usuario={detalhesUsuario}
-      />
+      {editarUsuario && (
+        <EditarPermissoesUsuarioDialog
+          open={true}
+          onOpenChange={(open) => !open && setEditarUsuario(null)}
+          usuario={editarUsuario}
+        />
+      )}
+      {detalhesUsuario && (
+        <DetalhesUsuarioDialog
+          open={true}
+          onOpenChange={(open) => !open && setDetalhesUsuario(null)}
+          usuario={detalhesUsuario}
+        />
+      )}
     </>
   );
 }

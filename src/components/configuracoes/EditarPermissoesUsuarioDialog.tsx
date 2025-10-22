@@ -20,6 +20,10 @@ export function EditarPermissoesUsuarioDialog({
   onOpenChange, 
   usuario 
 }: EditarPermissoesUsuarioDialogProps) {
+  if (!usuario) {
+    return null;
+  }
+
   const [permissoesSelecionadas, setPermissoesSelecionadas] = useState<string[]>([]);
   const queryClient = useQueryClient();
 
