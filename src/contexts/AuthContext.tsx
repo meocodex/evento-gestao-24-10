@@ -37,13 +37,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         
         if (session?.user) {
-          // Set minimal user immediately to allow redirect, preserving previous role
+          // Set minimal user immediately to allow redirect
           setUser(prev => ({
             id: session.user.id,
             name: prev?.name || session.user.email?.split('@')[0] || 'Usuário',
             email: session.user.email || '',
             tipo: prev?.tipo || 'sistema',
-            role: prev?.role || 'comercial', // Preserva role anterior
+            role: 'comercial', // Temporário até hidratação correta
             permissions: prev?.permissions || [],
           }));
         } else {
@@ -99,13 +99,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.warn('⚠️ Não foi possível hidratar perfil/roles/permissões:', e);
         }
       }
-    }, 100); // Debounce de 100ms
+    }, 50); // Debounce reduzido para 50ms (mais responsivo)
     
     return () => {
       isCancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [session?.user?.id, session?.user?.email]);
+  }, [session?.user?.id]); // Apenas ID - dispara sempre que muda
 
   const logout = async () => {
     await supabase.auth.signOut();
