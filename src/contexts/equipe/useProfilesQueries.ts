@@ -24,18 +24,22 @@ export function useProfilesQueries(enabled = true) {
     queryFn: async () => {
       console.log('🔍 Buscando profiles...');
       
-      // Buscar profiles com roles
+      // Buscar profiles sem joins aninhados
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_roles (
-            role
-          )
-        `)
+        .select('*')
         .order('nome', { ascending: true });
 
       if (profilesError) throw profilesError;
+
+      // Buscar roles separadamente
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) {
+        console.warn('⚠️ Erro ao buscar roles:', rolesError);
+      }
 
       // Buscar permissões separadamente
       const { data: permsData, error: permsError } = await supabase
@@ -46,6 +50,12 @@ export function useProfilesQueries(enabled = true) {
         console.warn('⚠️ Erro ao buscar permissões:', permsError);
       }
 
+      // Mapear roles por usuário
+      const rolesByUser = (rolesData || []).reduce((acc, r) => {
+        acc[r.user_id] = r.role as 'admin' | 'comercial' | 'suporte';
+        return acc;
+      }, {} as Record<string, 'admin' | 'comercial' | 'suporte'>);
+
       // Mapear permissões por usuário
       const permsByUser = (permsData || []).reduce((acc, perm) => {
         if (!acc[perm.user_id]) acc[perm.user_id] = [];
@@ -53,10 +63,14 @@ export function useProfilesQueries(enabled = true) {
         return acc;
       }, {} as Record<string, string[]>);
 
+      console.log('✅ Profiles carregados:', profilesData?.length || 0);
+      console.log('✅ Roles carregados:', rolesData?.length || 0);
+      console.log('✅ Permissões carregadas:', permsData?.length || 0);
+
       // Transformar para incluir permissões e role
       return (profilesData || []).map(profile => ({
         ...profile,
-        role: (profile as any).user_roles?.[0]?.role || 'comercial',
+        role: rolesByUser[profile.id] || 'comercial',
         permissions: permsByUser[profile.id] || [],
         funcao_principal: 'Usuário do Sistema',
       })) as ProfileMembro[];
