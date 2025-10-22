@@ -37,10 +37,10 @@ export function EditarPermissoesUsuarioDialog({
   });
 
   useEffect(() => {
-    if (usuario.permissions) {
+    if (open && usuario?.permissions) {
       setPermissoesSelecionadas(usuario.permissions);
     }
-  }, [usuario]);
+  }, [open, usuario?.id, usuario?.permissions]);
 
   const handleTemplateSelect = (permissions: string[]) => {
     // Se array vazio, significa Admin (todas permissões)
