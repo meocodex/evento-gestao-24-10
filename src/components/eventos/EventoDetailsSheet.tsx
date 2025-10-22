@@ -2,7 +2,7 @@ import { Evento } from '@/types/eventos';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useEventoPermissions } from '@/hooks/useEventoPermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DadosEvento } from './secoes/DadosEvento';
 import { MateriaisEvento } from './secoes/MateriaisEvento';
@@ -19,7 +19,7 @@ interface EventoDetailsSheetProps {
 }
 
 export function EventoDetailsSheet({ evento, open, onOpenChange }: EventoDetailsSheetProps) {
-  const permissions = useEventoPermissions(evento || undefined);
+  const permissions = usePermissions(evento || undefined);
   const isMobile = useIsMobile();
 
   if (!evento) return null;

@@ -7,7 +7,7 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EventoCountdown } from './EventoCountdown';
-import { useEventoPermissions } from '@/hooks/useEventoPermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +27,7 @@ interface EventoCardProps {
 }
 
 export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }: EventoCardProps) {
-  const { canEdit, canDeleteEvent } = useEventoPermissions(evento);
+  const { canEditEvent, canDeleteEvent } = usePermissions(evento);
   const navigate = useNavigate();
 
   const statusColors = {
@@ -59,7 +59,7 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
             <StatusBadge status={evento.status} />
           </div>
           
-          {canEdit && (
+          {canEditEvent(evento) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button 

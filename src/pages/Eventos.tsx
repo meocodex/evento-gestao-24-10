@@ -10,7 +10,7 @@ import { EventosCalendarView } from '@/components/eventos/EventosCalendarView';
 import { QuickCreateEventSheet } from '@/components/eventos/QuickCreateEventDialog';
 import { EventoFilters, EventoFiltersType } from '@/components/eventos/EventoFilters';
 import { useNavigate } from 'react-router-dom';
-import { useEventoPermissions } from '@/hooks/useEventoPermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useEventos } from '@/contexts/EventosContext';
 import { EventosStats } from '@/components/eventos/EventosStats';
 import { EventosQuickFilters } from '@/components/eventos/EventosQuickFilters';
@@ -32,7 +32,7 @@ export default function Eventos() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [] });
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
-  const permissions = useEventoPermissions();
+  const permissions = usePermissions();
   const [activeTab, setActiveTab] = useState<string>('todos');
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'kanban' | 'calendar'>('grid');

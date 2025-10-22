@@ -1,7 +1,7 @@
 import { Evento } from '@/types/eventos';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useEventoPermissions } from '@/hooks/useEventoPermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { DadosEvento } from './secoes/DadosEvento';
 import { MateriaisEvento } from './secoes/MateriaisEvento';
 import { OperacaoEvento } from './secoes/OperacaoEvento';
@@ -16,7 +16,7 @@ interface EventoDetailsDialogProps {
 }
 
 export function EventoDetailsDialog({ evento, open, onOpenChange }: EventoDetailsDialogProps) {
-  const permissions = useEventoPermissions(evento || undefined);
+  const permissions = usePermissions(evento || undefined);
 
   if (!evento) return null;
 

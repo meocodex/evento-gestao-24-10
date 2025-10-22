@@ -3,7 +3,7 @@ import { useEventos } from '@/contexts/EventosContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
-import { useEventoPermissions } from '@/hooks/useEventoPermissions';
+import { usePermissions } from '@/hooks/usePermissions';
 import { DadosEvento } from '@/components/eventos/secoes/DadosEvento';
 import { MateriaisEvento } from '@/components/eventos/secoes/MateriaisEvento';
 import { OperacaoEvento } from '@/components/eventos/secoes/OperacaoEvento';
@@ -19,7 +19,7 @@ export default function EventoDetalhes() {
   const { eventos } = useEventos();
   
   const evento = eventos.find(e => e.id === id);
-  const permissions = useEventoPermissions(evento);
+  const permissions = usePermissions(evento);
   
   if (!evento) {
     return (
