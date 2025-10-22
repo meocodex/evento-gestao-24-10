@@ -11,6 +11,7 @@ export interface OperacionalEquipe {
   funcao_principal: string;
   funcoes_secundarias: string[] | null;
   tipo_vinculo: TipoVinculo;
+  cnpj_pj: string | null;
   foto: string | null;
   documentos: string[] | null;
   status: StatusOperacional;

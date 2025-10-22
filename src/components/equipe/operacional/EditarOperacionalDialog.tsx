@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Plus } from 'lucide-react';
 import { useEquipe } from '@/contexts/EquipeContext';
 import { useCategorias } from '@/contexts/CategoriasContext';
 import { OperacionalEquipe } from '@/types/equipe';
@@ -17,7 +18,7 @@ interface EditarOperacionalDialogProps {
 
 export function EditarOperacionalDialog({ operacional, open, onOpenChange }: EditarOperacionalDialogProps) {
   const { editarOperacional } = useEquipe();
-  const { funcoesEquipe } = useCategorias();
+  const { funcoesEquipe, adicionarCategoria } = useCategorias();
   
   const [formData, setFormData] = useState({
     nome: operacional.nome,
@@ -27,9 +28,12 @@ export function EditarOperacionalDialog({ operacional, open, onOpenChange }: Edi
     email: operacional.email || '',
     funcao_principal: operacional.funcao_principal,
     tipo_vinculo: operacional.tipo_vinculo,
+    cnpj_pj: operacional.cnpj_pj || '',
     status: operacional.status,
     observacoes: operacional.observacoes || ''
   });
+  const [mostrarAdicionarFuncao, setMostrarAdicionarFuncao] = useState(false);
+  const [novaFuncaoNome, setNovaFuncaoNome] = useState('');
 
   useEffect(() => {
     setFormData({
@@ -40,6 +44,7 @@ export function EditarOperacionalDialog({ operacional, open, onOpenChange }: Edi
       email: operacional.email || '',
       funcao_principal: operacional.funcao_principal,
       tipo_vinculo: operacional.tipo_vinculo,
+      cnpj_pj: operacional.cnpj_pj || '',
       status: operacional.status,
       observacoes: operacional.observacoes || ''
     });
@@ -114,20 +119,74 @@ export function EditarOperacionalDialog({ operacional, open, onOpenChange }: Edi
             />
           </div>
 
-          <div>
-            <Label htmlFor="funcao">Função Principal *</Label>
-            <Select value={formData.funcao_principal} onValueChange={(value) => setFormData({ ...formData, funcao_principal: value })}>
-              <SelectTrigger id="funcao">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {funcoesEquipe.map((funcao) => (
-                  <SelectItem key={funcao.value} value={funcao.label}>
-                    {funcao.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="col-span-2">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Label htmlFor="funcao">Função Principal *</Label>
+                <Select value={formData.funcao_principal} onValueChange={(value) => setFormData({ ...formData, funcao_principal: value })}>
+                  <SelectTrigger id="funcao">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {funcoesEquipe.map((funcao) => (
+                      <SelectItem key={funcao.value} value={funcao.label}>
+                        {funcao.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="pt-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setMostrarAdicionarFuncao(true)}
+                  title="Adicionar nova função"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            {mostrarAdicionarFuncao && (
+              <div className="border rounded-lg p-3 space-y-2 mt-2">
+                <Label>Nova Função</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Nome da função"
+                    value={novaFuncaoNome}
+                    onChange={(e) => setNovaFuncaoNome(e.target.value)}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      if (novaFuncaoNome.trim()) {
+                        await adicionarCategoria('funcoes_equipe', {
+                          label: novaFuncaoNome,
+                          value: novaFuncaoNome.toLowerCase().replace(/\s+/g, '_'),
+                          ativa: true
+                        });
+                        setFormData({ ...formData, funcao_principal: novaFuncaoNome });
+                        setNovaFuncaoNome('');
+                        setMostrarAdicionarFuncao(false);
+                      }
+                    }}
+                  >
+                    Adicionar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setMostrarAdicionarFuncao(false);
+                      setNovaFuncaoNome('');
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div>
@@ -143,6 +202,18 @@ export function EditarOperacionalDialog({ operacional, open, onOpenChange }: Edi
               </SelectContent>
             </Select>
           </div>
+
+          {formData.tipo_vinculo === 'pj' && (
+            <div>
+              <Label htmlFor="cnpj_pj">CNPJ da Empresa</Label>
+              <Input
+                id="cnpj_pj"
+                value={formData.cnpj_pj}
+                onChange={(e) => setFormData({ ...formData, cnpj_pj: e.target.value })}
+                placeholder="00.000.000/0001-00"
+              />
+            </div>
+          )}
 
           <div>
             <Label htmlFor="status">Status *</Label>

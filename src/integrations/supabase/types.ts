@@ -636,6 +636,7 @@ export type Database = {
       equipe_operacional: {
         Row: {
           avaliacao: number | null
+          cnpj_pj: string | null
           cpf: string | null
           created_at: string | null
           documentos: string[] | null
@@ -654,6 +655,7 @@ export type Database = {
         }
         Insert: {
           avaliacao?: number | null
+          cnpj_pj?: string | null
           cpf?: string | null
           created_at?: string | null
           documentos?: string[] | null
@@ -672,6 +674,7 @@ export type Database = {
         }
         Update: {
           avaliacao?: number | null
+          cnpj_pj?: string | null
           cpf?: string | null
           created_at?: string | null
           documentos?: string[] | null

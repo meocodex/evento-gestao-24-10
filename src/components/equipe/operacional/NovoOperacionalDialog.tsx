@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Plus } from 'lucide-react';
 import { useEquipe } from '@/contexts/EquipeContext';
 import { useCategorias } from '@/contexts/CategoriasContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,7 +23,7 @@ interface NovoOperacionalDialogProps {
 
 export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDialogProps) {
   const { criarOperacional } = useEquipe();
-  const { funcoesEquipe } = useCategorias();
+  const { funcoesEquipe, adicionarCategoria } = useCategorias();
   const { toast } = useToast();
   
   const [formData, setFormData] = useState({
@@ -33,6 +34,7 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
     email: '',
     funcao_principal: '',
     tipo_vinculo: 'freelancer' as 'clt' | 'freelancer' | 'pj',
+    cnpj_pj: '',
     observacoes: ''
   });
 
@@ -40,6 +42,8 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
   const [senha, setSenha] = useState('');
   const [permissoesSelecionadas, setPermissoesSelecionadas] = useState<string[]>([]);
   const [criandoUsuario, setCriandoUsuario] = useState(false);
+  const [mostrarAdicionarFuncao, setMostrarAdicionarFuncao] = useState(false);
+  const [novaFuncaoNome, setNovaFuncaoNome] = useState('');
 
   const handleTemplateSelect = (permissions: string[]) => {
     setPermissoesSelecionadas(permissions);
@@ -112,11 +116,14 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
         email: '',
         funcao_principal: '',
         tipo_vinculo: 'freelancer',
+        cnpj_pj: '',
         observacoes: ''
       });
       setConcederAcesso(false);
       setSenha('');
       setPermissoesSelecionadas([]);
+      setMostrarAdicionarFuncao(false);
+      setNovaFuncaoNome('');
       onOpenChange(false);
     } catch (error: any) {
       toast({
@@ -196,20 +203,74 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
                 />
               </div>
 
-              <div>
-                <Label htmlFor="funcao">Função Principal *</Label>
-                <Select value={formData.funcao_principal} onValueChange={(value) => setFormData({ ...formData, funcao_principal: value })}>
-                  <SelectTrigger id="funcao">
-                    <SelectValue placeholder="Selecione a função" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {funcoesEquipe.map((funcao) => (
-                      <SelectItem key={funcao.value} value={funcao.label}>
-                        {funcao.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="col-span-2">
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <Label htmlFor="funcao">Função Principal *</Label>
+                    <Select value={formData.funcao_principal} onValueChange={(value) => setFormData({ ...formData, funcao_principal: value })}>
+                      <SelectTrigger id="funcao">
+                        <SelectValue placeholder="Selecione a função" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {funcoesEquipe.map((funcao) => (
+                          <SelectItem key={funcao.value} value={funcao.label}>
+                            {funcao.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="pt-6">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setMostrarAdicionarFuncao(true)}
+                      title="Adicionar nova função"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                {mostrarAdicionarFuncao && (
+                  <div className="border rounded-lg p-3 space-y-2 mt-2">
+                    <Label>Nova Função</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Nome da função"
+                        value={novaFuncaoNome}
+                        onChange={(e) => setNovaFuncaoNome(e.target.value)}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={async () => {
+                          if (novaFuncaoNome.trim()) {
+                            await adicionarCategoria('funcoes_equipe', {
+                              label: novaFuncaoNome,
+                              value: novaFuncaoNome.toLowerCase().replace(/\s+/g, '_'),
+                              ativa: true
+                            });
+                            setFormData({ ...formData, funcao_principal: novaFuncaoNome });
+                            setNovaFuncaoNome('');
+                            setMostrarAdicionarFuncao(false);
+                          }
+                        }}
+                      >
+                        Adicionar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setMostrarAdicionarFuncao(false);
+                          setNovaFuncaoNome('');
+                        }}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -225,6 +286,18 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
                   </SelectContent>
                 </Select>
               </div>
+
+              {formData.tipo_vinculo === 'pj' && (
+                <div>
+                  <Label htmlFor="cnpj_pj">CNPJ da Empresa</Label>
+                  <Input
+                    id="cnpj_pj"
+                    value={formData.cnpj_pj}
+                    onChange={(e) => setFormData({ ...formData, cnpj_pj: e.target.value })}
+                    placeholder="00.000.000/0001-00"
+                  />
+                </div>
+              )}
 
               <div className="col-span-2">
                 <Label htmlFor="observacoes">Observações</Label>
