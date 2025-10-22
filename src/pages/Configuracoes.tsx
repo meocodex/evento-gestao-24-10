@@ -184,6 +184,12 @@ export default function Configuracoes() {
           </TabsContent>
 
           <TabsContent value="usuarios" className="space-y-4">
+            <div className="mb-4">
+              <p className="text-sm text-muted-foreground">
+                Para criar novos usuários ou conceder acesso ao sistema, vá em <strong>Equipe</strong> e gerencie a partir de lá. 
+                Aqui você gerencia apenas as permissões de usuários existentes.
+              </p>
+            </div>
             <GerenciarUsuarios />
             <MatrizPermissoes />
           </TabsContent>

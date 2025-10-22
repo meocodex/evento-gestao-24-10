@@ -9,6 +9,8 @@ import { MembrosUnificadosVirtualList } from '@/components/equipe/MembrosUnifica
 import { NovoOperacionalDialog } from '@/components/equipe/operacional/NovoOperacionalDialog';
 import { DetalhesOperacionalDialog } from '@/components/equipe/operacional/DetalhesOperacionalDialog';
 import { EditarOperacionalDialog } from '@/components/equipe/operacional/EditarOperacionalDialog';
+import { ConcederAcessoSistemaDialog } from '@/components/equipe/ConcederAcessoSistemaDialog';
+import { GerenciarPermissoesMembroDialog } from '@/components/equipe/GerenciarPermissoesMembroDialog';
 import { OperacionalEquipe, MembroEquipeUnificado } from '@/types/equipe';
 import { Badge } from '@/components/ui/badge';
 export default function Equipe() {
@@ -25,6 +27,8 @@ export default function Equipe() {
   const [novoDialogOpen, setNovoDialogOpen] = useState(false);
   const [membroSelecionado, setMembroSelecionado] = useState<MembroEquipeUnificado | null>(null);
   const [editarMembro, setEditarMembro] = useState<MembroEquipeUnificado | null>(null);
+  const [concederAcessoMembro, setConcederAcessoMembro] = useState<MembroEquipeUnificado | null>(null);
+  const [gerenciarPermissoesMembro, setGerenciarPermissoesMembro] = useState<MembroEquipeUnificado | null>(null);
 
   // Filtrar membros localmente
   const membrosFiltrados = useMemo(() => {
@@ -214,6 +218,8 @@ export default function Equipe() {
             loading={loadingMembros}
             onDetalhes={setMembroSelecionado}
             onEditar={setEditarMembro}
+            onConcederAcesso={setConcederAcessoMembro}
+            onGerenciarPermissoes={setGerenciarPermissoesMembro}
           />
         </CardContent>
       </Card>
@@ -243,6 +249,18 @@ export default function Equipe() {
           onOpenChange={(open) => !open && setEditarMembro(null)}
         />
       )}
+
+      <ConcederAcessoSistemaDialog
+        open={!!concederAcessoMembro}
+        onOpenChange={(open) => !open && setConcederAcessoMembro(null)}
+        membro={concederAcessoMembro}
+      />
+
+      <GerenciarPermissoesMembroDialog
+        open={!!gerenciarPermissoesMembro}
+        onOpenChange={(open) => !open && setGerenciarPermissoesMembro(null)}
+        membro={gerenciarPermissoesMembro}
+      />
     </div>
   );
 }

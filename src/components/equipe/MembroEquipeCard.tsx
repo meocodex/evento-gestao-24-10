@@ -2,16 +2,24 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Phone, Mail, Star, Shield } from 'lucide-react';
+import { Phone, Mail, Star, Shield, Lock } from 'lucide-react';
 import { MembroEquipeUnificado } from '@/types/equipe';
 
 interface MembroEquipeCardProps {
   membro: MembroEquipeUnificado;
   onDetalhes: () => void;
   onEditar: () => void;
+  onConcederAcesso?: () => void;
+  onGerenciarPermissoes?: () => void;
 }
 
-export function MembroEquipeCard({ membro, onDetalhes, onEditar }: MembroEquipeCardProps) {
+export function MembroEquipeCard({ 
+  membro, 
+  onDetalhes, 
+  onEditar, 
+  onConcederAcesso, 
+  onGerenciarPermissoes 
+}: MembroEquipeCardProps) {
   const getTipoLabel = (tipo: string) => {
     const labels: Record<string, string> = {
       'clt': 'CLT',
@@ -143,13 +151,28 @@ export function MembroEquipeCard({ membro, onDetalhes, onEditar }: MembroEquipeC
             </div>
 
             {/* Ações */}
-            <div className="mt-3 flex gap-2">
+            <div className="mt-3 flex gap-2 flex-wrap">
               <Button variant="outline" size="sm" onClick={onDetalhes}>
                 Ver Detalhes
               </Button>
               <Button variant="ghost" size="sm" onClick={onEditar}>
                 Editar
               </Button>
+              
+              {/* Ações específicas por tipo de membro */}
+              {membro.tipo_membro === 'operacional' && onConcederAcesso && (
+                <Button variant="default" size="sm" onClick={onConcederAcesso}>
+                  <Lock className="h-3 w-3 mr-1" />
+                  Conceder Acesso
+                </Button>
+              )}
+              
+              {(membro.tipo_membro === 'sistema' || membro.tipo_membro === 'ambos') && onGerenciarPermissoes && (
+                <Button variant="secondary" size="sm" onClick={onGerenciarPermissoes}>
+                  <Shield className="h-3 w-3 mr-1" />
+                  Gerenciar Permissões
+                </Button>
+              )}
             </div>
           </div>
         </div>

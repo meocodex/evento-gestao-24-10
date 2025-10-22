@@ -5,9 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { UserPlus, Settings, Eye, MoreVertical, Shield } from "lucide-react";
+import { Settings, Eye, MoreVertical, Shield } from "lucide-react";
 import { useUsuarios, Usuario } from "@/hooks/useUsuarios";
-import { CriarOperadorDialog } from "./CriarOperadorDialog";
 import { EditarPermissoesUsuarioDialog } from "./EditarPermissoesUsuarioDialog";
 import { DetalhesUsuarioDialog } from "./DetalhesUsuarioDialog";
 import { format } from "date-fns";
@@ -41,7 +40,6 @@ function getRoleLabel(role: string) {
 
 export function GerenciarUsuarios() {
   const { usuarios, isLoading } = useUsuarios();
-  const [criarOpen, setCriarOpen] = useState(false);
   const [editarUsuario, setEditarUsuario] = useState<Usuario | null>(null);
   const [detalhesUsuario, setDetalhesUsuario] = useState<Usuario | null>(null);
 
@@ -61,15 +59,11 @@ export function GerenciarUsuarios() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Gerenciar Usuários</CardTitle>
+              <CardTitle>Usuários do Sistema</CardTitle>
               <CardDescription>
-                Visualize e gerencie as funções dos usuários do sistema
+                Visualize e gerencie as permissões dos usuários que já têm acesso ao sistema
               </CardDescription>
             </div>
-          <Button onClick={() => setCriarOpen(true)}>
-            <UserPlus className="mr-2 h-4 w-4" />
-            Criar Operador
-          </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -150,7 +144,6 @@ export function GerenciarUsuarios() {
         </CardContent>
       </Card>
 
-      <CriarOperadorDialog open={criarOpen} onOpenChange={setCriarOpen} />
       <EditarPermissoesUsuarioDialog
         open={!!editarUsuario}
         onOpenChange={(open) => !open && setEditarUsuario(null)}
