@@ -293,6 +293,23 @@ export function useDemandasMutations() {
     },
   });
 
+  const adicionarDemandaReembolso = useMutation({
+    mutationFn: async (data: any) => {
+      const { error } = await supabase
+        .from('demandas_reembolsos')
+        .insert(data);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['demandas'] });
+      toast({ title: 'Reembolso solicitado com sucesso!', description: 'O reembolso foi registrado.' });
+    },
+    onError: (error) => {
+      console.error('Erro ao solicitar reembolso:', error);
+      toast({ title: 'Erro ao solicitar reembolso', variant: 'destructive' });
+    },
+  });
+
   return {
     adicionarDemanda,
     editarDemanda,
@@ -303,5 +320,6 @@ export function useDemandasMutations() {
     reabrirDemanda,
     arquivarDemanda,
     desarquivarDemanda,
+    adicionarDemandaReembolso: adicionarDemandaReembolso.mutateAsync,
   };
 }

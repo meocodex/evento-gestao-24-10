@@ -15,7 +15,7 @@ export function useTransportadorasQueries(
   pageSizeTransportadoras = 50,
   filtrosTransportadoras?: FiltrosTransportadora
 ) {
-  return useQuery({
+  const transportadorasResult = useQuery({
     queryKey: ['transportadoras', pageTransportadoras, pageSizeTransportadoras, filtrosTransportadoras],
     queryFn: async () => {
       let query = supabase
@@ -50,6 +50,26 @@ export function useTransportadorasQueries(
     staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 60,
   });
+
+  const { data: transportadorasData } = transportadorasResult;
+
+  const buscarTransportadoraPorId = async (id: string) => {
+    const { data, error } = await supabase
+      .from('transportadoras')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  };
+
+  return {
+    ...transportadorasResult,
+    transportadoras: transportadorasData?.transportadoras || [],
+    totalCount: transportadorasData?.totalCount || 0,
+    buscarTransportadoraPorId,
+  };
 }
 
 export function useEnviosQueries(

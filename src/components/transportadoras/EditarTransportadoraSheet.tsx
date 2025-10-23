@@ -23,9 +23,9 @@ export function EditarTransportadoraSheet({ transportadora, open, onOpenChange }
     setFormData(transportadora);
   }, [transportadora]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    editarTransportadora(transportadora.id, formData);
+    await editarTransportadora.mutateAsync({ id: transportadora.id, data: formData });
     onOpenChange(false);
   };
 

@@ -31,12 +31,12 @@ export function GerenciarRotasSheet({ transportadora, open, onOpenChange }: Gere
 
   const [editandoRota, setEditandoRota] = useState<RotaAtendida | null>(null);
 
-  const handleAdicionarRota = () => {
+  const handleAdicionarRota = async () => {
     if (!novaRota.cidadeDestino || !novaRota.estadoDestino || novaRota.prazoEntrega <= 0) {
       return;
     }
 
-    adicionarRota(transportadora.id, novaRota);
+    await adicionarRota.mutateAsync({ transportadoraId: transportadora.id, rota: novaRota });
     setNovaRota({
       cidadeDestino: '',
       estadoDestino: '',
@@ -46,21 +46,25 @@ export function GerenciarRotasSheet({ transportadora, open, onOpenChange }: Gere
     });
   };
 
-  const handleEditarRota = () => {
+  const handleEditarRota = async () => {
     if (!editandoRota) return;
     
     const rotaIndex = transportadora.rotasAtendidas?.findIndex(r => r.id === editandoRota.id) ?? -1;
     if (rotaIndex !== -1) {
-      editarRota(transportadora.id, rotaIndex, editandoRota);
+      await editarRota.mutateAsync({
+        transportadoraId: transportadora.id,
+        rotaIndex,
+        rota: editandoRota,
+      });
     }
     setEditandoRota(null);
   };
 
-  const handleRemoverRota = (rotaId: string) => {
+  const handleRemoverRota = async (rotaId: string) => {
     if (window.confirm('Tem certeza que deseja remover esta rota?')) {
       const rotaIndex = transportadora.rotasAtendidas?.findIndex(r => r.id === rotaId) ?? -1;
       if (rotaIndex !== -1) {
-        removerRota(transportadora.id, rotaIndex);
+        await removerRota.mutateAsync({ transportadoraId: transportadora.id, rotaIndex });
       }
     }
   };

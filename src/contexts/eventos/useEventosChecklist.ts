@@ -1,75 +1,42 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { MaterialChecklist } from '@/types/eventos';
+import { toast } from 'sonner';
 
-export function useEventosChecklist() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const adicionarMaterial = useMutation({
-    mutationFn: async ({ eventoId, material }: { 
-      eventoId: string; 
-      material: Omit<MaterialChecklist, 'id' | 'alocado'> 
-    }) => {
+export function useEventosChecklist(eventoId: string) {
+  const { data: checklistData, isLoading } = useQuery({
+    queryKey: ['eventos-checklist', eventoId],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('eventos_checklist')
-        .insert([{
-          evento_id: eventoId,
-          item_id: material.itemId || `item-${Date.now()}`,
-          nome: material.nome,
-          quantidade: material.quantidade,
-          alocado: 0
-        }])
-        .select()
-        .single();
-
+        .select('*')
+        .eq('evento_id', eventoId);
+      
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['eventos'] });
-      toast({
-        title: 'Material adicionado!',
-        description: 'Material adicionado ao checklist com sucesso.'
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Erro ao adicionar material',
-        description: error.message,
-        variant: 'destructive'
-      });
-    }
   });
 
-  const removerMaterial = useMutation({
-    mutationFn: async ({ eventoId, materialId }: { eventoId: string; materialId: string }) => {
-      const { error } = await supabase
-        .from('eventos_checklist')
-        .delete()
-        .eq('id', materialId);
+  const adicionarMaterialChecklist = async (data: any) => {
+    const { error } = await supabase
+      .from('eventos_checklist')
+      .insert({ ...data, evento_id: eventoId });
+    if (error) throw error;
+    toast.success('Material adicionado ao checklist!');
+  };
 
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['eventos'] });
-      toast({
-        title: 'Material removido!',
-        description: 'Material removido do checklist.'
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Erro ao remover material',
-        description: error.message,
-        variant: 'destructive'
-      });
-    }
-  });
+  const removerMaterialChecklist = async (id: string) => {
+    const { error } = await supabase
+      .from('eventos_checklist')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+    toast.success('Material removido do checklist!');
+  };
 
   return {
-    adicionarMaterial,
-    removerMaterial
+    checklist: checklistData || [],
+    loading: isLoading,
+    adicionarMaterialChecklist,
+    removerMaterialChecklist,
   };
 }

@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { FiltrosEstoque } from './types';
 
 export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEstoque) => {
-  return useQuery({
+  const queryResult = useQuery({
     queryKey: ['materiais_estoque', page, pageSize, filtros],
     queryFn: async () => {
       const start = (page - 1) * pageSize;
@@ -33,7 +33,27 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
         totalCount: count || 0,
       };
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos
-    gcTime: 1000 * 60 * 30, // 30 minutos
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 30,
   });
+
+  const { data } = queryResult;
+
+  const buscarMaterialPorId = async (id: string) => {
+    const { data, error } = await supabase
+      .from('materiais_estoque')
+      .select('*')
+      .eq('id', id)
+      .single();
+    
+    if (error) throw error;
+    return data;
+  };
+
+  return {
+    ...queryResult,
+    materiais: data?.materiais || [],
+    totalCount: data?.totalCount || 0,
+    buscarMaterialPorId,
+  };
 };

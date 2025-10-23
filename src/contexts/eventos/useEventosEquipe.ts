@@ -1,82 +1,42 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { MembroEquipe } from '@/types/eventos';
+import { toast } from 'sonner';
 
-export function useEventosEquipe() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  const adicionarMembro = useMutation({
-    mutationFn: async ({ 
-      eventoId, 
-      membro 
-    }: { 
-      eventoId: string; 
-      membro: Omit<MembroEquipe, 'id'> 
-    }) => {
+export function useEventosEquipe(eventoId: string) {
+  const { data: equipeData, isLoading } = useQuery({
+    queryKey: ['eventos-equipe', eventoId],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from('eventos_equipe')
-        .insert([{
-          evento_id: eventoId,
-          nome: membro.nome,
-          funcao: membro.funcao,
-          telefone: membro.telefone,
-          whatsapp: membro.whatsapp,
-          data_inicio: membro.dataInicio,
-          data_fim: membro.dataFim,
-          observacoes: membro.observacoes,
-          operacional_id: membro.operacionalId
-        }])
-        .select()
-        .single();
-
+        .select('*')
+        .eq('evento_id', eventoId);
+      
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['eventos'] });
-      toast({
-        title: 'Membro adicionado!',
-        description: `${variables.membro.nome} foi adicionado à equipe.`
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Erro ao adicionar membro',
-        description: error.message,
-        variant: 'destructive'
-      });
-    }
   });
 
-  const removerMembro = useMutation({
-    mutationFn: async ({ membroId }: { membroId: string }) => {
-      const { error } = await supabase
-        .from('eventos_equipe')
-        .delete()
-        .eq('id', membroId);
+  const adicionarMembroEquipe = async (data: any) => {
+    const { error } = await supabase
+      .from('eventos_equipe')
+      .insert({ ...data, evento_id: eventoId });
+    if (error) throw error;
+    toast.success('Membro adicionado à equipe!');
+  };
 
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['eventos'] });
-      toast({
-        title: 'Membro removido!',
-        description: 'Membro removido da equipe.'
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: 'Erro ao remover membro',
-        description: error.message,
-        variant: 'destructive'
-      });
-    }
-  });
+  const removerMembroEquipe = async (id: string) => {
+    const { error } = await supabase
+      .from('eventos_equipe')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+    toast.success('Membro removido da equipe!');
+  };
 
   return {
-    adicionarMembro,
-    removerMembro
+    equipe: equipeData || [],
+    loading: isLoading,
+    adicionarMembroEquipe,
+    removerMembroEquipe,
   };
 }

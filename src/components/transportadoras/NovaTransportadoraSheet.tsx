@@ -34,9 +34,9 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
     rotasAtendidas: [],
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    criarTransportadora(formData);
+    await criarTransportadora.mutateAsync(formData);
     onOpenChange(false);
     setFormData({
       nome: '',

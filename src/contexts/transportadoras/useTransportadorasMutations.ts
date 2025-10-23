@@ -114,18 +114,6 @@ export function useTransportadorasMutations() {
     }
   });
 
-  return {
-    criarTransportadora,
-    editarTransportadora,
-    adicionarRota,
-    editarRota,
-    removerRota
-  };
-}
-
-export function useEnviosMutations() {
-  const queryClient = useQueryClient();
-
   const criarEnvio = useMutation({
     mutationFn: async (data: any) => {
       const { data: envio, error } = await supabase
@@ -138,26 +126,11 @@ export function useEnviosMutations() {
       return envio;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['envios'] });
+      queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
       toast({ title: 'Envio criado!' });
     },
     onError: (error: any) => {
       toast({ title: 'Erro ao criar envio', description: error.message, variant: 'destructive' });
-    }
-  });
-
-  const atualizarStatusEnvio = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase
-        .from('transportadoras_envios')
-        .update({ status })
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['envios'] });
-      toast({ title: 'Status atualizado!' });
     }
   });
 
@@ -171,8 +144,23 @@ export function useEnviosMutations() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['envios'] });
+      queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
       toast({ title: 'Envio atualizado!' });
+    }
+  });
+
+  const atualizarStatusEnvio = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const { error } = await supabase
+        .from('transportadoras_envios')
+        .update({ status })
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
+      toast({ title: 'Status atualizado!' });
     }
   });
 
@@ -186,15 +174,20 @@ export function useEnviosMutations() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['envios'] });
+      queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
       toast({ title: 'Envio excluído!' });
     }
   });
 
   return {
+    criarTransportadora,
+    editarTransportadora,
+    adicionarRota,
+    editarRota,
+    removerRota,
     criarEnvio,
     editarEnvio,
     atualizarStatusEnvio,
-    excluirEnvio
+    excluirEnvio,
   };
 }

@@ -268,9 +268,10 @@ export function useEventosMutations() {
   });
 
   return {
-    criarEvento: (data: EventoFormData) => criarEvento.mutateAsync(data),
-    editarEvento: (id: string, data: Partial<Evento>) => editarEvento.mutateAsync({ id, data }),
-    excluirEvento: (id: string) => excluirEvento.mutateAsync(id),
-    alterarStatus: (id: string, novoStatus: StatusEvento, observacao?: string) => alterarStatus.mutateAsync({ id, novoStatus, observacao })
+    adicionarEvento: criarEvento,
+    editarEvento: editarEvento,
+    excluirEvento: excluirEvento,
+    deletarEvento: excluirEvento,
+    alterarStatus: alterarStatus,
   };
 }

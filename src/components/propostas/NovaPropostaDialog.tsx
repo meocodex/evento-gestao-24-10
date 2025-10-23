@@ -70,7 +70,7 @@ export function NovaPropostaDialog({ open, onOpenChange }: NovaPropostaDialogPro
     return itens.reduce((acc, item) => acc + item.valorTotal, 0);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const template = templates.find(t => t.id === templateId);
     if (!template) return;
 
