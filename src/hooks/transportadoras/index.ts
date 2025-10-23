@@ -3,10 +3,13 @@
  */
 
 export { 
-  useTransportadorasQueries, 
+  useTransportadorasQueries,
+  type FiltrosTransportadora
+} from '@/contexts/transportadoras/useTransportadorasQueries';
+
+export {
   useEnviosQueries,
-  type FiltrosTransportadora,
-  type FiltrosEnvio 
+  type FiltrosEnvio
 } from '@/contexts/transportadoras/useTransportadorasQueries';
 
 // Helper temporário para compatibilidade

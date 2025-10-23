@@ -7,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { DocumentUpload } from '@/components/shared/DocumentUpload';
-import { useTransportadoras } from '@/contexts/TransportadorasContext';
-import { useEventos } from '@/contexts/EventosContext';
+import { useTransportadoras } from '@/hooks/transportadoras';
+import { useEventos } from '@/hooks/eventos';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AlertCircle } from 'lucide-react';
 import { addDays, format } from 'date-fns';

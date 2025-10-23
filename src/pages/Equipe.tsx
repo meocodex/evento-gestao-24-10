@@ -20,10 +20,10 @@ export default function Equipe() {
   const { data: profiles = [], isLoading: loadingProfiles } = useProfilesQueries(true);
   const loadingMembros = loadingOp || loadingProfiles;
   const membrosUnificados = useMemo(() => {
-    const unificados = [...operacionais.map(op => ({ ...op, tipo: 'operacional' as const }))];
+    const unificados = [...operacionais.map(op => ({ ...op, tipo: 'operacional' as const, tipo_membro: op.tipo_vinculo || 'CLT' }))];
     profiles.forEach(p => {
       if (!operacionais.find(op => op.email === p.email)) {
-        unificados.push({ ...p, tipo: 'sistema' as const, id: p.id, nome: p.nome, email: p.email, telefone: p.telefone, funcao_principal: '', status: 'ativo' });
+        unificados.push({ ...p, tipo: 'operacional' as const, tipo_membro: 'Sistema', id: p.id, nome: p.nome, email: p.email, telefone: p.telefone, funcao_principal: '', status: 'ativo' });
       }
     });
     return unificados;
@@ -84,9 +84,9 @@ export default function Equipe() {
   const stats = useMemo(() => {
     return {
       total: membrosUnificados.length,
-      sistema: membrosUnificados.filter(m => m.tipo_membro === 'sistema').length,
-      operacional: membrosUnificados.filter(m => m.tipo_membro === 'operacional').length,
-      ambos: membrosUnificados.filter(m => m.tipo_membro === 'ambos').length,
+      sistema: membrosUnificados.filter(m => m.tipo_membro === 'Sistema').length,
+      operacional: membrosUnificados.filter(m => m.tipo_membro && m.tipo_membro !== 'Sistema').length,
+      ambos: 0,
     };
   }, [membrosUnificados]);
 
@@ -240,7 +240,7 @@ export default function Equipe() {
         onOpenChange={setNovoDialogOpen}
       />
 
-      {membroSelecionado?.tipo_membro !== 'sistema' && membroSelecionado && (
+      {membroSelecionado?.tipo_membro !== 'Sistema' && membroSelecionado && (
         <DetalhesOperacionalDialog
           operacional={membroSelecionado as any}
           open={!!membroSelecionado}
@@ -252,7 +252,7 @@ export default function Equipe() {
         />
       )}
 
-      {editarMembro?.tipo_membro !== 'sistema' && editarMembro && (
+      {editarMembro?.tipo_membro !== 'Sistema' && editarMembro && (
         <EditarOperacionalDialog
           operacional={editarMembro as any}
           open={!!editarMembro}

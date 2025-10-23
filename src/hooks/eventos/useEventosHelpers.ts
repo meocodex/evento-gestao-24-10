@@ -9,7 +9,8 @@ import {
   useEventosFinanceiro,
   useEventosEquipe,
   useEventosMateriaisAlocados,
-  useEventosObservacoes
+  useEventosObservacoes,
+  useEventosChecklist
 } from './index';
 
 export function useEventos() {
@@ -20,6 +21,7 @@ export function useEventos() {
   const equipe = useEventosEquipe();
   const materiais = useEventosMateriaisAlocados();
   const observacoes = useEventosObservacoes();
+  const checklist = useEventosChecklist();
 
   return {
     eventos,
@@ -27,10 +29,22 @@ export function useEventos() {
     page: 1,
     pageSize: 50,
     setPage: () => {},
-    ...mutations,
-    ...financeiro,
-    ...equipe,
-    ...materiais,
-    ...observacoes,
+    criarEvento: (data: any) => mutations.criarEvento.mutateAsync(data),
+    editarEvento: (id: string, data: any) => mutations.editarEvento.mutateAsync({ id, data }),
+    deletarEvento: (id: string) => mutations.excluirEvento.mutateAsync(id),
+    alterarStatus: mutations.alterarStatus,
+    adicionarReceita: (eventoId: string, receita: any) => financeiro.adicionarReceita.mutateAsync({ eventoId, receita }),
+    removerReceita: (receitaId: string) => financeiro.removerReceita.mutateAsync({ receitaId }),
+    adicionarDespesa: (eventoId: string, despesa: any) => financeiro.adicionarDespesa.mutateAsync({ eventoId, despesa }),
+    removerDespesa: (despesaId: string) => financeiro.removerDespesa.mutateAsync({ despesaId }),
+    editarDespesa: financeiro.editarDespesa,
+    adicionarMembroEquipe: (eventoId: string, membro: any) => equipe.adicionarMembro.mutateAsync({ eventoId, membro }),
+    removerMembroEquipe: (membroId: string) => equipe.removerMembro.mutateAsync(membroId),
+    adicionarObservacaoOperacional: (id: string, obs: any) => observacoes.adicionarObservacao.mutateAsync({ eventoId: id, observacao: obs }),
+    adicionarMaterialChecklist: (eventoId: string, material: any) => checklist.adicionarMaterial.mutateAsync({ eventoId, material }),
+    removerMaterialChecklist: (eventoId: string, materialId: string) => checklist.removerMaterial.mutateAsync({ eventoId, materialId }),
+    removerMaterialAlocado: (eventoId: string, materialId: string) => materiais.desalocarMaterial.mutateAsync({ eventoId, materialId }),
+    alocarMaterial: materiais.alocarMaterial,
+    desalocarMaterial: materiais.desalocarMaterial,
   };
 }

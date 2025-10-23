@@ -27,7 +27,7 @@ export function useClientes() {
     setFiltros,
     criarCliente: mutations.criarCliente.mutateAsync,
     editarCliente: async (id: string, data: any) => mutations.editarCliente.mutateAsync({ id, data }),
-    excluirCliente: mutations.excluirCliente.mutateAsync,
+    excluirCliente: (id: string) => mutations.excluirCliente.mutateAsync(id),
     buscarClientePorId: (id: string) => clientes.find((c: Cliente) => c.id === id),
     aplicarFiltros: (novosFiltros: any) => setFiltros(novosFiltros),
     validarDocumento: (doc: string, tipo: 'CPF' | 'CNPJ') => tipo === 'CPF' ? validarCPF(doc) : validarCNPJ(doc),

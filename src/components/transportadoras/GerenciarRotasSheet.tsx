@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useTransportadoras } from '@/contexts/TransportadorasContext';
+import { useTransportadoras } from '@/hooks/transportadoras';
 import { Transportadora, RotaAtendida } from '@/types/transportadoras';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Pencil, Trash2, Plus } from 'lucide-react';

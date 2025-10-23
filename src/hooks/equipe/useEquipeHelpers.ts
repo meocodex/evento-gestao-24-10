@@ -12,10 +12,10 @@ export function useEquipe() {
   const mutations = useOperacionalMutations();
 
   const membrosUnificados = React.useMemo(() => {
-    const unificados = [...operacionais.map((op: any) => ({ ...op, tipo: 'operacional' as const }))];
+    const unificados = [...operacionais.map((op: any) => ({ ...op, tipo: 'operacional' as const, tipo_membro: op.tipo_vinculo || 'CLT' }))];
     profiles.forEach((p: any) => {
       if (!operacionais.find((op: any) => op.email === p.email)) {
-        unificados.push({ ...p, tipo: 'sistema' as const });
+        unificados.push({ ...p, tipo: 'operacional' as const, tipo_membro: 'Sistema' });
       }
     });
     return unificados;
@@ -34,6 +34,8 @@ export function useEquipe() {
     pageSize: 50,
     filtros: {},
     setFiltros: () => {},
-    ...mutations,
+    criarOperacional: mutations.criarOperacional,
+    editarOperacional: mutations.editarOperacional,
+    excluirOperacional: (id: string) => mutations.deletarOperacional.mutateAsync(id),
   };
 }

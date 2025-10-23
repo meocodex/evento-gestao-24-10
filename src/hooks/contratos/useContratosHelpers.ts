@@ -31,8 +31,14 @@ export function useContratos() {
     templates,
     loading,
     gerarPDF: gerarPDFContrato,
-    ...mutations,
-    ...templateMutations,
-    ...workflow,
+    criarContrato: (data: any) => mutations.criarContrato.mutateAsync(data),
+    editarContrato: (id: string, data: any) => mutations.editarContrato.mutateAsync({ id, data }),
+    excluirContrato: (id: string) => mutations.excluirContrato.mutateAsync(id),
+    criarTemplate: templateMutations.criarTemplate,
+    editarTemplate: templateMutations.editarTemplate,
+    excluirTemplate: templateMutations.excluirTemplate,
+    assinarContrato: (contratoId: string, parte: string) => workflow.assinarContrato.mutateAsync({ contratoId, parte }),
+    aprovarProposta: workflow.aprovarProposta,
+    converterPropostaEmContrato: (contratoId: string, eventoId: string) => workflow.converterPropostaEmContrato.mutateAsync({ contratoId, eventoId }),
   };
 }

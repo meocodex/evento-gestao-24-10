@@ -22,7 +22,12 @@ export function useEstoque() {
     setPage: () => {},
     pageSize: 50,
     totalCount: data?.totalCount || 0,
-    ...mutations,
+    adicionarMaterial: (dados: any) => mutations.adicionarMaterial.mutateAsync(dados),
+    editarMaterial: (id: string, dados: any) => mutations.editarMaterial.mutateAsync({ id, dados }),
+    excluirMaterial: (id: string) => mutations.excluirMaterial.mutateAsync(id),
+    adicionarSerial: (materialId: string, dados: any) => mutations.adicionarSerial.mutateAsync({ materialId, dados }),
+    editarSerial: (materialId: string, numeroSerial: string, dados: any) => mutations.editarSerial.mutateAsync({ materialId, numeroSerial, dados }),
+    excluirSerial: (materialId: string, numeroSerial: string) => mutations.excluirSerial.mutateAsync({ materialId, numeroSerial }),
     getEstatisticas: () => ({
       totalItens: materiais.reduce((sum: number, m: any) => sum + m.quantidadeTotal, 0),
       totalDisponiveis: materiais.reduce((sum: number, m: any) => sum + m.quantidadeDisponivel, 0),
