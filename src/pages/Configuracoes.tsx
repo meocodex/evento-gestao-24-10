@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useConfiguracoes } from '@/contexts/ConfiguracoesContext';
+import { useConfiguracoes } from '@/hooks/configuracoes';
 import { useToast } from '@/hooks/use-toast';
 import { GerenciarCategorias } from '@/components/configuracoes/GerenciarCategorias';
 import { GerenciarUsuarios } from '@/components/configuracoes/GerenciarUsuarios';

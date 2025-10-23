@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { FiltroDemandas } from '@/types/demandas';
-import { useDemandasQueries, useDemandasMutations } from '@/hooks/demandas';
+import { useDemandas } from '@/hooks/demandas';
 import { Demanda } from '@/types/demandas';
 import { DemandaCard } from '@/components/demandas/DemandaCard';
 import { DemandasVirtualList } from '@/components/demandas/DemandasVirtualList';
@@ -19,11 +19,7 @@ export default function Demandas() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const [filtros, setFiltros] = useState<FiltroDemandas>({});
-  const { demandas = [], totalCount = 0 } = useDemandasQueries(page, pageSize);
-  const mutations = useDemandasMutations();
-  const excluirDemanda = useCallback(async (id: string) => {
-    return await mutations.excluirDemanda.mutateAsync(id);
-  }, [mutations.excluirDemanda]);
+  const { demandas = [], totalCount = 0, excluirDemanda } = useDemandas(page, pageSize);
   const demandasFiltradas = demandas;
   const totalPages = Math.ceil(totalCount / pageSize);
   const estatisticas = useMemo(() => ({
@@ -60,7 +56,7 @@ export default function Demandas() {
   const confirmarExclusao = async () => {
     if (demandaSelecionada) {
       try {
-        await excluirDemanda(demandaSelecionada.id);
+        await excluirDemanda.mutateAsync(demandaSelecionada.id);
       } finally {
         setDialogExcluir(false);
         setDemandaSelecionada(null);
