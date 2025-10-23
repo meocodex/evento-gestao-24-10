@@ -23,7 +23,7 @@ export default function Equipe() {
     const unificados = [...operacionais.map(op => ({ 
       ...op, 
       tipo: 'operacional' as const, 
-      tipo_membro: 'operacional' as 'operacional',
+      tipo_membro: 'operacional' as const,
       avatar_url: op.foto || null
     }))];
     profiles.forEach(p => {
@@ -31,7 +31,7 @@ export default function Equipe() {
         unificados.push({ 
           ...p, 
           tipo: 'operacional' as const, 
-          tipo_membro: 'sistema' as 'sistema',
+          tipo_membro: 'sistema' as const,
           funcao_principal: 'Sistema',
           telefone: p.telefone || null,
           cpf: p.cpf || null,
@@ -97,8 +97,8 @@ export default function Equipe() {
   const stats = useMemo(() => {
     return {
       total: membrosUnificados.length,
-      sistema: membrosUnificados.filter(m => m.tipo_membro === 'Sistema').length,
-      operacional: membrosUnificados.filter(m => m.tipo_membro && m.tipo_membro !== 'Sistema').length,
+      sistema: membrosUnificados.filter(m => m.tipo_membro === 'sistema').length,
+      operacional: membrosUnificados.filter(m => m.tipo_membro === 'operacional').length,
       ambos: 0,
     };
   }, [membrosUnificados]);

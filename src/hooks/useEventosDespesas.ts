@@ -20,7 +20,7 @@ export function useEventosDespesas() {
         eventoId,
         despesa: {
           descricao: reembolso.descricao || 'Reembolso',
-          categoria: 'operacional',
+          categoria: 'pessoal' as const,
           valor: reembolso.valorTotal || reembolso.valor,
           demandaId,
         }

@@ -385,7 +385,7 @@ export function DetalhesContratoDialog({ open, onOpenChange, contrato, onEdit, o
               </Button>
             )}
             {contrato.status === 'assinado' && (
-              <Button variant="outline" onClick={() => gerarPDF(contrato.id)}>
+              <Button variant="outline" onClick={() => gerarPDF(contrato)}>
                 <Download className="mr-2 h-4 w-4" />
                 Baixar PDF
               </Button>

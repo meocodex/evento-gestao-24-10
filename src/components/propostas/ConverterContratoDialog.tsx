@@ -38,13 +38,7 @@ export function ConverterContratoDialog({ contrato, open, onOpenChange }: Conver
       return;
     }
 
-    await converterPropostaEmContrato(
-      contrato.id,
-      opcao,
-      eventoId || undefined,
-      contrato.dadosEvento,
-      adicionarReceitas
-    );
+    await converterPropostaEmContrato(contrato.id, eventoId || '');
 
     onOpenChange(false);
   };

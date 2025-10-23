@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { DocumentUpload } from '@/components/shared/DocumentUpload';
-import { useTransportadoras } from '@/contexts/TransportadorasContext';
+import { useTransportadoras } from '@/hooks/transportadoras';
 import { Envio } from '@/types/transportadoras';
 import { useIsMobile } from '@/hooks/use-mobile';
 

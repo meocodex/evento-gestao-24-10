@@ -33,7 +33,7 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
   const handleConfirmDelete = async () => {
     if (membroToDelete) {
       try {
-        await removerMembroEquipe(evento.id, membroToDelete);
+        await removerMembroEquipe(membroToDelete);
       } catch (error) {
         // Erro já tratado pelo hook
       } finally {

@@ -38,7 +38,7 @@ export function useEventos() {
     removerReceita: (receitaId: string) => financeiro.removerReceita.mutateAsync({ receitaId }),
     adicionarDespesa: (eventoId: string, despesa: any) => financeiro.adicionarDespesa.mutateAsync({ eventoId, despesa }),
     removerDespesa: (despesaId: string) => financeiro.removerDespesa.mutateAsync({ despesaId }),
-    editarDespesa: (despesaId: string, despesa: any) => financeiro.editarDespesa.mutateAsync({ despesaId, despesa }),
+    editarDespesa: (despesaId: string, despesa: any) => financeiro.editarDespesa.mutateAsync({ despesaId, data: despesa }),
     adicionarMembroEquipe: (eventoId: string, membro: any) => equipe.adicionarMembro.mutateAsync({ eventoId, membro }),
     removerMembroEquipe: (membroId: string) => equipe.removerMembro.mutateAsync({ membroId }),
     adicionarObservacaoOperacional: (id: string, obs: any) => observacoes.adicionarObservacao.mutateAsync({ eventoId: id, observacao: obs }),
