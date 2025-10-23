@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { FiltrosEstoque } from './types';
+import type { FiltrosEstoque } from '@/types/estoque';
 
 export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEstoque) => {
   const queryResult = useQuery({

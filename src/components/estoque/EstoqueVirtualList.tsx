@@ -3,7 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Edit, Trash2 } from 'lucide-react';
-import type { MaterialEstoque } from '@/contexts/estoque/types';
+import type { MaterialEstoque } from '@/types/estoque';
 import { CardSkeleton } from '@/components/shared/LoadingSkeleton';
 
 interface EstoqueVirtualListProps {

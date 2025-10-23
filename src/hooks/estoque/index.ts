@@ -9,7 +9,7 @@ import { useEstoqueSeriais as useEstoqueSeriaisImpl } from '@/contexts/estoque/u
 export { useEstoqueQueriesImpl as useEstoqueQueries };
 export { useEstoqueMutationsImpl as useEstoqueMutations };
 export { useEstoqueSeriaisImpl as useEstoqueSeriais };
-export type { FiltrosEstoque, MaterialEstoque, SerialEstoque } from '@/contexts/estoque/types';
+export type { FiltrosEstoque, MaterialEstoque, SerialEstoque } from '@/types/estoque';
 
 // Wrapper para compatibilidade
 export function useEstoque() {

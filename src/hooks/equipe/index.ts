@@ -11,7 +11,7 @@ export { useOperacionalQueriesImpl as useOperacionalQueries };
 export { useOperacionalMutationsImpl as useOperacionalMutations };
 export { useConflitosEquipeImpl as useConflitosEquipe };
 export { useProfilesQueriesImpl as useProfilesQueries };
-export type { FiltrosOperacional } from '@/contexts/equipe/types';
+export type { FiltrosOperacional } from '@/types/equipe';
 
 // Wrapper para compatibilidade - retorna objetos completos das mutations
 export function useEquipe() {

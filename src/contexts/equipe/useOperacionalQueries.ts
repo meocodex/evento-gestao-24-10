@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { OperacionalEquipe } from '@/types/equipe';
-import { FiltrosOperacional } from './types';
+import { OperacionalEquipe, FiltrosOperacional } from '@/types/equipe';
 
 export function useOperacionalQueries(
   page = 1,

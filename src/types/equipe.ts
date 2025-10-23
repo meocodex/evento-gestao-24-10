@@ -61,3 +61,10 @@ export interface ConflitoDatas {
   dataInicio: string;
   dataFim: string;
 }
+
+export interface FiltrosOperacional {
+  searchTerm?: string;
+  funcao?: string;
+  tipo?: string;
+  status?: string;
+}
