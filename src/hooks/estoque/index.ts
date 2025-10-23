@@ -18,11 +18,13 @@ export function useEstoque() {
   
   return {
     ...queries,
-    adicionarMaterial: mutations.adicionarMaterial.mutateAsync,
-    editarMaterial: mutations.editarMaterial.mutateAsync,
-    excluirMaterial: mutations.excluirMaterial.mutateAsync,
-    adicionarSerial: mutations.adicionarSerial.mutateAsync,
-    editarSerial: mutations.editarSerial.mutateAsync,
-    excluirSerial: mutations.excluirSerial.mutateAsync,
+    
+    // Mutations (objetos completos com mutateAsync, isPending, etc)
+    adicionarMaterial: mutations.adicionarMaterial,
+    editarMaterial: mutations.editarMaterial,
+    excluirMaterial: mutations.excluirMaterial,
+    adicionarSerial: mutations.adicionarSerial,
+    editarSerial: mutations.editarSerial,
+    excluirSerial: mutations.excluirSerial,
   };
 }

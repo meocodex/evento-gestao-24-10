@@ -67,7 +67,7 @@ export function EditarMaterialDialog({ open, onOpenChange, material }: EditarMat
   const onSubmit = async (data: MaterialFormData) => {
     setLoading(true);
     try {
-      await editarMaterial({ 
+      await editarMaterial.mutateAsync({ 
         id: material.id, 
         dados: {
           nome: data.nome,

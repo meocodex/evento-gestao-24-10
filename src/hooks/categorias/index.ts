@@ -2,8 +2,13 @@
  * Barrel export para hooks de categorias
  */
 
-export { useCategoriasQueries } from '@/contexts/categorias/useCategoriasQueries';
-export { useCategoriasMutations } from '@/contexts/categorias/useCategoriasMutations';
+import { useCategoriasQueries as useCategoriasQueriesImpl } from '@/contexts/categorias/useCategoriasQueries';
+import { useCategoriasMutations as useCategoriasMutationsImpl } from '@/contexts/categorias/useCategoriasMutations';
 
-// Helper temporário
-export { useCategorias } from './useCategoriasHelpers';
+export { useCategoriasQueriesImpl as useCategoriasQueries };
+export { useCategoriasMutationsImpl as useCategoriasMutations };
+
+// Wrapper para compatibilidade
+export function useCategorias() {
+  return useCategoriasQueriesImpl();
+}

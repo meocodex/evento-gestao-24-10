@@ -15,8 +15,10 @@ export function useClientes() {
   
   return {
     ...queries,
-    criarCliente: mutations.criarCliente.mutateAsync,
-    editarCliente: mutations.editarCliente.mutateAsync,
-    excluirCliente: mutations.excluirCliente.mutateAsync,
+    
+    // Mutations (objetos completos com mutateAsync, isPending, etc)
+    criarCliente: mutations.criarCliente,
+    editarCliente: mutations.editarCliente,
+    excluirCliente: mutations.excluirCliente,
   };
 }
