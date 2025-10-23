@@ -6,9 +6,6 @@ import { BrowserRouter } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CategoriasProvider } from "@/contexts/CategoriasContext";
-import { ConfiguracoesProvider } from "@/contexts/ConfiguracoesContext";
-import { CadastrosPublicosProvider } from "@/contexts/CadastrosPublicosContext";
-import { ContratosProvider } from "@/contexts/ContratosContext";
 
 // QueryClient com cache otimizado
 const queryClient = new QueryClient({
@@ -46,15 +43,9 @@ export function AppProviders({ children }: AppProvidersProps) {
       <BrowserRouter>
         <AuthProvider>
           <CategoriasProvider>
-            <ConfiguracoesProvider>
-              <CadastrosPublicosProvider>
-                <ContratosProvider>
-                  <TooltipProvider>
-                    {children}
-                  </TooltipProvider>
-                </ContratosProvider>
-              </CadastrosPublicosProvider>
-            </ConfiguracoesProvider>
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
           </CategoriasProvider>
         </AuthProvider>
       </BrowserRouter>
