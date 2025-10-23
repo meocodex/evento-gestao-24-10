@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useContratosMutations } from '@/hooks/contratos';
+import { useContratos } from '@/hooks/contratos';
 import { Contrato, StatusContrato } from '@/types/contratos';
 
 interface EditarContratoDialogProps {
@@ -15,7 +15,7 @@ interface EditarContratoDialogProps {
 }
 
 export function EditarContratoDialog({ open, onOpenChange, contrato }: EditarContratoDialogProps) {
-  const { editarContrato } = useContratosMutations();
+  const { editarContrato } = useContratos();
   const [titulo, setTitulo] = useState('');
   const [status, setStatus] = useState<StatusContrato>('rascunho');
   const [conteudo, setConteudo] = useState('');

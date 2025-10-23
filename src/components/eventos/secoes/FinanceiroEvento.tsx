@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useEventosMutations } from '@/hooks/eventos';
 import { useEventosFinanceiro } from '@/hooks/eventos';
 import { useDemandas } from '@/hooks/demandas';
 import { Evento } from '@/types/eventos';

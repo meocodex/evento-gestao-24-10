@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEventos } from '@/hooks/eventos';
+import { useEventoDetalhes } from '@/hooks/eventos';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
@@ -16,10 +16,16 @@ import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
 export default function EventoDetalhes() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { eventos } = useEventos();
-  
-  const evento = eventos.find(e => e.id === id);
+  const { data: evento, isLoading } = useEventoDetalhes(id);
   const permissions = usePermissions(evento);
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-navy-50 dark:bg-navy-950 flex items-center justify-center">
+        <LoadingSkeleton />
+      </div>
+    );
+  }
   
   if (!evento) {
     return (

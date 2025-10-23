@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Plus, Loader2, Search } from 'lucide-react';
-import { useClientesMutations } from '@/hooks/clientes';
+import { useClientes } from '@/hooks/clientes';
 import { clienteSchema } from '@/lib/validations/cliente';
 import { ClienteFormData } from '@/types/eventos';
 import { formatarDocumento, formatarTelefone, formatarCEP } from '@/lib/validations/cliente';
@@ -16,7 +16,7 @@ import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
 export function NovoClienteDialog() {
   const [open, setOpen] = useState(false);
   const [buscandoCEP, setBuscandoCEP] = useState(false);
-  const { criarCliente } = useClientesMutations();
+  const { criarCliente } = useClientes();
   const loading = criarCliente.isPending;
 
   const {

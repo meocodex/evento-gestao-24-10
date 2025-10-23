@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useContratosMutations, useContratosWorkflow } from '@/hooks/contratos';
+import { useContratos, useContratosWorkflow } from '@/hooks/contratos';
 import { Contrato } from '@/types/contratos';
 import { Badge } from '@/components/ui/badge';
 import { Check, Clock } from 'lucide-react';
@@ -12,7 +12,7 @@ interface SimularAssinaturaDialogProps {
 }
 
 export function SimularAssinaturaDialog({ open, onOpenChange, contrato }: SimularAssinaturaDialogProps) {
-  const { editarContrato } = useContratosMutations();
+  const { editarContrato } = useContratos();
   const { assinarContrato } = useContratosWorkflow();
 
   if (!contrato) return null;
