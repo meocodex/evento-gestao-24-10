@@ -26,7 +26,6 @@ export function useEventos() {
     criarEvento: mutations.adicionarEvento.mutateAsync,
     editarEvento: mutations.editarEvento.mutateAsync,
     excluirEvento: mutations.excluirEvento.mutateAsync,
-    deletarEvento: mutations.excluirEvento.mutateAsync, // Alias
     alterarStatus: mutations.alterarStatus.mutateAsync,
   };
 }

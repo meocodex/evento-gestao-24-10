@@ -62,7 +62,7 @@ export function useOperacionalMutations() {
     }
   });
 
-  const deletarOperacional = useMutation({
+  const excluirOperacional = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
         .from('equipe_operacional')
@@ -72,15 +72,15 @@ export function useOperacionalMutations() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
+      queryClient.invalidateQueries({ queryKey: ['equipe_operacional'] });
       toast({
-        title: 'Membro removido!',
-        description: 'Membro removido do cadastro.'
+        title: 'Membro excluído',
+        description: 'O membro foi removido da equipe operacional com sucesso'
       });
     },
     onError: (error: any) => {
       toast({
-        title: 'Erro ao remover membro',
+        title: 'Erro ao excluir membro',
         description: error.message,
         variant: 'destructive'
       });
@@ -90,6 +90,6 @@ export function useOperacionalMutations() {
   return {
     criarOperacional,
     editarOperacional,
-    deletarOperacional
+    excluirOperacional
   };
 }

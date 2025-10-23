@@ -13,17 +13,20 @@ export { useConflitosEquipeImpl as useConflitosEquipe };
 export { useProfilesQueriesImpl as useProfilesQueries };
 export type { FiltrosOperacional } from '@/contexts/equipe/types';
 
-// Wrapper para compatibilidade
+// Wrapper para compatibilidade - retorna objetos completos das mutations
 export function useEquipe() {
-  const operacionalQueries = useOperacionalQueriesImpl();
-  const operacionalMutations = useOperacionalMutationsImpl();
-  const profilesQueries = useProfilesQueriesImpl();
-  const conflitos = useConflitosEquipeImpl();
-  
+  const queries = useOperacionalQueriesImpl();
+  const mutations = useOperacionalMutationsImpl();
+  const profiles = useProfilesQueriesImpl();
+
   return {
-    ...operacionalQueries,
-    ...operacionalMutations,
-    ...profilesQueries,
-    ...conflitos,
+    // Queries
+    ...queries,
+    ...profiles,
+    
+    // Mutations (objetos completos com mutateAsync, isPending, etc)
+    criarOperacional: mutations.criarOperacional,
+    editarOperacional: mutations.editarOperacional,
+    excluirOperacional: mutations.excluirOperacional,
   };
 }

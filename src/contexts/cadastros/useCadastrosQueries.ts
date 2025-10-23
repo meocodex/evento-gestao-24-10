@@ -15,7 +15,7 @@ export function useCadastrosQueries() {
       
       return (data || []).map(transformCadastro);
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 2, // 2 minutos (cadastros pendentes mudam frequentemente)
   });
 
   return {

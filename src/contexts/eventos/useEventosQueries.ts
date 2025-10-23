@@ -60,8 +60,8 @@ export function useEventosQueries(page = 1, pageSize = 50, enabled = true) {
       
       return { eventos, totalCount: count || 0 };
     },
-    staleTime: 1000 * 60 * 10, // 10 minutos
-    gcTime: 1000 * 60 * 30, // 30 minutos
+    staleTime: 1000 * 60 * 5, // 5 minutos (eventos mudam com frequência moderada)
+    gcTime: 1000 * 60 * 30,
   });
 
   return {

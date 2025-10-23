@@ -31,7 +31,7 @@ export function useEventoDetalhes(eventoId: string | null | undefined) {
       return transformEvento(data);
     },
     enabled: !!eventoId,
-    staleTime: 1000 * 60 * 10, // 10 minutos
-    gcTime: 1000 * 60 * 20, // 20 minutos
+    staleTime: 1000 * 60 * 3, // 3 minutos (detalhes de evento mudam frequentemente)
+    gcTime: 1000 * 60 * 15,
   });
 }

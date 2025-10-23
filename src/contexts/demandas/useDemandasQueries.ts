@@ -28,8 +28,8 @@ export function useDemandasQueries(page = 1, pageSize = 20, enabled = true) {
         totalCount: count || 0
       };
     },
-    staleTime: 1000 * 60 * 10, // 10 minutos
-    gcTime: 1000 * 60 * 30,
+    staleTime: 1000 * 60 * 3, // 3 minutos (demandas são voláteis)
+    gcTime: 1000 * 60 * 20,
   });
 
   return {

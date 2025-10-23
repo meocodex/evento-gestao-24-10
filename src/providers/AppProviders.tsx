@@ -7,12 +7,20 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CategoriasProvider } from "@/contexts/CategoriasContext";
 
-// QueryClient com cache otimizado
+/**
+ * QueryClient com configurações otimizadas de cache.
+ * 
+ * Estratégia de cache:
+ * - staleTime: Tempo que os dados são considerados "frescos" (não refetch automático)
+ * - gcTime: Tempo que dados inativos permanecem em cache antes de serem limpos
+ * - refetchOnWindowFocus: Desabilitado para evitar refetches desnecessários
+ * - retry: 1 tentativa de retry em caso de erro
+ */
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutos
-      gcTime: 1000 * 60 * 30, // 30 minutos
+      staleTime: 1000 * 60 * 5, // 5 minutos (padrão para dados moderadamente voláteis)
+      gcTime: 1000 * 60 * 30, // 30 minutos (mantém cache por tempo razoável)
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
       retry: 1,

@@ -271,7 +271,6 @@ export function useEventosMutations() {
     adicionarEvento: criarEvento,
     editarEvento: editarEvento,
     excluirEvento: excluirEvento,
-    deletarEvento: excluirEvento,
     alterarStatus: alterarStatus,
   };
 }

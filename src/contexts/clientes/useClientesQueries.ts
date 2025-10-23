@@ -33,7 +33,7 @@ export function useClientesQueries(page = 1, pageSize = 20, searchTerm?: string,
         totalCount: count || 0 
       };
     },
-    staleTime: 1000 * 60 * 30, // 30 minutos (clientes mudam raramente)
+    staleTime: 1000 * 60 * 15, // 15 minutos (clientes são relativamente estáveis)
     gcTime: 1000 * 60 * 60, // 1 hora
   });
 
