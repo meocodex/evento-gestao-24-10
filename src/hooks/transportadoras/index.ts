@@ -8,3 +8,6 @@ export {
   type FiltrosTransportadora,
   type FiltrosEnvio 
 } from '@/contexts/transportadoras/useTransportadorasQueries';
+
+// Helper temporário para compatibilidade
+export { useTransportadoras } from './useTransportadorasHelpers';

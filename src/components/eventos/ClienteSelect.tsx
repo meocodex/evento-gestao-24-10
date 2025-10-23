@@ -15,7 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useClientes } from '@/contexts/ClientesContext';
+import { useClientes } from '@/hooks/clientes';
 
 interface ClienteSelectProps {
   value: string;

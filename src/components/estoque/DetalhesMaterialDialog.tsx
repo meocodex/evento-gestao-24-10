@@ -15,14 +15,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { MaterialEstoque, SerialEstoque } from '@/contexts/EstoqueContext';
+import { MaterialEstoque, SerialEstoque } from '@/hooks/estoque';
 import { Package, MapPin, Plus, Trash2, Edit } from 'lucide-react';
 import { useState } from 'react';
 import { NovoSerialDialog } from './NovoSerialDialog';
 import { EditarMaterialDialog } from './EditarMaterialDialog';
 import { EditarSerialDialog } from './EditarSerialDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { useEstoque } from '@/contexts/EstoqueContext';
+import { useEstoque } from '@/hooks/estoque';
 
 interface DetalhesMaterialDialogProps {
   open: boolean;

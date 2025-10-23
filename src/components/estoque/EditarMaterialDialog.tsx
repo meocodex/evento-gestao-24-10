@@ -19,9 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useEstoque } from '@/contexts/EstoqueContext';
-import { MaterialEstoque } from '@/contexts/EstoqueContext';
-import { useCategorias } from '@/contexts/CategoriasContext';
+import { useEstoque, MaterialEstoque } from '@/hooks/estoque';
+import { useCategorias } from '@/hooks/categorias';
 
 const materialSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),

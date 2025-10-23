@@ -10,7 +10,7 @@ import {
 import { Search, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useEstoque } from '@/contexts/EstoqueContext';
+import { useEstoque } from '@/hooks/estoque';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCategorias } from '@/contexts/CategoriasContext';
 

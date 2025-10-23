@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useEstoque } from '@/contexts/EstoqueContext';
+import { useEstoque } from '@/hooks/estoque';
 import { Package, Search } from 'lucide-react';
 
 interface AdicionarMaterialDialogProps {

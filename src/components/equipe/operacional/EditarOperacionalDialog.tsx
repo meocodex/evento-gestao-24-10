@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Plus } from 'lucide-react';
-import { useEquipe } from '@/contexts/EquipeContext';
+import { useEquipe } from '@/hooks/equipe';
 import { useCategorias } from '@/contexts/CategoriasContext';
 import { OperacionalEquipe } from '@/types/equipe';
 

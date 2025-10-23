@@ -9,7 +9,7 @@ import { AdicionarMaterialDialog } from '../modals/AdicionarMaterialDialog';
 import { AlocarMaterialDialog } from '../modals/AlocarMaterialDialog';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { useEventos } from '@/contexts/EventosContext';
+import { useEventos } from '@/hooks/eventos';
 
 interface MateriaisEventoProps {
   evento: Evento;

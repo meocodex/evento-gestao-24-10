@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useDemandasContext } from '@/contexts/DemandasContext';
+import { useDemandasContext } from '@/hooks/demandas';
 import { Demanda } from '@/types/demandas';
 import { AlertCircle, Eye, Plus, DollarSign } from 'lucide-react';
 import { useState } from 'react';

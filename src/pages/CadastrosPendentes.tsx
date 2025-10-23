@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { useCadastrosPublicos } from '@/contexts/CadastrosPublicosContext';
-import { useEventos } from '@/contexts/EventosContext';
+import { useEventos } from '@/hooks/eventos';
 import { CheckCircle, XCircle, Eye, Calendar, MapPin, User } from 'lucide-react';
 import { CadastroPublico } from '@/types/eventos';
 import { format } from 'date-fns';

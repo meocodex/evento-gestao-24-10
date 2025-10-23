@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Evento, StatusEvento } from '@/types/eventos';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { useEventos } from '@/contexts/EventosContext';
+import { useEventos } from '@/hooks/eventos';
 import { toast } from 'sonner';
 import { EventoKanbanCard } from './EventoKanbanCard';
 import { EventoKanbanColumn } from './EventoKanbanColumn';

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Contrato, StatusContrato } from '@/types/contratos';
-import { useContratos } from '@/contexts/ContratosContext';
+import { useContratos } from '@/hooks/contratos';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
@@ -21,8 +21,8 @@ import {
   CheckCircle2,
   XCircle
 } from 'lucide-react';
-import { useClientes } from '@/contexts/ClientesContext';
-import { useEventos } from '@/contexts/EventosContext';
+import { useClientes } from '@/hooks/clientes';
+import { useEventos } from '@/hooks/eventos';
 
 interface DetalhesContratoDialogProps {
   open: boolean;

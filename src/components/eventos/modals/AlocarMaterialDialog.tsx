@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Package, Search, CheckCircle2, XCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useEstoque } from '@/contexts/EstoqueContext';
+import { useEstoque } from '@/hooks/estoque';
 
 interface AlocarMaterialDialogProps {
   open: boolean;

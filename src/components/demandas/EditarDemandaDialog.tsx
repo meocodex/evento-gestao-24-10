@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useDemandasContext } from '@/contexts/DemandasContext';
-import { Demanda, CategoriaDemanda, PrioridadeDemanda } from '@/types/demandas';
-import { useEventos } from '@/contexts/EventosContext';
+import { useDemandasContext } from '@/hooks/demandas';
+import { TipoCategoria } from '@/types/categorias';
+import { useEventos } from '@/hooks/eventos';
 import { useUsuarios } from '@/hooks/useUsuarios';
 import { useCategorias } from '@/contexts/CategoriasContext';
 

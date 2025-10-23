@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useDemandasContext } from '@/contexts/DemandasContext';
+import { useDemandasContext } from '@/hooks/demandas';
 import { Demanda, StatusDemanda, TipoReembolso } from '@/types/demandas';
 import { format } from 'date-fns';
 import { useUsuarios } from '@/hooks/useUsuarios';

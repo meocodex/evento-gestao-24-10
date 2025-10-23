@@ -10,7 +10,7 @@ import { ptBR } from 'date-fns/locale';
 import { EditarDadosEvento } from './EditarDadosEvento';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
-import { useEventos } from '@/contexts/EventosContext';
+import { useEventos } from '@/hooks/eventos';
 import { AlterarStatusDialog } from '../modals/AlterarStatusDialog';
 
 interface DadosEventoProps {

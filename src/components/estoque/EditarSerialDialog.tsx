@@ -19,8 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useEstoque } from '@/contexts/EstoqueContext';
-import { SerialEstoque } from '@/contexts/EstoqueContext';
+import { useEstoque, SerialEstoque } from '@/hooks/estoque';
 
 const serialSchema = z.object({
   localizacao: z.string().min(1, 'Localização é obrigatória'),

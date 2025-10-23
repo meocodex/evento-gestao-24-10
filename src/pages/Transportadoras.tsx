@@ -4,7 +4,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { StatCard } from '@/components/dashboard/StatCard';
-import { useTransportadoras } from '@/contexts/TransportadorasContext';
+import { useTransportadoras } from '@/hooks/transportadoras';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NovaTransportadoraSheet } from '@/components/transportadoras/NovaTransportadoraSheet';
 import { EditarTransportadoraSheet } from '@/components/transportadoras/EditarTransportadoraSheet';

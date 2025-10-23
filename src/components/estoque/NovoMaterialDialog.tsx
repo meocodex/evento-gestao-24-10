@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useEstoque } from '@/contexts/EstoqueContext';
+import { useEstoque } from '@/hooks/estoque';
 import { useCategorias } from '@/contexts/CategoriasContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { toast } from '@/hooks/use-toast';

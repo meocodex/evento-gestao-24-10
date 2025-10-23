@@ -14,7 +14,7 @@ import { ClienteSelect } from './ClienteSelect';
 import { ComercialSelect } from './ComercialSelect';
 import { Badge } from '@/components/ui/badge';
 import { X, ChevronLeft, ChevronRight, Search, Calendar as CalendarIcon } from 'lucide-react';
-import { useEventos } from '@/contexts/EventosContext';
+import { useEventos } from '@/hooks/eventos';
 import { cn } from '@/lib/utils';
 import { buscarCEP } from '@/lib/api/viacep';
 import { format } from 'date-fns';

@@ -10,7 +10,7 @@ import { ClienteSelect } from './ClienteSelect';
 import { ComercialSelect } from './ComercialSelect';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
-import { useEventos } from '@/contexts/EventosContext';
+import { useEventos } from '@/hooks/eventos';
 
 interface NovoEventoDialogProps {
   open: boolean;

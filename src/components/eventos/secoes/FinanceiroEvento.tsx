@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useEventos } from '@/contexts/EventosContext';
-import { useDemandasContext } from '@/contexts/DemandasContext';
+import { useEventos } from '@/hooks/eventos';
+import { useDemandasContext } from '@/hooks/demandas';
 import { Evento } from '@/types/eventos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

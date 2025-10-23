@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useEventos } from '@/contexts/EventosContext';
-import { useDemandasContext } from '@/contexts/DemandasContext';
+import { useEventos } from '@/hooks/eventos';
+import { useDemandasContext } from '@/hooks/demandas';
 import { Evento } from '@/types/eventos';
 import { EventoDetailsDialog } from '@/components/eventos/EventoDetailsDialog';
 import { format } from 'date-fns';
