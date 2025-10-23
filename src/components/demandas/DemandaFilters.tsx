@@ -3,15 +3,16 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useDemandasContext } from '@/hooks/demandas';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, X, Search, Clock, AlertTriangle, Archive, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useEventos } from '@/hooks/eventos';
 import { useState } from 'react';
 import { Switch } from '@/components/ui/switch';
-import { useCategorias } from '@/contexts/CategoriasContext';
+import { useCategorias } from '@/hooks/categorias';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useUsuarios } from '@/hooks/useUsuarios';
+import { StatusDemanda, PrioridadeDemanda } from '@/types/demandas';
 
 export function DemandaFilters() {
   const { filtros, setFiltros } = useDemandasContext();
