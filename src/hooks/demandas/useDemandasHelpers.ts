@@ -3,12 +3,22 @@
  * TODO: Remover após migração completa
  */
 import * as React from 'react';
-import { useDemandasQueries, useDemandasMutations } from './index';
+import { 
+  useDemandasQueries, 
+  useDemandasMutations, 
+  useDemandasComentarios, 
+  useDemandasAnexos, 
+  useDemandasReembolsos 
+} from './index';
 
 export function useDemandasContext() {
   const [page] = React.useState(1);
+  const [filtros, setFiltros] = React.useState<any>({});
   const { demandas = [], totalCount = 0 } = useDemandasQueries(page, 20);
   const mutations = useDemandasMutations();
+  const comentarios = useDemandasComentarios();
+  const anexos = useDemandasAnexos();
+  const reembolsos = useDemandasReembolsos();
 
   return {
     demandas,
@@ -16,12 +26,13 @@ export function useDemandasContext() {
     page: 1,
     pageSize: 20,
     setPage: () => {},
-    filtros: {},
-    setFiltros: () => {},
+    filtros,
+    setFiltros,
     getDemandasFiltradas: () => demandas,
     getDemandasPorEvento: (eventoId: string) => demandas.filter((d: any) => d.eventoId === eventoId),
     getDemandasPorResponsavel: (responsavelId: string) => demandas.filter((d: any) => d.responsavelId === responsavelId),
     getDemandasPorSolicitante: (solicitanteId: string) => demandas.filter((d: any) => d.solicitanteId === solicitanteId),
+    getDemandasReembolsoPorEvento: (eventoId: string) => demandas.filter((d: any) => d.eventoId === eventoId && d.tipo === 'reembolso'),
     getEstatisticas: () => ({
       total: demandas.length,
       abertas: demandas.filter((d: any) => d.status === 'aberta').length,
@@ -33,5 +44,8 @@ export function useDemandasContext() {
       prazosVencidos: demandas.filter((d: any) => d.prazo && new Date(d.prazo) < new Date() && d.status !== 'concluida').length,
     }),
     ...mutations,
+    ...comentarios,
+    ...anexos,
+    ...reembolsos,
   };
 }

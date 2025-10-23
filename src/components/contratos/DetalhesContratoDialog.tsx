@@ -369,9 +369,9 @@ export function DetalhesContratoDialog({ open, onOpenChange, contrato, onEdit, o
             Fechar
           </Button>
           <div className="flex gap-2">
-            {contrato.status === 'proposta' && (
+          {contrato.status === 'proposta' && (
               <Button variant="default" onClick={() => {
-                aprovarProposta(contrato.id);
+                aprovarProposta.mutate({ contratoId: contrato.id });
                 onOpenChange(false);
               }}>
                 <CheckCircle2 className="mr-2 h-4 w-4" />

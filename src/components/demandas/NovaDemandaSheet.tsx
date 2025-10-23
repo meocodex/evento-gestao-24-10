@@ -11,9 +11,10 @@ import { useCategorias } from '@/hooks/categorias';
 import { useEventos } from '@/hooks/eventos';
 import { useUsuarios } from '@/hooks/useUsuarios';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCategorias } from '@/contexts/CategoriasContext';
 import { demandaSchema } from '@/lib/validations/demanda';
 import { useToast } from '@/hooks/use-toast';
+import { PrioridadeDemanda, CategoriaDemanda } from '@/types/demandas';
+import { Plus } from 'lucide-react';
 
 const prioridades: { value: PrioridadeDemanda; label: string }[] = [
   { value: 'baixa', label: 'Baixa' },
@@ -66,8 +67,8 @@ export function NovaDemandaSheet() {
       });
 
       const usuarioAtual = (usuarios || []).find(u => u.id === user.id);
-      adicionarDemanda(
-        {
+      adicionarDemanda.mutate({
+        data: {
           titulo: validatedData.titulo,
           descricao: validatedData.descricao,
           categoria: validatedData.categoria,
@@ -77,9 +78,9 @@ export function NovaDemandaSheet() {
           eventoRelacionado: validatedData.eventoRelacionado || undefined,
           tags: validatedData.tags,
         },
-        usuarioAtual?.nome || user.email,
-        user.id
-      );
+        solicitante: usuarioAtual?.nome || user.email,
+        solicitanteId: user.id
+      });
 
       toast({
         title: 'Sucesso',

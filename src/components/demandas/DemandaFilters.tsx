@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { useCategorias } from '@/hooks/categorias';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUsuarios } from '@/hooks/useUsuarios';
-import { StatusDemanda, PrioridadeDemanda } from '@/types/demandas';
+import { StatusDemanda, PrioridadeDemanda, CategoriaDemanda, TipoReembolso } from '@/types/demandas';
 
 export function DemandaFilters() {
   const { filtros, setFiltros } = useDemandasContext();

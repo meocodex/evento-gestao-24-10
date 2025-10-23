@@ -9,6 +9,7 @@ import {
   useTemplatesMutations, 
   useContratosWorkflow 
 } from './index';
+import { gerarPDFContrato } from '@/utils/pdfGenerator';
 
 export function useContratos() {
   const [page] = React.useState(1);
@@ -16,8 +17,10 @@ export function useContratos() {
   const { templates, contratos, loading } = useContratosQueries(
     page,
     pageSize,
-    { busca: '', status: '' },
-    { busca: '' }
+    { searchTerm: '', status: '' },
+    page,
+    pageSize,
+    { searchTerm: '' }
   );
   const mutations = useContratosMutations();
   const templateMutations = useTemplatesMutations();
@@ -27,6 +30,7 @@ export function useContratos() {
     contratos,
     templates,
     loading,
+    gerarPDF: gerarPDFContrato,
     ...mutations,
     ...templateMutations,
     ...workflow,

@@ -9,7 +9,8 @@ import { useDemandasContext } from '@/hooks/demandas';
 import { TipoCategoria } from '@/types/categorias';
 import { useEventos } from '@/hooks/eventos';
 import { useUsuarios } from '@/hooks/useUsuarios';
-import { useCategorias } from '@/contexts/CategoriasContext';
+import { useCategorias } from '@/hooks/categorias';
+import { Demanda, PrioridadeDemanda, CategoriaDemanda } from '@/types/demandas';
 
 interface EditarDemandaDialogProps {
   demanda: Demanda | null;
@@ -75,11 +76,11 @@ export function EditarDemandaDialog({ demanda, open, onOpenChange }: EditarDeman
     e.preventDefault();
     if (!demanda) return;
 
-    editarDemanda(demanda.id, {
+    editarDemanda.mutate({ id: demanda.id, data: {
       ...formData,
       responsavelId: formData.responsavelId || undefined,
       prazo: formData.prazo || undefined,
-    });
+    }});
 
     onOpenChange(false);
   };

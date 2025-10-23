@@ -7,7 +7,7 @@ import { useEstoqueQueries, useEstoqueMutations, type FiltrosEstoque } from './i
 
 export function useEstoque() {
   const [page] = React.useState(1);
-  const [filtros] = React.useState<FiltrosEstoque>({ busca: '', categoria: 'todas', status: 'todos', localizacao: '' });
+  const [filtros, setFiltros] = React.useState<FiltrosEstoque>({ busca: '', categoria: 'todas', status: 'todos', localizacao: '' });
   const { data, isLoading: loading } = useEstoqueQueries(page, 50, filtros);
   const materiais = data?.materiais || [];
   const mutations = useEstoqueMutations();
@@ -17,7 +17,7 @@ export function useEstoque() {
     materiaisFiltrados: materiais,
     loading,
     filtros,
-    setFiltros: () => {},
+    setFiltros,
     page: 1,
     setPage: () => {},
     pageSize: 50,
