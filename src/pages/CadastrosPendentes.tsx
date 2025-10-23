@@ -5,8 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { useCadastrosQueries } from '@/contexts/cadastros/useCadastrosQueries';
-import { useCadastrosMutations } from '@/contexts/cadastros/useCadastrosMutations';
+import { useCadastros } from '@/hooks/cadastros';
 import { useEventos } from '@/hooks/eventos';
 import { CheckCircle, XCircle, Eye, Calendar, MapPin, User } from 'lucide-react';
 import { CadastroPublico } from '@/types/eventos';
@@ -15,8 +14,7 @@ import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CadastrosPendentes() {
-  const { cadastros } = useCadastrosQueries();
-  const { aprovarCadastro, recusarCadastro } = useCadastrosMutations();
+  const { cadastros, aprovarCadastro, recusarCadastro } = useCadastros();
   const { criarEvento } = useEventos();
   const { toast } = useToast();
   const [selectedCadastro, setSelectedCadastro] = useState<CadastroPublico | null>(null);

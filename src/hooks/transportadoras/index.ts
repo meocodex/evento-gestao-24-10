@@ -5,8 +5,7 @@
 import { useTransportadorasQueries as useTransportadorasQueriesImpl, useEnviosQueries } from '@/contexts/transportadoras/useTransportadorasQueries';
 import { useTransportadorasMutations as useTransportadorasMutationsImpl } from '@/contexts/transportadoras/useTransportadorasMutations';
 
-export { useTransportadorasQueriesImpl as useTransportadorasQueries, useEnviosQueries };
-export { useTransportadorasMutationsImpl as useTransportadorasMutations };
+export { useEnviosQueries };
 
 // Wrapper para compatibilidade - retorna objetos completos das mutations
 export function useTransportadoras() {

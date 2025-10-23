@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useTemplatesMutations } from '@/hooks/contratos';
+import { useContratos } from '@/hooks/contratos';
 import { ContratoTemplate } from '@/types/contratos';
 import { UploadPapelTimbrado } from '@/components/propostas/UploadPapelTimbrado';
 import { Separator } from '@/components/ui/separator';
@@ -27,7 +27,7 @@ const variaveisSugeridas = [
 ];
 
 export function EditarTemplateDialog({ open, onOpenChange, template }: EditarTemplateDialogProps) {
-  const { editarTemplate } = useTemplatesMutations();
+  const { editarTemplate } = useContratos();
   const [nome, setNome] = useState('');
   const [tipo, setTipo] = useState<'evento' | 'fornecedor' | 'cliente' | 'outros'>('evento');
   const [descricao, setDescricao] = useState('');

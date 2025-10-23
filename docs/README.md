@@ -58,6 +58,7 @@ Cenários de teste para validação do sistema de permissões.
 
 | Documento | Última Atualização | Status | Versão |
 |-----------|-------------------|--------|--------|
+| 📘 [Hooks Guide](HOOKS.md) | Guia completo do padrão de hooks unificados | ✅ Completo | 2025-01-23 |
 | PERMISSIONS_MIGRATION.md | 2025-10-22 | ✅ Completo | 1.0 |
 | TESTES_PERMISSOES.md | 2025-10-22 | ✅ Completo | 1.0 |
 

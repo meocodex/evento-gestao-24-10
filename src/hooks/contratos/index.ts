@@ -7,11 +7,6 @@ import { useContratosMutations as useContratosMutationsImpl } from '@/contexts/c
 import { useContratosWorkflow as useContratosWorkflowImpl } from '@/contexts/contratos/useContratosWorkflow';
 import { useTemplatesMutations as useTemplatesMutationsImpl } from '@/contexts/contratos/useTemplatesMutations';
 
-export { useContratosQueriesImpl as useContratosQueries };
-export { useContratosMutationsImpl as useContratosMutations };
-export { useContratosWorkflowImpl as useContratosWorkflow };
-export { useTemplatesMutationsImpl as useTemplatesMutations };
-
 // Wrapper para compatibilidade
 export function useContratos(
   pageContratos?: number,

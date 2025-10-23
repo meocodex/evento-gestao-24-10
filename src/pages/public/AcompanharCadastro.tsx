@@ -7,12 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { useCadastrosQueries } from '@/contexts/cadastros/useCadastrosQueries';
+import { useCadastros } from '@/hooks/cadastros';
 
 export default function AcompanharCadastro() {
   const { protocolo } = useParams<{ protocolo: string }>();
   const navigate = useNavigate();
-  const { cadastros } = useCadastrosQueries();
+  const { cadastros } = useCadastros();
 
   const cadastro = protocolo ? cadastros.find(c => c.protocolo === protocolo) : undefined;
 

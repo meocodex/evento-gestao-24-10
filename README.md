@@ -174,11 +174,19 @@ src/
 
 ### Padrões de Código
 
-#### Contextos e Estado
-- Cada módulo principal tem seu próprio Context
-- Uso de TanStack Query para cache e sincronização
-- Separação de queries e mutations em arquivos dedicados
-- Transformações de dados isoladas
+#### Hooks e Estado
+- Cada módulo principal tem seu hook unificado (ex: `useEventos()`)
+- Uso de TanStack Query para cache e sincronização servidor
+- Hooks especializados para operações específicas (ex: `useEventoDetalhes()`)
+- Transformações de dados isoladas em `/contexts/*/transform*.ts`
+- Consulte [`docs/HOOKS.md`](./docs/HOOKS.md) para guia completo
+
+#### Hooks Personalizados
+- Hook unificado por recurso: `useEventos()`, `useClientes()`, etc
+- Retorna queries + mutations em um objeto único
+- Mutations retornam objetos completos (`.mutateAsync()`, `.isPending`)
+- Hooks especializados para operações complexas
+- Consulte [`docs/HOOKS.md`](./docs/HOOKS.md) para detalhes
 
 #### Componentes
 - Componentes funcionais com TypeScript

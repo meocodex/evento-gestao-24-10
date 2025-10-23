@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useTemplatesMutations } from '@/hooks/contratos';
+import { useContratos } from '@/hooks/contratos';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 
@@ -23,7 +23,7 @@ const variaveisSugeridas = [
 ];
 
 export function NovoTemplateDialog({ open, onOpenChange }: NovoTemplateDialogProps) {
-  const { criarTemplate } = useTemplatesMutations();
+  const { criarTemplate } = useContratos();
   const [nome, setNome] = useState('');
   const [tipo, setTipo] = useState<'evento' | 'fornecedor' | 'cliente' | 'outros'>('evento');
   const [descricao, setDescricao] = useState('');

@@ -6,8 +6,6 @@ import { useEstoqueQueries as useEstoqueQueriesImpl } from '@/contexts/estoque/u
 import { useEstoqueMutations as useEstoqueMutationsImpl } from '@/contexts/estoque/useEstoqueMutations';
 import { useEstoqueSeriais as useEstoqueSeriaisImpl } from '@/contexts/estoque/useEstoqueSeriais';
 
-export { useEstoqueQueriesImpl as useEstoqueQueries };
-export { useEstoqueMutationsImpl as useEstoqueMutations };
 export { useEstoqueSeriaisImpl as useEstoqueSeriais };
 export type { FiltrosEstoque, MaterialEstoque, SerialEstoque } from '@/types/estoque';
 
