@@ -2,20 +2,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { useDemandasContext } from '@/hooks/demandas';
+import { useState } from 'react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, X, Search, Clock, AlertTriangle, Archive, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useEventos } from '@/hooks/eventos';
-import { useState } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { useCategorias } from '@/hooks/categorias';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUsuarios } from '@/hooks/useUsuarios';
 import { StatusDemanda, PrioridadeDemanda, CategoriaDemanda, TipoReembolso } from '@/types/demandas';
 
-export function DemandaFilters() {
-  const { filtros, setFiltros } = useDemandasContext();
+interface DemandaFiltersProps {
+  filtros: any;
+  setFiltros: (filtros: any) => void;
+}
+
+export function DemandaFilters({ filtros, setFiltros }: DemandaFiltersProps) {
   const { eventos } = useEventos();
   const { categoriasDemandas, isLoading } = useCategorias();
   const { usuarios } = useUsuarios();

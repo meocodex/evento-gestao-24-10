@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { useCadastrosPublicos } from '@/contexts/CadastrosPublicosContext';
+import { useCadastrosQueries } from '@/contexts/cadastros/useCadastrosQueries';
+import { useCadastrosMutations } from '@/contexts/cadastros/useCadastrosMutations';
 import { useEventos } from '@/hooks/eventos';
 import { CheckCircle, XCircle, Eye, Calendar, MapPin, User } from 'lucide-react';
 import { CadastroPublico } from '@/types/eventos';
@@ -14,7 +15,8 @@ import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 
 export default function CadastrosPendentes() {
-  const { cadastros, aprovarCadastro, recusarCadastro } = useCadastrosPublicos();
+  const { cadastros } = useCadastrosQueries();
+  const mutations = useCadastrosMutations();
   const { criarEvento } = useEventos();
   const { toast } = useToast();
   const [selectedCadastro, setSelectedCadastro] = useState<CadastroPublico | null>(null);
@@ -26,7 +28,22 @@ export default function CadastrosPendentes() {
 
   const handleAprovar = async (cadastro: CadastroPublico) => {
     try {
-      await aprovarCadastro(cadastro.id, criarEvento);
+      const evento = await criarEvento.mutateAsync({
+        nome: cadastro.nome,
+        dataInicio: cadastro.dataInicio,
+        dataFim: cadastro.dataFim,
+        horaInicio: cadastro.horaInicio,
+        horaFim: cadastro.horaFim,
+        local: cadastro.local,
+        cidade: cadastro.cidade,
+        estado: cadastro.estado,
+        endereco: cadastro.endereco,
+        tipoEvento: cadastro.tipoEvento,
+        configuracaoIngresso: cadastro.configuracaoIngresso,
+        configuracaoBar: cadastro.configuracaoBar,
+      });
+      
+      mutations.aprovarCadastro.mutate({ cadastroId: cadastro.id, eventoId: evento.id });
       setDetailsOpen(false);
     } catch (error) {
       toast({
@@ -50,7 +67,7 @@ export default function CadastrosPendentes() {
     }
 
     try {
-      await recusarCadastro(selectedCadastro.id, motivoRecusa);
+      mutations.recusarCadastro.mutate({ cadastroId: selectedCadastro.id, motivo: motivoRecusa });
       setRecusarOpen(false);
       setDetailsOpen(false);
       setMotivoRecusa('');

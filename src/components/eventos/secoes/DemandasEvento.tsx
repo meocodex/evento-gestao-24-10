@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { useDemandasContext } from '@/hooks/demandas';
+import { useDemandasQueries } from '@/hooks/demandas';
 import { Demanda } from '@/types/demandas';
 import { AlertCircle, Eye, Plus, DollarSign } from 'lucide-react';
 import { useState } from 'react';
@@ -27,7 +27,9 @@ const prioridadeConfig = {
 };
 
 export function DemandasEvento({ eventoId }: DemandasEventoProps) {
-  const { getDemandasPorEvento, getDemandasReembolsoPorEvento } = useDemandasContext();
+  const { demandas: todasDemandas } = useDemandasQueries(1, 1000);
+  const getDemandasPorEvento = (id: string) => todasDemandas.filter((d: any) => d.eventoRelacionado === id);
+  const getDemandasReembolsoPorEvento = (id: string) => todasDemandas.filter((d: any) => d.eventoRelacionado === id && d.categoria === 'reembolso');
   const [demandaSelecionada, setDemandaSelecionada] = useState<Demanda | null>(null);
   const [detalhesOpen, setDetalhesOpen] = useState(false);
 

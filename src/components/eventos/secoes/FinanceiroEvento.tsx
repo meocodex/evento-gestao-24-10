@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useEventos } from '@/hooks/eventos';
-import { useDemandasContext } from '@/hooks/demandas';
+import { useDemandasQueries } from '@/hooks/demandas';
 import { Evento } from '@/types/eventos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,8 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
     adicionarDespesa, 
     removerDespesa 
   } = useEventos();
-  const { getDemandasReembolsoPorEvento } = useDemandasContext();
+  const { demandas } = useDemandasQueries(1, 1000);
+  const getDemandasReembolsoPorEvento = (id: string) => demandas.filter((d: any) => d.eventoRelacionado === id && d.categoria === 'reembolso');
   const [showAddReceita, setShowAddReceita] = useState(false);
   const [showAddDespesa, setShowAddDespesa] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);

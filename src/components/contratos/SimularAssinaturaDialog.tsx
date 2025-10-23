@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useContratos } from '@/contexts/ContratosContext';
+import { useContratosMutations, useContratosWorkflow } from '@/hooks/contratos';
 import { Contrato } from '@/types/contratos';
 import { Badge } from '@/components/ui/badge';
 import { Check, Clock } from 'lucide-react';
@@ -12,19 +12,21 @@ interface SimularAssinaturaDialogProps {
 }
 
 export function SimularAssinaturaDialog({ open, onOpenChange, contrato }: SimularAssinaturaDialogProps) {
-  const { assinarContrato, editarContrato } = useContratos();
+  const { editarContrato } = useContratosMutations();
+  const { assinarContrato } = useContratosWorkflow();
 
   if (!contrato) return null;
 
   const handleEnviarAssinatura = () => {
-    editarContrato(contrato.id, {
-      status: 'aguardando_assinatura',
+    editarContrato.mutate({ 
+      id: contrato.id, 
+      data: { status: 'aguardando_assinatura' }
     });
     onOpenChange(false);
   };
 
   const handleAssinar = (parte: string) => {
-    assinarContrato(contrato.id, parte);
+    assinarContrato.mutate({ contratoId: contrato.id, parte });
   };
 
   return (

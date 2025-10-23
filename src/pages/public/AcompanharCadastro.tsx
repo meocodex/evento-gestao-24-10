@@ -7,14 +7,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { useCadastrosPublicos } from '@/contexts/CadastrosPublicosContext';
+import { useCadastrosQueries } from '@/contexts/cadastros/useCadastrosQueries';
 
 export default function AcompanharCadastro() {
   const { protocolo } = useParams<{ protocolo: string }>();
   const navigate = useNavigate();
-  const { buscarCadastroPorProtocolo } = useCadastrosPublicos();
+  const { cadastros } = useCadastrosQueries();
 
-  const cadastro = protocolo ? buscarCadastroPorProtocolo(protocolo) : undefined;
+  const cadastro = protocolo ? cadastros.find(c => c.protocolo === protocolo) : undefined;
 
   if (!cadastro) {
     return (

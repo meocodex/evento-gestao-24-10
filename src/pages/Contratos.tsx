@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StatCard } from '@/components/dashboard/StatCard';
-import { useContratos } from '@/contexts/ContratosContext';
+import { useContratosQueries, useContratosMutations, useTemplatesMutations } from '@/hooks/contratos';
+import { gerarPDFContrato } from '@/utils/pdfGenerator';
 import { NovoContratoSheet } from '@/components/contratos/NovoContratoSheet';
 import { EditarContratoDialog } from '@/components/contratos/EditarContratoDialog';
 import { DetalhesContratoDialog } from '@/components/contratos/DetalhesContratoDialog';
@@ -24,23 +25,30 @@ import { TemplatesVirtualGrid } from '@/components/contratos/TemplatesVirtualGri
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 export default function Contratos() {
+  const [pageContratos, setPageContratos] = useState(1);
+  const [pageTemplates, setPageTemplates] = useState(1);
+  const [pageSizeContratos] = useState(50);
+  const [pageSizeTemplates] = useState(50);
+  const [filtrosContratos, setFiltrosContratos] = useState<any>({});
+  const [filtrosTemplates, setFiltrosTemplates] = useState<any>({});
+  
   const {
     contratos,
     templates,
     loading,
     totalContratos,
     totalTemplates,
+  } = useContratosQueries(
     pageContratos,
-    pageTemplates,
     pageSizeContratos,
+    filtrosContratos,
+    pageTemplates,
     pageSizeTemplates,
-    setPageContratos,
-    setPageTemplates,
-    setFiltrosContratos,
-    setFiltrosTemplates,
-    excluirContrato,
-    excluirTemplate,
-  } = useContratos();
+    filtrosTemplates
+  );
+  
+  const contratosMutations = useContratosMutations();
+  const templatesMutations = useTemplatesMutations();
   
   const [searchContratos, setSearchContratos] = useState('');
   const [searchTemplates, setSearchTemplates] = useState('');
@@ -392,7 +400,7 @@ export default function Contratos() {
         onOpenChange={setConfirmExcluirContrato}
         onConfirm={() => {
           if (contratoSelecionado) {
-            excluirContrato(contratoSelecionado.id);
+            contratosMutations.excluirContrato.mutate(contratoSelecionado.id);
             setConfirmExcluirContrato(false);
             setContratoSelecionado(null);
           }
@@ -408,7 +416,7 @@ export default function Contratos() {
         onOpenChange={setConfirmExcluirTemplate}
         onConfirm={() => {
           if (templateSelecionado) {
-            excluirTemplate(templateSelecionado.id);
+            templatesMutations.excluirTemplate.mutate(templateSelecionado.id);
             setConfirmExcluirTemplate(false);
             setTemplateSelecionado(null);
           }
