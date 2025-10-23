@@ -41,7 +41,7 @@ export function EnvioCard({ envio }: EnvioCardProps) {
     const statusOrder: Envio['status'][] = ['pendente', 'em_transito', 'entregue'];
     const currentIndex = statusOrder.indexOf(envio.status);
     if (currentIndex < statusOrder.length - 1) {
-      atualizarStatusEnvio({ id: envio.id, status: statusOrder[currentIndex + 1] });
+      atualizarStatusEnvio.mutateAsync({ id: envio.id, status: statusOrder[currentIndex + 1] });
     }
   };
 
@@ -141,7 +141,7 @@ export function EnvioCard({ envio }: EnvioCardProps) {
         open={confirmExcluirOpen}
         onOpenChange={setConfirmExcluirOpen}
         onConfirm={() => {
-          excluirEnvio(envio.id);
+          excluirEnvio.mutateAsync(envio.id);
           setConfirmExcluirOpen(false);
         }}
         title="Excluir Envio"

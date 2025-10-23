@@ -87,7 +87,7 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
     e.preventDefault();
     if (!eventoSelecionado) return;
     
-    criarEnvio({ ...formData, eventoId: eventoSelecionado, status: 'pendente' });
+    criarEnvio.mutateAsync({ ...formData, eventoId: eventoSelecionado, status: 'pendente' });
     onOpenChange(false);
     setFormData({
       transportadoraId: '',

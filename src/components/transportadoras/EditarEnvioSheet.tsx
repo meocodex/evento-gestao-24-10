@@ -27,7 +27,7 @@ export function EditarEnvioSheet({ envio, open, onOpenChange }: EditarEnvioSheet
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await editarEnvio({ id: envio.id, data: formData });
+    await editarEnvio.mutateAsync({ id: envio.id, data: formData });
     onOpenChange(false);
   };
 

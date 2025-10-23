@@ -179,7 +179,7 @@ export default function Transportadoras() {
           onOpenChange={setConfirmExcluirTransportadora}
           onConfirm={() => {
             if (transportadoraExcluir) {
-              excluirTransportadora(transportadoraExcluir.id);
+              excluirTransportadora.mutateAsync(transportadoraExcluir.id);
               setConfirmExcluirTransportadora(false);
               setTransportadoraExcluir(null);
             }
