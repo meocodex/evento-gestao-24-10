@@ -372,7 +372,7 @@ export function DetalhesContratoDialog({ open, onOpenChange, contrato, onEdit, o
           <div className="flex gap-2">
           {contrato.status === 'proposta' && (
               <Button variant="default" onClick={async () => {
-                await aprovarProposta({ contratoId: contrato.id });
+                await aprovarProposta.mutateAsync({ contratoId: contrato.id });
                 onOpenChange(false);
               }}>
                 <CheckCircle2 className="mr-2 h-4 w-4" />

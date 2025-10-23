@@ -320,6 +320,6 @@ export function useDemandasMutations() {
     reabrirDemanda,
     arquivarDemanda,
     desarquivarDemanda,
-    adicionarDemandaReembolso: adicionarDemandaReembolso.mutateAsync,
+    adicionarDemandaReembolso,
   };
 }

@@ -74,7 +74,7 @@ export function NovaPropostaDialog({ open, onOpenChange }: NovaPropostaDialogPro
     const template = templates.find(t => t.id === templateId);
     if (!template) return;
 
-    await criarContrato({
+    await criarContrato.mutateAsync({
       templateId,
       numero: `PROP-${Date.now()}`,
       clienteId,

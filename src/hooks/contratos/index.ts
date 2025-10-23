@@ -21,14 +21,16 @@ export function useContratos() {
   
   return {
     ...queries,
-    criarContrato: mutations.criarContrato.mutateAsync,
-    editarContrato: mutations.editarContrato.mutateAsync,
-    excluirContrato: mutations.excluirContrato.mutateAsync,
-    assinarContrato: workflow.assinarContrato.mutateAsync,
-    aprovarProposta: workflow.aprovarProposta.mutateAsync,
-    converterPropostaEmContrato: workflow.converterPropostaEmContrato.mutateAsync,
-    criarTemplate: templatesMutations.criarTemplate.mutateAsync,
-    editarTemplate: templatesMutations.editarTemplate.mutateAsync,
-    excluirTemplate: templatesMutations.excluirTemplate.mutateAsync,
+    
+    // Mutations (objetos completos com mutateAsync, isPending, etc)
+    criarContrato: mutations.criarContrato,
+    editarContrato: mutations.editarContrato,
+    excluirContrato: mutations.excluirContrato,
+    assinarContrato: workflow.assinarContrato,
+    aprovarProposta: workflow.aprovarProposta,
+    converterPropostaEmContrato: workflow.converterPropostaEmContrato,
+    criarTemplate: templatesMutations.criarTemplate,
+    editarTemplate: templatesMutations.editarTemplate,
+    excluirTemplate: templatesMutations.excluirTemplate,
   };
 }

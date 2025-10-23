@@ -141,7 +141,7 @@ export function NovaDemandaReembolsoDialog({ eventoId }: NovaDemandaReembolsoDia
       return;
     }
 
-    adicionarDemandaReembolso({
+    adicionarDemandaReembolso.mutateAsync({
       eventoId: selectedEventoId,
       eventoNome: eventos.find(e => e.id === selectedEventoId)?.nome || 'Evento',
       membroEquipeId: user?.id || 'user-1',
