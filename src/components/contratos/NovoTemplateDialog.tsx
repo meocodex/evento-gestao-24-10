@@ -23,7 +23,7 @@ const variaveisSugeridas = [
 ];
 
 export function NovoTemplateDialog({ open, onOpenChange }: NovoTemplateDialogProps) {
-  const { criarTemplate } = useContratos();
+  const { criarTemplate } = useTemplatesMutations();
   const [nome, setNome] = useState('');
   const [tipo, setTipo] = useState<'evento' | 'fornecedor' | 'cliente' | 'outros'>('evento');
   const [descricao, setDescricao] = useState('');

@@ -12,3 +12,14 @@ export { useEventosChecklist } from '@/contexts/eventos/useEventosChecklist';
 export { useEventosArquivos } from '@/contexts/eventos/useEventosArquivos';
 export { useEventosPropostas } from '@/contexts/eventos/useEventosPropostas';
 export { useEventoDetalhes } from '@/contexts/eventos/useEventoDetalhes';
+
+// Wrapper para compatibilidade
+export function useEventos() {
+  const queries = useEventosQueries();
+  const mutations = useEventosMutations();
+  
+  return {
+    ...queries,
+    ...mutations,
+  };
+}

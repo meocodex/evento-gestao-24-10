@@ -15,7 +15,7 @@ interface EditarContratoDialogProps {
 }
 
 export function EditarContratoDialog({ open, onOpenChange, contrato }: EditarContratoDialogProps) {
-  const { editarContrato } = useContratos();
+  const { editarContrato } = useContratosMutations();
   const [titulo, setTitulo] = useState('');
   const [status, setStatus] = useState<StatusContrato>('rascunho');
   const [conteudo, setConteudo] = useState('');
