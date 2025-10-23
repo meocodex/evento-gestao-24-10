@@ -73,7 +73,7 @@ export function EventosKanbanView({ eventos, onViewDetails }: EventosKanbanViewP
     if (!evento || evento.status === newStatus) return;
 
     try {
-      await editarEvento(eventoId, { status: newStatus });
+      await editarEvento({ id: eventoId, data: { status: newStatus } });
       toast.success(`Status alterado para ${statusColumns.find(s => s.id === newStatus)?.label}`);
     } catch (error) {
       toast.error('Erro ao alterar status');

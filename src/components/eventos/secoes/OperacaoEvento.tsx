@@ -19,8 +19,8 @@ interface OperacaoEventoProps {
 
 export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
   const { toast } = useToast();
-  const equipe = useEventosEquipe(evento.id);
-  const observacoes = useEventosObservacoes(evento.id);
+  const equipeHook = useEventosEquipe(evento.id);
+  const observacoesHook = useEventosObservacoes(evento.id);
   const [showAddMembro, setShowAddMembro] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [membroToDelete, setMembroToDelete] = useState<string | null>(null);
@@ -34,7 +34,7 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
   const handleConfirmDelete = async () => {
     if (membroToDelete) {
       try {
-        await removerMembroEquipe(membroToDelete);
+        await equipeHook.removerMembroEquipe(membroToDelete);
       } catch (error) {
         // Erro já tratado pelo hook
       } finally {
@@ -47,7 +47,7 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
   const handleAdicionarObservacao = async () => {
     if (novaObservacao.trim()) {
       try {
-        await adicionarObservacaoOperacional(evento.id, novaObservacao);
+        await observacoesHook.adicionarObservacaoOperacional(novaObservacao);
         setNovaObservacao('');
       } catch (error) {
         // Erro já tratado pelo hook
@@ -203,7 +203,7 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
         onOpenChange={setShowAddMembro}
         onAdicionar={async (data) => {
           try {
-            await adicionarMembroEquipe(evento.id, data);
+            await equipeHook.adicionarMembroEquipe(data);
             setShowAddMembro(false);
           } catch (error) {
             // Erro já tratado pelo hook

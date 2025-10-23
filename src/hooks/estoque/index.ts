@@ -15,15 +15,11 @@ export type { FiltrosEstoque, MaterialEstoque, SerialEstoque } from '@/contexts/
 export function useEstoque() {
   const queries = useEstoqueQueriesImpl();
   const mutations = useEstoqueMutationsImpl();
-  const seriais = useEstoqueSeriaisImpl();
   
   return {
     ...queries,
     adicionarMaterial: mutations.adicionarMaterial.mutateAsync,
     editarMaterial: mutations.editarMaterial.mutateAsync,
     excluirMaterial: mutations.excluirMaterial.mutateAsync,
-    adicionarSerial: seriais.adicionarSerial.mutateAsync,
-    editarSerial: seriais.editarSerial.mutateAsync,
-    excluirSerial: seriais.excluirSerial.mutateAsync,
   };
 }

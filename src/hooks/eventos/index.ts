@@ -23,7 +23,7 @@ export function useEventos() {
   
   return {
     ...queries,
-    criarEvento: mutations.criarEvento.mutateAsync,
+    criarEvento: mutations.adicionarEvento.mutateAsync,
     editarEvento: mutations.editarEvento.mutateAsync,
     excluirEvento: mutations.excluirEvento.mutateAsync,
     deletarEvento: mutations.excluirEvento.mutateAsync, // Alias

@@ -19,13 +19,13 @@ interface DadosEventoProps {
 }
 
 export function DadosEvento({ evento, permissions }: DadosEventoProps) {
-  const { editarEvento, excluirEvento } = useEventos();
+  const { editarEvento, deletarEvento, alterarStatus } = useEventos();
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
 
   const handleSave = async (data: Partial<Evento>) => {
-    await editarEvento(evento.id, data);
+    await editarEvento({ id: evento.id, data });
     setIsEditing(false);
   };
 
@@ -35,7 +35,7 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
   };
 
   const handleStatusChange = async (novoStatus: any, observacao?: string) => {
-    await alterarStatus(evento.id, novoStatus, observacao);
+    await alterarStatus({ id: evento.id, novoStatus, observacao });
   };
 
   if (isEditing) {

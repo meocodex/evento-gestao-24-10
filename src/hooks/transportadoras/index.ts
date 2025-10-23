@@ -11,10 +11,14 @@ export { useTransportadorasMutationsImpl as useTransportadorasMutations };
 // Wrapper para compatibilidade
 export function useTransportadoras() {
   const transportadorasQueries = useTransportadorasQueriesImpl();
+  const enviosQueries = useEnviosQueries();
   const mutations = useTransportadorasMutationsImpl();
   
   return {
     ...transportadorasQueries,
+    envios: enviosQueries.data?.envios || [],
+    totalEnvios: enviosQueries.data?.totalCount || 0,
+    loadingEnvios: enviosQueries.isLoading,
     criarTransportadora: mutations.criarTransportadora.mutateAsync,
     editarTransportadora: mutations.editarTransportadora.mutateAsync,
     excluirTransportadora: mutations.excluirTransportadora.mutateAsync,

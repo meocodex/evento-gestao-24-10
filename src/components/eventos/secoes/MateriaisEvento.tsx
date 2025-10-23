@@ -18,7 +18,7 @@ interface MateriaisEventoProps {
 
 export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const materiaisAlocados = useEventosMateriaisAlocados(evento.id);
-  const checklist = useEventosChecklist(evento.id);
+  const checklistHook = useEventosChecklist(evento.id);
   const { toast } = useToast();
   const [showAddMaterial, setShowAddMaterial] = useState(false);
   const [showAlocarMaterial, setShowAlocarMaterial] = useState(false);
@@ -49,9 +49,9 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const handleConfirmDelete = () => {
     if (itemToDelete) {
       if (itemToDelete.tipo === 'checklist') {
-        removerMaterialChecklist(evento.id, itemToDelete.id);
+        checklistHook.removerMaterialChecklist(itemToDelete.id);
       } else {
-        removerMaterialAlocado(evento.id, itemToDelete.id);
+        materiaisAlocados.removerMaterialAlocado(itemToDelete.id);
       }
       setItemToDelete(null);
       setShowDeleteDialog(false);
@@ -195,7 +195,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       open={showAddMaterial}
       onOpenChange={setShowAddMaterial}
       onAdicionar={(data) => {
-        adicionarMaterialChecklist(evento.id, data);
+        checklistHook.adicionarMaterialChecklist(data);
         setShowAddMaterial(false);
       }}
     />
@@ -209,7 +209,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         quantidadeNecessaria={selectedMaterial.quantidadeNecessaria}
         quantidadeJaAlocada={selectedMaterial.quantidadeJaAlocada}
         onAlocar={(data) => {
-          alocarMaterial(evento.id, data.tipoEnvio, {
+          materiaisAlocados.alocarMaterial({
             itemId: data.itemId,
             nome: selectedMaterial.nome,
             serial: data.serial,

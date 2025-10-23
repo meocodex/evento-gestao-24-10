@@ -7,27 +7,24 @@ import { useEventosFinanceiro } from '@/hooks/eventos';
  * eliminando a necessidade de callbacks globais e acoplamento circular
  * entre EventosContext e DemandasContext.
  */
-export function useEventosDespesas() {
-  const { adicionarDespesa } = useEventosFinanceiro();
+export function useEventosDespesas(eventoId: string) {
+  const financeiro = useEventosFinanceiro(eventoId);
 
   return {
     /**
      * Vincula uma demanda de reembolso a uma despesa do evento.
      * Cria uma nova despesa no financeiro do evento com base nos dados do reembolso.
      */
-    vincularReembolsoADespesa: async (eventoId: string, demandaId: string, reembolso: any) => {
+    vincularReembolsoADespesa: async (demandaId: string, reembolso: any) => {
       const valor = reembolso.valorTotal || reembolso.valor || 0;
-      await adicionarDespesa.mutateAsync({
-        eventoId,
-        despesa: {
-          descricao: reembolso.descricao || 'Reembolso',
-          categoria: 'pessoal' as const,
-          quantidade: 1,
-          valorUnitario: valor,
-          valor,
-          status: 'pendente' as const,
-          data: new Date().toISOString().split('T')[0]
-        }
+      await financeiro.adicionarDespesa({
+        descricao: reembolso.descricao || 'Reembolso',
+        categoria: 'pessoal' as const,
+        quantidade: 1,
+        valorUnitario: valor,
+        valor,
+        status: 'pendente' as const,
+        data: new Date().toISOString().split('T')[0]
       });
     }
   };

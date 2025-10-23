@@ -43,6 +43,24 @@ export function useTransportadorasMutations() {
     }
   });
 
+  const excluirTransportadora = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('transportadoras')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
+      toast({ title: 'Transportadora excluída!' });
+    },
+    onError: (error: any) => {
+      toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' });
+    }
+  });
+
   const adicionarRota = useMutation({
     mutationFn: async ({ transportadoraId, rota }: { transportadoraId: string; rota: any }) => {
       const { data: transportadora } = await supabase
@@ -182,6 +200,7 @@ export function useTransportadorasMutations() {
   return {
     criarTransportadora,
     editarTransportadora,
+    excluirTransportadora,
     adicionarRota,
     editarRota,
     removerRota,

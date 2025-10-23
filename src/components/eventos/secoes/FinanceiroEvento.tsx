@@ -50,9 +50,9 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
     if (itemToDelete) {
       try {
         if (itemToDelete.tipo === 'receita') {
-          await removerReceita(itemToDelete.id);
+          await financeiro.removerReceita(itemToDelete.id);
         } else {
-          await removerDespesa(itemToDelete.id);
+          await financeiro.removerDespesa(itemToDelete.id);
         }
       } catch (error) {
         // Erro já tratado pelo hook

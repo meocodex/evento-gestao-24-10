@@ -43,7 +43,7 @@ export default function CadastrosPendentes() {
         configuracaoBar: cadastro.configuracaoBar,
       });
       
-      mutations.aprovarCadastro.mutate({ cadastroId: cadastro.id, eventoId: evento.id });
+      mutations.aprovarCadastro({ cadastroId: cadastro.id, eventoId: evento.id });
       setDetailsOpen(false);
     } catch (error) {
       toast({
@@ -67,7 +67,7 @@ export default function CadastrosPendentes() {
     }
 
     try {
-      mutations.recusarCadastro.mutate({ cadastroId: selectedCadastro.id, motivo: motivoRecusa });
+      mutations.recusarCadastro({ cadastroId: selectedCadastro.id, motivo: motivoRecusa });
       setRecusarOpen(false);
       setDetailsOpen(false);
       setMotivoRecusa('');
