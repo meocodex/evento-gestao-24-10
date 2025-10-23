@@ -17,15 +17,17 @@ export { useEventosPropostas } from '@/contexts/eventos/useEventosPropostas';
 export { useEventoDetalhes } from '@/contexts/eventos/useEventoDetalhes';
 
 // Wrapper para compatibilidade
-export function useEventos() {
-  const queries = useEventosQueriesImpl();
+export function useEventos(page?: number, pageSize?: number) {
+  const queries = useEventosQueriesImpl(page, pageSize);
   const mutations = useEventosMutationsImpl();
   
   return {
     ...queries,
-    criarEvento: mutations.adicionarEvento.mutateAsync,
-    editarEvento: mutations.editarEvento.mutateAsync,
-    excluirEvento: mutations.excluirEvento.mutateAsync,
-    alterarStatus: mutations.alterarStatus.mutateAsync,
+    
+    // Mutations (objetos completos com mutateAsync, isPending, etc)
+    criarEvento: mutations.adicionarEvento,
+    editarEvento: mutations.editarEvento,
+    excluirEvento: mutations.excluirEvento,
+    alterarStatus: mutations.alterarStatus,
   };
 }

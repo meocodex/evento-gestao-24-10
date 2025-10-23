@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, Search, Plus } from 'lucide-react';
-import { useOperacionalQueries, useProfilesQueries } from '@/hooks/equipe';
+import { useEquipe } from '@/hooks/equipe';
 import { MembrosUnificadosVirtualList } from '@/components/equipe/MembrosUnificadosVirtualList';
 import { NovoOperacionalDialog } from '@/components/equipe/operacional/NovoOperacionalDialog';
 import { DetalhesOperacionalDialog } from '@/components/equipe/operacional/DetalhesOperacionalDialog';
@@ -16,9 +16,7 @@ import { Badge } from '@/components/ui/badge';
 export default function Equipe() {
   const [page, setPage] = useState(1);
   const pageSize = 50;
-  const { operacionais = [], loading: loadingOp } = useOperacionalQueries(page, pageSize, {}, true);
-  const { data: profiles = [], isLoading: loadingProfiles } = useProfilesQueries(true);
-  const loadingMembros = loadingOp || loadingProfiles;
+  const { operacionais = [], data: profiles = [], isLoading: loadingMembros } = useEquipe(page, pageSize, {}, true);
   const membrosUnificados = useMemo(() => {
     const unificados = [...operacionais.map(op => ({ 
       ...op, 

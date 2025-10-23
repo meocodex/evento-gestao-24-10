@@ -9,8 +9,8 @@ export { useClientesQueriesImpl as useClientesQueries };
 export { useClientesMutationsImpl as useClientesMutations };
 
 // Wrapper para compatibilidade
-export function useClientes() {
-  const queries = useClientesQueriesImpl();
+export function useClientes(page?: number, pageSize?: number, searchTerm?: string) {
+  const queries = useClientesQueriesImpl(page, pageSize, searchTerm);
   const mutations = useClientesMutationsImpl();
   
   return {

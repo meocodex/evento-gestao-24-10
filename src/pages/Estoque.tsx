@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,7 +9,7 @@ import { EditarMaterialDialog } from '@/components/estoque/EditarMaterialDialog'
 import { DetalhesMaterialDialog } from '@/components/estoque/DetalhesMaterialDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { EstoqueVirtualList } from '@/components/estoque/EstoqueVirtualList';
-import { useEstoqueQueries, useEstoqueMutations, type MaterialEstoque, type FiltrosEstoque } from '@/hooks/estoque';
+import { useEstoque, type MaterialEstoque, type FiltrosEstoque } from '@/hooks/estoque';
 import {
   Pagination,
   PaginationContent,
@@ -35,13 +35,7 @@ export default function Estoque() {
   const [page, setPage] = useState(1);
   const [filtros, setFiltros] = useState<FiltrosEstoque>({ busca: '', categoria: 'todas', status: 'todos', localizacao: '' });
   const pageSize = 50;
-  const { data, isLoading: loading } = useEstoqueQueries(page, pageSize, filtros);
-  const materiais = data?.materiais || [];
-  const totalCount = data?.totalCount || 0;
-  const mutations = useEstoqueMutations();
-  const excluirMaterial = useCallback(async (id: string) => {
-    return await mutations.excluirMaterial.mutateAsync(id);
-  }, [mutations.excluirMaterial]);
+  const { materiais = [], totalCount = 0, isLoading: loading, excluirMaterial } = useEstoque(page, pageSize, filtros);
   const materiaisFiltrados = materiais;
   const getEstatisticas = () => ({
     totalItens: materiais.reduce((sum, m) => sum + m.quantidadeTotal, 0),
@@ -79,7 +73,7 @@ export default function Estoque() {
   const handleConfirmDelete = async () => {
     if (materialParaExcluir) {
       try {
-        await excluirMaterial(materialParaExcluir.id);
+        await excluirMaterial.mutateAsync(materialParaExcluir.id);
       } finally {
         setMaterialParaExcluir(null);
         setShowDeleteConfirm(false);

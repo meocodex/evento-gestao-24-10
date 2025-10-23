@@ -14,10 +14,10 @@ export { useProfilesQueriesImpl as useProfilesQueries };
 export type { FiltrosOperacional } from '@/types/equipe';
 
 // Wrapper para compatibilidade - retorna objetos completos das mutations
-export function useEquipe() {
-  const queries = useOperacionalQueriesImpl();
+export function useEquipe(page?: number, pageSize?: number, filtros?: any, enabled?: boolean) {
+  const queries = useOperacionalQueriesImpl(page, pageSize, filtros, enabled);
   const mutations = useOperacionalMutationsImpl();
-  const profiles = useProfilesQueriesImpl();
+  const profiles = useProfilesQueriesImpl(enabled);
 
   return {
     // Queries

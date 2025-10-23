@@ -28,7 +28,7 @@ export default function CadastrosPendentes() {
 
   const handleAprovar = async (cadastro: CadastroPublico) => {
     try {
-      const evento = await criarEvento({
+      const evento = await criarEvento.mutateAsync({
         nome: cadastro.nome,
         dataInicio: cadastro.dataInicio,
         dataFim: cadastro.dataFim,

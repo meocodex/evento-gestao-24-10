@@ -164,7 +164,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
       const dataInicioStr = format(validatedData.dataInicio, 'yyyy-MM-dd');
       const dataFimStr = format(validatedData.dataFim, 'yyyy-MM-dd');
       
-      await criarEvento({
+      await criarEvento.mutateAsync({
         nome: validatedData.nome,
         tipoEvento: validatedData.tipoEvento,
         dataInicio: dataInicioStr,

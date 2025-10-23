@@ -137,7 +137,7 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
       const dataInicioDate = dataInicio ? dataInicio.split('T')[0] : '';
       const dataFimDate = dataFim ? dataFim.split('T')[0] : dataInicioDate;
 
-      await criarEvento({
+      await criarEvento.mutateAsync({
         nome,
         tipoEvento,
         dataInicio: dataInicioDate,

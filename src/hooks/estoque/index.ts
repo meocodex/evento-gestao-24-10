@@ -12,8 +12,8 @@ export { useEstoqueSeriaisImpl as useEstoqueSeriais };
 export type { FiltrosEstoque, MaterialEstoque, SerialEstoque } from '@/types/estoque';
 
 // Wrapper para compatibilidade
-export function useEstoque() {
-  const queries = useEstoqueQueriesImpl();
+export function useEstoque(page?: number, pageSize?: number, filtros?: any) {
+  const queries = useEstoqueQueriesImpl(page, pageSize, filtros);
   const mutations = useEstoqueMutationsImpl();
   
   return {

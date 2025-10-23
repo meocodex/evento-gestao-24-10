@@ -13,8 +13,22 @@ export { useContratosWorkflowImpl as useContratosWorkflow };
 export { useTemplatesMutationsImpl as useTemplatesMutations };
 
 // Wrapper para compatibilidade
-export function useContratos() {
-  const queries = useContratosQueriesImpl();
+export function useContratos(
+  pageContratos?: number,
+  pageSizeContratos?: number,
+  filtrosContratos?: any,
+  pageTemplates?: number,
+  pageSizeTemplates?: number,
+  filtrosTemplates?: any
+) {
+  const queries = useContratosQueriesImpl(
+    pageContratos,
+    pageSizeContratos,
+    filtrosContratos,
+    pageTemplates,
+    pageSizeTemplates,
+    filtrosTemplates
+  );
   const mutations = useContratosMutationsImpl();
   const workflow = useContratosWorkflowImpl();
   const templatesMutations = useTemplatesMutationsImpl();

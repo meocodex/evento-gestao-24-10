@@ -25,17 +25,17 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
   const [showStatusDialog, setShowStatusDialog] = useState(false);
 
   const handleSave = async (data: Partial<Evento>) => {
-    await editarEvento({ id: evento.id, data });
+    await editarEvento.mutateAsync({ id: evento.id, data });
     setIsEditing(false);
   };
 
   const handleDelete = async () => {
-    await excluirEvento(evento.id);
+    await excluirEvento.mutateAsync(evento.id);
     setShowDeleteDialog(false);
   };
 
   const handleStatusChange = async (novoStatus: any, observacao?: string) => {
-    await alterarStatus({ id: evento.id, novoStatus, observacao });
+    await alterarStatus.mutateAsync({ id: evento.id, novoStatus, observacao });
   };
 
   if (isEditing) {

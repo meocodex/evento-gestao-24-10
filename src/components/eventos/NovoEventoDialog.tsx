@@ -135,7 +135,7 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
       // Montar endereço completo
       const endereco = `${logradouro}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}`;
       
-      await criarEvento({
+      await criarEvento.mutateAsync({
         nome,
         dataInicio,
         dataFim,

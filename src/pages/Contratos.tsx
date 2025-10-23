@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StatCard } from '@/components/dashboard/StatCard';
-import { useContratosQueries, useContratosMutations, useTemplatesMutations } from '@/hooks/contratos';
+import { useContratos } from '@/hooks/contratos';
 import { gerarPDFContrato } from '@/utils/pdfGenerator';
 import { NovoContratoSheet } from '@/components/contratos/NovoContratoSheet';
 import { EditarContratoDialog } from '@/components/contratos/EditarContratoDialog';
@@ -38,7 +38,9 @@ export default function Contratos() {
     loading,
     totalContratos,
     totalTemplates,
-  } = useContratosQueries(
+    excluirContrato,
+    excluirTemplate,
+  } = useContratos(
     pageContratos,
     pageSizeContratos,
     filtrosContratos,
@@ -46,9 +48,6 @@ export default function Contratos() {
     pageSizeTemplates,
     filtrosTemplates
   );
-  
-  const contratosMutations = useContratosMutations();
-  const templatesMutations = useTemplatesMutations();
   
   const [searchContratos, setSearchContratos] = useState('');
   const [searchTemplates, setSearchTemplates] = useState('');
@@ -400,7 +399,7 @@ export default function Contratos() {
         onOpenChange={setConfirmExcluirContrato}
         onConfirm={() => {
           if (contratoSelecionado) {
-            contratosMutations.excluirContrato.mutate(contratoSelecionado.id);
+            excluirContrato.mutate(contratoSelecionado.id);
             setConfirmExcluirContrato(false);
             setContratoSelecionado(null);
           }
@@ -416,7 +415,7 @@ export default function Contratos() {
         onOpenChange={setConfirmExcluirTemplate}
         onConfirm={() => {
           if (templateSelecionado) {
-            templatesMutations.excluirTemplate.mutate(templateSelecionado.id);
+            excluirTemplate.mutate(templateSelecionado.id);
             setConfirmExcluirTemplate(false);
             setTemplateSelecionado(null);
           }
