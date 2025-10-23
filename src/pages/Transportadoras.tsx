@@ -35,10 +35,7 @@ export default function Transportadoras() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setFiltrosTransportadoras({
-        searchTerm,
-        status: statusFilter,
-      });
+      // Filtros aplicados localmente
     }, 300);
     return () => clearTimeout(timer);
   }, [searchTerm, statusFilter]);

@@ -16,13 +16,17 @@ export function useEventosDespesas() {
      * Cria uma nova despesa no financeiro do evento com base nos dados do reembolso.
      */
     vincularReembolsoADespesa: async (eventoId: string, demandaId: string, reembolso: any) => {
+      const valor = reembolso.valorTotal || reembolso.valor || 0;
       await adicionarDespesa.mutateAsync({
         eventoId,
         despesa: {
           descricao: reembolso.descricao || 'Reembolso',
           categoria: 'pessoal' as const,
-          valor: reembolso.valorTotal || reembolso.valor,
-          demandaId,
+          quantidade: 1,
+          valorUnitario: valor,
+          valor,
+          status: 'pendente' as const,
+          data: new Date().toISOString().split('T')[0]
         }
       });
     }

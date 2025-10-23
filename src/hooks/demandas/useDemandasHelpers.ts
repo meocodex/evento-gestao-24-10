@@ -20,6 +20,10 @@ export function useDemandasContext() {
   const anexos = useDemandasAnexos();
   const reembolsos = useDemandasReembolsos();
 
+  const excluirDemandaFn = React.useCallback(async (id: string) => {
+    return await mutations.excluirDemanda.mutateAsync(id);
+  }, [mutations.excluirDemanda]);
+
   return {
     demandas,
     totalCount,
@@ -46,7 +50,7 @@ export function useDemandasContext() {
     adicionarDemanda: (data: any) => mutations.adicionarDemanda.mutateAsync(data),
     criarDemanda: (data: any) => mutations.adicionarDemanda.mutateAsync(data),
     editarDemanda: (id: string, data: any) => mutations.editarDemanda.mutateAsync({ id, data }),
-    excluirDemanda: (id: string) => mutations.excluirDemanda.mutateAsync(id),
+    excluirDemanda: excluirDemandaFn,
     alterarStatus: (id: string, novoStatus: any) => mutations.alterarStatus.mutateAsync({ id, novoStatus }),
     atribuirResponsavel: (demandaId: string, responsavelId: string, responsavelNome: string) => 
       mutations.atribuirResponsavel.mutateAsync({ demandaId, responsavelId, responsavelNome }),

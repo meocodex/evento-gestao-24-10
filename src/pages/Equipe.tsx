@@ -31,11 +31,19 @@ export default function Equipe() {
         unificados.push({ 
           ...p, 
           tipo: 'operacional' as const, 
-          tipo_membro: 'sistema' as const,
+          tipo_membro: ('Sistema' as any),
           funcao_principal: 'Sistema',
-          telefone: p.telefone || null,
-          cpf: p.cpf || null,
-          whatsapp: null
+          funcoes_secundarias: [],
+          tipo_vinculo: 'CLT' as any,
+          cnpj_pj: '',
+          foto: p.avatar_url,
+          telefone: p.telefone || '',
+          cpf: p.cpf || '',
+          whatsapp: null,
+          documentos: [],
+          status: 'ativo' as any,
+          avaliacao: undefined,
+          observacoes: ''
         });
       }
     });
@@ -97,8 +105,8 @@ export default function Equipe() {
   const stats = useMemo(() => {
     return {
       total: membrosUnificados.length,
-      sistema: membrosUnificados.filter(m => m.tipo_membro === 'sistema').length,
-      operacional: membrosUnificados.filter(m => m.tipo_membro === 'operacional').length,
+      sistema: membrosUnificados.filter((m: any) => m.tipo_membro === 'Sistema').length,
+      operacional: membrosUnificados.filter((m: any) => m.tipo_membro === 'operacional').length,
       ambos: 0,
     };
   }, [membrosUnificados]);

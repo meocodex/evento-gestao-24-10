@@ -15,6 +15,10 @@ export function useClientes() {
   const { clientes = [], totalCount = 0, loading } = useClientesQueries(page, 20, searchTerm);
   const mutations = useClientesMutations();
 
+  const excluirClienteFn = React.useCallback(async (id: string) => {
+    return await mutations.excluirCliente.mutateAsync(id);
+  }, [mutations.excluirCliente]);
+
   return {
     clientes,
     clientesFiltrados: clientes,
@@ -27,7 +31,7 @@ export function useClientes() {
     setFiltros,
     criarCliente: mutations.criarCliente.mutateAsync,
     editarCliente: async (id: string, data: any) => mutations.editarCliente.mutateAsync({ id, data }),
-    excluirCliente: async (id: string) => mutations.excluirCliente.mutateAsync(id),
+    excluirCliente: excluirClienteFn,
     buscarClientePorId: (id: string) => clientes.find((c: Cliente) => c.id === id),
     aplicarFiltros: (novosFiltros: any) => setFiltros(novosFiltros),
     validarDocumento: (doc: string, tipo: 'CPF' | 'CNPJ') => tipo === 'CPF' ? validarCPF(doc) : validarCNPJ(doc),

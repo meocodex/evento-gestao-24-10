@@ -161,6 +161,21 @@ export function useEnviosMutations() {
     }
   });
 
+  const editarEnvio = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const { error } = await supabase
+        .from('transportadoras_envios')
+        .update(data)
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['envios'] });
+      toast({ title: 'Envio atualizado!' });
+    }
+  });
+
   const excluirEnvio = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -178,6 +193,7 @@ export function useEnviosMutations() {
 
   return {
     criarEnvio,
+    editarEnvio,
     atualizarStatusEnvio,
     excluirEnvio
   };

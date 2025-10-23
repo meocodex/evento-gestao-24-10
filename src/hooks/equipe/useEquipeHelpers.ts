@@ -15,7 +15,7 @@ export function useEquipe() {
     const unificados = [...operacionais.map((op: any) => ({ 
       ...op, 
       tipo: 'operacional' as const, 
-      tipo_membro: 'operacional',
+      tipo_membro: 'operacional' as 'operacional' | 'Sistema',
       funcao_principal: op.funcao_principal || 'Operacional',
       avatar_url: op.foto || null
     }))];
@@ -24,7 +24,7 @@ export function useEquipe() {
         unificados.push({ 
           ...p, 
           tipo: 'operacional' as const, 
-          tipo_membro: 'sistema',
+          tipo_membro: 'Sistema' as 'operacional' | 'Sistema',
           telefone: p.telefone || null,
           cpf: p.cpf || null,
           whatsapp: p.whatsapp || null,

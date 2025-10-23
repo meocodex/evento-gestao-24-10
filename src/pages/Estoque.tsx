@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -38,7 +38,10 @@ export default function Estoque() {
   const { data, isLoading: loading } = useEstoqueQueries(page, pageSize, filtros);
   const materiais = data?.materiais || [];
   const totalCount = data?.totalCount || 0;
-  const { excluirMaterial } = useEstoqueMutations();
+  const mutations = useEstoqueMutations();
+  const excluirMaterial = useCallback(async (id: string) => {
+    return await mutations.excluirMaterial.mutateAsync(id);
+  }, [mutations.excluirMaterial]);
   const materiaisFiltrados = materiais;
   const getEstatisticas = () => ({
     totalItens: materiais.reduce((sum, m) => sum + m.quantidadeTotal, 0),
@@ -77,8 +80,6 @@ export default function Estoque() {
     if (materialParaExcluir) {
       try {
         await excluirMaterial(materialParaExcluir.id);
-      } catch (error) {
-        // Error already handled
       } finally {
         setMaterialParaExcluir(null);
         setShowDeleteConfirm(false);

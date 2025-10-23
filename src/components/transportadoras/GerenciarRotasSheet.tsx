@@ -49,7 +49,7 @@ export function GerenciarRotasSheet({ transportadora, open, onOpenChange }: Gere
   const handleEditarRota = () => {
     if (!editandoRota) return;
     
-    const rotaIndex = transportadora.rotas?.findIndex(r => r.id === editandoRota.id) ?? -1;
+    const rotaIndex = transportadora.rotasAtendidas?.findIndex(r => r.id === editandoRota.id) ?? -1;
     if (rotaIndex !== -1) {
       editarRota(transportadora.id, rotaIndex, editandoRota);
     }
@@ -58,7 +58,7 @@ export function GerenciarRotasSheet({ transportadora, open, onOpenChange }: Gere
 
   const handleRemoverRota = (rotaId: string) => {
     if (window.confirm('Tem certeza que deseja remover esta rota?')) {
-      const rotaIndex = transportadora.rotas?.findIndex(r => r.id === rotaId) ?? -1;
+      const rotaIndex = transportadora.rotasAtendidas?.findIndex(r => r.id === rotaId) ?? -1;
       if (rotaIndex !== -1) {
         removerRota(transportadora.id, rotaIndex);
       }

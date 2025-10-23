@@ -27,6 +27,7 @@ export function useTransportadoras() {
     editarRota: (transportadoraId: string, rotaIndex: number, rota: any) => transportadorasMutations.editarRota.mutateAsync({ transportadoraId, rotaIndex, rota }),
     removerRota: (transportadoraId: string, rotaIndex: number) => transportadorasMutations.removerRota.mutateAsync({ transportadoraId, rotaIndex }),
     criarEnvio: (data: any) => enviosMutations.criarEnvio.mutateAsync(data),
+    editarEnvio: (id: string, data: any) => enviosMutations.editarEnvio.mutateAsync({ id, data }),
     atualizarStatusEnvio: (id: string, status: string) => enviosMutations.atualizarStatusEnvio.mutateAsync({ id, status }),
     excluirEnvio: (id: string) => enviosMutations.excluirEnvio.mutateAsync(id),
   };

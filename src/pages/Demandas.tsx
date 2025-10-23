@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useDemandasQueries, useDemandasMutations } from '@/hooks/demandas';
 import { Demanda } from '@/types/demandas';
 import { DemandaCard } from '@/components/demandas/DemandaCard';
@@ -18,7 +18,10 @@ export default function Demandas() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const { demandas = [], totalCount = 0 } = useDemandasQueries(page, pageSize);
-  const { excluirDemanda } = useDemandasMutations();
+  const mutations = useDemandasMutations();
+  const excluirDemanda = useCallback(async (id: string) => {
+    return await mutations.excluirDemanda.mutateAsync(id);
+  }, [mutations.excluirDemanda]);
   const demandasFiltradas = demandas;
   const totalPages = Math.ceil(totalCount / pageSize);
   const estatisticas = useMemo(() => ({
@@ -56,8 +59,6 @@ export default function Demandas() {
     if (demandaSelecionada) {
       try {
         await excluirDemanda(demandaSelecionada.id);
-      } catch (error) {
-        // Error already handled
       } finally {
         setDialogExcluir(false);
         setDemandaSelecionada(null);

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useClientesQueries, useClientesMutations } from '@/hooks/clientes';
 import { NovoClienteDialog } from '@/components/clientes/NovoClienteDialog';
 import { EditarClienteDialog } from '@/components/clientes/EditarClienteDialog';
@@ -21,7 +21,10 @@ export default function Clientes() {
   const [searchTerm, setSearchTerm] = useState('');
   const pageSize = 20;
   const { clientes = [], totalCount = 0 } = useClientesQueries(page, pageSize, searchTerm);
-  const { excluirCliente } = useClientesMutations();
+  const mutations = useClientesMutations();
+  const excluirCliente = useCallback(async (id: string) => {
+    return await mutations.excluirCliente.mutateAsync(id);
+  }, [mutations.excluirCliente]);
   const clientesFiltrados = clientes;
   const [visualizacao, setVisualizacao] = useState<'tabela' | 'cards'>('tabela');
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
@@ -37,8 +40,6 @@ export default function Clientes() {
     if (clienteSelecionado) {
       try {
         await excluirCliente(clienteSelecionado.id);
-      } catch (error) {
-        // Error already handled
       } finally {
         setDialogAberto(null);
         setClienteSelecionado(null);

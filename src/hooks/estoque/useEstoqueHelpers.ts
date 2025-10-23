@@ -12,6 +12,10 @@ export function useEstoque() {
   const materiais = data?.materiais || [];
   const mutations = useEstoqueMutations();
 
+  const excluirMaterialFn = React.useCallback(async (id: string) => {
+    return await mutations.excluirMaterial.mutateAsync(id);
+  }, [mutations.excluirMaterial]);
+
   return {
     materiais,
     materiaisFiltrados: materiais,
@@ -24,7 +28,7 @@ export function useEstoque() {
     totalCount: data?.totalCount || 0,
     adicionarMaterial: (dados: any) => mutations.adicionarMaterial.mutateAsync(dados),
     editarMaterial: (id: string, dados: any) => mutations.editarMaterial.mutateAsync({ id, dados }),
-    excluirMaterial: (id: string) => mutations.excluirMaterial.mutateAsync(id),
+    excluirMaterial: excluirMaterialFn,
     adicionarSerial: (materialId: string, dados: any) => mutations.adicionarSerial.mutateAsync({ materialId, dados }),
     editarSerial: (materialId: string, numeroSerial: string, dados: any) => mutations.editarSerial.mutateAsync({ materialId, numeroSerial, dados }),
     excluirSerial: (materialId: string, numeroSerial: string) => mutations.excluirSerial.mutateAsync({ materialId, numeroSerial }),
