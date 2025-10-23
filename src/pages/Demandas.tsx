@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { FiltroDemandas } from '@/types/demandas';
 import { useDemandasQueries, useDemandasMutations } from '@/hooks/demandas';
 import { Demanda } from '@/types/demandas';
 import { DemandaCard } from '@/components/demandas/DemandaCard';
@@ -17,6 +18,7 @@ import { Bell, Clock, AlertTriangle, Archive, XCircle } from 'lucide-react';
 export default function Demandas() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
+  const [filtros, setFiltros] = useState<FiltroDemandas>({});
   const { demandas = [], totalCount = 0 } = useDemandasQueries(page, pageSize);
   const mutations = useDemandasMutations();
   const excluirDemanda = useCallback(async (id: string) => {
@@ -124,7 +126,7 @@ export default function Demandas() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Filtros */}
           <div className="lg:col-span-1">
-            <DemandaFilters />
+            <DemandaFilters filtros={filtros} setFiltros={setFiltros} />
           </div>
 
           {/* Lista de Demandas */}

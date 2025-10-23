@@ -2,16 +2,20 @@
  * Barrel export para hooks de estoque
  */
 
-export { useEstoqueQueries } from '@/contexts/estoque/useEstoqueQueries';
-export { useEstoqueMutations } from '@/contexts/estoque/useEstoqueMutations';
-export { useEstoqueSeriais } from '@/contexts/estoque/useEstoqueSeriais';
+import { useEstoqueQueries as useEstoqueQueriesImpl } from '@/contexts/estoque/useEstoqueQueries';
+import { useEstoqueMutations as useEstoqueMutationsImpl } from '@/contexts/estoque/useEstoqueMutations';
+import { useEstoqueSeriais as useEstoqueSeriaisImpl } from '@/contexts/estoque/useEstoqueSeriais';
+
+export { useEstoqueQueriesImpl as useEstoqueQueries };
+export { useEstoqueMutationsImpl as useEstoqueMutations };
+export { useEstoqueSeriaisImpl as useEstoqueSeriais };
 export type { FiltrosEstoque, MaterialEstoque, SerialEstoque } from '@/contexts/estoque/types';
 
 // Wrapper para compatibilidade
 export function useEstoque() {
-  const queries = useEstoqueQueries();
-  const mutations = useEstoqueMutations();
-  const seriais = useEstoqueSeriais();
+  const queries = useEstoqueQueriesImpl();
+  const mutations = useEstoqueMutationsImpl();
+  const seriais = useEstoqueSeriaisImpl();
   
   return {
     ...queries,

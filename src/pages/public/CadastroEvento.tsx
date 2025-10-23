@@ -9,13 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useCadastrosPublicos } from '@/contexts/CadastrosPublicosContext';
+import { useCadastrosMutations } from '@/contexts/cadastros/useCadastrosMutations';
 import { TipoEvento, SetorEvento, TipoIngresso } from '@/types/eventos';
 import { estados } from '@/lib/validations/cliente';
 
 export default function CadastroEvento() {
   const navigate = useNavigate();
-  const { criarCadastro } = useCadastrosPublicos();
+  const { criarCadastro } = useCadastrosMutations();
   const [step, setStep] = useState(1);
   const [tipoEvento, setTipoEvento] = useState<TipoEvento | null>(null);
   const [loading, setLoading] = useState(false);

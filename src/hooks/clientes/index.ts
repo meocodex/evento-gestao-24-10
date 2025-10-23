@@ -2,13 +2,16 @@
  * Barrel export para hooks de clientes
  */
 
-export { useClientesQueries } from '@/contexts/clientes/useClientesQueries';
-export { useClientesMutations } from '@/contexts/clientes/useClientesMutations';
+import { useClientesQueries as useClientesQueriesImpl } from '@/contexts/clientes/useClientesQueries';
+import { useClientesMutations as useClientesMutationsImpl } from '@/contexts/clientes/useClientesMutations';
+
+export { useClientesQueriesImpl as useClientesQueries };
+export { useClientesMutationsImpl as useClientesMutations };
 
 // Wrapper para compatibilidade
 export function useClientes() {
-  const queries = useClientesQueries();
-  const mutations = useClientesMutations();
+  const queries = useClientesQueriesImpl();
+  const mutations = useClientesMutationsImpl();
   
   return {
     ...queries,

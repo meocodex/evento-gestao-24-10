@@ -2,13 +2,16 @@
  * Barrel export para hooks de transportadoras
  */
 
-export { useTransportadorasQueries, useEnviosQueries } from '@/contexts/transportadoras/useTransportadorasQueries';
-export { useTransportadorasMutations } from '@/contexts/transportadoras/useTransportadorasMutations';
+import { useTransportadorasQueries as useTransportadorasQueriesImpl, useEnviosQueries } from '@/contexts/transportadoras/useTransportadorasQueries';
+import { useTransportadorasMutations as useTransportadorasMutationsImpl } from '@/contexts/transportadoras/useTransportadorasMutations';
+
+export { useTransportadorasQueriesImpl as useTransportadorasQueries, useEnviosQueries };
+export { useTransportadorasMutationsImpl as useTransportadorasMutations };
 
 // Wrapper para compatibilidade
 export function useTransportadoras() {
-  const transportadorasQueries = useTransportadorasQueries();
-  const mutations = useTransportadorasMutations();
+  const transportadorasQueries = useTransportadorasQueriesImpl();
+  const mutations = useTransportadorasMutationsImpl();
   
   return {
     ...transportadorasQueries,

@@ -2,7 +2,7 @@ import { Evento } from '@/types/eventos';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useContratos } from '@/contexts/ContratosContext';
+import { useContratos } from '@/hooks/contratos';
 import { FileText, Download, Eye, Calendar, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';

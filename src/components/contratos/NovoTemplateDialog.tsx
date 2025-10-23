@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useContratos } from '@/contexts/ContratosContext';
+import { useTemplatesMutations } from '@/hooks/contratos';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 

@@ -2,17 +2,22 @@
  * Barrel export para hooks de contratos
  */
 
-export { useContratosQueries } from '@/contexts/contratos/useContratosQueries';
-export { useContratosMutations } from '@/contexts/contratos/useContratosMutations';
-export { useContratosWorkflow } from '@/contexts/contratos/useContratosWorkflow';
-export { useTemplatesMutations } from '@/contexts/contratos/useTemplatesMutations';
+import { useContratosQueries as useContratosQueriesImpl } from '@/contexts/contratos/useContratosQueries';
+import { useContratosMutations as useContratosMutationsImpl } from '@/contexts/contratos/useContratosMutations';
+import { useContratosWorkflow as useContratosWorkflowImpl } from '@/contexts/contratos/useContratosWorkflow';
+import { useTemplatesMutations as useTemplatesMutationsImpl } from '@/contexts/contratos/useTemplatesMutations';
+
+export { useContratosQueriesImpl as useContratosQueries };
+export { useContratosMutationsImpl as useContratosMutations };
+export { useContratosWorkflowImpl as useContratosWorkflow };
+export { useTemplatesMutationsImpl as useTemplatesMutations };
 
 // Wrapper para compatibilidade
 export function useContratos() {
-  const queries = useContratosQueries();
-  const mutations = useContratosMutations();
-  const workflow = useContratosWorkflow();
-  const templatesMutations = useTemplatesMutations();
+  const queries = useContratosQueriesImpl();
+  const mutations = useContratosMutationsImpl();
+  const workflow = useContratosWorkflowImpl();
+  const templatesMutations = useTemplatesMutationsImpl();
   
   return {
     ...queries,
