@@ -23,6 +23,7 @@ const Relatorios = lazy(() => import("./pages/Relatorios"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const Equipe = lazy(() => import("./pages/Equipe"));
 const CadastrosPendentes = lazy(() => import("./pages/CadastrosPendentes"));
+const TestesValidacao = lazy(() => import("./pages/TestesValidacao"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CadastroEvento = lazy(() => import("./pages/public/CadastroEvento"));
 const AcompanharCadastro = lazy(() => import("./pages/public/AcompanharCadastro"));
@@ -72,6 +73,7 @@ function ProtectedRoutes() {
         <Route path="configuracoes" element={<Configuracoes />} />
         <Route path="equipe" element={<Equipe />} />
         <Route path="cadastros-pendentes" element={<CadastrosPendentes />} />
+        <Route path="testes-validacao" element={<TestesValidacao />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
