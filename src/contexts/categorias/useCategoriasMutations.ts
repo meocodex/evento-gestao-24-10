@@ -52,7 +52,17 @@ export function useCategoriasMutations() {
         .single();
 
       const categorias = (config?.categorias as unknown as Categoria[]) || [];
+      
+      // Validar se categoria já existe
+      const categoriaExiste = categorias.find(c => c.value === categoria.value);
+      if (categoriaExiste) {
+        throw new Error(`Categoria "${categoria.label}" já existe`);
+      }
+      
+      console.log(`[${tipo}] Categorias antes:`, categorias.length);
+      console.log(`[${tipo}] Adicionando:`, categoria);
       categorias.push(categoria);
+      console.log(`[${tipo}] Categorias depois:`, categorias.length);
 
       const { error } = await supabase
         .from('configuracoes_categorias')
@@ -65,9 +75,26 @@ export function useCategoriasMutations() {
         });
 
       if (error) throw error;
+      
+      return { tipo, categoria };
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
+    onSuccess: (data) => {
+      // Atualização otimista sem refetch completo
+      queryClient.setQueryData(['configuracoes_categorias'], (old: any) => {
+        if (!old) return old;
+        return old.map((config: any) => {
+          if (config.tipo === data.tipo) {
+            const categorias = (config.categorias as Categoria[]) || [];
+            return {
+              ...config,
+              categorias: [...categorias, data.categoria],
+              updated_at: new Date().toISOString()
+            };
+          }
+          return config;
+        });
+      });
+      
       toast({
         title: 'Categoria adicionada',
         description: 'A nova categoria foi criada com sucesso.',

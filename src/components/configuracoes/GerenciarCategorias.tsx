@@ -28,20 +28,31 @@ export function GerenciarCategorias({ tipo, titulo, descricao }: GerenciarCatego
   const [novoLabel, setNovoLabel] = useState('');
   const [novoValue, setNovoValue] = useState('');
   const [labelEditando, setLabelEditando] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleAdicionar = async () => {
-    if (!novoLabel.trim() || !novoValue.trim()) return;
+    if (!novoLabel.trim() || !novoValue.trim() || loading) return;
 
-    const novaCategoria: Categoria = {
-      value: novoValue.toLowerCase().replace(/\s+/g, '_'),
-      label: novoLabel,
-      ativa: true,
-    };
+    setLoading(true);
+    try {
+      const novaCategoria: Categoria = {
+        value: novoValue.toLowerCase().replace(/\s+/g, '_'),
+        label: novoLabel,
+        ativa: true,
+      };
 
-    await adicionarCategoria(tipo, novaCategoria);
-    setNovoLabel('');
-    setNovoValue('');
-    setDialogAberto(false);
+      console.log(`[${tipo}] Adicionando categoria:`, novaCategoria);
+      await adicionarCategoria(tipo, novaCategoria);
+      console.log(`[${tipo}] Categoria adicionada com sucesso`);
+      
+      setNovoLabel('');
+      setNovoValue('');
+      setDialogAberto(false);
+    } catch (error) {
+      console.error(`[${tipo}] Erro ao adicionar categoria:`, error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleToggle = async (value: string) => {
@@ -176,8 +187,8 @@ export function GerenciarCategorias({ tipo, titulo, descricao }: GerenciarCatego
               <Button variant="outline" onClick={() => setDialogAberto(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleAdicionar} disabled={!novoLabel.trim() || !novoValue.trim()}>
-                Adicionar
+              <Button onClick={handleAdicionar} disabled={!novoLabel.trim() || !novoValue.trim() || loading}>
+                {loading ? 'Adicionando...' : 'Adicionar'}
               </Button>
             </DialogFooter>
           </DialogContent>
