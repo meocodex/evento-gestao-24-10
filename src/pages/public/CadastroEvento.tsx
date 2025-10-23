@@ -58,7 +58,7 @@ export default function CadastroEvento() {
 
     setLoading(true);
     try {
-      const protocolo = await criarCadastroEventoPublico({
+      const protocolo = await criarCadastro.mutateAsync({
         tipoEvento: tipoEvento!,
         nome,
         dataInicio,

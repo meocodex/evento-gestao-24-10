@@ -142,7 +142,7 @@ export default function Estoque() {
         />
       </div>
 
-      <EstoqueFilters />
+      <EstoqueFilters filtros={filtros} setFiltros={setFiltros} />
 
       {/* Controles */}
       <div className="flex items-center justify-between">

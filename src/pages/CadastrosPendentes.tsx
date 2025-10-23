@@ -46,7 +46,7 @@ export default function CadastrosPendentes() {
         tags: [],
       });
       
-      await aprovarCadastro({ cadastroId: cadastro.id, eventoId: evento.id });
+      await aprovarCadastro.mutateAsync({ cadastroId: cadastro.id, eventoId: evento.id });
       setDetailsOpen(false);
     } catch (error) {
       toast({
@@ -70,7 +70,7 @@ export default function CadastrosPendentes() {
     }
 
     try {
-      await recusarCadastro({ cadastroId: selectedCadastro.id, motivo: motivoRecusa });
+      await recusarCadastro.mutateAsync({ cadastroId: selectedCadastro.id, motivo: motivoRecusa });
       setRecusarOpen(false);
       setDetailsOpen(false);
       setMotivoRecusa('');

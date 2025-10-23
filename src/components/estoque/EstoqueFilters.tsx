@@ -10,12 +10,16 @@ import {
 import { Search, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useEstoque } from '@/hooks/estoque';
 import { Card, CardContent } from '@/components/ui/card';
 import { useCategorias } from '@/contexts/CategoriasContext';
+import { FiltrosEstoque } from '@/hooks/estoque';
 
-export function EstoqueFilters() {
-  const { filtros, setFiltros } = useEstoque();
+interface EstoqueFiltersProps {
+  filtros: FiltrosEstoque;
+  setFiltros: (filtros: FiltrosEstoque) => void;
+}
+
+export function EstoqueFilters({ filtros, setFiltros }: EstoqueFiltersProps) {
   const { categoriasEstoque, isLoading } = useCategorias();
 
   const handleReset = () => {

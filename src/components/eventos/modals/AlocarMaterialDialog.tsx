@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useEstoque } from '@/hooks/estoque';
 import { Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -41,25 +41,24 @@ export function AlocarMaterialDialog({
   const [transportadora, setTransportadora] = useState('');
   const [responsavel, setResponsavel] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [materialEstoque, setMaterialEstoque] = useState<any>(null);
 
-  // Buscar material no estoque
-  const materialEstoque = useMemo(() => {
-    return buscarMaterialPorId(itemId);
-  }, [itemId, buscarMaterialPorId]);
+  // Buscar material no estoque quando o dialog abrir
+  useEffect(() => {
+    if (open && itemId) {
+      buscarMaterialPorId(itemId).then(setMaterialEstoque);
+    }
+  }, [open, itemId, buscarMaterialPorId]);
 
   // Filtrar seriais disponíveis
-  const serialsFiltrados = useMemo(() => {
-    if (!materialEstoque?.seriais) return [];
-    
-    return materialEstoque.seriais
-      .filter(s => s.numero.toLowerCase().includes(searchTerm.toLowerCase()))
-      .sort((a, b) => {
-        // Disponíveis primeiro
-        if (a.status === 'disponivel' && b.status !== 'disponivel') return -1;
-        if (a.status !== 'disponivel' && b.status === 'disponivel') return 1;
-        return a.numero.localeCompare(b.numero);
-      });
-  }, [materialEstoque, searchTerm]);
+  const serialsFiltrados = (materialEstoque?.seriais || [])
+    .filter((s: any) => s.numero.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a: any, b: any) => {
+      // Disponíveis primeiro
+      if (a.status === 'disponivel' && b.status !== 'disponivel') return -1;
+      if (a.status !== 'disponivel' && b.status === 'disponivel') return 1;
+      return a.numero.localeCompare(b.numero);
+    });
 
   const quantidadeRestante = quantidadeNecessaria - quantidadeJaAlocada;
 
