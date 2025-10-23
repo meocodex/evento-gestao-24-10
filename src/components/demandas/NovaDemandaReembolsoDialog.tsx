@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useDemandasMutations } from '@/hooks/demandas';
+import { useDemandas } from '@/hooks/demandas';
 import { useEventos } from '@/hooks/eventos';
 import { useAuth } from '@/contexts/AuthContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
@@ -29,7 +29,7 @@ const tipoReembolsoLabels: Record<TipoReembolso, string> = {
 
 export function NovaDemandaReembolsoDialog({ eventoId }: NovaDemandaReembolsoDialogProps) {
   const [open, setOpen] = useState(false);
-  const { adicionarDemandaReembolso } = useDemandasMutations();
+  const { adicionarDemandaReembolso } = useDemandas();
   const { eventos } = useEventos();
   const { user } = useAuth();
   const { toast } = useToast();

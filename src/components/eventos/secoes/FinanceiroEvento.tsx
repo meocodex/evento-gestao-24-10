@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useEventosMutations } from '@/hooks/eventos';
 import { useEventosFinanceiro } from '@/hooks/eventos';
-import { useDemandasQueries } from '@/hooks/demandas';
+import { useDemandas } from '@/hooks/demandas';
 import { Evento } from '@/types/eventos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ interface FinanceiroEventoProps {
 export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps) {
   const { toast } = useToast();
   const financeiro = useEventosFinanceiro(evento.id);
-  const { demandas } = useDemandasQueries(1, 1000);
+  const { demandas } = useDemandas(1, 1000);
   const getDemandasReembolsoPorEvento = (id: string) => demandas.filter((d: any) => d.eventoRelacionado === id && d.categoria === 'reembolso');
   const [showAddReceita, setShowAddReceita] = useState(false);
   const [showAddDespesa, setShowAddDespesa] = useState(false);

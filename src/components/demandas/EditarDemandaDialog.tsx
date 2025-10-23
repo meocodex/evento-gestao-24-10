@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useDemandasMutations } from '@/hooks/demandas';
+import { useDemandas } from '@/hooks/demandas';
 import { TipoCategoria } from '@/types/categorias';
 import { useEventos } from '@/hooks/eventos';
 import { useUsuarios } from '@/hooks/useUsuarios';
@@ -26,7 +26,7 @@ const prioridades: { value: PrioridadeDemanda; label: string }[] = [
 ];
 
 export function EditarDemandaDialog({ demanda, open, onOpenChange }: EditarDemandaDialogProps) {
-  const { editarDemanda } = useDemandasMutations();
+  const { editarDemanda } = useDemandas();
   const { eventos } = useEventos();
   const { categoriasDemandas, isLoading } = useCategorias();
   const { usuarios } = useUsuarios();

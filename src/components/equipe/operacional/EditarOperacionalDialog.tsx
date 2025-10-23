@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Plus } from 'lucide-react';
 import { useEquipe } from '@/hooks/equipe';
-import { useCategorias } from '@/contexts/CategoriasContext';
+import { useCategorias } from '@/hooks/categorias';
 import { OperacionalEquipe } from '@/types/equipe';
 
 interface EditarOperacionalDialogProps {

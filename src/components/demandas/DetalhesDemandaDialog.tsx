@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useDemandasMutations, useDemandasComentarios, useDemandasReembolsos, useDemandasAnexos } from '@/hooks/demandas';
+import { useDemandas, useDemandasAnexos } from '@/hooks/demandas';
 import { Demanda, StatusDemanda, TipoReembolso } from '@/types/demandas';
 import { format } from 'date-fns';
 import { useUsuarios } from '@/hooks/useUsuarios';
@@ -49,9 +49,18 @@ const statusPagamentoConfig = {
 };
 
 export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesDemandaDialogProps) {
-  const mutations = useDemandasMutations();
-  const comentarios = useDemandasComentarios();
-  const reembolsos = useDemandasReembolsos();
+  const {
+    alterarStatus,
+    atribuirResponsavel,
+    marcarComoResolvida,
+    reabrirDemanda,
+    arquivarDemanda,
+    desarquivarDemanda,
+    adicionarComentario,
+    aprovarReembolso,
+    recusarReembolso,
+    marcarReembolsoPago,
+  } = useDemandas();
   const { user } = useAuth();
   const vincularReembolso = demanda.eventoRelacionado ? useEventosDespesas(demanda.eventoRelacionado) : null;
   const { usuarios } = useUsuarios();
@@ -67,13 +76,13 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   const isAdmin = user?.role === 'admin';
 
   const handleAlterarStatus = (novoStatus: StatusDemanda) => {
-    mutations.alterarStatus.mutateAsync({ id: demanda.id, novoStatus });
+    alterarStatus.mutateAsync({ id: demanda.id, novoStatus });
   };
 
   const handleAtribuirResponsavel = (responsavelId: string) => {
     const responsavel = (usuarios || []).find((u) => u.id === responsavelId);
     if (responsavel) {
-      mutations.atribuirResponsavel.mutateAsync({ demandaId: demanda.id, responsavelId, responsavelNome: responsavel.nome });
+      atribuirResponsavel.mutateAsync({ demandaId: demanda.id, responsavelId, responsavelNome: responsavel.nome });
     }
   };
 
@@ -81,7 +90,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
     if (!novoComentario.trim() || !user) return;
 
     const usuarioAtual = (usuarios || []).find(u => u.id === user.id);
-    comentarios.adicionarComentario.mutate({
+    adicionarComentario.mutate({
       demandaId: demanda.id,
       conteudo: novoComentario,
       autor: usuarioAtual?.nome || user.email,
@@ -91,20 +100,20 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   };
 
   const handleMarcarResolvida = () => {
-    mutations.marcarComoResolvida.mutateAsync(demanda.id);
+    marcarComoResolvida.mutateAsync(demanda.id);
   };
 
   const handleReabrirDemanda = () => {
-    mutations.reabrirDemanda.mutateAsync(demanda.id);
+    reabrirDemanda.mutateAsync(demanda.id);
   };
 
   const handleAprovarReembolso = (formaPagamento: string, observacoes?: string) => {
-    reembolsos.aprovarReembolso.mutateAsync({ demandaId: demanda.id, formaPagamento, observacoes });
+    aprovarReembolso.mutateAsync({ demandaId: demanda.id, formaPagamento, observacoes });
     setShowAprovarDialog(false);
   };
 
   const handleMarcarPago = (dataPagamento: string, comprovante?: string, observacoes?: string) => {
-    reembolsos.marcarReembolsoPago.mutateAsync({ demandaId: demanda.id, dataPagamento, comprovante, observacoes });
+    marcarReembolsoPago.mutateAsync({ demandaId: demanda.id, dataPagamento, comprovante, observacoes });
     
     // Vincular reembolso ao financeiro do evento
     if (demanda.eventoRelacionado && demanda.dadosReembolso && vincularReembolso) {
@@ -118,29 +127,29 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   };
 
   const handleRecusar = (motivo: string) => {
-    reembolsos.recusarReembolso.mutateAsync({ demandaId: demanda.id, motivo });
+    recusarReembolso.mutateAsync({ demandaId: demanda.id, motivo });
     setShowRecusarDialog(false);
   };
 
   const handleIniciarAtendimento = () => {
-    mutations.alterarStatus.mutateAsync({ id: demanda.id, novoStatus: 'em-andamento' });
+    alterarStatus.mutateAsync({ id: demanda.id, novoStatus: 'em-andamento' });
   };
 
   const handleConcluirDemanda = () => {
-    mutations.marcarComoResolvida.mutateAsync(demanda.id);
-    mutations.alterarStatus.mutateAsync({ id: demanda.id, novoStatus: 'concluida' });
+    marcarComoResolvida.mutateAsync(demanda.id);
+    alterarStatus.mutateAsync({ id: demanda.id, novoStatus: 'concluida' });
   };
 
   const handleCancelarDemanda = () => {
-    mutations.alterarStatus.mutateAsync({ id: demanda.id, novoStatus: 'cancelada' });
+    alterarStatus.mutateAsync({ id: demanda.id, novoStatus: 'cancelada' });
   };
 
   const handleArquivar = () => {
-    mutations.arquivarDemanda.mutateAsync(demanda.id);
+    arquivarDemanda.mutateAsync(demanda.id);
   };
 
   const handleDesarquivar = () => {
-    mutations.desarquivarDemanda.mutateAsync(demanda.id);
+    desarquivarDemanda.mutateAsync(demanda.id);
   };
 
   const isReembolso = demanda.categoria === 'reembolso' && demanda.dadosReembolso;

@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { useCategorias } from '@/contexts/CategoriasContext';
+import { useCategorias } from '@/hooks/categorias';
 import { useEquipe } from '@/hooks/equipe';
 import { useConflitosEquipe } from '@/contexts/equipe/useConflitosEquipe';
 import { MembroEquipe } from '@/types/eventos';

@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEventos } from '@/hooks/eventos';
-import { useDemandasQueries } from '@/hooks/demandas';
+import { useDemandas } from '@/hooks/demandas';
 import { Evento } from '@/types/eventos';
 import { EventoDetailsDialog } from '@/components/eventos/EventoDetailsDialog';
 import { format } from 'date-fns';
@@ -13,7 +13,7 @@ import { ptBR } from 'date-fns/locale';
 
 export default function Financeiro() {
   const { eventos } = useEventos();
-  const { demandas } = useDemandasQueries(1, 1000);
+  const { demandas } = useDemandas(1, 1000);
   const [selectedEvento, setSelectedEvento] = useState<Evento | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 

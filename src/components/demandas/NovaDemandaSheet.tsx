@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useDemandasMutations } from '@/hooks/demandas';
+import { useDemandas } from '@/hooks/demandas';
 import { TipoCategoria } from '@/types/categorias';
 import { useCategorias } from '@/hooks/categorias';
 import { useEventos } from '@/hooks/eventos';
@@ -25,7 +25,7 @@ const prioridades: { value: PrioridadeDemanda; label: string }[] = [
 
 export function NovaDemandaSheet() {
   const [open, setOpen] = useState(false);
-  const { adicionarDemanda } = useDemandasMutations();
+  const { criarDemanda } = useDemandas();
   const { eventos } = useEventos();
   const { categoriasDemandas, isLoading: loadingCategorias } = useCategorias();
   const { usuarios } = useUsuarios();
@@ -67,7 +67,7 @@ export function NovaDemandaSheet() {
       });
 
       const usuarioAtual = (usuarios || []).find(u => u.id === user.id);
-      adicionarDemanda.mutateAsync({
+      criarDemanda.mutateAsync({
         data: {
           titulo: validatedData.titulo,
           descricao: validatedData.descricao,

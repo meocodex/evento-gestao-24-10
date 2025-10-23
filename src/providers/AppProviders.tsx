@@ -5,7 +5,6 @@ import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persist
 import { BrowserRouter } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { CategoriasProvider } from "@/contexts/CategoriasContext";
 
 /**
  * QueryClient com configurações otimizadas de cache.
@@ -50,11 +49,9 @@ export function AppProviders({ children }: AppProvidersProps) {
     >
       <BrowserRouter>
         <AuthProvider>
-          <CategoriasProvider>
-            <TooltipProvider>
-              {children}
-            </TooltipProvider>
-          </CategoriasProvider>
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
         </AuthProvider>
       </BrowserRouter>
     </PersistQueryClientProvider>

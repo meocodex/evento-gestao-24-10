@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus } from 'lucide-react';
 import { useEquipe } from '@/hooks/equipe';
-import { useCategorias } from '@/contexts/CategoriasContext';
+import { useCategorias } from '@/hooks/categorias';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { TemplatesPermissoes } from '@/components/configuracoes/TemplatesPermissoes';
