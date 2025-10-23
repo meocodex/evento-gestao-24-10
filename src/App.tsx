@@ -1,26 +1,12 @@
 import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { GlobalErrorBoundary } from "@/components/shared/GlobalErrorBoundary";
 import { CardSkeleton } from "@/components/shared/LoadingSkeleton";
-import { ClientesProvider } from "@/contexts/ClientesContext";
-import { EstoqueProvider } from "@/contexts/EstoqueContext";
-import { TransportadorasProvider } from "@/contexts/TransportadorasContext";
-import { ContratosProvider } from "@/contexts/ContratosContext";
-import { ConfiguracoesProvider } from "@/contexts/ConfiguracoesContext";
-import { CadastrosPublicosProvider } from "@/contexts/CadastrosPublicosContext";
-import { EventosProvider } from "@/contexts/EventosContext";
-import { DemandasProvider } from "@/contexts/DemandasContext";
-import { CategoriasProvider } from "@/contexts/CategoriasContext";
-import { EquipeProvider } from "@/contexts/EquipeContext";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { AppProviders } from "@/providers/AppProviders";
 
 // Lazy loading de páginas para code splitting
 const Auth = lazy(() => import("./pages/Auth"));
@@ -40,25 +26,6 @@ const CadastrosPendentes = lazy(() => import("./pages/CadastrosPendentes"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CadastroEvento = lazy(() => import("./pages/public/CadastroEvento"));
 const AcompanharCadastro = lazy(() => import("./pages/public/AcompanharCadastro"));
-
-// QueryClient com cache otimizado
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutos
-      gcTime: 1000 * 60 * 30, // 30 minutos
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
-      retry: 1,
-    },
-  },
-});
-
-// Persister para cache local
-const persister = createSyncStoragePersister({
-  storage: window.localStorage,
-  key: 'gercao-cache',
-});
 
 // Componente de loading para Suspense
 function PageLoader() {
@@ -133,72 +100,21 @@ function AuthRoutes() {
   );
 }
 
-// App com todas as otimizações
+// App simplificado com estrutura limpa
 const App = () => (
   <GlobalErrorBoundary>
-    <ErrorBoundary>
-      <PersistQueryClientProvider 
-        client={queryClient} 
-        persistOptions={{ persister }}
-      >
-        <BrowserRouter>
-          <AuthProvider>
-            <ErrorBoundary>
-              <CategoriasProvider>
-                <ErrorBoundary>
-                  <EquipeProvider>
-                    <ErrorBoundary>
-                      <EventosProvider>
-                        <ErrorBoundary>
-                          <DemandasProvider>
-                            <ErrorBoundary>
-                              <ClientesProvider>
-                                <ErrorBoundary>
-                                  <EstoqueProvider>
-                                    <ErrorBoundary>
-                                      <ConfiguracoesProvider>
-                                        <ErrorBoundary>
-                                          <CadastrosPublicosProvider>
-                                            <ErrorBoundary>
-                                              <TransportadorasProvider>
-                                                <ErrorBoundary>
-                                                  <ContratosProvider>
-                                                    <TooltipProvider>
-                                                      <Toaster />
-                                                      <Sonner />
-                                                      <Suspense fallback={<PageLoader />}>
-                                                        <Routes>
-                                                          <Route path="/auth" element={<AuthRoutes />} />
-                                                          <Route path="/cadastro-evento" element={<CadastroEvento />} />
-                                                          <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
-                                                          <Route path="/*" element={<ProtectedRoutes />} />
-                                                        </Routes>
-                                                      </Suspense>
-                                                    </TooltipProvider>
-                                                  </ContratosProvider>
-                                                </ErrorBoundary>
-                                              </TransportadorasProvider>
-                                            </ErrorBoundary>
-                                          </CadastrosPublicosProvider>
-                                        </ErrorBoundary>
-                                      </ConfiguracoesProvider>
-                                    </ErrorBoundary>
-                                  </EstoqueProvider>
-                                </ErrorBoundary>
-                              </ClientesProvider>
-                            </ErrorBoundary>
-                          </DemandasProvider>
-                        </ErrorBoundary>
-                      </EventosProvider>
-                    </ErrorBoundary>
-                  </EquipeProvider>
-                </ErrorBoundary>
-              </CategoriasProvider>
-            </ErrorBoundary>
-          </AuthProvider>
-        </BrowserRouter>
-      </PersistQueryClientProvider>
-    </ErrorBoundary>
+    <AppProviders>
+      <Toaster />
+      <Sonner />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/auth" element={<AuthRoutes />} />
+          <Route path="/cadastro-evento" element={<CadastroEvento />} />
+          <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
+          <Route path="/*" element={<ProtectedRoutes />} />
+        </Routes>
+      </Suspense>
+    </AppProviders>
   </GlobalErrorBoundary>
 );
 
