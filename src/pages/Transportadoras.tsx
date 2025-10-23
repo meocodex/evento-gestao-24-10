@@ -20,7 +20,6 @@ export default function Transportadoras() {
     transportadoras,
     envios,
     loading,
-    setFiltrosTransportadoras,
     excluirTransportadora,
   } = useTransportadoras();
   const [searchTerm, setSearchTerm] = useState('');

@@ -71,9 +71,9 @@ export function EditarSerialDialog({
   const onSubmit = async (data: SerialFormData) => {
     setLoading(true);
     try {
-      await editarSerial.mutateAsync({ 
+      await editarSerial({ 
         materialId, 
-        numeroSerial: serial.numero, 
+        numeroSerial: serial.numero,
         dados: {
           status: data.status,
           localizacao: data.localizacao,

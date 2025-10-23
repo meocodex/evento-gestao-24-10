@@ -14,7 +14,7 @@ interface ContratosEventoProps {
 }
 
 export function ContratosEvento({ evento }: ContratosEventoProps) {
-  const { contratos, gerarPDF } = useContratos();
+  const { contratos } = useContratos();
   const [contratoSelecionado, setContratoSelecionado] = useState<string | null>(null);
   
   // Filtrar contratos relacionados ao evento
@@ -144,14 +144,6 @@ export function ContratosEvento({ evento }: ContratosEventoProps) {
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   Ver Detalhes
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => gerarPDF(contrato.id)}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Baixar PDF
                 </Button>
               </div>
             </CardContent>

@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function CadastrosPendentes() {
   const { cadastros } = useCadastrosQueries();
-  const mutations = useCadastrosMutations();
+  const { aprovarCadastro, recusarCadastro } = useCadastrosMutations();
   const { criarEvento } = useEventos();
   const { toast } = useToast();
   const [selectedCadastro, setSelectedCadastro] = useState<CadastroPublico | null>(null);
@@ -28,7 +28,7 @@ export default function CadastrosPendentes() {
 
   const handleAprovar = async (cadastro: CadastroPublico) => {
     try {
-      const evento = await criarEvento.mutateAsync({
+      const evento = await criarEvento({
         nome: cadastro.nome,
         dataInicio: cadastro.dataInicio,
         dataFim: cadastro.dataFim,
@@ -41,9 +41,12 @@ export default function CadastrosPendentes() {
         tipoEvento: cadastro.tipoEvento,
         configuracaoIngresso: cadastro.configuracaoIngresso,
         configuracaoBar: cadastro.configuracaoBar,
+        clienteId: '',
+        comercialId: '',
+        tags: [],
       });
       
-      mutations.aprovarCadastro({ cadastroId: cadastro.id, eventoId: evento.id });
+      await aprovarCadastro({ cadastroId: cadastro.id, eventoId: evento.id });
       setDetailsOpen(false);
     } catch (error) {
       toast({
@@ -67,7 +70,7 @@ export default function CadastrosPendentes() {
     }
 
     try {
-      mutations.recusarCadastro({ cadastroId: selectedCadastro.id, motivo: motivoRecusa });
+      await recusarCadastro({ cadastroId: selectedCadastro.id, motivo: motivoRecusa });
       setRecusarOpen(false);
       setDetailsOpen(false);
       setMotivoRecusa('');

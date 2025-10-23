@@ -41,7 +41,7 @@ export function EnvioCard({ envio }: EnvioCardProps) {
     const statusOrder: Envio['status'][] = ['pendente', 'em_transito', 'entregue'];
     const currentIndex = statusOrder.indexOf(envio.status);
     if (currentIndex < statusOrder.length - 1) {
-      atualizarStatusEnvio(envio.id, statusOrder[currentIndex + 1]);
+      atualizarStatusEnvio({ id: envio.id, status: statusOrder[currentIndex + 1] });
     }
   };
 

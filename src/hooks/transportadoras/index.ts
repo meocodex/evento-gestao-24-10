@@ -18,7 +18,7 @@ export function useTransportadoras() {
     ...transportadorasQueries,
     envios: enviosQueries.data?.envios || [],
     totalEnvios: enviosQueries.data?.totalCount || 0,
-    loadingEnvios: enviosQueries.isLoading,
+    loading: transportadorasQueries.isLoading || enviosQueries.isLoading,
     criarTransportadora: mutations.criarTransportadora.mutateAsync,
     editarTransportadora: mutations.editarTransportadora.mutateAsync,
     excluirTransportadora: mutations.excluirTransportadora.mutateAsync,

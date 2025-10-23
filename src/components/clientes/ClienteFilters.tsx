@@ -14,7 +14,14 @@ const ESTADOS_BRASILEIROS = [
 ];
 
 export function ClienteFilters() {
-  const { filtros, aplicarFiltros, limparFiltros, clientes } = useClientes();
+  const { clientes } = useClientes();
+  const [filtros, setFiltros] = useState({
+    busca: '',
+    tipo: 'todos' as 'todos' | 'CPF' | 'CNPJ',
+    estado: '',
+    cidade: '',
+    status: 'todos' as 'todos' | 'ativo' | 'inativo',
+  });
   const [isOpen, setIsOpen] = useState(false);
 
   const cidadesDisponiveis = Array.from(
@@ -24,6 +31,20 @@ export function ClienteFilters() {
         .map((c) => c.endereco.cidade)
     )
   ).sort();
+
+  const aplicarFiltros = (novosFiltros: Partial<typeof filtros>) => {
+    setFiltros((prev) => ({ ...prev, ...novosFiltros }));
+  };
+
+  const limparFiltros = () => {
+    setFiltros({
+      busca: '',
+      tipo: 'todos',
+      estado: '',
+      cidade: '',
+      status: 'todos',
+    });
+  };
 
   const contarFiltrosAtivos = () => {
     let count = 0;
@@ -38,125 +59,117 @@ export function ClienteFilters() {
   const filtrosAtivos = contarFiltrosAtivos();
 
   return (
-    <div className="space-y-4">
-      {/* Busca */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar por nome, documento, email ou telefone..."
-          className="pl-9"
-          value={filtros.busca}
-          onChange={(e) => aplicarFiltros({ busca: e.target.value })}
-        />
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
+      <div className="flex items-center gap-2 mb-4">
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" className="gap-2">
+            <Filter className="h-4 w-4" />
+            Filtros
+            {filtrosAtivos > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {filtrosAtivos}
+              </Badge>
+            )}
+          </Button>
+        </CollapsibleTrigger>
+        {filtrosAtivos > 0 && (
+          <Button variant="ghost" size="sm" onClick={limparFiltros} className="gap-2">
+            <X className="h-4 w-4" />
+            Limpar
+          </Button>
+        )}
       </div>
 
-      {/* Filtros Avançados */}
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <div className="flex items-center justify-between">
-          <CollapsibleTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Filter className="mr-2 h-4 w-4" />
-              Filtros Avançados
-              {filtrosAtivos > 0 && (
-                <Badge variant="secondary" className="ml-2">
-                  {filtrosAtivos}
-                </Badge>
-              )}
-            </Button>
-          </CollapsibleTrigger>
-          {filtrosAtivos > 0 && (
-            <Button variant="ghost" size="sm" onClick={limparFiltros}>
-              <X className="mr-2 h-4 w-4" />
-              Limpar Filtros
-            </Button>
-          )}
+      <CollapsibleContent className="space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome, documento, email..."
+            value={filtros.busca}
+            onChange={(e) => aplicarFiltros({ busca: e.target.value })}
+            className="pl-9"
+          />
         </div>
 
-        <CollapsibleContent className="mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Tipo */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Tipo</label>
-              <Select
-                value={filtros.tipo}
-                onValueChange={(value: 'CPF' | 'CNPJ' | 'todos') => aplicarFiltros({ tipo: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="CPF">CPF (Pessoa Física)</SelectItem>
-                  <SelectItem value="CNPJ">CNPJ (Pessoa Jurídica)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Estado */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Estado</label>
-              <Select
-                value={filtros.estado || 'all'}
-                onValueChange={(value) => {
-                  aplicarFiltros({ estado: value === 'all' ? '' : value, cidade: '' });
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  {ESTADOS_BRASILEIROS.map((estado) => (
-                    <SelectItem key={estado} value={estado}>
-                      {estado}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Cidade */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Cidade</label>
-              <Select
-                value={filtros.cidade || 'all'}
-                onValueChange={(value) => aplicarFiltros({ cidade: value === 'all' ? '' : value })}
-                disabled={!filtros.estado}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={filtros.estado ? 'Selecione...' : 'Escolha um estado'} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  {cidadesDisponiveis.map((cidade) => (
-                    <SelectItem key={cidade} value={cidade}>
-                      {cidade}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Status */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
-              <Select
-                value={filtros.status}
-                onValueChange={(value: 'ativo' | 'inativo' | 'todos') => aplicarFiltros({ status: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="ativo">Ativos</SelectItem>
-                  <SelectItem value="inativo">Inativos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div>
+            <label className="text-sm font-medium mb-2 block">Tipo</label>
+            <Select
+              value={filtros.tipo}
+              onValueChange={(value) => aplicarFiltros({ tipo: value as any })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos</SelectItem>
+                <SelectItem value="CPF">Pessoa Física</SelectItem>
+                <SelectItem value="CNPJ">Pessoa Jurídica</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CollapsibleContent>
-      </Collapsible>
-    </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">Estado</label>
+            <Select
+              value={filtros.estado}
+              onValueChange={(value) => {
+                aplicarFiltros({ estado: value, cidade: '' });
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos</SelectItem>
+                {ESTADOS_BRASILEIROS.map((estado) => (
+                  <SelectItem key={estado} value={estado}>
+                    {estado}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">Cidade</label>
+            <Select
+              value={filtros.cidade}
+              onValueChange={(value) => aplicarFiltros({ cidade: value })}
+              disabled={!filtros.estado}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todas</SelectItem>
+                {cidadesDisponiveis.map((cidade) => (
+                  <SelectItem key={cidade} value={cidade}>
+                    {cidade}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium mb-2 block">Status</label>
+            <Select
+              value={filtros.status}
+              onValueChange={(value) => aplicarFiltros({ status: value as any })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos</SelectItem>
+                <SelectItem value="ativo">Ativo</SelectItem>
+                <SelectItem value="inativo">Inativo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
   );
 }

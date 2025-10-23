@@ -72,7 +72,7 @@ export function NovoMaterialDialog({ open, onOpenChange }: NovoMaterialDialogPro
 
     setLoading(true);
     try {
-      await adicionarMaterial.mutateAsync({
+      await adicionarMaterial({
         nome: data.nome,
         categoria: data.categoria,
         descricao: data.descricao || undefined,

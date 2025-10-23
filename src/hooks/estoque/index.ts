@@ -21,5 +21,8 @@ export function useEstoque() {
     adicionarMaterial: mutations.adicionarMaterial.mutateAsync,
     editarMaterial: mutations.editarMaterial.mutateAsync,
     excluirMaterial: mutations.excluirMaterial.mutateAsync,
+    adicionarSerial: mutations.adicionarSerial.mutateAsync,
+    editarSerial: mutations.editarSerial.mutateAsync,
+    excluirSerial: mutations.excluirSerial.mutateAsync,
   };
 }

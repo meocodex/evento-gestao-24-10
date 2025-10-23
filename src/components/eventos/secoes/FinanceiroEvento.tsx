@@ -274,7 +274,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
         open={showAddReceita}
         onOpenChange={setShowAddReceita}
         onAdicionar={async (data) => {
-          await adicionarReceita(evento.id, data);
+          await financeiro.adicionarReceita(data);
           setShowAddReceita(false);
         }}
       />
@@ -283,7 +283,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
         open={showAddDespesa}
         onOpenChange={setShowAddDespesa}
         onAdicionar={async (data) => {
-          await adicionarDespesa(evento.id, data);
+          await financeiro.adicionarDespesa(data);
           setShowAddDespesa(false);
         }}
       />

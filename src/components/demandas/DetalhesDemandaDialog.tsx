@@ -53,7 +53,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   const comentarios = useDemandasComentarios();
   const reembolsos = useDemandasReembolsos();
   const { user } = useAuth();
-  const { vincularReembolsoADespesa } = useEventosDespesas();
+  const vincularReembolso = demanda.eventoRelacionado ? useEventosDespesas(demanda.eventoRelacionado) : null;
   const { usuarios } = useUsuarios();
   const [novoComentario, setNovoComentario] = useState('');
   const [showAprovarDialog, setShowAprovarDialog] = useState(false);
@@ -107,9 +107,8 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
     reembolsos.marcarReembolsoPago.mutateAsync({ demandaId: demanda.id, dataPagamento, comprovante, observacoes });
     
     // Vincular reembolso ao financeiro do evento
-    if (demanda.eventoRelacionado && demanda.dadosReembolso) {
-      vincularReembolsoADespesa(
-        demanda.eventoRelacionado,
+    if (demanda.eventoRelacionado && demanda.dadosReembolso && vincularReembolso) {
+      vincularReembolso.vincularReembolsoADespesa(
         demanda.id,
         demanda.dadosReembolso
       );

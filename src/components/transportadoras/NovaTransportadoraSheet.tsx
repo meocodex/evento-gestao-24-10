@@ -36,7 +36,7 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await criarTransportadora.mutateAsync(formData);
+    await criarTransportadora(formData);
     onOpenChange(false);
     setFormData({
       nome: '',

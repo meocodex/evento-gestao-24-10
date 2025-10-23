@@ -43,10 +43,9 @@ export function AlocarMaterialDialog({
   const [searchTerm, setSearchTerm] = useState('');
 
   // Buscar material no estoque
-  const materialData = buscarMaterialPorId(itemId);
   const materialEstoque = useMemo(() => {
-    return materialData;
-  }, [materialData]);
+    return buscarMaterialPorId(itemId);
+  }, [itemId, buscarMaterialPorId]);
 
   // Filtrar seriais disponíveis
   const serialsFiltrados = useMemo(() => {
