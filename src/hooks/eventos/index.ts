@@ -23,6 +23,10 @@ export function useEventos() {
   
   return {
     ...queries,
-    ...mutations,
+    criarEvento: mutations.criarEvento.mutateAsync,
+    editarEvento: mutations.editarEvento.mutateAsync,
+    excluirEvento: mutations.excluirEvento.mutateAsync,
+    deletarEvento: mutations.excluirEvento.mutateAsync, // Alias
+    alterarStatus: mutations.alterarStatus.mutateAsync,
   };
 }

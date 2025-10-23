@@ -103,7 +103,8 @@ export function useCadastrosMutations() {
 
   return {
     criarCadastro,
-    aprovarCadastro,
-    recusarCadastro,
+    criarCadastroEventoPublico: criarCadastro.mutateAsync,
+    aprovarCadastro: aprovarCadastro.mutateAsync,
+    recusarCadastro: recusarCadastro.mutateAsync,
   };
 }

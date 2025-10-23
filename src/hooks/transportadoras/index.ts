@@ -15,6 +15,15 @@ export function useTransportadoras() {
   
   return {
     ...transportadorasQueries,
-    ...mutations,
+    criarTransportadora: mutations.criarTransportadora.mutateAsync,
+    editarTransportadora: mutations.editarTransportadora.mutateAsync,
+    excluirTransportadora: mutations.excluirTransportadora.mutateAsync,
+    adicionarRota: mutations.adicionarRota.mutateAsync,
+    editarRota: mutations.editarRota.mutateAsync,
+    removerRota: mutations.removerRota.mutateAsync,
+    criarEnvio: mutations.criarEnvio.mutateAsync,
+    editarEnvio: mutations.editarEnvio.mutateAsync,
+    excluirEnvio: mutations.excluirEnvio.mutateAsync,
+    atualizarStatusEnvio: mutations.atualizarStatusEnvio.mutateAsync,
   };
 }

@@ -21,10 +21,12 @@ export function useContratos() {
   
   return {
     ...queries,
-    ...mutations,
+    criarContrato: mutations.criarContrato.mutateAsync,
+    editarContrato: mutations.editarContrato.mutateAsync,
+    excluirContrato: mutations.excluirContrato.mutateAsync,
     ...workflow,
-    criarTemplate: templatesMutations.criarTemplate,
-    editarTemplate: templatesMutations.editarTemplate,
-    excluirTemplate: templatesMutations.excluirTemplate,
+    criarTemplate: templatesMutations.criarTemplate.mutateAsync,
+    editarTemplate: templatesMutations.editarTemplate.mutateAsync,
+    excluirTemplate: templatesMutations.excluirTemplate.mutateAsync,
   };
 }

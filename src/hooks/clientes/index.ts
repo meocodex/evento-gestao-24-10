@@ -15,6 +15,8 @@ export function useClientes() {
   
   return {
     ...queries,
-    ...mutations,
+    criarCliente: mutations.criarCliente.mutateAsync,
+    editarCliente: mutations.editarCliente.mutateAsync,
+    excluirCliente: mutations.excluirCliente.mutateAsync,
   };
 }

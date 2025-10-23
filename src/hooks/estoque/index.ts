@@ -19,7 +19,11 @@ export function useEstoque() {
   
   return {
     ...queries,
-    ...mutations,
-    ...seriais,
+    adicionarMaterial: mutations.adicionarMaterial.mutateAsync,
+    editarMaterial: mutations.editarMaterial.mutateAsync,
+    excluirMaterial: mutations.excluirMaterial.mutateAsync,
+    adicionarSerial: seriais.adicionarSerial.mutateAsync,
+    editarSerial: seriais.editarSerial.mutateAsync,
+    excluirSerial: seriais.excluirSerial.mutateAsync,
   };
 }
