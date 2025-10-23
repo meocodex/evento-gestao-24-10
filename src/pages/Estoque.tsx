@@ -9,8 +9,7 @@ import { EditarMaterialDialog } from '@/components/estoque/EditarMaterialDialog'
 import { DetalhesMaterialDialog } from '@/components/estoque/DetalhesMaterialDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { EstoqueVirtualList } from '@/components/estoque/EstoqueVirtualList';
-import { useEstoque } from '@/contexts/EstoqueContext';
-import type { MaterialEstoque } from '@/contexts/EstoqueContext';
+import { useEstoqueQueries, useEstoqueMutations, type MaterialEstoque, type FiltrosEstoque } from '@/hooks/estoque';
 import {
   Pagination,
   PaginationContent,
@@ -33,16 +32,21 @@ import {
 } from 'lucide-react';
 
 export default function Estoque() {
-  const { 
-    materiaisFiltrados, 
-    loading, 
-    getEstatisticas, 
-    excluirMaterial,
-    page,
-    setPage,
-    pageSize,
-    totalCount,
-  } = useEstoque();
+  const [page, setPage] = useState(1);
+  const [filtros, setFiltros] = useState<FiltrosEstoque>({ busca: '', categoria: 'todas', status: 'todos', localizacao: '' });
+  const pageSize = 50;
+  const { data, isLoading: loading } = useEstoqueQueries(page, pageSize, filtros);
+  const materiais = data?.materiais || [];
+  const totalCount = data?.totalCount || 0;
+  const { excluirMaterial } = useEstoqueMutations();
+  const materiaisFiltrados = materiais;
+  const getEstatisticas = () => ({
+    totalItens: materiais.reduce((sum, m) => sum + m.quantidadeTotal, 0),
+    totalDisponiveis: materiais.reduce((sum, m) => sum + m.quantidadeDisponivel, 0),
+    totalEmUso: materiais.reduce((sum, m) => sum + (m.quantidadeTotal - m.quantidadeDisponivel), 0),
+    totalManutencao: 0,
+    categorias: new Set(materiais.map(m => m.categoria)).size,
+  });
   const [showNovoMaterial, setShowNovoMaterial] = useState(false);
   const [materialSelecionado, setMaterialSelecionado] = useState<MaterialEstoque | null>(null);
   const [showDetalhes, setShowDetalhes] = useState(false);

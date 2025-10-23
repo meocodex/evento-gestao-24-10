@@ -11,7 +11,7 @@ import { QuickCreateEventSheet } from '@/components/eventos/QuickCreateEventDial
 import { EventoFilters, EventoFiltersType } from '@/components/eventos/EventoFilters';
 import { useNavigate } from 'react-router-dom';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useEventos } from '@/contexts/EventosContext';
+import { useEventosQueries } from '@/hooks/eventos';
 import { EventosStats } from '@/components/eventos/EventosStats';
 import { EventosQuickFilters } from '@/components/eventos/EventosQuickFilters';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,7 +27,9 @@ import {
 } from '@/components/ui/pagination';
 
 export default function Eventos() {
-  const { eventos, totalCount, page, pageSize, setPage } = useEventos();
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
+  const { eventos = [], totalCount = 0 } = useEventosQueries(page, pageSize);
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [] });

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, Search, Plus } from 'lucide-react';
-import { useEquipe } from '@/contexts/EquipeContext';
+import { useOperacionalQueries, useProfilesQueries } from '@/hooks/equipe';
 import { MembrosUnificadosVirtualList } from '@/components/equipe/MembrosUnificadosVirtualList';
 import { NovoOperacionalDialog } from '@/components/equipe/operacional/NovoOperacionalDialog';
 import { DetalhesOperacionalDialog } from '@/components/equipe/operacional/DetalhesOperacionalDialog';
@@ -14,10 +14,20 @@ import { GerenciarPermissoesMembroDialog } from '@/components/equipe/GerenciarPe
 import { OperacionalEquipe, MembroEquipeUnificado } from '@/types/equipe';
 import { Badge } from '@/components/ui/badge';
 export default function Equipe() {
-  const { 
-    membrosUnificados,
-    loadingMembros,
-  } = useEquipe();
+  const [page, setPage] = useState(1);
+  const pageSize = 50;
+  const { operacionais = [], isLoading: loadingOp } = useOperacionalQueries(page, pageSize, {}, true);
+  const { data: profiles = [], isLoading: loadingProfiles } = useProfilesQueries(true);
+  const loadingMembros = loadingOp || loadingProfiles;
+  const membrosUnificados = useMemo(() => {
+    const unificados = [...operacionais.map(op => ({ ...op, tipo: 'operacional' as const }))];
+    profiles.forEach(p => {
+      if (!operacionais.find(op => op.email === p.email)) {
+        unificados.push({ ...p, tipo: 'sistema' as const, id: p.id, nome: p.nome, email: p.email, telefone: p.telefone, funcao_principal: '', status: 'ativo' });
+      }
+    });
+    return unificados;
+  }, [operacionais, profiles]);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [funcaoFilter, setFuncaoFilter] = useState<string>('todos');

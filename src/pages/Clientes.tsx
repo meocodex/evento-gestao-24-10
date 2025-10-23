@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useClientes } from '@/contexts/ClientesContext';
+import { useState, useMemo } from 'react';
+import { useClientesQueries, useClientesMutations } from '@/hooks/clientes';
 import { NovoClienteDialog } from '@/components/clientes/NovoClienteDialog';
 import { EditarClienteDialog } from '@/components/clientes/EditarClienteDialog';
 import { DetalhesClienteDialog } from '@/components/clientes/DetalhesClienteDialog';
@@ -17,7 +17,12 @@ import { Cliente } from '@/types/eventos';
 import { Users, User, Building2, Grid3x3, List, Eye, Pencil, Trash2 } from 'lucide-react';
 
 export default function Clientes() {
-  const { clientesFiltrados, excluirCliente, clientes, totalCount, page, setPage, pageSize } = useClientes();
+  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState('');
+  const pageSize = 20;
+  const { clientes = [], totalCount = 0 } = useClientesQueries(page, pageSize, searchTerm);
+  const { excluirCliente } = useClientesMutations();
+  const clientesFiltrados = clientes;
   const [visualizacao, setVisualizacao] = useState<'tabela' | 'cards'>('tabela');
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
   const [dialogAberto, setDialogAberto] = useState<'detalhes' | 'editar' | 'excluir' | null>(null);

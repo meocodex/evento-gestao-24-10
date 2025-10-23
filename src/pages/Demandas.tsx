@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useDemandasContext } from '@/contexts/DemandasContext';
+import { useState, useMemo } from 'react';
+import { useDemandasQueries, useDemandasMutations } from '@/hooks/demandas';
 import { Demanda } from '@/types/demandas';
 import { DemandaCard } from '@/components/demandas/DemandaCard';
 import { DemandasVirtualList } from '@/components/demandas/DemandasVirtualList';
@@ -15,10 +15,22 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 import { Bell, Clock, AlertTriangle, Archive, XCircle } from 'lucide-react';
 
 export default function Demandas() {
-  const { getDemandasFiltradas, getEstatisticas, excluirDemanda, totalCount, page, setPage, pageSize } = useDemandasContext();
-  const demandasFiltradas = getDemandasFiltradas();
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+  const { demandas = [], totalCount = 0 } = useDemandasQueries(page, pageSize);
+  const { excluirDemanda } = useDemandasMutations();
+  const demandasFiltradas = demandas;
   const totalPages = Math.ceil(totalCount / pageSize);
-  const estatisticas = getEstatisticas();
+  const estatisticas = useMemo(() => ({
+    total: demandas.length,
+    abertas: demandas.filter(d => d.status === 'aberta').length,
+    emAndamento: demandas.filter(d => d.status === 'em-andamento').length,
+    concluidas: demandas.filter(d => d.status === 'concluida').length,
+    canceladas: demandas.filter(d => d.status === 'cancelada').length,
+    urgentes: demandas.filter(d => d.prioridade === 'urgente').length,
+    arquivadas: demandas.filter(d => d.arquivada).length,
+    prazosVencidos: demandas.filter(d => d.prazo && new Date(d.prazo) < new Date() && d.status !== 'concluida').length,
+  }), [demandas]);
 
   const [demandaSelecionada, setDemandaSelecionada] = useState<Demanda | null>(null);
   const [dialogDetalhes, setDialogDetalhes] = useState(false);

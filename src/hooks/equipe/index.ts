@@ -7,3 +7,6 @@ export { useOperacionalMutations } from '@/contexts/equipe/useOperacionalMutatio
 export { useConflitosEquipe } from '@/contexts/equipe/useConflitosEquipe';
 export { useProfilesQueries } from '@/contexts/equipe/useProfilesQueries';
 export type { FiltrosOperacional } from '@/contexts/equipe/types';
+
+// Helpers temporários
+export { useEquipe } from './useEquipeHelpers';

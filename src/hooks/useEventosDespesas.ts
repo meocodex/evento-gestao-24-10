@@ -1,4 +1,4 @@
-import { useEventos } from '@/contexts/EventosContext';
+import { useEventosFinanceiro } from '@/hooks/eventos';
 
 /**
  * Hook para gerenciar despesas de eventos relacionadas a demandas de reembolso.
@@ -8,7 +8,7 @@ import { useEventos } from '@/contexts/EventosContext';
  * entre EventosContext e DemandasContext.
  */
 export function useEventosDespesas() {
-  const { vincularReembolsoADespesa } = useEventos();
+  const { vincularReembolsoADespesa } = useEventosFinanceiro();
 
   return {
     /**

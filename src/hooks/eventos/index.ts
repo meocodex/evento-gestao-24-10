@@ -18,3 +18,6 @@ export { useEventosFinanceiro } from '@/contexts/eventos/useEventosFinanceiro';
 export { useEventosObservacoes } from '@/contexts/eventos/useEventosObservacoes';
 export { useEventosArquivos } from '@/contexts/eventos/useEventosArquivos';
 export { useEventosPropostas } from '@/contexts/eventos/useEventosPropostas';
+
+// Helpers temporários
+export { useEventos } from './useEventosHelpers';
