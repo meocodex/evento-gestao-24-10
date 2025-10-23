@@ -12,10 +12,24 @@ export function useEquipe() {
   const mutations = useOperacionalMutations();
 
   const membrosUnificados = React.useMemo(() => {
-    const unificados = [...operacionais.map((op: any) => ({ ...op, tipo: 'operacional' as const, tipo_membro: op.tipo_vinculo || 'CLT' }))];
+    const unificados = [...operacionais.map((op: any) => ({ 
+      ...op, 
+      tipo: 'operacional' as const, 
+      tipo_membro: 'operacional',
+      funcao_principal: op.funcao_principal || 'Operacional',
+      avatar_url: op.foto || null
+    }))];
     profiles.forEach((p: any) => {
       if (!operacionais.find((op: any) => op.email === p.email)) {
-        unificados.push({ ...p, tipo: 'operacional' as const, tipo_membro: 'Sistema' });
+        unificados.push({ 
+          ...p, 
+          tipo: 'operacional' as const, 
+          tipo_membro: 'sistema',
+          telefone: p.telefone || null,
+          cpf: p.cpf || null,
+          whatsapp: p.whatsapp || null,
+          funcao_principal: 'Sistema'
+        });
       }
     });
     return unificados;

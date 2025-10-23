@@ -50,10 +50,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       if (itemToDelete.tipo === 'checklist') {
         removerMaterialChecklist(evento.id, itemToDelete.id);
       } else {
-        // Determinar se é antecipado ou com técnicos
-        const isAntecipado = evento.materiaisAlocados.antecipado.some(m => m.id === itemToDelete.id);
-        const tipo = isAntecipado ? 'antecipado' : 'comTecnicos';
-        removerMaterialAlocado(evento.id, tipo, itemToDelete.id);
+        removerMaterialAlocado(evento.id, itemToDelete.id);
       }
       setItemToDelete(null);
       setShowDeleteDialog(false);

@@ -35,9 +35,14 @@ export default function Clientes() {
 
   const handleExcluir = async () => {
     if (clienteSelecionado) {
-      await excluirCliente(clienteSelecionado.id);
-      setDialogAberto(null);
-      setClienteSelecionado(null);
+      try {
+        await excluirCliente(clienteSelecionado.id);
+      } catch (error) {
+        // Error already handled
+      } finally {
+        setDialogAberto(null);
+        setClienteSelecionado(null);
+      }
     }
   };
 

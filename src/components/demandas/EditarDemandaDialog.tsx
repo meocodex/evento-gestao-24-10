@@ -76,11 +76,11 @@ export function EditarDemandaDialog({ demanda, open, onOpenChange }: EditarDeman
     e.preventDefault();
     if (!demanda) return;
 
-    editarDemanda.mutate({ id: demanda.id, data: {
+    editarDemanda(demanda.id, {
       ...formData,
       responsavelId: formData.responsavelId || undefined,
       prazo: formData.prazo || undefined,
-    }});
+    });
 
     onOpenChange(false);
   };

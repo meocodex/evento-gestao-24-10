@@ -52,11 +52,16 @@ export default function Demandas() {
     setDialogExcluir(true);
   };
 
-  const confirmarExclusao = () => {
+  const confirmarExclusao = async () => {
     if (demandaSelecionada) {
-      excluirDemanda(demandaSelecionada.id);
-      setDialogExcluir(false);
-      setDemandaSelecionada(null);
+      try {
+        await excluirDemanda(demandaSelecionada.id);
+      } catch (error) {
+        // Error already handled
+      } finally {
+        setDialogExcluir(false);
+        setDemandaSelecionada(null);
+      }
     }
   };
 

@@ -67,7 +67,7 @@ export function NovaDemandaSheet() {
       });
 
       const usuarioAtual = (usuarios || []).find(u => u.id === user.id);
-      adicionarDemanda.mutate({
+      adicionarDemanda({
         data: {
           titulo: validatedData.titulo,
           descricao: validatedData.descricao,

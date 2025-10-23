@@ -75,9 +75,14 @@ export default function Estoque() {
 
   const handleConfirmDelete = async () => {
     if (materialParaExcluir) {
-      await excluirMaterial(materialParaExcluir.id);
-      setMaterialParaExcluir(null);
-      setShowDeleteConfirm(false);
+      try {
+        await excluirMaterial(materialParaExcluir.id);
+      } catch (error) {
+        // Error already handled
+      } finally {
+        setMaterialParaExcluir(null);
+        setShowDeleteConfirm(false);
+      }
     }
   };
 
