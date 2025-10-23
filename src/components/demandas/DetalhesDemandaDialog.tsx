@@ -584,7 +584,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removerAnexo({ demandaId: demanda.id, anexoId: anexo.id, url: anexo.url })}
+                        onClick={() => removerAnexo.mutateAsync({ demandaId: demanda.id, anexoId: anexo.id, url: anexo.url })}
                       >
                         Remover
                       </Button>

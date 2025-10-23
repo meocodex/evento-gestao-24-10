@@ -90,7 +90,7 @@ export function useDemandasAnexos(demandaId: string) {
 
   return {
     anexos: [], // TODO: implementar query de anexos
-    adicionarAnexo: adicionarAnexo.mutateAsync,
-    removerAnexo: removerAnexo.mutateAsync,
+    adicionarAnexo,
+    removerAnexo,
   };
 }
