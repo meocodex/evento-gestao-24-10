@@ -54,8 +54,8 @@ export function NovoContratoSheet({ open, onOpenChange }: NovoContratoSheetProps
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = () => {
-    criarContrato({
+  const handleSubmit = async () => {
+    await criarContrato.mutateAsync({
       templateId,
       numero: `CTR-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
       clienteId: clienteId || undefined,

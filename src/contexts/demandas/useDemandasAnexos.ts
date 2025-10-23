@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
-export function useDemandasAnexos() {
+export function useDemandasAnexos(demandaId: string) {
   const queryClient = useQueryClient();
 
   const adicionarAnexo = useMutation({
@@ -89,7 +89,8 @@ export function useDemandasAnexos() {
   });
 
   return {
-    adicionarAnexo,
-    removerAnexo,
+    anexos: [], // TODO: implementar query de anexos
+    adicionarAnexo: adicionarAnexo.mutateAsync,
+    removerAnexo: removerAnexo.mutateAsync,
   };
 }

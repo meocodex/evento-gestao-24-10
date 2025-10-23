@@ -36,16 +36,19 @@ export function EditarContratoDialog({ open, onOpenChange, contrato }: EditarCon
     }
   }, [contrato]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (contrato) {
-      editarContrato(contrato.id, {
-        titulo,
-        status,
-        conteudo,
-        valor: valor ? parseFloat(valor) : undefined,
-        dataInicio: dataInicio || undefined,
-        dataFim: dataFim || undefined,
-        observacoes,
+      await editarContrato.mutateAsync({ 
+        id: contrato.id, 
+        data: {
+          titulo,
+          status,
+          conteudo,
+          valor: valor ? parseFloat(valor) : undefined,
+          dataInicio: dataInicio || undefined,
+          dataFim: dataFim || undefined,
+          observacoes,
+        }
       });
       onOpenChange(false);
     }
