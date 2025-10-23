@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useEventos } from '@/hooks/eventos';
+import { useEventosEquipe, useEventosObservacoes } from '@/hooks/eventos';
 import { Evento } from '@/types/eventos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,8 @@ interface OperacaoEventoProps {
 
 export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
   const { toast } = useToast();
-  const { adicionarMembroEquipe, removerMembroEquipe, adicionarObservacaoOperacional } = useEventos();
+  const equipe = useEventosEquipe(evento.id);
+  const observacoes = useEventosObservacoes(evento.id);
   const [showAddMembro, setShowAddMembro] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [membroToDelete, setMembroToDelete] = useState<string | null>(null);

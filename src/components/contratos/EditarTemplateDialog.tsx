@@ -47,16 +47,19 @@ export function EditarTemplateDialog({ open, onOpenChange, template }: EditarTem
     }
   }, [template]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (template) {
-      editarTemplate(template.id, {
-        nome,
-        tipo,
-        descricao,
-        conteudo,
-        variaveis,
-        status,
-        versao: template.versao + 1,
+      await editarTemplate.mutateAsync({ 
+        id: template.id, 
+        data: {
+          nome,
+          tipo,
+          descricao,
+          conteudo,
+          variaveis,
+          status,
+          versao: template.versao + 1,
+        }
       });
       onOpenChange(false);
     }

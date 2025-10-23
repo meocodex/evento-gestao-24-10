@@ -45,7 +45,7 @@ const statusConfig: Record<StatusContrato, { label: string; variant: 'default' |
 };
 
 export function DetalhesContratoDialog({ open, onOpenChange, contrato, onEdit, onConverter }: DetalhesContratoDialogProps) {
-  const { gerarPDF, aprovarProposta } = useContratos();
+  const { aprovarProposta } = useContratos();
   const { clientes } = useClientes();
   const { eventos } = useEventos();
   const [simularAssinaturaOpen, setSimularAssinaturaOpen] = useState(false);
@@ -385,7 +385,7 @@ export function DetalhesContratoDialog({ open, onOpenChange, contrato, onEdit, o
               </Button>
             )}
             {contrato.status === 'assinado' && (
-              <Button variant="outline" onClick={() => gerarPDF(contrato)}>
+              <Button variant="outline" onClick={() => gerarPDFContrato(contrato, 'download')}>
                 <Download className="mr-2 h-4 w-4" />
                 Baixar PDF
               </Button>

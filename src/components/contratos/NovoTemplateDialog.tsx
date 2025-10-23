@@ -31,8 +31,8 @@ export function NovoTemplateDialog({ open, onOpenChange }: NovoTemplateDialogPro
   const [variaveis, setVariaveis] = useState<string[]>([]);
   const [novaVariavel, setNovaVariavel] = useState('');
 
-  const handleSubmit = () => {
-    criarTemplate({
+  const handleSubmit = async () => {
+    await criarTemplate.mutateAsync({
       nome,
       tipo,
       descricao,

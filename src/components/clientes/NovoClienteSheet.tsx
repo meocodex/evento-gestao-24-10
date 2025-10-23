@@ -7,16 +7,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Plus, Loader2, Search } from 'lucide-react';
-import { useClientes } from '@/hooks/clientes';
+import { useClientesMutations } from '@/hooks/clientes';
 import { clienteSchema } from '@/lib/validations/cliente';
 import { ClienteFormData } from '@/types/eventos';
 import { formatarDocumento, formatarTelefone, formatarCEP } from '@/lib/validations/cliente';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
 
 export function NovoClienteSheet() {
   const [open, setOpen] = useState(false);
   const [buscandoCEP, setBuscandoCEP] = useState(false);
-  const { criarCliente, buscarEnderecoPorCEP, loading } = useClientes();
+  const { criarCliente } = useClientesMutations();
+  const loading = criarCliente.isPending;
   const isMobile = useIsMobile();
 
   const {
@@ -76,7 +78,7 @@ export function NovoClienteSheet() {
 
   const onSubmit = async (data: ClienteFormData) => {
     try {
-      await criarCliente(data);
+      await criarCliente.mutateAsync(data);
       reset();
       setOpen(false);
     } catch (error) {

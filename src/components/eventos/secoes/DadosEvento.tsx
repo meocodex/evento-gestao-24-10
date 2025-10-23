@@ -19,7 +19,7 @@ interface DadosEventoProps {
 }
 
 export function DadosEvento({ evento, permissions }: DadosEventoProps) {
-  const { editarEvento, deletarEvento, alterarStatus } = useEventos();
+  const { editarEvento, excluirEvento } = useEventos();
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);

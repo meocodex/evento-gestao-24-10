@@ -52,7 +52,6 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   const mutations = useDemandasMutations();
   const comentarios = useDemandasComentarios();
   const reembolsos = useDemandasReembolsos();
-  const anexos = useDemandasAnexos();
   const { user } = useAuth();
   const { vincularReembolsoADespesa } = useEventosDespesas();
   const { usuarios } = useUsuarios();
@@ -62,6 +61,8 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   const [showRecusarDialog, setShowRecusarDialog] = useState(false);
 
   if (!demanda) return null;
+  
+  const { anexos, adicionarAnexo, removerAnexo } = useDemandasAnexos(demanda.id);
 
   const isAdmin = user?.role === 'admin';
 
@@ -584,7 +585,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removerAnexo(demanda.id, anexo.id, anexo.url)}
+                        onClick={() => removerAnexo({ demandaId: demanda.id, anexoId: anexo.id, url: anexo.url })}
                       >
                         Remover
                       </Button>

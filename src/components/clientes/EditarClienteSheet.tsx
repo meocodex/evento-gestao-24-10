@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Loader2, Search } from 'lucide-react';
-import { useClientes } from '@/hooks/clientes';
+import { useClientesMutations } from '@/hooks/clientes';
 import { clienteSchema } from '@/lib/validations/cliente';
 import { ClienteFormData, Cliente } from '@/types/eventos';
 import { formatarDocumento, formatarTelefone, formatarCEP } from '@/lib/validations/cliente';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
 
 interface EditarClienteSheetProps {
   cliente: Cliente;
@@ -21,7 +22,8 @@ interface EditarClienteSheetProps {
 
 export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClienteSheetProps) {
   const [buscandoCEP, setBuscandoCEP] = useState(false);
-  const { editarCliente, buscarEnderecoPorCEP, loading } = useClientes();
+  const { editarCliente } = useClientesMutations();
+  const loading = editarCliente.isPending;
   const isMobile = useIsMobile();
 
   const {
@@ -83,7 +85,7 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
 
   const onSubmit = async (data: ClienteFormData) => {
     try {
-      await editarCliente(cliente.id, data);
+      await editarCliente.mutateAsync({ id: cliente.id, data });
       onOpenChange(false);
     } catch (error) {
       // Erro já tratado no contexto

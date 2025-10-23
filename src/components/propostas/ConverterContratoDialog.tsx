@@ -38,7 +38,7 @@ export function ConverterContratoDialog({ contrato, open, onOpenChange }: Conver
       return;
     }
 
-    await converterPropostaEmContrato(contrato.id, eventoId || '');
+    await converterPropostaEmContrato.mutateAsync({ contratoId: contrato.id, eventoId: eventoId || '' });
 
     onOpenChange(false);
   };

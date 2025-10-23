@@ -34,3 +34,6 @@ export async function buscarEnderecoPorCEP(cep: string): Promise<EnderecoViaCEP 
     return null;
   }
 }
+
+// Alias para compatibilidade
+export const buscarCEP = buscarEnderecoPorCEP;

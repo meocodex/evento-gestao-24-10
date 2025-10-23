@@ -68,10 +68,13 @@ export function NovoSerialDialog({
   const onSubmit = async (data: SerialFormData) => {
     setLoading(true);
     try {
-      await adicionarSerial(materialId, {
-        numero: data.numero.toUpperCase(),
-        status: data.status as 'disponivel' | 'em-uso' | 'manutencao',
-        localizacao: data.localizacao,
+      await adicionarSerial.mutateAsync({ 
+        materialId, 
+        dados: {
+          numero: data.numero.toUpperCase(),
+          status: data.status as 'disponivel' | 'em-uso' | 'manutencao',
+          localizacao: data.localizacao,
+        }
       });
       reset();
       onOpenChange(false);

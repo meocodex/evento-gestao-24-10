@@ -9,7 +9,7 @@ import { AdicionarMaterialDialog } from '../modals/AdicionarMaterialDialog';
 import { AlocarMaterialDialog } from '../modals/AlocarMaterialDialog';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { useEventos } from '@/hooks/eventos';
+import { useEventosMateriaisAlocados, useEventosChecklist } from '@/hooks/eventos';
 
 interface MateriaisEventoProps {
   evento: Evento;
@@ -17,7 +17,8 @@ interface MateriaisEventoProps {
 }
 
 export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
-  const { adicionarMaterialChecklist, removerMaterialChecklist, alocarMaterial, removerMaterialAlocado } = useEventos();
+  const materiaisAlocados = useEventosMateriaisAlocados(evento.id);
+  const checklist = useEventosChecklist(evento.id);
   const { toast } = useToast();
   const [showAddMaterial, setShowAddMaterial] = useState(false);
   const [showAlocarMaterial, setShowAlocarMaterial] = useState(false);

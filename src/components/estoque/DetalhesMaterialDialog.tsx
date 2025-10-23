@@ -61,7 +61,7 @@ export function DetalhesMaterialDialog({
 
   const handleConfirmDelete = async () => {
     if (serialParaExcluir) {
-      await excluirSerial(material.id, serialParaExcluir);
+      await excluirSerial.mutateAsync({ materialId: material.id, numeroSerial: serialParaExcluir });
       setSerialParaExcluir(null);
       setShowDeleteConfirm(false);
     }
