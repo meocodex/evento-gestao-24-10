@@ -49,9 +49,9 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const handleConfirmDelete = () => {
     if (itemToDelete) {
       if (itemToDelete.tipo === 'checklist') {
-        checklistHook.removerMaterialChecklist(itemToDelete.id);
+        checklistHook.removerMaterialChecklist.mutate(itemToDelete.id);
       } else {
-        materiaisAlocados.removerMaterialAlocado(itemToDelete.id);
+        materiaisAlocados.removerMaterialAlocado.mutate(itemToDelete.id);
       }
       setItemToDelete(null);
       setShowDeleteDialog(false);
@@ -195,7 +195,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       open={showAddMaterial}
       onOpenChange={setShowAddMaterial}
       onAdicionar={(data) => {
-        checklistHook.adicionarMaterialChecklist(data);
+        checklistHook.adicionarMaterialChecklist.mutate(data);
         setShowAddMaterial(false);
       }}
     />
@@ -209,7 +209,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         quantidadeNecessaria={selectedMaterial.quantidadeNecessaria}
         quantidadeJaAlocada={selectedMaterial.quantidadeJaAlocada}
         onAlocar={(data) => {
-          materiaisAlocados.alocarMaterial({
+          materiaisAlocados.alocarMaterial.mutate({
             itemId: data.itemId,
             nome: selectedMaterial.nome,
             serial: data.serial,

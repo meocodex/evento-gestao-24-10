@@ -34,7 +34,7 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
   const handleConfirmDelete = async () => {
     if (membroToDelete) {
       try {
-        await equipeHook.removerMembroEquipe(membroToDelete);
+        await equipeHook.removerMembroEquipe.mutateAsync(membroToDelete);
       } catch (error) {
         // Erro já tratado pelo hook
       } finally {
@@ -47,7 +47,7 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
   const handleAdicionarObservacao = async () => {
     if (novaObservacao.trim()) {
       try {
-        await observacoesHook.adicionarObservacaoOperacional(novaObservacao);
+        await observacoesHook.adicionarObservacaoOperacional.mutateAsync(novaObservacao);
         setNovaObservacao('');
       } catch (error) {
         // Erro já tratado pelo hook
@@ -203,7 +203,7 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
         onOpenChange={setShowAddMembro}
         onAdicionar={async (data) => {
           try {
-            await equipeHook.adicionarMembroEquipe(data);
+            await equipeHook.adicionarMembroEquipe.mutateAsync(data);
             setShowAddMembro(false);
           } catch (error) {
             // Erro já tratado pelo hook

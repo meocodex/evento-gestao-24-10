@@ -1,6 +1,6 @@
 import { useEffect, Suspense } from 'react';
 import { Navigate, Outlet, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { NotificationCenter } from './NotificationCenter';

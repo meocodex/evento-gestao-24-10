@@ -10,7 +10,7 @@ import { TipoCategoria } from '@/types/categorias';
 import { useCategorias } from '@/hooks/categorias';
 import { useEventos } from '@/hooks/eventos';
 import { useUsuarios } from '@/hooks/useUsuarios';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { demandaSchema } from '@/lib/validations/demanda';
 import { useToast } from '@/hooks/use-toast';
 import { PrioridadeDemanda, CategoriaDemanda } from '@/types/demandas';

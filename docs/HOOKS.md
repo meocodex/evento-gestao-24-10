@@ -148,10 +148,10 @@ import {
   useEventos,           // Lista paginada de eventos
   useEventoDetalhes,    // Detalhes de UM evento específico (otimizado)
   useEventosFinanceiro, // Operações financeiras de um evento
-  useEventosEquipe,     // Gestão de equipe de um evento
-  useEventosMateriaisAlocados, // Materiais alocados
-  useEventosObservacoes,       // Observações/notas
-  useEventosChecklist,         // Checklist operacional
+  useEventosEquipe,     // Gestão de equipe (com mutations)
+  useEventosMateriaisAlocados, // Materiais alocados (com mutations)
+  useEventosObservacoes,       // Observações/notas (com mutations)
+  useEventosChecklist,         // Checklist operacional (com mutations)
   useEventosArquivos,          // Upload/gestão de arquivos
 } from '@/hooks/eventos';
 
@@ -163,7 +163,46 @@ const { data: evento, isLoading } = useEventoDetalhes(eventoId);
 
 // Para operações financeiras
 const { receitas, despesas, adicionarReceita } = useEventosFinanceiro(eventoId);
+
+// Gestão de Equipe (com mutations do TanStack Query)
+const { 
+  equipe, 
+  loading,
+  adicionarMembroEquipe,  // Mutation object
+  removerMembroEquipe,    // Mutation object
+} = useEventosEquipe(eventoId);
+
+// Uso de mutations
+await adicionarMembroEquipe.mutateAsync(data);
+if (adicionarMembroEquipe.isPending) { /* loading */ }
+
+// Checklist (com mutations)
+const { 
+  checklist,
+  adicionarMaterialChecklist,  // Mutation object
+  removerMaterialChecklist,    // Mutation object
+} = useEventosChecklist(eventoId);
+
+// Materiais Alocados (com mutations)
+const {
+  materiaisAlocados,
+  alocarMaterial,           // Mutation object
+  removerMaterialAlocado,   // Mutation object
+} = useEventosMateriaisAlocados(eventoId);
+
+// Observações (com mutations)
+const {
+  observacoes,
+  adicionarObservacaoOperacional, // Mutation object
+} = useEventosObservacoes(eventoId);
 ```
+
+**Vantagens dos Hooks Especializados com Mutations:**
+- ✅ Loading states granulares (`.isPending`)
+- ✅ Tratamento de erros integrado (`.isError`, `.error`)
+- ✅ Invalidação automática de cache
+- ✅ Retry automático em caso de falha
+- ✅ Otimistic updates quando necessário
 
 ### Demandas
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useDemandas } from '@/hooks/demandas';
 import { useEventos } from '@/hooks/eventos';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

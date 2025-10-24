@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useCategorias } from '@/hooks/categorias';
 import { useEquipe } from '@/hooks/equipe';
-import { useConflitosEquipe } from '@/contexts/equipe/useConflitosEquipe';
+import { useConflitosEquipe } from '@/hooks/equipe';
 import { MembroEquipe } from '@/types/eventos';
 import { AlertTriangle, User, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';

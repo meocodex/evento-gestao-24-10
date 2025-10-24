@@ -7,7 +7,7 @@ import { useOperacionalMutations as useOperacionalMutationsImpl } from '@/contex
 import { useConflitosEquipe as useConflitosEquipeImpl } from '@/contexts/equipe/useConflitosEquipe';
 import { useProfilesQueries as useProfilesQueriesImpl } from '@/contexts/equipe/useProfilesQueries';
 
-export { useConflitosEquipeImpl as useConflitosEquipe };
+export { useConflitosEquipe } from '@/contexts/equipe/useConflitosEquipe';
 export type { FiltrosOperacional } from '@/types/equipe';
 
 // Wrapper para compatibilidade - retorna objetos completos das mutations

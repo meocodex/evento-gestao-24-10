@@ -11,7 +11,7 @@ import { Demanda, StatusDemanda, TipoReembolso } from '@/types/demandas';
 import { format } from 'date-fns';
 import { useUsuarios } from '@/hooks/useUsuarios';
 import { MessageSquare, Paperclip, Send, CheckCircle2, AlertCircle, Link2, Repeat, DollarSign, FileText, Download, XCircle, Archive, Play, Ban } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useEventosDespesas } from '@/hooks/useEventosDespesas';
 import { AprovarReembolsoDialog } from './AprovarReembolsoDialog';
 import { MarcarPagoDialog } from './MarcarPagoDialog';
