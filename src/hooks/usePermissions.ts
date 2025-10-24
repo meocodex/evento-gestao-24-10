@@ -96,12 +96,16 @@ interface UsePermissionsResult {
 
 export function usePermissions(evento?: Evento): UsePermissionsResult {
   const { user, loading } = useAuth();
+  
+  // Admin tem acesso total (apenas UI - segurança real está no RLS)
+  const isAdmin = user?.role === 'admin';
 
   /**
    * Verifica se o usuário possui uma permissão específica
    * @param permissionId - ID da permissão (ex: 'eventos.criar')
    */
   const hasPermission = (permissionId: string): boolean => {
+    if (isAdmin) return true;
     if (!user?.permissions) return false;
     return user.permissions.includes(permissionId);
   };
@@ -111,6 +115,7 @@ export function usePermissions(evento?: Evento): UsePermissionsResult {
    * @param permissionIds - Array de IDs de permissões
    */
   const hasAnyPermission = (permissionIds: string[]): boolean => {
+    if (isAdmin) return true;
     if (!user?.permissions) return false;
     return permissionIds.some(permissionId => user.permissions!.includes(permissionId));
   };
@@ -120,6 +125,7 @@ export function usePermissions(evento?: Evento): UsePermissionsResult {
    * @param permissionIds - Array de IDs de permissões
    */
   const hasAllPermissions = (permissionIds: string[]): boolean => {
+    if (isAdmin) return true;
     if (!user?.permissions) return false;
     return permissionIds.every(permissionId => user.permissions!.includes(permissionId));
   };
@@ -132,6 +138,7 @@ export function usePermissions(evento?: Evento): UsePermissionsResult {
    * - eventos.visualizar: pode ver eventos básicos
    */
   const canViewEvent = (evento?: Evento): boolean => {
+    if (isAdmin) return true;
     if (hasPermission('eventos.visualizar_todos')) return true;
     if (hasPermission('eventos.visualizar_proprios') && evento?.comercial?.id === user?.id) return true;
     return hasPermission('eventos.visualizar');
@@ -144,6 +151,7 @@ export function usePermissions(evento?: Evento): UsePermissionsResult {
    * - eventos.editar_proprios: pode editar apenas eventos onde é comercial
    */
   const canEditEvent = (evento?: Evento): boolean => {
+    if (isAdmin) return true;
     if (hasPermission('eventos.editar_todos')) return true;
     if (hasPermission('eventos.editar_proprios') && evento?.comercial?.id === user?.id) return true;
     return false;

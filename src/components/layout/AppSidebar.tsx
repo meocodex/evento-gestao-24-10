@@ -47,13 +47,13 @@ const menuItems = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const { state } = useSidebar();
   const location = useLocation();
 
-  const filteredItems = menuItems.filter((item) =>
-    user?.role ? item.roles.includes(user.role) : false
-  );
+  const filteredItems = user?.role === 'admin'
+    ? menuItems
+    : (user?.role ? menuItems.filter((item) => item.roles.includes(user.role)) : []);
 
   const isActive = (path: string) => location.pathname === path;
 
