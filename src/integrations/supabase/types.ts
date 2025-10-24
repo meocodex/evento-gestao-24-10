@@ -1882,6 +1882,7 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      system_has_users: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "comercial" | "suporte"

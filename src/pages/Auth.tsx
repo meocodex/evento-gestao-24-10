@@ -27,20 +27,17 @@ export default function Auth() {
     cpf: "" 
   });
 
-  // Verificar se existem usuários no sistema
+  // Verificar se existem usuários no sistema usando RPC seguro
   useEffect(() => {
     const checkExistingUsers = async () => {
       try {
-        const { data, error } = await supabase
-          .from('user_roles')
-          .select('user_id')
-          .limit(1);
+        const { data, error } = await supabase.rpc('system_has_users');
 
         if (error) {
           console.error('Erro ao verificar usuários:', error);
           setHasUsers(true); // Em caso de erro, assume que há usuários (mais seguro)
         } else {
-          setHasUsers(data && data.length > 0);
+          setHasUsers(data === true);
         }
       } catch (error) {
         console.error('Erro ao verificar usuários:', error);
@@ -370,6 +367,17 @@ export default function Auth() {
                       Criar Primeiro Administrador
                     </>
                   )}
+                </Button>
+
+                {/* Fallback: permitir acesso ao login caso detecção falhe */}
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  className="w-full" 
+                  onClick={() => setHasUsers(true)}
+                  disabled={loading}
+                >
+                  Já tenho conta
                 </Button>
               </form>
             </CardContent>
