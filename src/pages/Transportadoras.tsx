@@ -172,7 +172,7 @@ export default function Transportadoras() {
             onOpenChange={(open) => !open && setGerenciarRotasTransportadora(null)}
           />
         )}
-        <NovoEnvioSheet open={novoEnvioOpen} onOpenChange={setNovoEnvioOpen} />
+        {novoEnvioOpen && <NovoEnvioSheet open={novoEnvioOpen} onOpenChange={setNovoEnvioOpen} />}
 
         <ConfirmDialog
           open={confirmExcluirTransportadora}

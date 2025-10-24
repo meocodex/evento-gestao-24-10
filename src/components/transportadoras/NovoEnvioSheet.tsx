@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,6 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
   const isMobile = useIsMobile();
   
   const [eventoSelecionado, setEventoSelecionado] = useState('');
-  const [transportadorasFiltradas, setTransportadorasFiltradas] = useState(transportadoras);
   const [formData, setFormData] = useState({
     transportadoraId: '',
     eventoId: '',
@@ -38,22 +37,20 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
     observacoes: '',
   });
 
-  useEffect(() => {
+  const transportadorasFiltradas = useMemo(() => {
     if (eventoSelecionado) {
       const evento = eventos.find(e => e.id === eventoSelecionado);
       if (evento) {
-        const transportadorasDisponiveis = transportadoras.filter(t =>
+        return transportadoras.filter(t =>
           t.rotasAtendidas.some(r =>
             r.cidadeDestino === evento.cidade &&
             r.estadoDestino === evento.estado &&
             r.ativa
           )
         );
-        setTransportadorasFiltradas(transportadorasDisponiveis);
       }
-    } else {
-      setTransportadorasFiltradas(transportadoras);
     }
+    return transportadoras;
   }, [eventoSelecionado, eventos, transportadoras]);
 
   useEffect(() => {
@@ -71,17 +68,30 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
           const dataEvento = new Date(evento.dataInicio);
           const dataEntregaPrevista = addDays(dataEvento, -rota.prazoEntrega);
           
-          setFormData(prev => ({
-            ...prev,
-            origem: `${transportadora.endereco.cidade} - ${transportadora.endereco.estado}`,
-            destino: `${evento.cidade} - ${evento.estado}`,
-            dataEntregaPrevista: format(dataEntregaPrevista, 'yyyy-MM-dd'),
-            valor: rota.valorBase || 0,
-          }));
+          const novaOrigem = `${transportadora.endereco.cidade} - ${transportadora.endereco.estado}`;
+          const novoDestino = `${evento.cidade} - ${evento.estado}`;
+          const novaData = format(dataEntregaPrevista, 'yyyy-MM-dd');
+          const novoValor = rota.valorBase || 0;
+          
+          // Só atualizar se os valores mudaram
+          if (
+            formData.origem !== novaOrigem ||
+            formData.destino !== novoDestino ||
+            formData.dataEntregaPrevista !== novaData ||
+            formData.valor !== novoValor
+          ) {
+            setFormData(prev => ({
+              ...prev,
+              origem: novaOrigem,
+              destino: novoDestino,
+              dataEntregaPrevista: novaData,
+              valor: novoValor,
+            }));
+          }
         }
       }
     }
-  }, [formData.transportadoraId, eventoSelecionado, transportadoras, eventos]);
+  }, [formData.transportadoraId, eventoSelecionado, transportadoras, eventos, formData.origem, formData.destino, formData.dataEntregaPrevista, formData.valor]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
