@@ -15,8 +15,8 @@ export { useEventosPropostas } from '@/contexts/eventos/useEventosPropostas';
 export { useEventoDetalhes } from '@/contexts/eventos/useEventoDetalhes';
 
 // Wrapper para compatibilidade
-export function useEventos(page?: number, pageSize?: number) {
-  const queries = useEventosQueriesImpl(page, pageSize);
+export function useEventos(page?: number, pageSize?: number, searchTerm?: string) {
+  const queries = useEventosQueriesImpl(page, pageSize, searchTerm);
   const mutations = useEventosMutationsImpl();
   
   return {

@@ -19,7 +19,8 @@ export default function Demandas() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
   const [filtros, setFiltros] = useState<FiltroDemandas>({});
-  const { demandas = [], totalCount = 0, excluirDemanda } = useDemandas(page, pageSize);
+  const [searchTerm, setSearchTerm] = useState('');
+  const { demandas = [], totalCount = 0, excluirDemanda } = useDemandas(page, pageSize, searchTerm);
   const demandasFiltradas = demandas;
   const totalPages = Math.ceil(totalCount / pageSize);
   const estatisticas = useMemo(() => ({
@@ -122,7 +123,16 @@ export default function Demandas() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Filtros */}
           <div className="lg:col-span-1">
-            <DemandaFilters filtros={filtros} setFiltros={setFiltros} />
+            <DemandaFilters 
+              filtros={filtros} 
+              setFiltros={(newFiltros) => {
+                setFiltros(newFiltros);
+                // Atualizar searchTerm quando o filtro de busca mudar
+                if (newFiltros.busca !== undefined) {
+                  setSearchTerm(newFiltros.busca);
+                }
+              }} 
+            />
           </div>
 
           {/* Lista de Demandas */}

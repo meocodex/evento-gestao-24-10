@@ -29,9 +29,9 @@ import {
 export default function Eventos() {
   const [page, setPage] = useState(1);
   const pageSize = 50;
-  const { eventos = [], totalCount = 0 } = useEventos(page, pageSize);
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const { eventos = [], totalCount = 0 } = useEventos(page, pageSize, searchTerm);
+  const navigate = useNavigate();
   const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [] });
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const permissions = usePermissions();

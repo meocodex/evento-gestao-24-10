@@ -2,15 +2,53 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { transformDemanda } from './transformDemanda';
 import { Demanda } from '@/types/demandas';
+import { useDebounce } from '@/hooks/useDebounce';
 
-export function useDemandasQueries(page = 1, pageSize = 20, enabled = true) {
+export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string, enabled = true) {
+  // Debounce do termo de busca
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['demandas', page, pageSize],
+    queryKey: ['demandas', page, pageSize, debouncedSearchTerm],
     enabled,
     queryFn: async () => {
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
+
+      // Se houver termo de busca, usar Full-Text Search otimizado
+      if (debouncedSearchTerm && debouncedSearchTerm.trim().length > 0) {
+        const { data: searchResults, error: searchError } = await supabase
+          .rpc('search_demandas', {
+            query_text: debouncedSearchTerm.trim(),
+            limit_count: pageSize
+          });
+
+        if (searchError) throw searchError;
+
+        const demandasIds = (searchResults || []).map((r: any) => r.id);
+        
+        if (demandasIds.length === 0) {
+          return { demandas: [], totalCount: 0 };
+        }
+
+        const { data, error } = await supabase
+          .from('demandas')
+          .select(`
+            *,
+            comentarios:demandas_comentarios(*),
+            anexos:demandas_anexos(*)
+          `)
+          .in('id', demandasIds);
+
+        if (error) throw error;
+
+        return {
+          demandas: (data || []).map(transformDemanda),
+          totalCount: (data || []).length
+        };
+      }
       
+      // Query normal (sem busca)
       const { data, error, count } = await supabase
         .from('demandas')
         .select(`
