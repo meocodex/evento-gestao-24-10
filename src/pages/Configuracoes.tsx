@@ -14,6 +14,7 @@ import { GerenciarCategorias } from '@/components/configuracoes/GerenciarCategor
 import { GerenciarUsuarios } from '@/components/configuracoes/GerenciarUsuarios';
 import { MatrizPermissoes } from '@/components/configuracoes/MatrizPermissoes';
 import { NotificationSettings } from '@/components/configuracoes/NotificationSettings';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Configuracoes() {
   const { toast } = useToast();
@@ -414,6 +415,53 @@ export default function Configuracoes() {
 
           <TabsContent value="notificacoes" className="space-y-4">
             <NotificationSettings />
+            
+            {/* Card de Teste de Notificações */}
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-primary" />
+                  <CardTitle>Testar Notificações Push</CardTitle>
+                </div>
+                <CardDescription>
+                  Envie uma notificação de teste para verificar se está tudo funcionando
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={async () => {
+                    try {
+                      const { data, error } = await supabase.functions.invoke('send-push', {
+                        body: {
+                          userId: (await supabase.auth.getUser()).data.user?.id,
+                          title: '🎉 Notificação de Teste',
+                          body: 'Se você está vendo isso, as notificações estão funcionando perfeitamente!',
+                          url: '/configuracoes'
+                        }
+                      });
+
+                      if (error) throw error;
+
+                      toast({
+                        title: 'Teste enviado!',
+                        description: 'Verifique se recebeu a notificação.',
+                      });
+                    } catch (error) {
+                      console.error('Erro ao testar notificação:', error);
+                      toast({
+                        title: 'Erro ao testar',
+                        description: 'Verifique se as notificações estão ativadas.',
+                        variant: 'destructive'
+                      });
+                    }
+                  }}
+                  className="w-full sm:w-auto"
+                >
+                  <Bell className="h-4 w-4 mr-2" />
+                  Enviar Notificação de Teste
+                </Button>
+              </CardContent>
+            </Card>
             
             <Card>
               <CardHeader>
