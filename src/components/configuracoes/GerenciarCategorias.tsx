@@ -28,12 +28,10 @@ export function GerenciarCategorias({ tipo, titulo, descricao }: GerenciarCatego
   const [novoLabel, setNovoLabel] = useState('');
   const [novoValue, setNovoValue] = useState('');
   const [labelEditando, setLabelEditando] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const handleAdicionar = async () => {
-    if (!novoLabel.trim() || !novoValue.trim() || loading) return;
+    if (!novoLabel.trim() || !novoValue.trim() || adicionarCategoria.isPending) return;
 
-    setLoading(true);
     try {
       const novaCategoria: Categoria = {
         value: novoValue.toLowerCase().replace(/\s+/g, '_'),
@@ -42,7 +40,7 @@ export function GerenciarCategorias({ tipo, titulo, descricao }: GerenciarCatego
       };
 
       console.log(`[${tipo}] Adicionando categoria:`, novaCategoria);
-      await adicionarCategoria(tipo, novaCategoria);
+      await adicionarCategoria.mutateAsync({ tipo, categoria: novaCategoria });
       console.log(`[${tipo}] Categoria adicionada com sucesso`);
       
       setNovoLabel('');
@@ -50,18 +48,16 @@ export function GerenciarCategorias({ tipo, titulo, descricao }: GerenciarCatego
       setDialogAberto(false);
     } catch (error) {
       console.error(`[${tipo}] Erro ao adicionar categoria:`, error);
-    } finally {
-      setLoading(false);
     }
   };
 
   const handleToggle = async (value: string) => {
-    await toggleCategoria(tipo, value);
+    await toggleCategoria.mutateAsync({ tipo, value });
   };
 
   const handleEditar = async () => {
     if (!categoriaEditando || !labelEditando.trim()) return;
-    await editarCategoria(tipo, categoriaEditando.value, labelEditando);
+    await editarCategoria.mutateAsync({ tipo, value: categoriaEditando.value, novoLabel: labelEditando });
     setDialogEditarAberto(false);
     setCategoriaEditando(null);
     setLabelEditando('');
@@ -69,7 +65,7 @@ export function GerenciarCategorias({ tipo, titulo, descricao }: GerenciarCatego
 
   const handleExcluir = async () => {
     if (!categoriaExcluindo) return;
-    await excluirCategoria(tipo, categoriaExcluindo.value);
+    await excluirCategoria.mutateAsync({ tipo, value: categoriaExcluindo.value });
     setConfirmExcluirAberto(false);
     setCategoriaExcluindo(null);
   };
@@ -187,8 +183,8 @@ export function GerenciarCategorias({ tipo, titulo, descricao }: GerenciarCatego
               <Button variant="outline" onClick={() => setDialogAberto(false)}>
                 Cancelar
               </Button>
-              <Button onClick={handleAdicionar} disabled={!novoLabel.trim() || !novoValue.trim() || loading}>
-                {loading ? 'Adicionando...' : 'Adicionar'}
+              <Button onClick={handleAdicionar} disabled={!novoLabel.trim() || !novoValue.trim() || adicionarCategoria.isPending}>
+                {adicionarCategoria.isPending ? 'Adicionando...' : 'Adicionar'}
               </Button>
             </DialogFooter>
           </DialogContent>

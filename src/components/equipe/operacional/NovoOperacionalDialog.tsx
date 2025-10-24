@@ -245,10 +245,13 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
                         size="sm"
                         onClick={async () => {
                           if (novaFuncaoNome.trim()) {
-                            await adicionarCategoria('funcoes_equipe', {
-                              label: novaFuncaoNome,
-                              value: novaFuncaoNome.toLowerCase().replace(/\s+/g, '_'),
-                              ativa: true
+                            await adicionarCategoria.mutateAsync({ 
+                              tipo: 'funcoes_equipe', 
+                              categoria: {
+                                label: novaFuncaoNome,
+                                value: novaFuncaoNome.toLowerCase().replace(/\s+/g, '_'),
+                                ativa: true
+                              }
                             });
                             setFormData({ ...formData, funcao_principal: novaFuncaoNome });
                             setNovaFuncaoNome('');
