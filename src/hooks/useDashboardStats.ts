@@ -52,54 +52,73 @@ export interface DashboardStats {
 export function useDashboardStats() {
   return useQuery({
     queryKey: ['dashboard-stats'],
+    staleTime: 1000 * 60 * 5, // 5 minutos (views materializadas atualizam via triggers)
     queryFn: async (): Promise<DashboardStats> => {
       const hoje = new Date();
       const inicioMes = startOfMonth(hoje);
       const fimMes = endOfMonth(hoje);
       const proximos7Dias = addDays(hoje, 7);
 
-      // ===== EVENTOS =====
-      const { data: eventos } = await supabase
-        .from('eventos')
-        .select('id, status, data_inicio, created_at');
-      
-      const eventosMes = eventos?.filter(e => {
-        const createdAt = new Date(e.created_at);
-        return createdAt >= inicioMes && createdAt <= fimMes;
-      }) || [];
+      // ===== EVENTOS (usando view materializada) =====
+      const { data: eventosStats } = await supabase
+        .from('vw_eventos_stats')
+        .select('*');
 
       const eventosPorStatus = {
-        orcamentoEnviado: eventos?.filter(e => e.status === 'orcamento_enviado').length || 0,
-        aprovado: eventos?.filter(e => e.status === 'confirmado').length || 0,
-        materiaisAlocados: eventos?.filter(e => e.status === 'materiais_alocados').length || 0,
-        emAndamento: eventos?.filter(e => e.status === 'em_andamento').length || 0,
-        concluido: eventos?.filter(e => e.status === 'finalizado').length || 0,
+        orcamentoEnviado: 0,
+        aprovado: 0,
+        materiaisAlocados: 0,
+        emAndamento: 0,
+        concluido: 0,
       };
+
+      let totalEventosMes = 0;
+      eventosStats?.forEach(row => {
+        const total = row.total || 0;
+        totalEventosMes += total;
+        switch(row.status) {
+          case 'orcamento_enviado': eventosPorStatus.orcamentoEnviado = total; break;
+          case 'confirmado': eventosPorStatus.aprovado = total; break;
+          case 'materiais_alocados': eventosPorStatus.materiaisAlocados = total; break;
+          case 'em_andamento': eventosPorStatus.emAndamento = total; break;
+          case 'finalizado': eventosPorStatus.concluido = total; break;
+        }
+      });
+
+      // Buscar eventos para cálculo de próximos 7 dias (não está na view)
+      const { data: eventos } = await supabase
+        .from('eventos')
+        .select('data_inicio');
 
       const eventosProximos = eventos?.filter(e => {
         const dataInicio = new Date(e.data_inicio);
         return isAfter(dataInicio, hoje) && isBefore(dataInicio, proximos7Dias);
       }) || [];
 
-      // ===== RECEITAS =====
+      // ===== FINANCEIRO (usando view materializada) =====
+      const { data: financeiroStats } = await supabase
+        .from('vw_financeiro_eventos')
+        .select('*');
+
+      const receitaTotal = financeiroStats?.reduce((sum, row) => sum + (Number(row.total_receitas) || 0), 0) || 0;
+      const despesaTotal = financeiroStats?.reduce((sum, row) => sum + (Number(row.total_despesas) || 0), 0) || 0;
+
+      // Buscar detalhes de receitas e despesas para status (não está na view)
       const { data: receitas } = await supabase
         .from('eventos_receitas')
         .select('valor, status, data')
         .gte('data', inicioMes.toISOString().split('T')[0])
         .lte('data', fimMes.toISOString().split('T')[0]);
 
-      const receitaTotal = receitas?.reduce((acc, r) => acc + Number(r.valor), 0) || 0;
       const receitasPendentes = receitas?.filter(r => r.status === 'pendente').reduce((acc, r) => acc + Number(r.valor), 0) || 0;
       const receitasPagas = receitas?.filter(r => r.status === 'pago').reduce((acc, r) => acc + Number(r.valor), 0) || 0;
 
-      // ===== DESPESAS =====
       const { data: despesas } = await supabase
         .from('eventos_despesas')
         .select('valor, status, data')
         .gte('data', inicioMes.toISOString().split('T')[0])
         .lte('data', fimMes.toISOString().split('T')[0]);
 
-      const despesaTotal = despesas?.reduce((acc, d) => acc + Number(d.valor), 0) || 0;
       const despesasPendentes = despesas?.filter(d => d.status === 'pendente').reduce((acc, d) => acc + Number(d.valor), 0) || 0;
       const despesasPagas = despesas?.filter(d => d.status === 'pago').reduce((acc, d) => acc + Number(d.valor), 0) || 0;
 
@@ -135,19 +154,20 @@ export function useDashboardStats() {
       const estoqueManutencao = seriais?.filter(s => s.status === 'manutencao').length || 0;
       const estoquePerdido = 0; // Não há status "perdido" na tabela materiais_seriais
 
-      // ===== DEMANDAS =====
+      // ===== DEMANDAS (usando view materializada) =====
+      const { data: demandasStats } = await supabase
+        .from('vw_demandas_stats')
+        .select('*');
+
+      const demandasAbertas = demandasStats?.find(d => d.status === 'aberta')?.total || 0;
+      const demandasEmAndamento = demandasStats?.find(d => d.status === 'em-andamento')?.total || 0;
+      const demandasUrgentes = demandasStats?.find(d => d.prioridade === 'urgente')?.total || 0;
+      const demandasAtrasadas = demandasStats?.reduce((sum, d) => sum + (d.atrasadas || 0), 0) || 0;
+      
+      // Buscar prazos para validação de alertas (não está na view)
       const { data: demandas } = await supabase
         .from('demandas')
         .select('status, prioridade, prazo');
-
-      const demandasAbertas = demandas?.filter(d => d.status === 'aberta').length || 0;
-      const demandasEmAndamento = demandas?.filter(d => d.status === 'em-andamento').length || 0;
-      const demandasUrgentes = demandas?.filter(d => d.prioridade === 'urgente' && d.status !== 'concluida').length || 0;
-      
-      const demandasAtrasadas = demandas?.filter(d => {
-        if (!d.prazo || d.status === 'concluida') return false;
-        return isAfter(hoje, new Date(d.prazo));
-      }).length || 0;
 
       // ===== ALERTAS =====
       const alertas: DashboardStats['alertas'] = [];
@@ -219,7 +239,7 @@ export function useDashboardStats() {
       }
 
       return {
-        totalEventos: eventosMes.length,
+        totalEventos: totalEventosMes,
         eventosPorStatus,
         eventosProximos7Dias: eventosProximos.length,
         receitaTotal,
@@ -244,8 +264,6 @@ export function useDashboardStats() {
         alertas,
       };
     },
-    staleTime: 1000 * 60 * 2, // 2 minutos
-    refetchInterval: 1000 * 60 * 5, // Refetch a cada 5 minutos
   });
 }
 

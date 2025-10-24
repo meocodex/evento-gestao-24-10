@@ -1800,6 +1800,18 @@ export type Database = {
       notificar_cobrancas_atrasadas: { Args: never; Returns: undefined }
       notificar_demandas_urgentes: { Args: never; Returns: undefined }
       notificar_materiais_atrasados: { Args: never; Returns: undefined }
+      search_clientes: {
+        Args: { limit_count?: number; query_text: string }
+        Returns: {
+          documento: string
+          email: string
+          id: string
+          nome: string
+          rank: number
+          telefone: string
+          tipo: string
+        }[]
+      }
       search_demandas: {
         Args: { limit_count?: number; query_text: string }
         Returns: {
