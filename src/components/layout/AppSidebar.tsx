@@ -13,6 +13,7 @@ import {
   LogOut,
   UserCog,
   Activity,
+  ClipboardList,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -26,34 +27,64 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { useAuth } from '@/hooks/useAuth';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/components/ui/sidebar';
 
 const menuItems = [
-  { title: 'Dashboard', url: '/dashboard', icon: Home, roles: ['admin', 'comercial', 'suporte'] },
-  { title: 'Eventos', url: '/eventos', icon: Calendar, roles: ['admin', 'comercial', 'suporte'] },
-  { title: 'Clientes', url: '/clientes', icon: Users, roles: ['admin', 'comercial'] },
-  { title: 'Estoque', url: '/estoque', icon: Package, roles: ['admin', 'suporte'] },
-  { title: 'Demandas', url: '/demandas', icon: Bell, roles: ['admin', 'comercial', 'suporte'] },
-  { title: 'Transportadoras', url: '/transportadoras', icon: Truck, roles: ['admin', 'suporte'] },
-  { title: 'Financeiro', url: '/financeiro', icon: DollarSign, roles: ['admin'] },
-  { title: 'Contratos', url: '/contratos', icon: FileText, roles: ['admin', 'comercial'] },
-  { title: 'Relatórios', url: '/relatorios', icon: BarChart3, roles: ['admin', 'comercial', 'suporte'] },
-  { title: 'Equipe', url: '/equipe', icon: UserCog, roles: ['admin', 'suporte'] },
-  { title: 'Performance', url: '/performance', icon: Activity, roles: ['admin'] },
-  { title: 'Configurações', url: '/configuracoes', icon: Settings, roles: ['admin'] },
+  { title: 'Dashboard', url: '/dashboard', icon: Home },
+  { title: 'Eventos', url: '/eventos', icon: Calendar },
+  { title: 'Clientes', url: '/clientes', icon: Users },
+  { title: 'Demandas', url: '/demandas', icon: ClipboardList },
+  { title: 'Equipe', url: '/equipe', icon: UserCog },
+  { title: 'Contratos', url: '/contratos', icon: FileText },
+  { title: 'Estoque', url: '/estoque', icon: Package },
+  { title: 'Transportadoras', url: '/transportadoras', icon: Truck },
+  { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
+  { title: 'Relatórios', url: '/relatorios', icon: BarChart3 },
+  { title: 'Performance', url: '/performance', icon: Activity },
+  { title: 'Configurações', url: '/configuracoes', icon: Settings },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, logout, loading } = useAuth();
   const { state } = useSidebar();
   const location = useLocation();
+  const { hasAnyPermission } = usePermissions();
 
-  const filteredItems = user?.role === 'admin'
-    ? menuItems
-    : (user?.role ? menuItems.filter((item) => item.roles.includes(user.role)) : []);
+  const isAdmin = user?.isAdmin === true;
+
+  const filteredItems = menuItems.filter(item => {
+    // Admin vê tudo
+    if (isAdmin) return true;
+    
+    // Itens restritos apenas ao admin
+    if (item.title === 'Financeiro') {
+      return hasAnyPermission(['financeiro.visualizar', 'financeiro.visualizar_proprios', 'financeiro.editar']);
+    }
+    if (item.title === 'Configurações' || item.title === 'Performance') {
+      return false; // Apenas admin
+    }
+    
+    // Itens com permissões específicas
+    if (item.title === 'Equipe') {
+      return hasAnyPermission(['equipe.visualizar', 'equipe.editar']);
+    }
+    if (item.title === 'Contratos') {
+      return hasAnyPermission(['contratos.visualizar', 'contratos.editar']);
+    }
+    if (item.title === 'Estoque') {
+      return hasAnyPermission(['estoque.editar', 'estoque.alocar']);
+    }
+    if (item.title === 'Transportadoras') {
+      return hasAnyPermission(['transportadoras.visualizar', 'transportadoras.editar']);
+    }
+    
+    // Itens básicos (Dashboard, Eventos, Clientes, Demandas, Relatórios) - todos veem
+    return true;
+  });
 
   const isActive = (path: string) => location.pathname === path;
 

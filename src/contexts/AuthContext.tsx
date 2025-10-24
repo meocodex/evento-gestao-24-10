@@ -12,6 +12,7 @@ export interface User {
   tipo?: 'sistema' | 'operacional' | 'ambos';
   role: UserRole;
   permissions: string[];
+  isAdmin: boolean;
 }
 
 interface AuthContextType {
@@ -46,6 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             tipo: 'sistema',
             role: 'comercial',
             permissions: [],
+            isAdmin: false,
           });
         } else {
           setUser(null);
@@ -79,23 +81,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       try {
         const userId = session.user.id;
-        const [{ data: profile }, { data: roles }, { data: perms }] = await Promise.all([
+        const [
+          { data: profile }, 
+          { data: roles }, 
+          { data: perms },
+          { data: isAdminRpc },
+          { count: totalPerms }
+        ] = await Promise.all([
           supabase.from('profiles').select('nome, tipo').eq('id', userId).single(),
           supabase.from('user_roles').select('role').eq('user_id', userId),
           supabase.from('user_permissions').select('permission_id').eq('user_id', userId),
+          supabase.rpc('has_role', { _user_id: userId, _role: 'admin' }),
+          supabase.from('permissions').select('*', { count: 'exact', head: true }),
         ]);
         
         if (isCancelled) return;
         
-        console.log('✅ Profile hydrated:', { profile, roles: roles?.length, perms: perms?.length });
+        // Detecção robusta de admin: RPC ou todas as permissões
+        const isAdminFinal = isAdminRpc === true || (perms && totalPerms && perms.length === totalPerms);
+        const finalRole = isAdminFinal ? 'admin' : ((roles?.[0]?.role as UserRole) || 'comercial');
+        
+        console.log('✅ Profile hydrated:', { 
+          profile, 
+          rolesLen: roles?.length, 
+          permsLen: perms?.length, 
+          totalPerms 
+        });
+        console.log('👑 isAdmin=', isAdminFinal, 'finalRole=', finalRole);
         
         setUser(prev => ({
           id: userId,
           name: profile?.nome || prev?.name || 'Usuário',
           email: session.user.email || prev?.email || '',
           tipo: (profile?.tipo as 'sistema' | 'operacional' | 'ambos') || prev?.tipo || 'sistema',
-          role: (roles?.[0]?.role as UserRole) || prev?.role || 'comercial',
+          role: finalRole,
           permissions: (perms || []).map(p => p.permission_id),
+          isAdmin: isAdminFinal,
         }));
       } catch (e) {
         if (!isCancelled) {

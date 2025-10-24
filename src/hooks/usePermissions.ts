@@ -98,7 +98,7 @@ export function usePermissions(evento?: Evento): UsePermissionsResult {
   const { user, loading } = useAuth();
   
   // Admin tem acesso total (apenas UI - segurança real está no RLS)
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.isAdmin === true;
 
   /**
    * Verifica se o usuário possui uma permissão específica
