@@ -8,6 +8,7 @@ import { CardSkeleton } from "@/components/shared/LoadingSkeleton";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { AppProviders } from "@/providers/AppProviders";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { NavigationLoadingBar } from "@/components/shared/NavigationLoadingBar";
 
 // Lazy loading de páginas para code splitting
 const Auth = lazy(() => import("./pages/Auth"));
@@ -109,6 +110,7 @@ function AuthRoutes() {
 const App = () => (
   <GlobalErrorBoundary>
     <AppProviders>
+      <NavigationLoadingBar />
       <InstallPrompt />
       <Toaster />
       <Sonner />

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useEstoque } from '@/hooks/estoque';
 import { Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -47,18 +47,25 @@ export function AlocarMaterialDialog({
   useEffect(() => {
     if (open && itemId) {
       buscarMaterialPorId(itemId).then(setMaterialEstoque);
+    } else if (!open) {
+      // Limpar ao fechar para evitar stale data
+      setMaterialEstoque(null);
     }
   }, [open, itemId, buscarMaterialPorId]);
 
-  // Filtrar seriais disponíveis
-  const serialsFiltrados = (materialEstoque?.seriais || [])
-    .filter((s: any) => s.numero.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a: any, b: any) => {
-      // Disponíveis primeiro
-      if (a.status === 'disponivel' && b.status !== 'disponivel') return -1;
-      if (a.status !== 'disponivel' && b.status === 'disponivel') return 1;
-      return a.numero.localeCompare(b.numero);
-    });
+  // Filtrar seriais disponíveis - usar useMemo para evitar recalcular a cada render
+  const serialsFiltrados = useMemo(() => {
+    if (!materialEstoque?.seriais) return [];
+    
+    return materialEstoque.seriais
+      .filter((s: any) => s.numero.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a: any, b: any) => {
+        // Disponíveis primeiro
+        if (a.status === 'disponivel' && b.status !== 'disponivel') return -1;
+        if (a.status !== 'disponivel' && b.status === 'disponivel') return 1;
+        return a.numero.localeCompare(b.numero);
+      });
+  }, [materialEstoque?.seriais, searchTerm]);
 
   const quantidadeRestante = quantidadeNecessaria - quantidadeJaAlocada;
 

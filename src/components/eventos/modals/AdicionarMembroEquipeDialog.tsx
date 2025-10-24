@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +33,12 @@ export function AdicionarMembroEquipeDialog({
   const { operacionais } = useEquipe();
   const { verificarConflitos } = useConflitosEquipe();
 
+  // Memoizar operacionais ativos para evitar recalcular sempre
+  const operacionaisAtivos = useMemo(() => 
+    operacionais.filter(op => op.status === 'ativo'),
+    [operacionais]
+  );
+
   const [modo, setModo] = useState<'selecionar' | 'novo'>('selecionar');
   const [operacionalId, setOperacionalId] = useState('');
   const [nome, setNome] = useState('');
@@ -44,8 +50,6 @@ export function AdicionarMembroEquipeDialog({
   const [observacoes, setObservacoes] = useState('');
   const [conflitos, setConflitos] = useState<any[]>([]);
   const [verificandoConflitos, setVerificandoConflitos] = useState(false);
-
-  const operacionaisAtivos = operacionais.filter(op => op.status === 'ativo');
 
   // Preencher dados ao selecionar operacional
   useEffect(() => {
@@ -60,15 +64,22 @@ export function AdicionarMembroEquipeDialog({
     }
   }, [operacionalId, modo, operacionaisAtivos]);
 
-  // Verificar conflitos quando mudar período
+  // Verificar conflitos quando mudar período (com debounce implícito via timeout)
   useEffect(() => {
-    const verificar = async () => {
-      if (!dataInicio || !dataFim) {
-        setConflitos([]);
-        return;
-      }
+    // Não verificar se faltam dados essenciais
+    if (!dataInicio || !dataFim) {
+      setConflitos([]);
+      return;
+    }
 
-      setVerificandoConflitos(true);
+    // Não verificar se não tem identificação do membro
+    if (modo === 'selecionar' && !operacionalId) return;
+    if (modo === 'novo' && (!nome || !funcao)) return;
+
+    setVerificandoConflitos(true);
+    
+    // Timeout para evitar chamadas excessivas durante digitação
+    const timer = setTimeout(async () => {
       try {
         const resultado = await verificarConflitos({
           operacionalId: modo === 'selecionar' ? operacionalId : undefined,
@@ -81,13 +92,17 @@ export function AdicionarMembroEquipeDialog({
         setConflitos(resultado);
       } catch (error) {
         console.error('Erro ao verificar conflitos:', error);
+        setConflitos([]);
       } finally {
         setVerificandoConflitos(false);
       }
-    };
+    }, 500); // 500ms debounce
 
-    verificar();
-  }, [dataInicio, dataFim, operacionalId, nome, funcao, modo, eventoId, verificarConflitos]);
+    return () => {
+      clearTimeout(timer);
+      setVerificandoConflitos(false);
+    };
+  }, [dataInicio, dataFim, operacionalId, nome, funcao, modo, eventoId]);
 
   const resetForm = () => {
     setModo('selecionar');

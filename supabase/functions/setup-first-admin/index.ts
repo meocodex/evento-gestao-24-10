@@ -129,10 +129,11 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Erro no setup:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Erro ao criar primeiro administrador';
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message || 'Erro ao criar primeiro administrador',
+        error: errorMessage,
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

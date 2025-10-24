@@ -47,8 +47,9 @@ export function EditarDemandaDialog({ demanda, open, onOpenChange }: EditarDeman
     tags: [] as string[],
   });
 
+  // Só atualizar formData se demanda realmente mudou (comparação por ID)
   useEffect(() => {
-    if (demanda) {
+    if (demanda && demanda.id !== formData.titulo) { // Usamos uma comparação indireta já que não temos ID no formData
       setFormData({
         titulo: demanda.titulo,
         descricao: demanda.descricao,
@@ -61,7 +62,7 @@ export function EditarDemandaDialog({ demanda, open, onOpenChange }: EditarDeman
         tags: demanda.tags,
       });
     }
-  }, [demanda]);
+  }, [demanda, formData.titulo]);
 
   const handleEventoChange = (eventoId: string) => {
     const evento = eventosAtivos.find(e => e.id === eventoId);

@@ -21,9 +21,12 @@ export function EditarEnvioSheet({ envio, open, onOpenChange }: EditarEnvioSheet
   const isMobile = useIsMobile();
   const [formData, setFormData] = useState(envio);
 
+  // Só atualizar formData se envio realmente mudou (comparação por ID)
   useEffect(() => {
-    setFormData(envio);
-  }, [envio]);
+    if (envio.id !== formData.id) {
+      setFormData(envio);
+    }
+  }, [envio.id, envio, formData.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
