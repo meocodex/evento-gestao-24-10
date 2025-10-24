@@ -39,18 +39,18 @@ serve(async (req) => {
       }
     );
 
-    // Verificar se já existe algum usuário
-    const { data: existingUsers, error: checkError } = await supabaseAdmin
-      .from('user_roles')
-      .select('user_id')
-      .limit(1);
+    // Verificar se já existe algum usuário usando a API de administração
+    const { data: existingAuthUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+      page: 1,
+      perPage: 1
+    });
 
-    if (checkError) {
-      console.error('❌ Erro ao verificar usuários existentes:', checkError);
+    if (listError) {
+      console.error('❌ Erro ao verificar usuários existentes:', listError);
       throw new Error('Erro ao verificar usuários existentes');
     }
 
-    if (existingUsers && existingUsers.length > 0) {
+    if (existingAuthUsers && existingAuthUsers.users && existingAuthUsers.users.length > 0) {
       console.warn('⚠️ Sistema já tem usuários cadastrados');
       throw new Error('O sistema já possui usuários cadastrados. Use o fluxo normal de criação de usuários.');
     }
@@ -76,25 +76,35 @@ serve(async (req) => {
 
     console.log('✅ Usuário criado:', authData.user.id);
 
-    // Criar profile manualmente (não depender de trigger)
+    // Upsert profile (idempotente - não falha se já existir)
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .insert({
-        id: authData.user.id,
-        nome,
-        email,
-        telefone,
-        cpf,
-      });
+      .upsert(
+        {
+          id: authData.user.id,
+          nome,
+          email,
+          telefone,
+          cpf,
+        },
+        { onConflict: 'id' }
+      );
 
     if (profileError) {
-      console.error('❌ Erro ao criar profile:', profileError);
-      throw new Error('Erro ao criar perfil do usuário');
+      console.error('⚠️ Aviso ao criar/atualizar profile:', profileError);
+      // Não falhar aqui - continuar com o processo
+      console.log('⏭️ Continuando apesar do erro no profile...');
+    } else {
+      console.log('✅ Profile criado/atualizado');
     }
 
-    console.log('✅ Profile criado');
+    // Garantir role admin de forma idempotente
+    // Deletar qualquer role existente e inserir admin
+    await supabaseAdmin
+      .from('user_roles')
+      .delete()
+      .eq('user_id', authData.user.id);
 
-    // Criar role admin manualmente
     const { error: roleError } = await supabaseAdmin
       .from('user_roles')
       .insert({
@@ -121,7 +131,13 @@ serve(async (req) => {
 
     console.log(`✅ ${allPermissions.length} permissões encontradas`);
 
-    // Inserir todas as permissões para o admin
+    // Garantir permissões de forma idempotente
+    // Deletar permissões existentes e reinserir todas
+    await supabaseAdmin
+      .from('user_permissions')
+      .delete()
+      .eq('user_id', authData.user.id);
+
     const permissionsToInsert = allPermissions.map(p => ({
       user_id: authData.user.id,
       permission_id: p.id,
@@ -182,7 +198,13 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Erro no setup:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Erro ao criar primeiro administrador';
+    let errorMessage = error instanceof Error ? error.message : 'Erro ao criar primeiro administrador';
+    
+    // Mensagens mais amigáveis para erros específicos
+    if (errorMessage.includes('duplicate key') || errorMessage.includes('already registered')) {
+      errorMessage = 'Este email já está cadastrado. Por favor, faça login com suas credenciais.';
+    }
+    
     return new Response(
       JSON.stringify({
         success: false,

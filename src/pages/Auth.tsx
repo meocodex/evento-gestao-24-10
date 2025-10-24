@@ -215,7 +215,7 @@ export default function Auth() {
         password: setupData.password,
       });
 
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof ZodError) {
         const firstError = error.errors[0];
         toast.error(firstError.message, {
@@ -223,7 +223,23 @@ export default function Auth() {
           duration: 4000,
         });
       } else {
-        toast.error(error.message || "Erro ao criar administrador");
+        const errorMsg = error.message || "Erro ao criar administrador";
+        
+        // Se for erro de duplicação ou usuário já existe, orientar login
+        if (errorMsg.includes('duplicate') || errorMsg.includes('já está cadastrado') || errorMsg.includes('already registered')) {
+          toast.success("Usuário já cadastrado. Use as credenciais informadas para fazer login.");
+          
+          // Preencher formulário de login
+          setLoginData({
+            email: setupData.email,
+            password: setupData.password,
+          });
+          
+          // Alternar para tela de login
+          setHasUsers(true);
+        } else {
+          toast.error(errorMsg);
+        }
       }
     } finally {
       setLoading(false);
