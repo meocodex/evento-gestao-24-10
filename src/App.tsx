@@ -7,6 +7,7 @@ import { GlobalErrorBoundary } from "@/components/shared/GlobalErrorBoundary";
 import { CardSkeleton } from "@/components/shared/LoadingSkeleton";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { AppProviders } from "@/providers/AppProviders";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 
 // Lazy loading de páginas para code splitting
 const Auth = lazy(() => import("./pages/Auth"));
@@ -108,6 +109,7 @@ function AuthRoutes() {
 const App = () => (
   <GlobalErrorBoundary>
     <AppProviders>
+      <InstallPrompt />
       <Toaster />
       <Sonner />
       <Suspense fallback={<PageLoader />}>

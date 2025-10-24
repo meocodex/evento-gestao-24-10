@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { GerenciarCategorias } from '@/components/configuracoes/GerenciarCategorias';
 import { GerenciarUsuarios } from '@/components/configuracoes/GerenciarUsuarios';
 import { MatrizPermissoes } from '@/components/configuracoes/MatrizPermissoes';
+import { NotificationSettings } from '@/components/configuracoes/NotificationSettings';
 
 export default function Configuracoes() {
   const { toast } = useToast();
@@ -412,6 +413,8 @@ export default function Configuracoes() {
           </TabsContent>
 
           <TabsContent value="notificacoes" className="space-y-4">
+            <NotificationSettings />
+            
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">

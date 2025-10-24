@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { DemandaFormData, StatusDemanda } from '@/types/demandas';
+import { format } from 'date-fns';
 
 export function useDemandasMutations() {
   const queryClient = useQueryClient();
@@ -35,6 +36,32 @@ export function useDemandasMutations() {
         .single();
 
       if (error) throw error;
+
+      // Enviar push notification se demanda for urgente
+      if (data.prioridade === 'urgente' && data.responsavelId) {
+        try {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+          
+          await fetch(`${supabaseUrl}/functions/v1/send-push`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseKey}`
+            },
+            body: JSON.stringify({
+              userId: data.responsavelId,
+              title: '🚨 Demanda Urgente',
+              body: `${data.titulo}${data.prazo ? ` - Prazo: ${format(new Date(data.prazo), 'dd/MM')}` : ''}`,
+              url: `/demandas?id=${demanda.id}`
+            })
+          });
+        } catch (pushError) {
+          console.error('Erro ao enviar push notification:', pushError);
+          // Não falha a operação se push notification falhar
+        }
+      }
+
       return demanda;
     },
     onSuccess: () => {

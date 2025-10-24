@@ -1,30 +1,30 @@
-// Service Worker para cache offline e performance
-const CACHE_NAME = 'gercao-cache-v1';
-const RUNTIME_CACHE = 'gercao-runtime-v1';
+// Service Worker PWA Online-First
+const CACHE_NAME = 'gercao-v2';
 
-// Arquivos para cache inicial
-const urlsToCache = [
+// Cache apenas assets estáticos essenciais
+const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/manifest.json'
 ];
 
-// Install - cache arquivos estáticos
+// Install
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(STATIC_ASSETS);
+    }).then(() => self.skipWaiting())
   );
 });
 
-// Activate - limpar caches antigos
+// Activate
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(cacheNames => {
+    caches.keys().then(keys => {
       return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME && cacheName !== RUNTIME_CACHE) {
-            return caches.delete(cacheName);
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
           }
         })
       );
@@ -32,53 +32,73 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch - estratégia de cache
+// Network First - sempre tenta buscar online
 self.addEventListener('fetch', (event) => {
+  // Ignorar non-GET requests
+  if (event.request.method !== 'GET') return;
+
   const { request } = event;
   const url = new URL(request.url);
 
-  // Ignorar requisições de browser-sync e APIs externas
+  // Ignorar requisições externas
   if (url.hostname !== self.location.hostname) {
     return;
   }
 
-  // Network First para API calls
-  if (url.pathname.includes('/api/') || url.pathname.includes('supabase')) {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          const clonedResponse = response.clone();
-          caches.open(RUNTIME_CACHE).then(cache => {
-            cache.put(request, clonedResponse);
-          });
-          return response;
-        })
-        .catch(() => caches.match(request))
-    );
-    return;
-  }
-
-  // Cache First para assets estáticos
   event.respondWith(
-    caches.match(request)
-      .then(cachedResponse => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        return fetch(request).then(response => {
-          // Cache apenas respostas válidas
-          if (!response || response.status !== 200 || response.type === 'error') {
-            return response;
-          }
-
-          const responseToCache = response.clone();
-          caches.open(RUNTIME_CACHE).then(cache => {
-            cache.put(request, responseToCache);
+    fetch(request)
+      .then(response => {
+        // Cache successful responses para assets estáticos
+        if (response.ok && isStaticAsset(url.pathname)) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(request, clone);
           });
-
-          return response;
-        });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Fallback para cache apenas em falha de rede
+        return caches.match(request);
       })
   );
+});
+
+function isStaticAsset(pathname) {
+  return pathname.match(/\.(js|css|png|jpg|jpeg|svg|woff2|webp|json)$/);
+}
+
+// Push notification handlers
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : {};
+  
+  const options = {
+    body: data.body || 'Nova notificação',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    vibrate: [200, 100, 200],
+    data: {
+      url: data.url || '/'
+    },
+    actions: [
+      { action: 'open', title: 'Abrir' },
+      { action: 'close', title: 'Fechar' }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'GERCAO', options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  if (event.action === 'open' || !event.action) {
+    const urlToOpen = event.notification.data.url;
+    
+    event.waitUntil(
+      clients.openWindow(urlToOpen)
+    );
+  }
 });
