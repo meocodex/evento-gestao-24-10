@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2, FileText, Receipt } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2, FileText, Receipt, Paperclip } from 'lucide-react';
+import { FileViewer } from '@/components/shared/FileViewer';
 import { AdicionarReceitaDialog } from '../modals/AdicionarReceitaDialog';
 import { AdicionarDespesaDialog } from '../modals/AdicionarDespesaDialog';
 import { RelatorioFechamentoDialog } from '../modals/RelatorioFechamentoDialog';
@@ -28,6 +29,8 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; tipo: 'receita' | 'despesa' } | null>(null);
   const [despesasSelecionadas, setDespesasSelecionadas] = useState<Set<string>>(new Set());
+  const [fileViewerOpen, setFileViewerOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<{ url: string; nome: string; tipo: string } | null>(null);
 
   const reembolsosEvento = getDemandasReembolsoPorEvento(evento.id);
   const reembolsosPagos = reembolsosEvento.filter(d => d.dadosReembolso?.statusPagamento === 'pago');
@@ -169,6 +172,22 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
                     <p className="text-xs text-muted-foreground mt-1">
                       {receita.quantidade} x R$ {receita.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
+                    {receita.comprovante && (
+                      <button
+                        onClick={() => {
+                          setSelectedFile({ 
+                            url: receita.comprovante!, 
+                            nome: `Comprovante-${receita.descricao}`, 
+                            tipo: receita.comprovante!.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg' 
+                          });
+                          setFileViewerOpen(true);
+                        }}
+                        className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
+                      >
+                        <Paperclip className="h-3 w-3" />
+                        Ver comprovante
+                      </button>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-green-600">R$ {receita.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
@@ -249,6 +268,22 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
                     <p className="text-xs text-muted-foreground mt-1">
                       {despesa.quantidade} x R$ {despesa.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </p>
+                    {despesa.comprovante && (
+                      <button
+                        onClick={() => {
+                          setSelectedFile({ 
+                            url: despesa.comprovante!, 
+                            nome: `Comprovante-${despesa.descricao}`, 
+                            tipo: despesa.comprovante!.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg' 
+                          });
+                          setFileViewerOpen(true);
+                        }}
+                        className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
+                      >
+                        <Paperclip className="h-3 w-3" />
+                        Ver comprovante
+                      </button>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-red-600">R$ {despesa.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
@@ -301,6 +336,19 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
         title="Confirmar Exclusão"
         description="Tem certeza que deseja remover este item?"
       />
+
+      {selectedFile && (
+        <FileViewer
+          isOpen={fileViewerOpen}
+          onClose={() => {
+            setFileViewerOpen(false);
+            setSelectedFile(null);
+          }}
+          fileUrl={selectedFile.url}
+          fileName={selectedFile.nome}
+          fileType={selectedFile.tipo}
+        />
+      )}
     </div>
   );
 }

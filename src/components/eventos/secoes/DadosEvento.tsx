@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EventoTimeline } from '@/components/shared/EventoTimeline';
-import { Calendar, MapPin, User, Building2, Mail, Phone, Edit, Trash2, RefreshCw } from 'lucide-react';
+import { Calendar, MapPin, User, Building2, Mail, Phone, Edit, Trash2, RefreshCw, FileText, Image as ImageIcon } from 'lucide-react';
+import { FileViewer } from '@/components/shared/FileViewer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { EditarDadosEvento } from './EditarDadosEvento';
@@ -23,6 +24,8 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [fileViewerOpen, setFileViewerOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<{ url: string; nome: string; tipo: string } | null>(null);
 
   const handleSave = async (data: Partial<Evento>) => {
     await editarEvento.mutateAsync({ id: evento.id, data });
@@ -123,6 +126,89 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
         </CardContent>
       </Card>
 
+      {/* Documentos e Mídias */}
+      {(evento.documentos?.length > 0 || evento.plantaBaixa || evento.fotosEvento?.length > 0) && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Documentos e Mídias</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {evento.plantaBaixa && (
+              <div>
+                <p className="text-sm font-medium mb-2">Planta Baixa</p>
+                <button
+                  onClick={() => {
+                    setSelectedFile({ 
+                      url: evento.plantaBaixa!, 
+                      nome: 'Planta Baixa', 
+                      tipo: evento.plantaBaixa!.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg' 
+                    });
+                    setFileViewerOpen(true);
+                  }}
+                  className="flex items-center gap-2 text-sm text-primary hover:underline"
+                >
+                  <FileText className="h-4 w-4" />
+                  Visualizar Planta Baixa
+                </button>
+              </div>
+            )}
+
+            {evento.documentos?.length > 0 && (
+              <div>
+                <p className="text-sm font-medium mb-2">Documentos ({evento.documentos.length})</p>
+                <div className="space-y-2">
+                  {evento.documentos.map((doc, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setSelectedFile({ 
+                          url: doc, 
+                          nome: `Documento-${idx + 1}`, 
+                          tipo: doc.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg' 
+                        });
+                        setFileViewerOpen(true);
+                      }}
+                      className="flex items-center gap-2 text-sm text-primary hover:underline w-full text-left"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Documento {idx + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {evento.fotosEvento?.length > 0 && (
+              <div>
+                <p className="text-sm font-medium mb-2">Fotos do Evento ({evento.fotosEvento.length})</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {evento.fotosEvento.map((foto, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setSelectedFile({ 
+                          url: foto, 
+                          nome: `Foto-${idx + 1}`, 
+                          tipo: 'image/jpeg' 
+                        });
+                        setFileViewerOpen(true);
+                      }}
+                      className="aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-primary transition-colors"
+                    >
+                      <img 
+                        src={foto} 
+                        alt={`Foto ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Timeline</CardTitle>
@@ -146,6 +232,19 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
         statusAtual={evento.status}
         onAlterar={handleStatusChange}
       />
+
+      {selectedFile && (
+        <FileViewer
+          isOpen={fileViewerOpen}
+          onClose={() => {
+            setFileViewerOpen(false);
+            setSelectedFile(null);
+          }}
+          fileUrl={selectedFile.url}
+          fileName={selectedFile.nome}
+          fileType={selectedFile.tipo}
+        />
+      )}
     </div>
   );
 }

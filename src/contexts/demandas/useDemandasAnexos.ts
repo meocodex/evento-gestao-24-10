@@ -20,9 +20,13 @@ export function useDemandasAnexos(demandaId: string) {
       const fileName = `${timestamp}-${arquivo.name}`;
       const filePath = `${demandaId}/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('demandas')
-        .upload(filePath, arquivo);
+        .upload(filePath, arquivo, {
+          contentType: arquivo.type,
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) throw uploadError;
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { FileViewer } from '@/components/shared/FileViewer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -68,6 +69,8 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   const [showAprovarDialog, setShowAprovarDialog] = useState(false);
   const [showPagoDialog, setShowPagoDialog] = useState(false);
   const [showRecusarDialog, setShowRecusarDialog] = useState(false);
+  const [fileViewerOpen, setFileViewerOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<{ url: string; nome: string; tipo: string } | null>(null);
 
   if (!demanda) return null;
   
@@ -264,15 +267,17 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
                             <Paperclip className="h-3 w-3" />
                             {item.anexos.length} comprovante(s)
                             {item.anexos.map((anexo) => (
-                              <Button
+                              <button
                                 key={anexo.id}
-                                variant="link"
-                                size="sm"
-                                className="h-auto p-0 text-xs"
+                                onClick={() => {
+                                  setSelectedFile({ url: anexo.url, nome: anexo.nome, tipo: anexo.tipo || 'application/octet-stream' });
+                                  setFileViewerOpen(true);
+                                }}
+                                className="text-xs text-primary hover:underline flex items-center gap-1"
                               >
-                                <Download className="h-3 w-3 mr-1" />
+                                <Paperclip className="h-3 w-3" />
                                 {anexo.nome}
-                              </Button>
+                              </button>
                             ))}
                           </div>
                         </CardContent>
@@ -579,21 +584,30 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
                   {demanda.anexos.map((anexo) => (
                     <div
                       key={anexo.id}
-                      className="flex items-center justify-between p-3 bg-muted rounded-lg"
+                      className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/70 transition-colors"
                     >
-                      <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => {
+                          setSelectedFile({ url: anexo.url, nome: anexo.nome, tipo: anexo.tipo || 'application/octet-stream' });
+                          setFileViewerOpen(true);
+                        }}
+                        className="flex items-center gap-3 flex-1 text-left"
+                      >
                         <Paperclip className="h-4 w-4" />
                         <div>
-                          <p className="font-medium">{anexo.nome}</p>
+                          <p className="font-medium hover:text-primary transition-colors">{anexo.nome}</p>
                           <p className="text-xs text-muted-foreground">
                             {anexo.uploadPor} - {format(new Date(anexo.uploadEm), 'dd/MM/yyyy HH:mm')}
                           </p>
                         </div>
-                      </div>
+                      </button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removerAnexo.mutateAsync({ demandaId: demanda.id, anexoId: anexo.id, url: anexo.url })}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removerAnexo.mutateAsync({ demandaId: demanda.id, anexoId: anexo.id, url: anexo.url });
+                        }}
                       >
                         Remover
                       </Button>
@@ -628,6 +642,19 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
             onConfirm={handleRecusar}
           />
         </>
+      )}
+
+      {selectedFile && (
+        <FileViewer
+          isOpen={fileViewerOpen}
+          onClose={() => {
+            setFileViewerOpen(false);
+            setSelectedFile(null);
+          }}
+          fileUrl={selectedFile.url}
+          fileName={selectedFile.nome}
+          fileType={selectedFile.tipo}
+        />
       )}
     </Dialog>
   );
