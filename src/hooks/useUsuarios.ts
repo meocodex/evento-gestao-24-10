@@ -22,26 +22,47 @@ export function useUsuarios() {
   const { data: usuarios, isLoading, error } = useQuery({
     queryKey: ['usuarios'],
     queryFn: async () => {
+      // 1. Buscar profiles
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_roles (
-            role
-          ),
-          user_permissions (
-            permission_id
-          )
-        `)
+        .select('*')
         .order('nome');
 
       if (profilesError) throw profilesError;
+      if (!profiles || profiles.length === 0) return [];
 
-      return profiles.map(profile => ({
-        ...profile,
-        role: profile.user_roles?.[0]?.role || 'comercial',
-        permissions: profile.user_permissions?.map((up: any) => up.permission_id) || []
-      })) as Usuario[];
+      const userIds = profiles.map(p => p.id);
+
+      // 2. Buscar roles
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('user_id, role')
+        .in('user_id', userIds);
+
+      // 3. Buscar permissions
+      const { data: permissions } = await supabase
+        .from('user_permissions')
+        .select('user_id, permission_id')
+        .in('user_id', userIds);
+
+      console.log('📊 useUsuarios debug:', {
+        profilesCount: profiles?.length,
+        rolesCount: roles?.length,
+        permissionsCount: permissions?.length,
+        userIds: userIds.slice(0, 3)
+      });
+
+      // 4. Combinar dados
+      return profiles.map(profile => {
+        const userRole = roles?.find(r => r.user_id === profile.id);
+        const userPerms = permissions?.filter(p => p.user_id === profile.id) || [];
+        
+        return {
+          ...profile,
+          role: userRole?.role || 'comercial',
+          permissions: userPerms.map(p => p.permission_id)
+        } as Usuario;
+      });
     },
   });
 

@@ -127,7 +127,7 @@ export function EditarPermissoesUsuarioDialog({
             <Button 
               onClick={() => salvarPermissoes.mutate()}
               className="flex-1"
-              disabled={salvarPermissoes.isPending || permissoesSelecionadas.length === 0}
+              disabled={salvarPermissoes.isPending}
             >
               {salvarPermissoes.isPending ? "Salvando..." : "Salvar Permissões"}
             </Button>

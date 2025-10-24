@@ -113,7 +113,10 @@ export function DetalhesUsuarioDialog({
               <div>
                 <p className="text-muted-foreground">Membro desde</p>
                 <p className="font-medium">
-                  {format(new Date(usuario.created_at), "dd/MM/yyyy 'às' HH:mm")}
+                  {usuario.created_at 
+                    ? format(new Date(usuario.created_at), "dd/MM/yyyy 'às' HH:mm")
+                    : 'Data não disponível'
+                  }
                 </p>
               </div>
             </div>
