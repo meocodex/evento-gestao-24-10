@@ -76,39 +76,91 @@ serve(async (req) => {
 
     console.log('✅ Usuário criado:', authData.user.id);
 
-    // O trigger handle_new_user() vai criar o profile e a role automaticamente
-    // Mas como é o primeiro usuário, ele será admin (lógica do trigger)
-    
-    // Aguardar um pouco para garantir que o trigger executou
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Criar profile manualmente (não depender de trigger)
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .insert({
+        id: authData.user.id,
+        nome,
+        email,
+        telefone,
+        cpf,
+      });
 
-    // Verificar se o usuário foi criado corretamente
-    const { data: profile, error: profileError } = await supabaseAdmin
+    if (profileError) {
+      console.error('❌ Erro ao criar profile:', profileError);
+      throw new Error('Erro ao criar perfil do usuário');
+    }
+
+    console.log('✅ Profile criado');
+
+    // Criar role admin manualmente
+    const { error: roleError } = await supabaseAdmin
+      .from('user_roles')
+      .insert({
+        user_id: authData.user.id,
+        role: 'admin',
+      });
+
+    if (roleError) {
+      console.error('❌ Erro ao criar role:', roleError);
+      throw new Error('Erro ao definir role do usuário');
+    }
+
+    console.log('✅ Role admin criada');
+
+    // Buscar TODAS as permissões disponíveis
+    const { data: allPermissions, error: permError } = await supabaseAdmin
+      .from('permissions')
+      .select('id');
+
+    if (permError || !allPermissions) {
+      console.error('❌ Erro ao buscar permissões:', permError);
+      throw new Error('Erro ao buscar permissões do sistema');
+    }
+
+    console.log(`✅ ${allPermissions.length} permissões encontradas`);
+
+    // Inserir todas as permissões para o admin
+    const permissionsToInsert = allPermissions.map(p => ({
+      user_id: authData.user.id,
+      permission_id: p.id,
+    }));
+
+    const { error: userPermError } = await supabaseAdmin
+      .from('user_permissions')
+      .insert(permissionsToInsert);
+
+    if (userPermError) {
+      console.error('❌ Erro ao atribuir permissões:', userPermError);
+      throw new Error('Erro ao atribuir permissões ao admin');
+    }
+
+    console.log('✅ Todas as permissões atribuídas ao admin');
+
+    // Verificar resultado final
+    const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('*')
       .eq('id', authData.user.id)
       .single();
 
-    if (profileError || !profile) {
-      console.error('❌ Erro ao verificar profile:', profileError);
-      throw new Error('Usuário criado mas houve erro na configuração do perfil');
-    }
-
-    const { data: role, error: roleError } = await supabaseAdmin
+    const { data: role } = await supabaseAdmin
       .from('user_roles')
       .select('*')
       .eq('user_id', authData.user.id)
       .single();
 
-    if (roleError || !role || role.role !== 'admin') {
-      console.error('❌ Erro ao verificar role:', roleError);
-      throw new Error('Usuário criado mas não foi definido como admin');
-    }
+    const { count: permCount } = await supabaseAdmin
+      .from('user_permissions')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', authData.user.id);
 
     console.log('✅ Primeiro admin configurado com sucesso!');
     console.log('📧 Email:', email);
     console.log('👤 Nome:', nome);
-    console.log('🔑 Role:', role.role);
+    console.log('🔑 Role:', role?.role);
+    console.log('🔐 Permissões:', permCount);
 
     return new Response(
       JSON.stringify({
@@ -117,8 +169,9 @@ serve(async (req) => {
         user: {
           id: authData.user.id,
           email: authData.user.email,
-          nome: profile.nome,
-          role: role.role,
+          nome: profile?.nome,
+          role: role?.role,
+          permissions: permCount,
         }
       }),
       {
