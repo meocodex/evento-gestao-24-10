@@ -12,6 +12,7 @@ import {
   Home,
   LogOut,
   UserCog,
+  Activity,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -41,6 +42,7 @@ const menuItems = [
   { title: 'Contratos', url: '/contratos', icon: FileText, roles: ['admin', 'comercial'] },
   { title: 'Relatórios', url: '/relatorios', icon: BarChart3, roles: ['admin', 'comercial', 'suporte'] },
   { title: 'Equipe', url: '/equipe', icon: UserCog, roles: ['admin', 'suporte'] },
+  { title: 'Performance', url: '/performance', icon: Activity, roles: ['admin'] },
   { title: 'Configurações', url: '/configuracoes', icon: Settings, roles: ['admin'] },
 ];
 
