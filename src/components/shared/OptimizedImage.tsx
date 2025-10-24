@@ -1,4 +1,4 @@
-import { useState, ImgHTMLAttributes } from 'react';
+import { useState, useEffect, useRef, ImgHTMLAttributes } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -8,16 +8,18 @@ interface OptimizedImageProps extends ImgHTMLAttributes<HTMLImageElement> {
   fallbackSrc?: string;
   blurDataURL?: string;
   priority?: boolean;
+  sizes?: string;
 }
 
 /**
  * Componente de imagem otimizada com:
- * - Lazy loading nativo (exceto priority)
+ * - WebP com fallback automático via <picture>
+ * - Lazy loading avançado com IntersectionObserver
  * - Blur placeholder opcional
  * - Skeleton durante carregamento
- * - Fallback em caso de erro
- * - Transição suave
+ * - Srcset para imagens responsivas
  * - Decoding assíncrono
+ * - Transição suave
  */
 export function OptimizedImage({ 
   src, 
@@ -27,10 +29,43 @@ export function OptimizedImage({
   priority = false,
   className,
   style,
+  sizes,
+  width,
+  height,
   ...props 
 }: OptimizedImageProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string | undefined>(priority ? src : undefined);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Advanced lazy loading with IntersectionObserver
+  useEffect(() => {
+    if (priority || !imgRef.current) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setImageSrc(src);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        rootMargin: '50px', // Preload 50px before entering viewport
+        threshold: 0.01,
+      }
+    );
+
+    observer.observe(imgRef.current);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [src, priority]);
 
   const handleLoad = () => {
     setLoaded(true);
@@ -39,6 +74,27 @@ export function OptimizedImage({
   const handleError = () => {
     setError(true);
     setLoaded(true);
+  };
+
+  // Generate WebP version URL (assumes .webp version exists or will be created)
+  const webpSrc = imageSrc?.replace(/\.(jpg|jpeg|png)$/i, '.webp');
+  const shouldUseWebP = imageSrc && /\.(jpg|jpeg|png)$/i.test(imageSrc);
+
+  // Generate srcset for responsive images
+  const generateSrcSet = (baseSrc: string) => {
+    if (!width || !height) return undefined;
+    
+    const widths = [640, 750, 828, 1080, 1200, 1920];
+    const applicableWidths = widths.filter(w => w <= Number(width));
+    
+    if (applicableWidths.length === 0) return undefined;
+    
+    return applicableWidths
+      .map(w => {
+        const scaledSrc = baseSrc; // In production, use a CDN that supports width parameters
+        return `${scaledSrc} ${w}w`;
+      })
+      .join(', ');
   };
 
   return (
@@ -56,20 +112,56 @@ export function OptimizedImage({
           <Skeleton className="absolute inset-0" />
         </>
       )}
-      <img
-        src={error ? fallbackSrc : src}
-        alt={alt}
-        loading={priority ? 'eager' : 'lazy'}
-        decoding="async"
-        fetchPriority={priority ? 'high' : 'auto'}
-        onLoad={handleLoad}
-        onError={handleError}
-        className={cn(
-          "transition-opacity duration-300 w-full h-full object-cover",
-          loaded ? "opacity-100" : "opacity-0"
-        )}
-        {...props}
-      />
+      
+      {shouldUseWebP ? (
+        <picture>
+          <source 
+            srcSet={generateSrcSet(webpSrc!) || webpSrc} 
+            type="image/webp"
+            sizes={sizes}
+          />
+          <source 
+            srcSet={generateSrcSet(imageSrc!) || imageSrc} 
+            type={imageSrc!.match(/\.png$/i) ? 'image/png' : 'image/jpeg'}
+            sizes={sizes}
+          />
+          <img
+            ref={imgRef}
+            src={error ? fallbackSrc : imageSrc}
+            alt={alt}
+            width={width}
+            height={height}
+            loading={priority ? 'eager' : 'lazy'}
+            decoding="async"
+            fetchPriority={priority ? 'high' : 'auto'}
+            onLoad={handleLoad}
+            onError={handleError}
+            className={cn(
+              "transition-opacity duration-300 w-full h-full object-cover",
+              loaded ? "opacity-100" : "opacity-0"
+            )}
+            {...props}
+          />
+        </picture>
+      ) : (
+        <img
+          ref={imgRef}
+          src={error ? fallbackSrc : imageSrc}
+          alt={alt}
+          width={width}
+          height={height}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          fetchPriority={priority ? 'high' : 'auto'}
+          onLoad={handleLoad}
+          onError={handleError}
+          className={cn(
+            "transition-opacity duration-300 w-full h-full object-cover",
+            loaded ? "opacity-100" : "opacity-0"
+          )}
+          {...props}
+        />
+      )}
     </div>
   );
 }

@@ -15,15 +15,20 @@ const Avatar = React.forwardRef<
 ));
 Avatar.displayName = AvatarPrimitive.Root.displayName;
 
+interface AvatarImageProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image> {
+  priority?: boolean;
+}
+
 const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
-  React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
->(({ className, ...props }, ref) => (
+  AvatarImageProps
+>(({ className, priority = false, ...props }, ref) => (
   <AvatarPrimitive.Image 
     ref={ref} 
     className={cn("aspect-square h-full w-full object-cover", className)} 
-    loading="lazy"
+    loading={priority ? "eager" : "lazy"}
     decoding="async"
+    fetchPriority={priority ? "high" : "auto"}
     {...props} 
   />
 ));
