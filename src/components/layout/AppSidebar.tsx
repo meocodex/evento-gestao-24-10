@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Calendar,
   Users,
@@ -49,7 +49,6 @@ const menuItems = [
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user, logout } = useAuth();
   const { state } = useSidebar();
-  const navigate = useNavigate();
   const location = useLocation();
 
   const filteredItems = menuItems.filter((item) =>
@@ -88,13 +87,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu className="space-y-1 px-2">
               {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <button
-                    type="button"
-                    role="link"
+                  <Link
+                    to={item.url}
                     aria-current={isActive(item.url) ? 'page' : undefined}
-                    onClick={() => navigate(item.url)}
                     className={cn(
-                      "group relative flex items-center gap-3 px-3 md:px-4 py-3 rounded-xl mx-2 transition-all duration-200 min-h-[44px] w-full text-left",
+                      "group relative flex items-center gap-3 px-3 md:px-4 py-3 rounded-xl mx-2 transition-all duration-200 min-h-[44px] w-full",
                       isActive(item.url)
                         ? "bg-sidebar-accent border-l-4 border-accent text-sidebar-foreground shadow-md"
                         : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
@@ -111,7 +108,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         )}
                       </>
                     )}
-                  </button>
+                  </Link>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
