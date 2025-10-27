@@ -33,7 +33,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
 
   const handleAlocarClick = (item: any) => {
     setSelectedMaterial({
-      itemId: item.itemId,
+      itemId: item.item_id,
       nome: item.nome,
       quantidadeNecessaria: item.quantidade,
       quantidadeJaAlocada: item.alocado,
@@ -78,13 +78,17 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
             )}
           </CardHeader>
           <CardContent>
-            {evento.checklist.length === 0 ? (
+            {checklistHook.loading ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Carregando materiais...
+              </p>
+            ) : checklistHook.checklist.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
                 Nenhum material adicionado ao checklist
               </p>
             ) : (
               <div className="space-y-2">
-                {evento.checklist.map((item) => (
+                {checklistHook.checklist.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-3 border rounded">
                     <div className="flex-1">
                       <p className="font-medium">{item.nome}</p>
