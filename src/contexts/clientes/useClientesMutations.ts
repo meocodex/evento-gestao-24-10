@@ -8,9 +8,18 @@ export function useClientesMutations() {
 
   const criarCliente = useMutation({
     mutationFn: async (novoCliente: Omit<Cliente, 'id' | 'created_at' | 'updated_at'>) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error('Usuário não autenticado');
+      }
+
       const { data, error } = await supabase
         .from('clientes')
-        .insert([novoCliente])
+        .insert([{
+          ...novoCliente,
+          created_by: user.id
+        }])
         .select()
         .single();
 
