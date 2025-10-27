@@ -118,13 +118,16 @@ export const clienteSchema = z.object({
   telefone: z.string()
     .min(10, 'Telefone inválido')
     .max(15, 'Telefone muito longo')
-    .refine((tel) => {
-      const limpo = tel.replace(/\D/g, '');
+    .transform(val => val.replace(/\D/g, ''))
+    .refine((limpo) => {
       return limpo.length >= 10 && limpo.length <= 11;
     }, 'Telefone inválido'),
   whatsapp: z.string()
     .optional()
-    .transform(val => val ? val.replace(/\D/g, '') : val)
+    .transform(val => {
+      if (!val || val.trim() === '') return undefined;
+      return val.replace(/\D/g, '');
+    })
     .refine((val) => {
       if (!val) return true;
       return val.length >= 10 && val.length <= 11;
