@@ -110,12 +110,49 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
   const buscarMaterialPorId = async (id: string) => {
     const { data, error } = await supabase
       .from('materiais_estoque')
-      .select('*')
+      .select(`
+        id,
+        nome,
+        categoria,
+        descricao,
+        foto,
+        valor_unitario,
+        quantidade_total,
+        quantidade_disponivel,
+        materiais_seriais (
+          numero,
+          status,
+          localizacao,
+          ultima_manutencao,
+          data_aquisicao,
+          observacoes
+        )
+      `)
       .eq('id', id)
       .single();
     
     if (error) throw error;
-    return data;
+    
+    // Transformar para o formato esperado
+    return {
+      id: data.id,
+      nome: data.nome,
+      categoria: data.categoria,
+      descricao: data.descricao || undefined,
+      foto: data.foto || undefined,
+      valorUnitario: data.valor_unitario || undefined,
+      quantidadeTotal: data.quantidade_total,
+      quantidadeDisponivel: data.quantidade_disponivel,
+      unidade: 'un',
+      seriais: (data.materiais_seriais || []).map((s: any) => ({
+        numero: s.numero,
+        status: dbToUiStatus(s.status),
+        localizacao: s.localizacao,
+        ultimaManutencao: s.ultima_manutencao || undefined,
+        dataAquisicao: s.data_aquisicao || undefined,
+        observacoes: s.observacoes || undefined,
+      }))
+    };
   };
 
   return {

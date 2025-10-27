@@ -151,9 +151,20 @@ export function AlocarMaterialDialog({
             <ScrollArea className="h-[200px] mt-2">
               <div className="space-y-2">
                 {serialsFiltrados.length === 0 ? (
-                  <p className="text-sm text-muted-foreground text-center py-8">
-                    Nenhum serial disponível
-                  </p>
+                  <div className="text-center py-8">
+                    <p className="text-sm text-muted-foreground">
+                      {!materialEstoque?.seriais?.length
+                        ? 'Nenhum serial cadastrado para este material.'
+                        : searchTerm
+                        ? 'Nenhum serial encontrado com esse termo.'
+                        : 'Nenhum serial disponível no momento.'}
+                    </p>
+                    {!materialEstoque?.seriais?.length && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Cadastre seriais em Estoque &gt; {materialNome}
+                      </p>
+                    )}
+                  </div>
                 ) : (
                   serialsFiltrados.map((s) => (
                     <Card
