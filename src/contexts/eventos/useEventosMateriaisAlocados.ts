@@ -29,6 +29,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
+      queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
       toast.success('Material alocado com sucesso!');
     },
     onError: (error: any) => {
@@ -48,6 +49,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
+      queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
       toast.success('Material removido com sucesso!');
     },
     onError: (error: any) => {
