@@ -82,6 +82,12 @@ interface UsePermissionsResult {
   /** Verifica se pode alocar materiais */
   canAllocateMaterials: boolean;
   
+  /** Verifica se pode alocar materiais (alias) */
+  canAllocate: boolean;
+  
+  /** Verifica se pode editar checklist de materiais */
+  canEditChecklist: boolean;
+  
   /** Verifica se pode editar operações */
   canEditOperations: boolean;
   
@@ -174,6 +180,8 @@ export function usePermissions(evento?: Evento): UsePermissionsResult {
     
     // Operações
     canAllocateMaterials: hasPermission('estoque.alocar'),
+    canAllocate: hasPermission('estoque.alocar'),
+    canEditChecklist: hasAnyPermission(['eventos.editar_todos', 'eventos.editar_proprios', 'estoque.editar']),
     canEditOperations: hasAnyPermission(['equipe.editar', 'estoque.editar']),
     
     permissions: user?.permissions || [],
