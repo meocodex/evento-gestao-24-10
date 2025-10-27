@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,15 +26,26 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
   const [permissoesSelecionadas, setPermissoesSelecionadas] = useState<string[]>([]);
   const [concedendo, setConcedendo] = useState(false);
 
+  // Inicializar email com o email do membro
+  useEffect(() => {
+    if (membro?.email) {
+      setEmail(membro.email);
+    }
+  }, [membro]);
+
   const handleTemplateSelect = (permissions: string[]) => {
     setPermissoesSelecionadas(permissions);
   };
 
   const handleSubmit = async () => {
-    if (!membro || !email || !senha) {
+    if (!membro) {
+      return;
+    }
+
+    if (!email || !senha) {
       toast({
         title: 'Campos obrigatórios',
-        description: 'Preencha email e senha.',
+        description: 'Preencha o email e a senha.',
         variant: 'destructive'
       });
       return;
@@ -111,20 +122,33 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="email@exemplo.com"
                 />
+                {membro?.email && email !== membro.email && (
+                  <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
+                    ⚠️ Você está alterando o email de <strong>{membro.email}</strong> para <strong>{email}</strong>
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  {membro?.email 
+                    ? 'Este é o email cadastrado. Você pode editá-lo se necessário.'
+                    : 'Digite o email que será usado para login no sistema.'
+                  }
+                </p>
               </div>
               <div>
-                <Label htmlFor="senha">Senha *</Label>
+                <Label htmlFor="senha">Senha de Acesso *</Label>
                 <Input
                   id="senha"
                   type="password"
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
-                  placeholder="Senha de acesso"
+                  placeholder="Digite a senha que o usuário usará para login"
                 />
               </div>
-              <p className="text-sm text-muted-foreground">
-                Este operacional será convertido para tipo "Sistema + Operacional" e terá acesso completo à plataforma.
-              </p>
+              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                <p className="text-sm text-blue-800 dark:text-blue-300">
+                  ℹ️ Ao conceder acesso, este membro será convertido para tipo <strong>"Sistema + Operacional"</strong> e poderá fazer login na plataforma.
+                </p>
+              </div>
             </div>
           </TabsContent>
 
