@@ -11,7 +11,17 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
 
       let query = supabase
         .from('materiais_estoque')
-        .select('*', { count: 'exact' });
+        .select(`
+          *,
+          materiais_seriais (
+            numero,
+            status,
+            localizacao,
+            ultima_manutencao,
+            data_aquisicao,
+            observacoes
+          )
+        `, { count: 'exact' });
 
       // Aplicar filtros server-side
       if (filtros?.busca) {
@@ -28,8 +38,29 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
 
       if (error) throw error;
 
+      // Transformar dados para o formato esperado
+      const materiaisTransformados = (data || []).map((m: any) => ({
+        id: m.id,
+        nome: m.nome,
+        categoria: m.categoria,
+        descricao: m.descricao || undefined,
+        foto: m.foto || undefined,
+        valorUnitario: m.valor_unitario || undefined,
+        quantidadeTotal: m.quantidade_total,
+        quantidadeDisponivel: m.quantidade_disponivel,
+        unidade: 'un',
+        seriais: (m.materiais_seriais || []).map((s: any) => ({
+          numero: s.numero,
+          status: s.status as 'disponivel' | 'em-uso' | 'manutencao',
+          localizacao: s.localizacao,
+          ultimaManutencao: s.ultima_manutencao || undefined,
+          dataAquisicao: s.data_aquisicao || undefined,
+          observacoes: s.observacoes || undefined,
+        }))
+      }));
+
       return {
-        materiais: data || [],
+        materiais: materiaisTransformados,
         totalCount: count || 0,
       };
     },

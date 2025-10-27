@@ -37,13 +37,30 @@ export default function Estoque() {
   const pageSize = 50;
   const { materiais = [], totalCount = 0, isLoading: loading, excluirMaterial } = useEstoque(page, pageSize, filtros);
   const materiaisFiltrados = materiais;
-  const getEstatisticas = () => ({
-    totalItens: materiais.reduce((sum, m) => sum + m.quantidadeTotal, 0),
-    totalDisponiveis: materiais.reduce((sum, m) => sum + m.quantidadeDisponivel, 0),
-    totalEmUso: materiais.reduce((sum, m) => sum + (m.quantidadeTotal - m.quantidadeDisponivel), 0),
-    totalManutencao: 0,
-    categorias: new Set(materiais.map(m => m.categoria)).size,
-  });
+  const getEstatisticas = () => {
+    const total = materiais.length;
+    
+    // Contar seriais por status
+    let disponiveis = 0;
+    let emUso = 0;
+    let manutencao = 0;
+
+    materiais.forEach(material => {
+      (material.seriais || []).forEach(serial => {
+        if (serial.status === 'disponivel') disponiveis++;
+        else if (serial.status === 'em-uso') emUso++;
+        else if (serial.status === 'manutencao') manutencao++;
+      });
+    });
+
+    return {
+      totalItens: materiais.reduce((sum, m) => sum + m.quantidadeTotal, 0),
+      totalDisponiveis: disponiveis,
+      totalEmUso: emUso,
+      totalManutencao: manutencao,
+      categorias: new Set(materiais.map(m => m.categoria)).size,
+    };
+  };
   const [showNovoMaterial, setShowNovoMaterial] = useState(false);
   const [materialSelecionado, setMaterialSelecionado] = useState<MaterialEstoque | null>(null);
   const [showDetalhes, setShowDetalhes] = useState(false);

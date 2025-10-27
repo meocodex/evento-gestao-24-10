@@ -8,10 +8,30 @@ export const useEstoqueMutations = () => {
 
   const adicionarMaterial = useMutation({
     mutationFn: async (dados: Omit<MaterialEstoque, 'id' | 'seriais' | 'quantidadeTotal' | 'quantidadeDisponivel' | 'unidade'>) => {
+      // Buscar o maior ID atual para gerar sequencial
+      const { data: materiais } = await supabase
+        .from('materiais_estoque')
+        .select('id')
+        .order('id', { ascending: false })
+        .limit(1);
+
+      // Extrair número do ID (ex: "MAT5" -> 5)
+      const ultimoId = materiais?.[0]?.id;
+      let proximoNumero = 1;
+      
+      if (ultimoId && ultimoId.startsWith('MAT')) {
+        const numeroAtual = parseInt(ultimoId.replace('MAT', ''));
+        if (!isNaN(numeroAtual)) {
+          proximoNumero = numeroAtual + 1;
+        }
+      }
+
+      const novoId = `MAT${proximoNumero}`;
+
       const { data, error } = await supabase
         .from('materiais_estoque')
         .insert({
-          id: `MAT${Date.now()}`,
+          id: novoId,
           nome: dados.nome,
           categoria: dados.categoria,
           descricao: dados.descricao,
