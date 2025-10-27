@@ -15,8 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { MaterialEstoque, SerialEstoque } from '@/hooks/estoque';
-import { Package, MapPin, Plus, Trash2, Edit } from 'lucide-react';
+import { MaterialEstoque, SerialEstoque, useEstoqueSeriais } from '@/hooks/estoque';
+import { Package, MapPin, Plus, Trash2, Edit, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { NovoSerialDialog } from './NovoSerialDialog';
 import { EditarMaterialDialog } from './EditarMaterialDialog';
@@ -42,12 +42,18 @@ export function DetalhesMaterialDialog({
   material 
 }: DetalhesMaterialDialogProps) {
   const { excluirSerial } = useEstoque();
+  const { data: seriaisAtualizados = [], isLoading: loadingSeriais } = useEstoqueSeriais(material.id);
   const [showNovoSerial, setShowNovoSerial] = useState(false);
   const [showEditarMaterial, setShowEditarMaterial] = useState(false);
   const [showEditarSerial, setShowEditarSerial] = useState(false);
   const [serialParaEditar, setSerialParaEditar] = useState<SerialEstoque | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [serialParaExcluir, setSerialParaExcluir] = useState<string | null>(null);
+
+  // Calcular estatísticas a partir dos seriais atualizados
+  const totalAtualizado = seriaisAtualizados.length;
+  const disponivelAtualizado = seriaisAtualizados.filter(s => s.status === 'disponivel').length;
+  const emUsoManutencao = totalAtualizado - disponivelAtualizado;
 
   const handleEditSerial = (serial: SerialEstoque) => {
     setSerialParaEditar(serial);
@@ -102,16 +108,16 @@ export function DetalhesMaterialDialog({
             {/* Estatísticas */}
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <p className="text-2xl font-bold">{material.quantidadeTotal}</p>
+                <p className="text-2xl font-bold">{totalAtualizado}</p>
                 <p className="text-sm text-muted-foreground">Total</p>
               </div>
               <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <p className="text-2xl font-bold text-primary">{material.quantidadeDisponivel}</p>
+                <p className="text-2xl font-bold text-primary">{disponivelAtualizado}</p>
                 <p className="text-sm text-muted-foreground">Disponível</p>
               </div>
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <p className="text-2xl font-bold text-destructive">
-                  {material.quantidadeTotal - material.quantidadeDisponivel}
+                  {emUsoManutencao}
                 </p>
                 <p className="text-sm text-muted-foreground">Em Uso/Manutenção</p>
               </div>
@@ -129,7 +135,12 @@ export function DetalhesMaterialDialog({
                 </Button>
               </div>
 
-              {(material.seriais || []).length === 0 ? (
+              {loadingSeriais ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Loader2 className="h-12 w-12 mx-auto mb-2 opacity-50 animate-spin" />
+                  <p>Carregando unidades...</p>
+                </div>
+              ) : seriaisAtualizados.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
                   <p>Nenhuma unidade cadastrada</p>
@@ -145,7 +156,7 @@ export function DetalhesMaterialDialog({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {(material.seriais || []).map((serial) => (
+                    {seriaisAtualizados.map((serial) => (
                       <TableRow key={serial.numero}>
                         <TableCell className="font-mono text-sm">
                           {serial.numero}
