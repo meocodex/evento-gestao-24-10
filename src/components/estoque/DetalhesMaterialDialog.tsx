@@ -7,6 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -16,13 +17,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { MaterialEstoque, SerialEstoque, useEstoqueSeriais } from '@/hooks/estoque';
-import { Package, MapPin, Plus, Trash2, Edit, Loader2 } from 'lucide-react';
+import { Package, MapPin, Plus, Trash2, Edit, Loader2, History } from 'lucide-react';
 import { useState } from 'react';
 import { NovoSerialDialog } from './NovoSerialDialog';
 import { EditarMaterialDialog } from './EditarMaterialDialog';
 import { EditarSerialDialog } from './EditarSerialDialog';
+import { HistoricoMaterialTimeline } from './HistoricoMaterialTimeline';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useEstoque } from '@/hooks/estoque';
+import { statusConfig } from '@/lib/estoqueStatus';
 
 interface DetalhesMaterialDialogProps {
   open: boolean;
@@ -30,13 +33,7 @@ interface DetalhesMaterialDialogProps {
   material: MaterialEstoque;
 }
 
-const statusConfig = {
-  'disponivel': { label: 'Disponível', variant: 'default' as const },
-  'em-uso': { label: 'Em Uso', variant: 'secondary' as const },
-  'manutencao': { label: 'Manutenção', variant: 'destructive' as const },
-};
-
-export function DetalhesMaterialDialog({ 
+export function DetalhesMaterialDialog({
   open, 
   onOpenChange, 
   material 
@@ -90,7 +87,18 @@ export function DetalhesMaterialDialog({
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-6">
+          <Tabs defaultValue="geral" className="mt-4">
+            <TabsList>
+              <TabsTrigger value="geral">Geral</TabsTrigger>
+              <TabsTrigger value="seriais">Seriais ({totalAtualizado})</TabsTrigger>
+              <TabsTrigger value="historico">
+                <History className="h-4 w-4 mr-2" />
+                Histórico Completo
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="geral" className="mt-4">
+              <div className="space-y-6">
             {/* Informações Gerais */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -124,6 +132,21 @@ export function DetalhesMaterialDialog({
             </div>
 
             <Separator />
+
+            {material.descricao && (
+              <>
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Descrição</p>
+                  <p>{material.descricao}</p>
+                </div>
+                <Separator />
+              </>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="seriais" className="mt-4">
+          <div className="space-y-4">
 
             {/* Lista de Seriais */}
             <div>
@@ -162,8 +185,15 @@ export function DetalhesMaterialDialog({
                           {serial.numero}
                         </TableCell>
                         <TableCell>
-                          <Badge variant={statusConfig[serial.status].variant}>
-                            {statusConfig[serial.status].label}
+                          <Badge 
+                            variant={
+                              serial.status === 'disponivel' ? 'default' :
+                              serial.status === 'em-uso' ? 'secondary' :
+                              serial.status === 'perdido' ? 'destructive' :
+                              'warning'
+                            }
+                          >
+                            {statusConfig[serial.status]?.label || serial.status}
                           </Badge>
                         </TableCell>
                         <TableCell>
@@ -198,6 +228,12 @@ export function DetalhesMaterialDialog({
               )}
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="historico" className="mt-4">
+          <HistoricoMaterialTimeline materialId={material.id} />
+        </TabsContent>
+      </Tabs>
         </DialogContent>
       </Dialog>
 

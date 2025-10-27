@@ -4,12 +4,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, PackagePlus, Trash2 } from 'lucide-react';
+import { Plus, PackagePlus, Trash2, RotateCcw } from 'lucide-react';
 import { AdicionarMaterialDialog } from '../modals/AdicionarMaterialDialog';
 import { AlocarMaterialDialog } from '../modals/AlocarMaterialDialog';
+import { DevolverMaterialDialog } from '../modals/DevolverMaterialDialog';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useEventosMateriaisAlocados, useEventosChecklist } from '@/hooks/eventos';
+import { MaterialAlocado } from '@/types/estoque';
 
 interface MateriaisEventoProps {
   evento: Evento;
@@ -30,6 +32,8 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   } | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; tipo: 'checklist' | 'alocado' } | null>(null);
+  const [showDevolverMaterial, setShowDevolverMaterial] = useState(false);
+  const [materialParaDevolver, setMaterialParaDevolver] = useState<MaterialAlocado | null>(null);
 
   const handleAlocarClick = (item: any) => {
     setSelectedMaterial({
@@ -64,6 +68,14 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       <TabsList>
         <TabsTrigger value="checklist">Checklist</TabsTrigger>
         <TabsTrigger value="alocacao">Alocação</TabsTrigger>
+        <TabsTrigger value="devolucoes">
+          Devoluções
+          {materiaisAlocados.materiaisAlocados.filter((m: any) => m.status_devolucao === 'pendente').length > 0 && (
+            <Badge variant="destructive" className="ml-2">
+              {materiaisAlocados.materiaisAlocados.filter((m: any) => m.status_devolucao === 'pendente').length}
+            </Badge>
+          )}
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="checklist" className="mt-4">
@@ -193,6 +205,75 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
           </Card>
         </div>
       </TabsContent>
+
+      <TabsContent value="devolucoes" className="mt-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Devoluções Pendentes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {materiaisAlocados.loading ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Carregando materiais...
+              </p>
+            ) : materiaisAlocados.materiaisAlocados.filter((m: any) => m.status_devolucao === 'pendente').length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                Nenhuma devolução pendente
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {materiaisAlocados.materiaisAlocados
+                  .filter((m: any) => m.status_devolucao === 'pendente')
+                  .map((material: any) => (
+                    <Card key={material.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium">{material.nome}</p>
+                              <Badge variant="warning">Pendente</Badge>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {material.serial || `${material.quantidade_alocada || 1} unidades`}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Envio: {material.tipo_envio === 'antecipado' 
+                                ? `Antecipado${material.transportadora ? ` via ${material.transportadora}` : ''}`
+                                : `Com Técnicos${material.responsavel ? ` - ${material.responsavel}` : ''}`
+                              }
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setMaterialParaDevolver({
+                                id: material.id,
+                                eventoId: material.evento_id,
+                                itemId: material.item_id,
+                                nome: material.nome,
+                                serial: material.serial,
+                                tipoEnvio: material.tipo_envio,
+                                transportadora: material.transportadora,
+                                responsavel: material.responsavel,
+                                quantidadeAlocada: material.quantidade_alocada || 1,
+                                quantidadeDevolvida: material.quantidade_devolvida || 0,
+                                statusDevolucao: material.status_devolucao,
+                              });
+                              setShowDevolverMaterial(true);
+                            }}
+                          >
+                            <RotateCcw className="h-4 w-4 mr-2" />
+                            Registrar Devolução
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </TabsContent>
     </Tabs>
 
     <AdicionarMaterialDialog
@@ -236,6 +317,24 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         }}
       />
     )}
+
+    <DevolverMaterialDialog
+      material={materialParaDevolver}
+      open={showDevolverMaterial}
+      onOpenChange={setShowDevolverMaterial}
+      onConfirmar={(dados) => {
+        if (materialParaDevolver) {
+          materiaisAlocados.registrarDevolucao.mutate({
+            alocacaoId: materialParaDevolver.id,
+            statusDevolucao: dados.statusDevolucao,
+            observacoes: dados.observacoes,
+            fotos: dados.fotos,
+          });
+          setShowDevolverMaterial(false);
+          setMaterialParaDevolver(null);
+        }
+      }}
+    />
 
     <ConfirmDialog
       open={showDeleteDialog}
