@@ -146,8 +146,8 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
         <Tabs defaultValue="dados" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="dados">Dados Básicos</TabsTrigger>
-            <TabsTrigger value="acesso" disabled={!concederAcesso}>Acesso Sistema</TabsTrigger>
-            <TabsTrigger value="permissoes" disabled={!concederAcesso}>Permissões</TabsTrigger>
+            <TabsTrigger value="acesso">Acesso Sistema</TabsTrigger>
+            <TabsTrigger value="permissoes">Permissões</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dados" className="space-y-4 mt-4">
@@ -329,6 +329,13 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
           </TabsContent>
 
           <TabsContent value="acesso" className="space-y-4 mt-4">
+            {!concederAcesso && (
+              <div className="bg-muted/50 border rounded-lg p-4 mb-4">
+                <p className="text-sm text-muted-foreground">
+                  ⚠️ Para habilitar o acesso ao sistema, ative o switch "Conceder acesso ao sistema" na aba Dados Básicos.
+                </p>
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <Label htmlFor="senha">Senha *</Label>
@@ -338,6 +345,7 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   placeholder="Senha de acesso"
+                  disabled={!concederAcesso}
                 />
               </div>
               <p className="text-sm text-muted-foreground">

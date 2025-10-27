@@ -20,6 +20,14 @@ export function MembroEquipeCard({
   onConcederAcesso, 
   onGerenciarPermissoes 
 }: MembroEquipeCardProps) {
+  console.log('🔍 MembroEquipeCard Debug:', {
+    nome: membro.nome,
+    tipo_membro: membro.tipo_membro,
+    role: membro.role,
+    permissions: membro.permissions,
+    permissionsCount: membro.permissions?.length
+  });
+
   const getTipoLabel = (tipo: string) => {
     const labels: Record<string, string> = {
       'clt': 'CLT',
@@ -134,16 +142,19 @@ export function MembroEquipeCard({
                   </Badge>
                 )}
                 
-                {membro.tipo_membro === 'sistema' && membro.permissions && (
+                {/* Contador de Permissões */}
+                {(membro.tipo_membro === 'sistema' || membro.tipo_membro === 'ambos') && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Shield className="h-3 w-3" />
-                {membro.permissions === undefined ? (
-                  <span className="text-muted-foreground italic text-xs">Sincronizando...</span>
-                ) : membro.permissions.length === 0 ? (
-                  <span className="text-muted-foreground text-xs">Nenhuma permissão</span>
-                ) : (
-                  <span className="text-xs">{membro.permissions.length} permissões</span>
-                )}
+                    {membro.permissions === undefined ? (
+                      <span className="text-muted-foreground italic">Sincronizando...</span>
+                    ) : membro.permissions === null ? (
+                      <span className="text-red-500">Erro ao carregar</span>
+                    ) : membro.permissions.length === 0 ? (
+                      <span className="text-muted-foreground">Nenhuma permissão</span>
+                    ) : (
+                      <span>{membro.permissions.length} permissões</span>
+                    )}
                   </div>
                 )}
               </div>

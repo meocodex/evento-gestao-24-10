@@ -18,9 +18,8 @@ export default function Equipe() {
   const pageSize = 50;
   const { operacionais = [], data: profiles = [], isLoading: loadingMembros } = useEquipe(page, pageSize, {}, true);
   const membrosUnificados = useMemo(() => {
-    const unificados = [...operacionais.map(op => ({ 
+    const unificados: any[] = [...operacionais.map(op => ({ 
       ...op, 
-      tipo: 'operacional' as const, 
       tipo_membro: 'operacional' as const,
       avatar_url: op.foto || null
     }))];
@@ -28,9 +27,8 @@ export default function Equipe() {
       if (!operacionais.find(op => op.email === p.email)) {
         unificados.push({ 
           ...p, 
-          tipo: 'operacional' as const, 
-          tipo_membro: ('Sistema' as any),
-          funcao_principal: 'Sistema',
+          tipo_membro: 'sistema' as const,
+          funcao_principal: p.funcao_principal || 'Sistema',
           funcoes_secundarias: [],
           tipo_vinculo: 'CLT' as any,
           cnpj_pj: '',
@@ -41,7 +39,9 @@ export default function Equipe() {
           documentos: [],
           status: 'ativo' as any,
           avaliacao: undefined,
-          observacoes: ''
+          observacoes: '',
+          role: p.role,
+          permissions: p.permissions
         });
       }
     });
@@ -103,9 +103,9 @@ export default function Equipe() {
   const stats = useMemo(() => {
     return {
       total: membrosUnificados.length,
-      sistema: membrosUnificados.filter((m: any) => m.tipo_membro === 'Sistema').length,
+      sistema: membrosUnificados.filter((m: any) => m.tipo_membro === 'sistema').length,
       operacional: membrosUnificados.filter((m: any) => m.tipo_membro === 'operacional').length,
-      ambos: 0,
+      ambos: membrosUnificados.filter((m: any) => m.tipo_membro === 'ambos').length,
     };
   }, [membrosUnificados]);
 
