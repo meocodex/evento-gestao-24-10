@@ -2,13 +2,14 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Phone, Mail, Star, Shield, Lock } from 'lucide-react';
+import { Phone, Mail, Star, Shield, Lock, Trash2 } from 'lucide-react';
 import { MembroEquipeUnificado } from '@/types/equipe';
 
 interface MembroEquipeCardProps {
   membro: MembroEquipeUnificado;
   onDetalhes: () => void;
   onEditar: () => void;
+  onExcluir: () => void;
   onConcederAcesso?: () => void;
   onGerenciarPermissoes?: () => void;
 }
@@ -17,6 +18,7 @@ export function MembroEquipeCard({
   membro, 
   onDetalhes, 
   onEditar, 
+  onExcluir,
   onConcederAcesso, 
   onGerenciarPermissoes 
 }: MembroEquipeCardProps) {
@@ -224,6 +226,11 @@ export function MembroEquipeCard({
                   Gerenciar Permissões
                 </Button>
               )}
+
+              <Button variant="destructive" size="sm" onClick={onExcluir}>
+                <Trash2 className="h-3 w-3 mr-1" />
+                Excluir
+              </Button>
             </div>
           </div>
         </div>

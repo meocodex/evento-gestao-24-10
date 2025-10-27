@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Phone, Mail, Star, Edit, FileText, Calendar } from 'lucide-react';
+import { Phone, Mail, Star, Edit, FileText, Calendar, Trash2 } from 'lucide-react';
 import { OperacionalEquipe } from '@/types/equipe';
 
 interface DetalhesOperacionalDialogProps {
@@ -11,9 +11,10 @@ interface DetalhesOperacionalDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onEditar: () => void;
+  onExcluir: () => void;
 }
 
-export function DetalhesOperacionalDialog({ operacional, open, onOpenChange, onEditar }: DetalhesOperacionalDialogProps) {
+export function DetalhesOperacionalDialog({ operacional, open, onOpenChange, onEditar, onExcluir }: DetalhesOperacionalDialogProps) {
   const getTipoLabel = (tipo: string) => {
     const labels: Record<string, string> = {
       clt: 'CLT',
@@ -75,10 +76,16 @@ export function DetalhesOperacionalDialog({ operacional, open, onOpenChange, onE
               </div>
             </div>
 
-            <Button onClick={onEditar} variant="outline" size="sm">
-              <Edit className="h-4 w-4 mr-2" />
-              Editar
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={onExcluir} variant="destructive" size="sm">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Excluir
+              </Button>
+              <Button onClick={onEditar} variant="outline" size="sm">
+                <Edit className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
+            </div>
           </div>
 
           <Separator />

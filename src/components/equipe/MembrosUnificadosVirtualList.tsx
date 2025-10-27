@@ -9,6 +9,7 @@ interface MembrosUnificadosVirtualListProps {
   loading?: boolean;
   onDetalhes: (membro: MembroEquipeUnificado) => void;
   onEditar: (membro: MembroEquipeUnificado) => void;
+  onExcluir: (membro: MembroEquipeUnificado) => void;
   onConcederAcesso?: (membro: MembroEquipeUnificado) => void;
   onGerenciarPermissoes?: (membro: MembroEquipeUnificado) => void;
 }
@@ -18,6 +19,7 @@ export function MembrosUnificadosVirtualList({
   loading,
   onDetalhes,
   onEditar,
+  onExcluir,
   onConcederAcesso,
   onGerenciarPermissoes,
 }: MembrosUnificadosVirtualListProps) {
@@ -80,6 +82,7 @@ export function MembrosUnificadosVirtualList({
                   membro={membro}
                   onDetalhes={() => onDetalhes(membro)}
                   onEditar={() => onEditar(membro)}
+                  onExcluir={() => onExcluir(membro)}
                   onConcederAcesso={onConcederAcesso ? () => onConcederAcesso(membro) : undefined}
                   onGerenciarPermissoes={onGerenciarPermissoes ? () => onGerenciarPermissoes(membro) : undefined}
                 />

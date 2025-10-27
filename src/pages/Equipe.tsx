@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Users, Search, Plus } from 'lucide-react';
 import { useEquipe } from '@/hooks/equipe';
 import { MembrosUnificadosVirtualList } from '@/components/equipe/MembrosUnificadosVirtualList';
@@ -13,10 +14,13 @@ import { ConcederAcessoSistemaDialog } from '@/components/equipe/ConcederAcessoS
 import { GerenciarPermissoesMembroDialog } from '@/components/equipe/GerenciarPermissoesMembroDialog';
 import { OperacionalEquipe, MembroEquipeUnificado } from '@/types/equipe';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 export default function Equipe() {
+  const { toast } = useToast();
   const [page, setPage] = useState(1);
   const pageSize = 50;
-  const { operacionais = [], data: profiles = [], isLoading: loadingMembros } = useEquipe(page, pageSize, {}, true);
+  const { operacionais = [], data: profiles = [], isLoading: loadingMembros, excluirOperacional } = useEquipe(page, pageSize, {}, true);
   const membrosUnificados = useMemo(() => {
     const unificados: any[] = [...operacionais.map(op => ({ 
       ...op, 
@@ -58,6 +62,39 @@ export default function Equipe() {
   const [editarMembro, setEditarMembro] = useState<MembroEquipeUnificado | null>(null);
   const [concederAcessoMembro, setConcederAcessoMembro] = useState<MembroEquipeUnificado | null>(null);
   const [gerenciarPermissoesMembro, setGerenciarPermissoesMembro] = useState<MembroEquipeUnificado | null>(null);
+  const [membroParaExcluir, setMembroParaExcluir] = useState<MembroEquipeUnificado | null>(null);
+
+  // Handler de exclusão
+  const handleConfirmarExclusao = async () => {
+    if (!membroParaExcluir) return;
+
+    try {
+      // Se for tipo 'sistema' ou 'ambos', precisa excluir do auth também
+      if (membroParaExcluir.tipo_membro === 'sistema' || membroParaExcluir.tipo_membro === 'ambos') {
+        const { error } = await supabase.functions.invoke('excluir-usuario', {
+          body: { user_id: membroParaExcluir.id }
+        });
+        
+        if (error) throw error;
+      } else {
+        // Apenas operacional - excluir da tabela equipe_operacional
+        await excluirOperacional.mutateAsync(membroParaExcluir.id);
+      }
+
+      toast({
+        title: 'Membro excluído',
+        description: `${membroParaExcluir.nome} foi removido com sucesso.`
+      });
+
+      setMembroParaExcluir(null);
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao excluir',
+        description: error.message || 'Ocorreu um erro ao excluir o membro.',
+        variant: 'destructive'
+      });
+    }
+  };
 
   // Filtrar membros localmente
   const membrosFiltrados = useMemo(() => {
@@ -247,6 +284,7 @@ export default function Equipe() {
             loading={loadingMembros}
             onDetalhes={setMembroSelecionado}
             onEditar={setEditarMembro}
+            onExcluir={setMembroParaExcluir}
             onConcederAcesso={setConcederAcessoMembro}
             onGerenciarPermissoes={setGerenciarPermissoesMembro}
           />
@@ -266,6 +304,10 @@ export default function Equipe() {
           onOpenChange={(open) => !open && setMembroSelecionado(null)}
           onEditar={() => {
             setEditarMembro(membroSelecionado);
+            setMembroSelecionado(null);
+          }}
+          onExcluir={() => {
+            setMembroParaExcluir(membroSelecionado);
             setMembroSelecionado(null);
           }}
         />
@@ -290,6 +332,50 @@ export default function Equipe() {
         onOpenChange={(open) => !open && setGerenciarPermissoesMembro(null)}
         membro={gerenciarPermissoesMembro}
       />
+
+      {/* Dialog de Confirmação de Exclusão */}
+      <AlertDialog open={!!membroParaExcluir} onOpenChange={(open) => !open && setMembroParaExcluir(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              {membroParaExcluir?.tipo_membro === 'ambos' ? (
+                <>
+                  ⚠️ <strong>{membroParaExcluir?.nome}</strong> possui acesso ao sistema. 
+                  <br /><br />
+                  Ao excluir, este membro será:
+                  <ul className="list-disc ml-5 mt-2">
+                    <li>Removido da equipe operacional</li>
+                    <li>Perderá acesso ao sistema (login)</li>
+                    <li>Suas permissões serão revogadas</li>
+                  </ul>
+                </>
+              ) : membroParaExcluir?.tipo_membro === 'sistema' ? (
+                <>
+                  Tem certeza que deseja revogar o acesso de <strong>{membroParaExcluir?.nome}</strong>?
+                  <br /><br />
+                  Este usuário perderá o acesso ao sistema e todas as suas permissões serão removidas.
+                </>
+              ) : (
+                <>
+                  Tem certeza que deseja excluir <strong>{membroParaExcluir?.nome}</strong>?
+                  <br /><br />
+                  Esta ação não pode ser desfeita.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmarExclusao}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir Permanentemente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
