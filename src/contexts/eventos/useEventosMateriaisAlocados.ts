@@ -31,6 +31,10 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       toast.success('Material alocado com sucesso!');
     },
+    onError: (error: any) => {
+      console.error('Erro ao alocar material:', error);
+      toast.error(`Erro ao alocar material: ${error.message || 'Erro desconhecido'}`);
+    },
   });
 
   const removerMaterialAlocado = useMutation({
@@ -45,6 +49,10 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       toast.success('Material removido com sucesso!');
+    },
+    onError: (error: any) => {
+      console.error('Erro ao remover material:', error);
+      toast.error(`Erro ao remover material: ${error.message || 'Erro desconhecido'}`);
     },
   });
 

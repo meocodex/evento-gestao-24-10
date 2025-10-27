@@ -20,7 +20,7 @@ interface AlocarMaterialDialogProps {
   quantidadeJaAlocada: number;
   onAlocar: (data: {
     itemId: string;
-    tipoEnvio: 'antecipado' | 'com-tecnicos';
+    tipoEnvio: 'antecipado' | 'com_tecnicos';
     serial: string;
     transportadora?: string;
     responsavel?: string;
@@ -38,7 +38,7 @@ export function AlocarMaterialDialog({
 }: AlocarMaterialDialogProps) {
   const { buscarMaterialPorId } = useEstoque();
   const queryClient = useQueryClient();
-  const [tipoEnvio, setTipoEnvio] = useState<'antecipado' | 'com-tecnicos'>('antecipado');
+  const [tipoEnvio, setTipoEnvio] = useState<'antecipado' | 'com_tecnicos'>('antecipado');
   const [serial, setSerial] = useState('');
   const [transportadora, setTransportadora] = useState('');
   const [responsavel, setResponsavel] = useState('');
@@ -81,7 +81,7 @@ export function AlocarMaterialDialog({
       return;
     }
 
-    if (tipoEnvio === 'com-tecnicos' && !responsavel) {
+    if (tipoEnvio === 'com_tecnicos' && !responsavel) {
       return;
     }
 
@@ -132,7 +132,7 @@ export function AlocarMaterialDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="antecipado">Envio Antecipado</SelectItem>
-                <SelectItem value="com-tecnicos">Com Técnicos</SelectItem>
+                <SelectItem value="com_tecnicos">Com Técnicos</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -242,7 +242,7 @@ export function AlocarMaterialDialog({
             disabled={
               !serial ||
               (tipoEnvio === 'antecipado' && !transportadora) ||
-              (tipoEnvio === 'com-tecnicos' && !responsavel)
+              (tipoEnvio === 'com_tecnicos' && !responsavel)
             }
           >
             Alocar
