@@ -20,9 +20,17 @@ export function useEventosChecklist(eventoId: string) {
 
   const adicionarMaterialChecklist = useMutation({
     mutationFn: async (data: any) => {
+      const payload = {
+        item_id: data.itemId,
+        nome: data.nome,
+        quantidade: data.quantidade,
+        alocado: 0,
+        evento_id: eventoId,
+      };
+
       const { error } = await supabase
         .from('eventos_checklist')
-        .insert({ ...data, evento_id: eventoId });
+        .insert(payload);
       if (error) throw error;
     },
     onSuccess: () => {
