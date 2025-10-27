@@ -137,7 +137,13 @@ export function MembroEquipeCard({
                 {membro.tipo_membro === 'sistema' && membro.permissions && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Shield className="h-3 w-3" />
-                    <span>{membro.permissions.length} permissões</span>
+                {membro.permissions === undefined ? (
+                  <span className="text-muted-foreground italic text-xs">Sincronizando...</span>
+                ) : membro.permissions.length === 0 ? (
+                  <span className="text-muted-foreground text-xs">Nenhuma permissão</span>
+                ) : (
+                  <span className="text-xs">{membro.permissions.length} permissões</span>
+                )}
                   </div>
                 )}
               </div>

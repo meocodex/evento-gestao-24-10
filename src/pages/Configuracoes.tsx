@@ -11,8 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useConfiguracoes } from '@/hooks/configuracoes';
 import { useToast } from '@/hooks/use-toast';
 import { GerenciarCategorias } from '@/components/configuracoes/GerenciarCategorias';
-import { GerenciarUsuarios } from '@/components/configuracoes/GerenciarUsuarios';
-import { MatrizPermissoes } from '@/components/configuracoes/MatrizPermissoes';
 import { NotificationSettings } from '@/components/configuracoes/NotificationSettings';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -100,7 +98,6 @@ export default function Configuracoes() {
             <TabsTrigger value="perfil">Perfil</TabsTrigger>
             <TabsTrigger value="empresa">Empresa</TabsTrigger>
             <TabsTrigger value="categorias">Categorias</TabsTrigger>
-            <TabsTrigger value="usuarios">Usuários</TabsTrigger>
             <TabsTrigger value="integracoes">Integrações</TabsTrigger>
             <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
             <TabsTrigger value="seguranca">Segurança</TabsTrigger>
@@ -183,17 +180,6 @@ export default function Configuracoes() {
                 descricao="Personalize as funções disponíveis para membros da equipe"
               />
             </div>
-          </TabsContent>
-
-          <TabsContent value="usuarios" className="space-y-4">
-            <div className="mb-4">
-              <p className="text-sm text-muted-foreground">
-                Para criar novos usuários ou conceder acesso ao sistema, vá em <strong>Equipe</strong> e gerencie a partir de lá. 
-                Aqui você gerencia apenas as permissões de usuários existentes.
-              </p>
-            </div>
-            <GerenciarUsuarios />
-            <MatrizPermissoes />
           </TabsContent>
 
           <TabsContent value="integracoes" className="space-y-4">

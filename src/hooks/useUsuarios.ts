@@ -21,6 +21,9 @@ export function useUsuarios() {
 
   const { data: usuarios, isLoading, error } = useQuery({
     queryKey: ['usuarios'],
+    retry: 2,
+    retryDelay: 1000,
+    staleTime: 30000,
     queryFn: async () => {
       // 1. Buscar profiles
       const { data: profiles, error: profilesError } = await supabase

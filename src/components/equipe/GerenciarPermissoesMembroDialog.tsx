@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { TemplatesPermissoes } from '@/components/configuracoes/TemplatesPermissoes';
 import { GerenciarPermissoes } from '@/components/configuracoes/GerenciarPermissoes';
 import { MembroEquipeUnificado } from '@/types/equipe';
+import { Loader2 } from 'lucide-react';
 
 interface GerenciarPermissoesMembroDialogProps {
   open: boolean;
@@ -21,11 +22,57 @@ export function GerenciarPermissoesMembroDialog({ open, onOpenChange, membro }: 
   const [permissoesSelecionadas, setPermissoesSelecionadas] = useState<string[]>([]);
   const [salvando, setSalvando] = useState(false);
 
-  useEffect(() => {
-    if (membro?.permissions) {
-      setPermissoesSelecionadas(membro.permissions);
+  // Query dedicada que carrega permissões on dialog open
+  const { data: membroPermsData, isLoading: loadingPerms } = useQuery({
+    queryKey: ['membro_permissions_dialog', membro?.id, open],
+    enabled: open && !!membro?.id,
+    queryFn: async () => {
+      const [
+        { data: up }, 
+        { data: roleData },
+        { data: allPerms }
+      ] = await Promise.all([
+        supabase
+          .from('user_permissions')
+          .select('permission_id')
+          .eq('user_id', membro!.id),
+        supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', membro!.id)
+          .single(),
+        supabase
+          .from('permissions')
+          .select('id')
+      ]);
+      
+      const selectedPerms = up?.map(p => p.permission_id) || [];
+      const isAdmin = roleData?.role === 'admin';
+      const totalPerms = allPerms?.map(p => p.id) || [];
+      
+      console.log('🔍 GerenciarPermissoesMembro carregou:', {
+        membroId: membro!.id,
+        membroNome: membro!.nome,
+        isAdmin,
+        selectedCount: selectedPerms.length,
+        totalCount: totalPerms.length
+      });
+      
+      // Se admin e permissões não batem, forçar todas
+      if (isAdmin && selectedPerms.length < totalPerms.length) {
+        return { permissions: totalPerms, role: 'admin' };
+      }
+      
+      return { permissions: selectedPerms, role: roleData?.role || 'comercial' };
     }
-  }, [membro]);
+  });
+
+  // Atualizar estado quando carregar
+  useEffect(() => {
+    if (open && membroPermsData) {
+      setPermissoesSelecionadas(membroPermsData.permissions);
+    }
+  }, [open, membroPermsData]);
 
   const handleTemplateSelect = (permissions: string[]) => {
     setPermissoesSelecionadas(permissions);
@@ -77,6 +124,22 @@ export function GerenciarPermissoesMembroDialog({ open, onOpenChange, membro }: 
       setSalvando(false);
     }
   };
+
+  // Loading state
+  if (loadingPerms) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-3xl">
+          <div className="flex items-center justify-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-3 text-sm text-muted-foreground">
+              Carregando permissões de {membro?.nome}...
+            </span>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
