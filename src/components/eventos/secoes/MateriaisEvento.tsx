@@ -4,10 +4,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, PackagePlus, Trash2, RotateCcw } from 'lucide-react';
+import { Plus, PackagePlus, Trash2, RotateCcw, CheckSquare } from 'lucide-react';
 import { AdicionarMaterialDialog } from '../modals/AdicionarMaterialDialog';
 import { AlocarMaterialDialog } from '../modals/AlocarMaterialDialog';
 import { DevolverMaterialDialog } from '../modals/DevolverMaterialDialog';
+import { DevolverMaterialLoteDialog } from '../modals/DevolverMaterialLoteDialog';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useEventosMateriaisAlocados, useEventosChecklist } from '@/hooks/eventos';
@@ -34,6 +35,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const [itemToDelete, setItemToDelete] = useState<{ id: string; tipo: 'checklist' | 'alocado' } | null>(null);
   const [showDevolverMaterial, setShowDevolverMaterial] = useState(false);
   const [materialParaDevolver, setMaterialParaDevolver] = useState<MaterialAlocado | null>(null);
+  const [showDevolverLote, setShowDevolverLote] = useState(false);
 
   const handleAlocarClick = (item: any) => {
     setSelectedMaterial({
@@ -208,8 +210,18 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
 
       <TabsContent value="devolucoes" className="mt-4">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Devoluções Pendentes</CardTitle>
+            {materiaisAlocados.materiaisAlocados.filter((m: any) => m.status_devolucao === 'pendente').length > 1 && (
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => setShowDevolverLote(true)}
+              >
+                <CheckSquare className="h-4 w-4 mr-2" />
+                Devolução em Lote ({materiaisAlocados.materiaisAlocados.filter((m: any) => m.status_devolucao === 'pendente').length})
+              </Button>
+            )}
           </CardHeader>
           <CardContent>
             {materiaisAlocados.loading ? (
@@ -332,6 +344,37 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
           });
           setShowDevolverMaterial(false);
           setMaterialParaDevolver(null);
+        }
+      }}
+    />
+
+    <DevolverMaterialLoteDialog
+      materiais={materiaisAlocados.materiaisAlocados
+        .filter((m: any) => m.status_devolucao === 'pendente')
+        .map((m: any) => ({
+          id: m.id,
+          eventoId: m.evento_id,
+          itemId: m.item_id,
+          nome: m.nome,
+          serial: m.serial,
+          tipoEnvio: m.tipo_envio,
+          transportadora: m.transportadora,
+          responsavel: m.responsavel,
+          quantidadeAlocada: m.quantidade_alocada || 1,
+          quantidadeDevolvida: m.quantidade_devolvida || 0,
+          statusDevolucao: m.status_devolucao,
+        }))}
+      open={showDevolverLote}
+      onOpenChange={setShowDevolverLote}
+      onConfirmar={async (materiaisIds, statusDevolucao, observacoes, fotos) => {
+        // Processar devoluções em lote
+        for (const materialId of materiaisIds) {
+          await materiaisAlocados.registrarDevolucao.mutateAsync({
+            alocacaoId: materialId,
+            statusDevolucao,
+            observacoes,
+            fotos,
+          });
         }
       }}
     />
