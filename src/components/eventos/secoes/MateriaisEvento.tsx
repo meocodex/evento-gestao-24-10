@@ -202,6 +202,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         checklistHook.adicionarMaterialChecklist.mutate(data);
         setShowAddMaterial(false);
       }}
+      itensJaNoChecklist={checklistHook.checklist.map(item => item.item_id)}
     />
 
     {selectedMaterial && (

@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useEstoque } from '@/hooks/estoque';
 import { Package, Search } from 'lucide-react';
@@ -12,19 +11,27 @@ interface AdicionarMaterialDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAdicionar: (data: { itemId: string; nome: string; quantidade: number }) => void;
+  itensJaNoChecklist?: string[];
 }
 
-export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: AdicionarMaterialDialogProps) {
+export function AdicionarMaterialDialog({ 
+  open, 
+  onOpenChange, 
+  onAdicionar,
+  itensJaNoChecklist = [],
+}: AdicionarMaterialDialogProps) {
   const { toast } = useToast();
   const { materiais } = useEstoque();
   const [materialId, setMaterialId] = useState('');
   const [quantidade, setQuantidade] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const materiaisFiltrados = materiais.filter(m => 
-    m.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    m.categoria.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const materiaisFiltrados = materiais
+    .filter(m => !itensJaNoChecklist.includes(m.id))
+    .filter(m => 
+      m.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      m.categoria.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
   const materialSelecionado = materiais.find(m => m.id === materialId);
 
@@ -63,11 +70,6 @@ export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: Adi
       nome: materialSelecionado!.nome, 
       quantidade 
     });
-
-    toast({
-      title: 'Material adicionado!',
-      description: 'O material foi adicionado ao checklist.',
-    });
     
     // Reset form
     setMaterialId('');
@@ -99,9 +101,15 @@ export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: Adi
           </div>
 
           <div className="border rounded-lg max-h-60 overflow-y-auto">
-            {materiaisFiltrados.length === 0 ? (
+            {materiais.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center py-8">
-                Nenhum material encontrado
+                Nenhum material cadastrado no estoque. Cadastre materiais na seção Estoque.
+              </p>
+            ) : materiaisFiltrados.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                {searchTerm 
+                  ? 'Nenhum material encontrado com esse termo.' 
+                  : 'Todos os materiais já foram adicionados ao checklist.'}
               </p>
             ) : (
               <div className="divide-y">
@@ -167,7 +175,7 @@ export function AdicionarMaterialDialog({ open, onOpenChange, onAdicionar }: Adi
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit">Adicionar</Button>
+            <Button type="submit" disabled={!materialId}>Adicionar</Button>
           </div>
         </form>
       </DialogContent>
