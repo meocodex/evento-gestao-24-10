@@ -91,6 +91,14 @@ export function HistoricoMaterialTimeline({ materialId, serialNumero }: Historic
               )}
             </div>
 
+            {item.serialNumero && (
+              <div className="mt-2">
+                <Badge variant="outline" className="font-mono">
+                  🔖 {item.serialNumero}
+                </Badge>
+              </div>
+            )}
+
             <p className="text-sm text-muted-foreground">
               {format(new Date(item.dataMovimentacao), "dd/MM/yyyy 'às' HH:mm")}
             </p>
