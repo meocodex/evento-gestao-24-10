@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { toast as sonnerToast } from 'sonner';
 import { toast } from '@/hooks/use-toast';
 import type { MaterialEstoque, SerialEstoque } from '@/types/estoque';
+import { uiToDbStatus, dbToUiStatus } from '@/lib/estoqueStatus';
 
 export const useEstoqueMutations = () => {
   const queryClient = useQueryClient();
@@ -133,12 +135,28 @@ export const useEstoqueMutations = () => {
 
   const adicionarSerial = useMutation({
     mutationFn: async ({ materialId, dados }: { materialId: string; dados: SerialEstoque }) => {
+      // Converter status de UI para DB
+      const statusDb = uiToDbStatus(dados.status);
+
+      // Verificar se o serial já existe
+      const { data: existente } = await supabase
+        .from('materiais_seriais')
+        .select('numero')
+        .eq('material_id', materialId)
+        .eq('numero', dados.numero)
+        .maybeSingle();
+
+      if (existente) {
+        throw new Error('Já existe um serial com este número para este material');
+      }
+
+      // Inserir o serial com status convertido
       const { error } = await supabase
         .from('materiais_seriais')
         .insert({
           material_id: materialId,
           numero: dados.numero,
-          status: dados.status,
+          status: statusDb,
           localizacao: dados.localizacao,
           data_aquisicao: dados.dataAquisicao,
           ultima_manutencao: dados.ultimaManutencao,
@@ -147,13 +165,13 @@ export const useEstoqueMutations = () => {
 
       if (error) throw error;
 
-      // Incrementar contadores usando função do banco
-      if (dados.status === 'disponivel') {
+      // ORDEM CORRETA: Primeiro incrementar total
+      await supabase.rpc('increment_estoque_total', { p_material_id: materialId });
+
+      // Depois, se o status for disponível, incrementar disponível
+      if (statusDb === 'disponivel') {
         await supabase.rpc('increment_estoque_disponivel', { p_material_id: materialId });
       }
-
-      // Atualizar quantidade total
-      await supabase.rpc('increment_estoque_total', { p_material_id: materialId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
@@ -163,22 +181,32 @@ export const useEstoqueMutations = () => {
         description: 'Novo item adicionado ao estoque.',
       });
     },
+    onError: (error: any) => {
+      const errorMsg = error.message || 'Erro ao adicionar serial';
+      sonnerToast.error(errorMsg);
+    },
   });
 
   const editarSerial = useMutation({
     mutationFn: async ({ materialId, numeroSerial, dados }: { materialId: string; numeroSerial: string; dados: Partial<SerialEstoque> }) => {
-      // Buscar status atual
-      const { data: serialAtual } = await supabase
+      // Buscar o serial atual para comparar status (DB format)
+      const { data: serialAtual, error: fetchError } = await supabase
         .from('materiais_seriais')
         .select('status')
         .eq('material_id', materialId)
         .eq('numero', numeroSerial)
         .single();
 
+      if (fetchError) throw fetchError;
+
+      const oldStatusDb = serialAtual.status as any; // status vem do DB (em_uso)
+      const newStatusDb = dados.status ? uiToDbStatus(dados.status) : oldStatusDb;
+
+      // Atualizar o serial com status convertido
       const { error } = await supabase
         .from('materiais_seriais')
         .update({
-          status: dados.status,
+          status: newStatusDb,
           localizacao: dados.localizacao,
           data_aquisicao: dados.dataAquisicao,
           ultima_manutencao: dados.ultimaManutencao,
@@ -189,12 +217,15 @@ export const useEstoqueMutations = () => {
 
       if (error) throw error;
 
-      // Atualizar quantidade disponível se mudou o status
-      if (dados.status && serialAtual && serialAtual.status !== dados.status) {
-        if (serialAtual.status !== 'disponivel' && dados.status === 'disponivel') {
-          await supabase.rpc('increment_estoque_disponivel', { p_material_id: materialId });
-        } else if (serialAtual.status === 'disponivel' && dados.status !== 'disponivel') {
+      // Se o status mudou, atualizar a quantidade disponível (comparar em DB terms)
+      if (dados.status && oldStatusDb !== newStatusDb) {
+        // Se mudou de disponível para outro status, decrementar
+        if (oldStatusDb === 'disponivel' && newStatusDb !== 'disponivel') {
           await supabase.rpc('decrement_estoque_disponivel', { p_material_id: materialId });
+        }
+        // Se mudou de outro status para disponível, incrementar
+        else if (oldStatusDb !== 'disponivel' && newStatusDb === 'disponivel') {
+          await supabase.rpc('increment_estoque_disponivel', { p_material_id: materialId });
         }
       }
     },
@@ -205,6 +236,10 @@ export const useEstoqueMutations = () => {
         title: 'Serial atualizado',
         description: 'As alterações foram salvas com sucesso.',
       });
+    },
+    onError: (error: any) => {
+      const errorMsg = error.message || 'Erro ao atualizar serial';
+      sonnerToast.error(errorMsg);
     },
   });
 

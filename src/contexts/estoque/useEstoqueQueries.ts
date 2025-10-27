@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { FiltrosEstoque } from '@/types/estoque';
+import { dbToUiStatus } from '@/lib/estoqueStatus';
 
 export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEstoque) => {
   const queryClient = useQueryClient();
@@ -53,7 +54,7 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
         unidade: 'un',
         seriais: (m.materiais_seriais || []).map((s: any) => ({
           numero: s.numero,
-          status: s.status as 'disponivel' | 'em-uso' | 'manutencao',
+          status: dbToUiStatus(s.status),
           localizacao: s.localizacao,
           ultimaManutencao: s.ultima_manutencao || undefined,
           dataAquisicao: s.data_aquisicao || undefined,
