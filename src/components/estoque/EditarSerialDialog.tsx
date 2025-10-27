@@ -24,7 +24,7 @@ import { TagInput } from './TagInput';
 
 const serialSchema = z.object({
   localizacao: z.string().min(1, 'Localização é obrigatória'),
-  status: z.enum(['disponivel', 'em-uso', 'manutencao'] as const),
+  status: z.enum(['disponivel', 'em-uso', 'manutencao', 'perdido', 'consumido'] as const),
   tags: z.array(z.string()).optional().default([]),
 });
 

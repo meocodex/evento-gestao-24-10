@@ -28,6 +28,7 @@ import { toast } from '@/hooks/use-toast';
 const materialSchema = z.object({
   nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   categoria: z.string().min(1, 'Categoria é obrigatória'),
+  tipoControle: z.enum(['serial', 'quantidade'] as const).default('serial'),
   descricao: z.string().optional(),
   valorUnitario: z.coerce.number().positive('Valor deve ser positivo').optional().or(z.literal('')),
 });
@@ -75,6 +76,7 @@ export function NovoMaterialDialog({ open, onOpenChange }: NovoMaterialDialogPro
       await adicionarMaterial.mutateAsync({
         nome: data.nome,
         categoria: data.categoria,
+        tipoControle: data.tipoControle,
         descricao: data.descricao || undefined,
         valorUnitario: data.valorUnitario ? Number(data.valorUnitario) : undefined,
       });

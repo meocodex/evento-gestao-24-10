@@ -3,10 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Progress } from '@/components/ui/progress';
 import { useState, useEffect, useMemo } from 'react';
 import { useEstoque } from '@/hooks/estoque';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
-import { Search, CheckCircle2, Lock } from 'lucide-react';
+import { Search, CheckCircle2, Lock, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
@@ -44,12 +45,15 @@ export function AlocarMaterialDialog({
   const { buscarMaterialPorId } = useEstoque();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { alocarMaterialLote } = useEventosMateriaisAlocados(eventoId);
   const [tipoEnvio, setTipoEnvio] = useState<'antecipado' | 'com_tecnicos'>('antecipado');
-  const [serial, setSerial] = useState('');
+  const [serialsSelecionados, setSerialsSelecionados] = useState<string[]>([]);
   const [transportadora, setTransportadora] = useState('');
   const [responsavel, setResponsavel] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [materialEstoque, setMaterialEstoque] = useState<any>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processedCount, setProcessedCount] = useState(0);
 
   // Buscar materiais já alocados neste evento
   const { materiaisAlocados } = useEventosMateriaisAlocados(eventoId);
@@ -127,29 +131,71 @@ export function AlocarMaterialDialog({
 
   const quantidadeRestante = quantidadeNecessaria - quantidadeJaAlocada;
 
-  const handleSubmit = () => {
-    if (!serial) return;
+  const toggleSerial = (numero: string) => {
+    setSerialsSelecionados(prev => {
+      if (prev.includes(numero)) {
+        return prev.filter(s => s !== numero);
+      }
+      
+      if (prev.length >= quantidadeRestante) {
+        toast({
+          title: "Limite atingido",
+          description: `Você já selecionou ${quantidadeRestante} ${quantidadeRestante === 1 ? 'serial' : 'seriais'} (quantidade necessária)`,
+          variant: "destructive",
+        });
+        return prev;
+      }
+      
+      return [...prev, numero];
+    });
+  };
+
+  const handleSubmitLote = async () => {
+    if (serialsSelecionados.length === 0) return;
 
     if (tipoEnvio === 'antecipado' && !transportadora) {
+      toast({
+        title: "Campo obrigatório",
+        description: "Informe a transportadora para envio antecipado",
+        variant: "destructive",
+      });
       return;
     }
 
     if (tipoEnvio === 'com_tecnicos' && !responsavel) {
+      toast({
+        title: "Campo obrigatório",
+        description: "Informe o responsável pelo envio",
+        variant: "destructive",
+      });
       return;
     }
 
-    onAlocar({
-      itemId,
-      tipoEnvio,
-      serial,
-      ...(tipoEnvio === 'antecipado' ? { transportadora } : { responsavel }),
-    });
+    setIsProcessing(true);
+    setProcessedCount(0);
 
-    // Limpar form
-    setSerial('');
-    setTransportadora('');
-    setResponsavel('');
-    setSearchTerm('');
+    try {
+      const dados = serialsSelecionados.map(serial => ({
+        item_id: itemId,
+        tipo_envio: tipoEnvio,
+        serial,
+        ...(tipoEnvio === 'antecipado' ? { transportadora } : { responsavel }),
+      }));
+
+      await alocarMaterialLote.mutateAsync(dados);
+
+      // Limpar form
+      setSerialsSelecionados([]);
+      setTransportadora('');
+      setResponsavel('');
+      setSearchTerm('');
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Erro ao alocar em lote:', error);
+    } finally {
+      setIsProcessing(false);
+      setProcessedCount(0);
+    }
   };
 
   return (
@@ -202,6 +248,55 @@ export function AlocarMaterialDialog({
               />
             </div>
             <ScrollArea className="h-[200px] mt-2">
+              {serialsFiltrados.length > 0 && (
+                <div className="flex items-center justify-between p-3 bg-muted rounded-lg mb-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={serialsSelecionados.length === quantidadeRestante ? "default" : "secondary"}>
+                      {serialsSelecionados.length} / {quantidadeRestante}
+                    </Badge>
+                    <p className="text-sm text-muted-foreground">
+                      {serialsSelecionados.length === 1 ? 'serial selecionado' : 'seriais selecionados'}
+                    </p>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    {serialsSelecionados.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSerialsSelecionados([])}
+                      >
+                        Limpar
+                      </Button>
+                    )}
+                    {serialsFiltrados.some((s: any) => 
+                      s.status === 'disponivel' && 
+                      !serialsAlocadosNesteEvento.includes(s.numero) &&
+                      !serialsAlocadosGlobal[s.numero]
+                    ) && serialsSelecionados.length < quantidadeRestante && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const disponiveis = serialsFiltrados
+                            .filter((s: any) => {
+                              const jaAlocadoAqui = serialsAlocadosNesteEvento.includes(s.numero);
+                              const alocadoEmOutro = serialsAlocadosGlobal[s.numero];
+                              return s.status === 'disponivel' && !jaAlocadoAqui && !alocadoEmOutro;
+                            })
+                            .slice(0, quantidadeRestante - serialsSelecionados.length)
+                            .map((s: any) => s.numero);
+                          
+                          setSerialsSelecionados(prev => [...prev, ...disponiveis]);
+                        }}
+                      >
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Auto ({quantidadeRestante - serialsSelecionados.length})
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="space-y-2">
                 {serialsFiltrados.length === 0 ? (
                   <div className="text-center py-8">
@@ -229,8 +324,8 @@ export function AlocarMaterialDialog({
                       <Card
                         key={s.numero}
                         className={`transition-colors ${
-                          serial === s.numero
-                            ? 'border-primary bg-primary/5'
+                          serialsSelecionados.includes(s.numero)
+                            ? 'border-primary bg-primary/10'
                             : jaAlocadoAqui
                             ? 'border-green-500 bg-green-50 dark:bg-green-950/20'
                             : alocadoEmOutro
@@ -240,29 +335,27 @@ export function AlocarMaterialDialog({
                             : 'opacity-50 cursor-not-allowed'
                         }`}
                         onClick={() => {
-                          if (jaAlocadoAqui) {
-                            toast({
-                              title: "Material já alocado",
-                              description: "Este serial já está alocado neste evento",
-                              variant: "default",
-                            });
-                            return;
-                          }
-                          if (alocadoEmOutro) {
-                            toast({
-                              title: "Material indisponível",
-                              description: `Este serial está alocado em: ${serialsAlocadosGlobal[s.numero].eventoNome}`,
-                              variant: "destructive",
-                            });
-                            return;
-                          }
-                          if (podeSelecionar) {
-                            setSerial(s.numero);
-                          }
+                          if (jaAlocadoAqui || alocadoEmOutro || !podeSelecionar) return;
+                          toggleSerial(s.numero);
                         }}
                       >
                         <CardContent className="p-3">
-                          <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-3">
+                            {/* Checkbox visível */}
+                            {podeSelecionar && !jaAlocadoAqui && !alocadoEmOutro && (
+                              <div className="flex-shrink-0">
+                                <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                  serialsSelecionados.includes(s.numero)
+                                    ? 'bg-primary border-primary'
+                                    : 'border-muted-foreground/30'
+                                }`}>
+                                  {serialsSelecionados.includes(s.numero) && (
+                                    <CheckCircle2 className="h-4 w-4 text-primary-foreground" />
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1">
                                 <p className="font-medium truncate">{s.numero}</p>
@@ -342,19 +435,43 @@ export function AlocarMaterialDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={
-              !serial ||
-              (tipoEnvio === 'antecipado' && !transportadora) ||
-              (tipoEnvio === 'com_tecnicos' && !responsavel)
-            }
-          >
-            Alocar
-          </Button>
+          <div className="flex-1">
+            {isProcessing && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span>Alocando seriais...</span>
+                  <span className="font-medium">
+                    {processedCount} / {serialsSelecionados.length}
+                  </span>
+                </div>
+                <Progress value={(processedCount / serialsSelecionados.length) * 100} />
+              </div>
+            )}
+          </div>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isProcessing}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSubmitLote}
+              disabled={
+                isProcessing ||
+                serialsSelecionados.length === 0 ||
+                (tipoEnvio === 'antecipado' && !transportadora) ||
+                (tipoEnvio === 'com_tecnicos' && !responsavel)
+              }
+            >
+              {isProcessing 
+                ? `Alocando... (${processedCount}/${serialsSelecionados.length})`
+                : `Alocar ${serialsSelecionados.length} ${serialsSelecionados.length === 1 ? 'Serial' : 'Seriais'}`
+              }
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

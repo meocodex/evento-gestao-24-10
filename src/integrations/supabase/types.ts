@@ -1140,45 +1140,66 @@ export type Database = {
       eventos_materiais_alocados: {
         Row: {
           created_at: string | null
+          data_devolucao: string | null
           data_envio: string | null
           evento_id: string
+          fotos_devolucao: string[] | null
           id: string
           item_id: string
           nome: string
+          observacoes_devolucao: string | null
+          quantidade_alocada: number | null
+          quantidade_devolvida: number | null
           rastreamento: string | null
           responsavel: string | null
-          serial: string
+          responsavel_devolucao: string | null
+          serial: string | null
           status: Database["public"]["Enums"]["status_material"]
+          status_devolucao: string | null
           tipo_envio: Database["public"]["Enums"]["tipo_envio"]
           transportadora: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          data_devolucao?: string | null
           data_envio?: string | null
           evento_id: string
+          fotos_devolucao?: string[] | null
           id?: string
           item_id: string
           nome: string
+          observacoes_devolucao?: string | null
+          quantidade_alocada?: number | null
+          quantidade_devolvida?: number | null
           rastreamento?: string | null
           responsavel?: string | null
-          serial: string
+          responsavel_devolucao?: string | null
+          serial?: string | null
           status?: Database["public"]["Enums"]["status_material"]
+          status_devolucao?: string | null
           tipo_envio: Database["public"]["Enums"]["tipo_envio"]
           transportadora?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          data_devolucao?: string | null
           data_envio?: string | null
           evento_id?: string
+          fotos_devolucao?: string[] | null
           id?: string
           item_id?: string
           nome?: string
+          observacoes_devolucao?: string | null
+          quantidade_alocada?: number | null
+          quantidade_devolvida?: number | null
           rastreamento?: string | null
           responsavel?: string | null
-          serial?: string
+          responsavel_devolucao?: string | null
+          serial?: string | null
           status?: Database["public"]["Enums"]["status_material"]
+          status_devolucao?: string | null
           tipo_envio?: Database["public"]["Enums"]["tipo_envio"]
           transportadora?: string | null
           updated_at?: string | null
@@ -1197,6 +1218,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_financeiro_eventos"
             referencedColumns: ["evento_id"]
+          },
+          {
+            foreignKeyName: "eventos_materiais_alocados_responsavel_devolucao_fkey"
+            columns: ["responsavel_devolucao"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1315,6 +1343,7 @@ export type Database = {
           nome: string
           quantidade_disponivel: number
           quantidade_total: number
+          tipo_controle: string
           updated_at: string | null
           valor_unitario: number | null
         }
@@ -1327,6 +1356,7 @@ export type Database = {
           nome: string
           quantidade_disponivel?: number
           quantidade_total?: number
+          tipo_controle?: string
           updated_at?: string | null
           valor_unitario?: number | null
         }
@@ -1339,6 +1369,7 @@ export type Database = {
           nome?: string
           quantidade_disponivel?: number
           quantidade_total?: number
+          tipo_controle?: string
           updated_at?: string | null
           valor_unitario?: number | null
         }
@@ -1405,14 +1436,117 @@ export type Database = {
           },
         ]
       }
+      materiais_historico_movimentacao: {
+        Row: {
+          created_at: string | null
+          data_movimentacao: string | null
+          evento_id: string | null
+          evento_nome: string | null
+          fotos_comprovantes: string[] | null
+          id: string
+          localizacao_destino: string | null
+          localizacao_origem: string | null
+          material_id: string
+          motivo: string | null
+          observacoes: string | null
+          quantidade: number | null
+          responsavel: string | null
+          serial_numero: string | null
+          tipo_envio: string | null
+          tipo_operacao: string
+          transportadora: string | null
+          usuario_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_movimentacao?: string | null
+          evento_id?: string | null
+          evento_nome?: string | null
+          fotos_comprovantes?: string[] | null
+          id?: string
+          localizacao_destino?: string | null
+          localizacao_origem?: string | null
+          material_id: string
+          motivo?: string | null
+          observacoes?: string | null
+          quantidade?: number | null
+          responsavel?: string | null
+          serial_numero?: string | null
+          tipo_envio?: string | null
+          tipo_operacao: string
+          transportadora?: string | null
+          usuario_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_movimentacao?: string | null
+          evento_id?: string | null
+          evento_nome?: string | null
+          fotos_comprovantes?: string[] | null
+          id?: string
+          localizacao_destino?: string | null
+          localizacao_origem?: string | null
+          material_id?: string
+          motivo?: string | null
+          observacoes?: string | null
+          quantidade?: number | null
+          responsavel?: string | null
+          serial_numero?: string | null
+          tipo_envio?: string | null
+          tipo_operacao?: string
+          transportadora?: string | null
+          usuario_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materiais_historico_movimentacao_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "materiais_historico_movimentacao_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_financeiro_eventos"
+            referencedColumns: ["evento_id"]
+          },
+          {
+            foreignKeyName: "materiais_historico_movimentacao_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materiais_estoque"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "materiais_historico_movimentacao_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "vw_estoque_popular"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "materiais_historico_movimentacao_usuario_id_fkey"
+            columns: ["usuario_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       materiais_seriais: {
         Row: {
           created_at: string | null
           data_aquisicao: string | null
+          data_perda: string | null
+          fotos_perda: string[] | null
           localizacao: string
           material_id: string
+          motivo_perda: string | null
           numero: string
           observacoes: string | null
+          perdido_em: string | null
           status: Database["public"]["Enums"]["status_serial"]
           tags: string[] | null
           ultima_manutencao: string | null
@@ -1421,10 +1555,14 @@ export type Database = {
         Insert: {
           created_at?: string | null
           data_aquisicao?: string | null
+          data_perda?: string | null
+          fotos_perda?: string[] | null
           localizacao: string
           material_id: string
+          motivo_perda?: string | null
           numero: string
           observacoes?: string | null
+          perdido_em?: string | null
           status?: Database["public"]["Enums"]["status_serial"]
           tags?: string[] | null
           ultima_manutencao?: string | null
@@ -1433,10 +1571,14 @@ export type Database = {
         Update: {
           created_at?: string | null
           data_aquisicao?: string | null
+          data_perda?: string | null
+          fotos_perda?: string[] | null
           localizacao?: string
           material_id?: string
+          motivo_perda?: string | null
           numero?: string
           observacoes?: string | null
+          perdido_em?: string | null
           status?: Database["public"]["Enums"]["status_serial"]
           tags?: string[] | null
           ultima_manutencao?: string | null
@@ -1456,6 +1598,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_estoque_popular"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "materiais_seriais_perdido_em_fkey"
+            columns: ["perdido_em"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "materiais_seriais_perdido_em_fkey"
+            columns: ["perdido_em"]
+            isOneToOne: false
+            referencedRelation: "vw_financeiro_eventos"
+            referencedColumns: ["evento_id"]
           },
         ]
       }
@@ -1938,7 +2094,12 @@ export type Database = {
         | "em_transito"
         | "entregue"
         | "preparado"
-      status_serial: "disponivel" | "em-uso" | "manutencao"
+      status_serial:
+        | "disponivel"
+        | "em-uso"
+        | "manutencao"
+        | "perdido"
+        | "consumido"
       tipo_cliente: "CPF" | "CNPJ"
       tipo_envio: "antecipado" | "com_tecnicos"
       tipo_evento: "ingresso" | "bar" | "hibrido"
@@ -2129,7 +2290,13 @@ export const Constants = {
         "entregue",
         "preparado",
       ],
-      status_serial: ["disponivel", "em-uso", "manutencao"],
+      status_serial: [
+        "disponivel",
+        "em-uso",
+        "manutencao",
+        "perdido",
+        "consumido",
+      ],
       tipo_cliente: ["CPF", "CNPJ"],
       tipo_envio: ["antecipado", "com_tecnicos"],
       tipo_evento: ["ingresso", "bar", "hibrido"],
