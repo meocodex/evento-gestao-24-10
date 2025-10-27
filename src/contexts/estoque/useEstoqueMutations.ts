@@ -153,9 +153,7 @@ export const useEstoqueMutations = () => {
       }
 
       // Atualizar quantidade total
-      const { error: updateError } = await supabase.rpc('query', {
-        query: `UPDATE materiais_estoque SET quantidade_total = quantidade_total + 1 WHERE id = '${materialId}'`
-      });
+      await supabase.rpc('increment_estoque_total', { p_material_id: materialId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
@@ -238,9 +236,7 @@ export const useEstoqueMutations = () => {
       }
 
       // Atualizar quantidade total
-      const { error: updateError } = await supabase.rpc('query', {
-        query: `UPDATE materiais_estoque SET quantidade_total = GREATEST(0, quantidade_total - 1) WHERE id = '${materialId}'`
-      });
+      await supabase.rpc('decrement_estoque_total', { p_material_id: materialId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });

@@ -1802,6 +1802,10 @@ export type Database = {
         Args: { p_material_id: string }
         Returns: undefined
       }
+      decrement_estoque_total: {
+        Args: { p_material_id: string }
+        Returns: undefined
+      }
       has_permission: {
         Args: { _permission_id: string; _user_id: string }
         Returns: boolean
@@ -1818,6 +1822,10 @@ export type Database = {
         Returns: undefined
       }
       increment_estoque_disponivel: {
+        Args: { p_material_id: string }
+        Returns: undefined
+      }
+      increment_estoque_total: {
         Args: { p_material_id: string }
         Returns: undefined
       }
