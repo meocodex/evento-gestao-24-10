@@ -177,6 +177,7 @@ export function AlocarMaterialDialog({
     try {
       const dados = serialsSelecionados.map(serial => ({
         item_id: itemId,
+        nome: materialNome,
         tipo_envio: tipoEnvio,
         serial,
         ...(tipoEnvio === 'antecipado' ? { transportadora } : { responsavel }),
