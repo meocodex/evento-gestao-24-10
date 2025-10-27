@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 export default function Equipe() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const pageSize = 50;
   const { operacionais = [], data: profiles = [], isLoading: loadingMembros, excluirOperacional } = useEquipe(page, pageSize, {}, true);
@@ -76,6 +78,10 @@ export default function Equipe() {
         });
         
         if (error) throw error;
+
+        // Invalidar queries após exclusão do Auth
+        queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
+        queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
       } else {
         // Apenas operacional - excluir da tabela equipe_operacional
         await excluirOperacional.mutateAsync(membroParaExcluir.id);
