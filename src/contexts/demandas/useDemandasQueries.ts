@@ -1,10 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { transformDemanda } from './transformDemanda';
 import { Demanda } from '@/types/demandas';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useEffect } from 'react';
 
 export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string, enabled = true) {
+  const queryClient = useQueryClient();
   // Debounce do termo de busca
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -69,6 +71,32 @@ export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string,
     staleTime: 1000 * 60 * 3, // 3 minutos (demandas são voláteis)
     gcTime: 1000 * 60 * 20,
   });
+
+  // Realtime listeners para demandas e tabelas relacionadas
+  useEffect(() => {
+    const channel = supabase
+      .channel('demandas-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'demandas' },
+        () => queryClient.invalidateQueries({ queryKey: ['demandas'] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'demandas_comentarios' },
+        () => queryClient.invalidateQueries({ queryKey: ['demandas'] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'demandas_anexos' },
+        () => queryClient.invalidateQueries({ queryKey: ['demandas'] })
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   return {
     demandas: data?.demandas || [],

@@ -1,7 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { OperacionalEquipe, FiltrosOperacional } from '@/types/equipe';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useEffect } from 'react';
 
 export function useOperacionalQueries(
   page = 1,
@@ -9,6 +10,7 @@ export function useOperacionalQueries(
   filtros?: FiltrosOperacional,
   enabled = true
 ) {
+  const queryClient = useQueryClient();
   // Debounce do termo de busca
   const debouncedSearchTerm = useDebounce(filtros?.searchTerm, 300);
 
@@ -94,6 +96,22 @@ export function useOperacionalQueries(
     staleTime: 1000 * 60 * 30, // 30 minutos
     gcTime: 1000 * 60 * 60, // 1 hora
   });
+
+  // Realtime listener para equipe operacional
+  useEffect(() => {
+    const channel = supabase
+      .channel('equipe-operacional-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'equipe_operacional' },
+        () => queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] })
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   return {
     operacionais: data?.operacionais || [],

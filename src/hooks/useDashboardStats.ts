@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useEffect } from 'react';
 import { startOfMonth, endOfMonth, addDays, isAfter, isBefore, differenceInDays } from 'date-fns';
 
 export interface DashboardStats {
@@ -50,9 +51,10 @@ export interface DashboardStats {
 }
 
 export function useDashboardStats() {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
     queryKey: ['dashboard-stats'],
-    staleTime: 1000 * 60 * 5, // 5 minutos (views materializadas atualizam via triggers)
     queryFn: async (): Promise<DashboardStats> => {
       const hoje = new Date();
       const inicioMes = startOfMonth(hoje);
@@ -264,7 +266,52 @@ export function useDashboardStats() {
         alertas,
       };
     },
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
   });
+
+  // Realtime listeners para todas as tabelas que afetam o dashboard
+  useEffect(() => {
+    const channel = supabase
+      .channel('dashboard-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'eventos' },
+        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'eventos_receitas' },
+        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'eventos_despesas' },
+        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'eventos_cobrancas' },
+        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'materiais_seriais' },
+        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'demandas' },
+        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  return query;
 }
 
 // Hook específico para comercial (seus eventos)

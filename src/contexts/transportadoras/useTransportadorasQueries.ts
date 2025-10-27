@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useEffect } from 'react';
 
 export interface FiltrosTransportadora {
   searchTerm?: string;
@@ -15,6 +16,8 @@ export function useTransportadorasQueries(
   pageSizeTransportadoras = 50,
   filtrosTransportadoras?: FiltrosTransportadora
 ) {
+  const queryClient = useQueryClient();
+
   const transportadorasResult = useQuery({
     queryKey: ['transportadoras', pageTransportadoras, pageSizeTransportadoras, filtrosTransportadoras],
     queryFn: async () => {
@@ -64,6 +67,27 @@ export function useTransportadorasQueries(
     return data;
   };
 
+  // Realtime listeners para transportadoras e rotas
+  useEffect(() => {
+    const channel = supabase
+      .channel('transportadoras-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transportadoras' },
+        () => queryClient.invalidateQueries({ queryKey: ['transportadoras'] })
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'transportadoras_rotas' },
+        () => queryClient.invalidateQueries({ queryKey: ['transportadoras'] })
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   return {
     ...transportadorasResult,
     transportadoras: transportadorasData?.transportadoras || [],
@@ -77,7 +101,9 @@ export function useEnviosQueries(
   pageSizeEnvios = 50,
   filtrosEnvios?: FiltrosEnvio
 ) {
-  return useQuery({
+  const queryClient = useQueryClient();
+
+  const query = useQuery({
     queryKey: ['envios', pageEnvios, pageSizeEnvios, filtrosEnvios],
     queryFn: async () => {
       let query = supabase
@@ -105,4 +131,22 @@ export function useEnviosQueries(
     staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 60,
   });
+
+  // Realtime listener para envios
+  useEffect(() => {
+    const channel = supabase
+      .channel('envios-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'envios' },
+        () => queryClient.invalidateQueries({ queryKey: ['envios'] })
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
+  return query;
 }

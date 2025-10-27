@@ -1,9 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Cliente } from '@/types/eventos';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useEffect } from 'react';
 
 export function useClientesQueries(page = 1, pageSize = 20, searchTerm?: string, enabled = true) {
+  const queryClient = useQueryClient();
   // Debounce do termo de busca
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -60,6 +62,22 @@ export function useClientesQueries(page = 1, pageSize = 20, searchTerm?: string,
     staleTime: 1000 * 60 * 15, // 15 minutos (clientes são relativamente estáveis)
     gcTime: 1000 * 60 * 60, // 1 hora
   });
+
+  // Realtime listener para clientes
+  useEffect(() => {
+    const channel = supabase
+      .channel('clientes-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'clientes' },
+        () => queryClient.invalidateQueries({ queryKey: ['clientes'] })
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   return {
     clientes: data?.clientes || [],
