@@ -215,20 +215,21 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         quantidadeJaAlocada={selectedMaterial.quantidadeJaAlocada}
         onAlocar={(data) => {
           materiaisAlocados.alocarMaterial.mutate({
-            itemId: data.itemId,
+            item_id: data.itemId,
             nome: selectedMaterial.nome,
             serial: data.serial,
             status: 'reservado',
+            tipo_envio: data.tipoEnvio,
             ...(data.tipoEnvio === 'antecipado' 
               ? { 
                   transportadora: data.transportadora!, 
-                  dataEnvio: new Date().toISOString(),
+                  data_envio: new Date().toISOString().split('T')[0],
                 } 
               : { 
                   responsavel: data.responsavel! 
                 }
             ),
-          } as any);
+          });
           setShowAlocarMaterial(false);
           setSelectedMaterial(null);
         }}
