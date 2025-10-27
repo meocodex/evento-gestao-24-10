@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -46,6 +47,30 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       toast.success('Material removido com sucesso!');
     },
   });
+
+  // Listener para updates em tempo real
+  useEffect(() => {
+    const channel = supabase
+      .channel(`evento-materiais-${eventoId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'eventos_materiais_alocados',
+          filter: `evento_id=eq.${eventoId}`
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
+          queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [eventoId, queryClient]);
 
   return {
     materiaisAlocados: materiaisData || [],

@@ -1,8 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { FiltrosEstoque } from '@/types/estoque';
 
 export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEstoque) => {
+  const queryClient = useQueryClient();
   const queryResult = useQuery({
     queryKey: ['materiais_estoque', page, pageSize, filtros],
     queryFn: async () => {
@@ -64,9 +66,43 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
         totalCount: count || 0,
       };
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 30, // 30 segundos para dados mais frescos
     gcTime: 1000 * 60 * 30,
   });
+
+  // Listener para updates em tempo real
+  useEffect(() => {
+    const channel = supabase
+      .channel('materiais-estoque-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'materiais_estoque'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'materiais_seriais'
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+          queryClient.invalidateQueries({ queryKey: ['materiais_seriais'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
   const { data } = queryResult;
 

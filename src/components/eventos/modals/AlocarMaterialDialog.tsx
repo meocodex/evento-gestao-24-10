@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { useState, useEffect, useMemo } from 'react';
 import { useEstoque } from '@/hooks/estoque';
+import { useQueryClient } from '@tanstack/react-query';
 import { Search } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -36,6 +37,7 @@ export function AlocarMaterialDialog({
   onAlocar,
 }: AlocarMaterialDialogProps) {
   const { buscarMaterialPorId } = useEstoque();
+  const queryClient = useQueryClient();
   const [tipoEnvio, setTipoEnvio] = useState<'antecipado' | 'com-tecnicos'>('antecipado');
   const [serial, setSerial] = useState('');
   const [transportadora, setTransportadora] = useState('');
@@ -46,12 +48,15 @@ export function AlocarMaterialDialog({
   // Buscar material no estoque quando o dialog abrir
   useEffect(() => {
     if (open && itemId) {
+      // Forçar refetch sempre que abrir
       buscarMaterialPorId(itemId).then(setMaterialEstoque);
+      
+      // Invalidar cache ao abrir para garantir dados frescos
+      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
     } else if (!open) {
-      // Limpar ao fechar para evitar stale data
       setMaterialEstoque(null);
     }
-  }, [open, itemId, buscarMaterialPorId]);
+  }, [open, itemId, buscarMaterialPorId, queryClient]);
 
   // Filtrar seriais disponíveis - usar useMemo para evitar recalcular a cada render
   const serialsFiltrados = useMemo(() => {
