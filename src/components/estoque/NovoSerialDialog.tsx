@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useEstoque } from '@/hooks/estoque';
+import { TagInput } from './TagInput';
 
 const serialSchema = z.object({
   numero: z.string()
@@ -28,6 +29,7 @@ const serialSchema = z.object({
     .regex(/^[A-Z0-9\-_]+$/i, 'Use apenas letras, números, hífens e underscores'),
   localizacao: z.string().min(1, 'Localização é obrigatória'),
   status: z.enum(['disponivel', 'em-uso', 'manutencao'] as const),
+  tags: z.array(z.string()).optional().default([]),
 });
 
 type SerialFormData = z.infer<typeof serialSchema>;
@@ -60,10 +62,12 @@ export function NovoSerialDialog({
     defaultValues: {
       status: 'disponivel',
       localizacao: 'Depósito Principal',
+      tags: [],
     },
   });
 
   const status = watch('status');
+  const tags = watch('tags');
 
   const onSubmit = async (data: SerialFormData) => {
     setLoading(true);
@@ -74,6 +78,7 @@ export function NovoSerialDialog({
           numero: data.numero.toUpperCase(),
           status: data.status as 'disponivel' | 'em-uso' | 'manutencao',
           localizacao: data.localizacao,
+          tags: data.tags || [],
         }
       });
       reset();
@@ -134,6 +139,19 @@ export function NovoSerialDialog({
             {errors.status && (
               <p className="text-sm text-destructive">{errors.status.message}</p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tags">Tags (opcional)</Label>
+            <TagInput
+              value={tags || []}
+              onChange={(newTags) => setValue('tags', newTags)}
+              placeholder="Ex: Bateria carregada, Testado..."
+              suggestions={['Bateria carregada', 'Bateria descarregada', 'Testado', 'Necessita manutenção', 'Novo']}
+            />
+            <p className="text-xs text-muted-foreground">
+              Adicione etiquetas para facilitar a identificação
+            </p>
           </div>
 
           <DialogFooter>

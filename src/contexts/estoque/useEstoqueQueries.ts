@@ -16,14 +16,15 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
         .from('materiais_estoque')
         .select(`
           *,
-          materiais_seriais (
-            numero,
-            status,
-            localizacao,
-            ultima_manutencao,
-            data_aquisicao,
-            observacoes
-          )
+        materiais_seriais (
+          numero,
+          status,
+          localizacao,
+          tags,
+          ultima_manutencao,
+          data_aquisicao,
+          observacoes
+        )
         `, { count: 'exact' });
 
       // Aplicar filtros server-side
@@ -56,6 +57,7 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
           numero: s.numero,
           status: dbToUiStatus(s.status),
           localizacao: s.localizacao,
+          tags: s.tags || [],
           ultimaManutencao: s.ultima_manutencao || undefined,
           dataAquisicao: s.data_aquisicao || undefined,
           observacoes: s.observacoes || undefined,
@@ -123,6 +125,7 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
           numero,
           status,
           localizacao,
+          tags,
           ultima_manutencao,
           data_aquisicao,
           observacoes
@@ -148,6 +151,7 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
         numero: s.numero,
         status: dbToUiStatus(s.status),
         localizacao: s.localizacao,
+        tags: s.tags || [],
         ultimaManutencao: s.ultima_manutencao || undefined,
         dataAquisicao: s.data_aquisicao || undefined,
         observacoes: s.observacoes || undefined,

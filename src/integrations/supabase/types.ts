@@ -1414,6 +1414,7 @@ export type Database = {
           numero: string
           observacoes: string | null
           status: Database["public"]["Enums"]["status_serial"]
+          tags: string[] | null
           ultima_manutencao: string | null
           updated_at: string | null
         }
@@ -1425,6 +1426,7 @@ export type Database = {
           numero: string
           observacoes?: string | null
           status?: Database["public"]["Enums"]["status_serial"]
+          tags?: string[] | null
           ultima_manutencao?: string | null
           updated_at?: string | null
         }
@@ -1436,6 +1438,7 @@ export type Database = {
           numero?: string
           observacoes?: string | null
           status?: Database["public"]["Enums"]["status_serial"]
+          tags?: string[] | null
           ultima_manutencao?: string | null
           updated_at?: string | null
         }

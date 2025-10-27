@@ -2,6 +2,7 @@ export interface SerialEstoque {
   numero: string;
   status: 'disponivel' | 'em-uso' | 'manutencao';
   localizacao: string;
+  tags?: string[];
   eventoId?: string;
   eventoNome?: string;
   ultimaManutencao?: string;

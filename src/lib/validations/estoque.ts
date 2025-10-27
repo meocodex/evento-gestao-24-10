@@ -68,6 +68,11 @@ export const serialEstoqueSchema = z.object({
     .string()
     .uuid('Material inválido'),
   serial: serialSchema,
+  tags: z
+    .array(z.string().trim().min(1).max(50))
+    .max(10, 'Máximo de 10 tags por serial')
+    .optional()
+    .default([]),
   observacoes: z
     .string()
     .trim()

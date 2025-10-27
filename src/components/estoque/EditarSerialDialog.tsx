@@ -20,10 +20,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useEstoque, SerialEstoque } from '@/hooks/estoque';
+import { TagInput } from './TagInput';
 
 const serialSchema = z.object({
   localizacao: z.string().min(1, 'Localização é obrigatória'),
   status: z.enum(['disponivel', 'em-uso', 'manutencao'] as const),
+  tags: z.array(z.string()).optional().default([]),
 });
 
 type SerialFormData = z.infer<typeof serialSchema>;
@@ -56,15 +58,18 @@ export function EditarSerialDialog({
     defaultValues: {
       status: serial.status,
       localizacao: serial.localizacao,
+      tags: serial.tags || [],
     },
   });
 
   const status = watch('status');
+  const tags = watch('tags');
 
   useEffect(() => {
     reset({
       status: serial.status,
       localizacao: serial.localizacao,
+      tags: serial.tags || [],
     });
   }, [serial, reset]);
 
@@ -77,6 +82,7 @@ export function EditarSerialDialog({
         dados: {
           status: data.status,
           localizacao: data.localizacao,
+          tags: data.tags || [],
         }
       });
       onOpenChange(false);
@@ -120,6 +126,19 @@ export function EditarSerialDialog({
             {errors.status && (
               <p className="text-sm text-destructive">{errors.status.message}</p>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tags">Tags (opcional)</Label>
+            <TagInput
+              value={tags || []}
+              onChange={(newTags) => setValue('tags', newTags)}
+              placeholder="Ex: Bateria carregada, Testado..."
+              suggestions={['Bateria carregada', 'Bateria descarregada', 'Testado', 'Necessita manutenção', 'Novo']}
+            />
+            <p className="text-xs text-muted-foreground">
+              Adicione etiquetas para facilitar a identificação
+            </p>
           </div>
 
           <DialogFooter>

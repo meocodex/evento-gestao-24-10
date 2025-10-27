@@ -158,6 +158,7 @@ export const useEstoqueMutations = () => {
           numero: dados.numero,
           status: statusDb,
           localizacao: dados.localizacao,
+          tags: dados.tags || [],
           data_aquisicao: dados.dataAquisicao,
           ultima_manutencao: dados.ultimaManutencao,
           observacoes: dados.observacoes,
@@ -208,6 +209,7 @@ export const useEstoqueMutations = () => {
         .update({
           status: newStatusDb,
           localizacao: dados.localizacao,
+          tags: dados.tags,
           data_aquisicao: dados.dataAquisicao,
           ultima_manutencao: dados.ultimaManutencao,
           observacoes: dados.observacoes,

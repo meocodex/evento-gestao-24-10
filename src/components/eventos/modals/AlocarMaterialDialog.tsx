@@ -178,9 +178,19 @@ export function AlocarMaterialDialog({
                     >
                       <CardContent className="p-3">
                         <div className="flex items-center justify-between">
-                          <div>
+                          <div className="flex-1">
                             <p className="font-medium">{s.numero}</p>
                             <p className="text-sm text-muted-foreground">{s.localizacao}</p>
+                            
+                            {s.tags && s.tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {s.tags.map((tag) => (
+                                  <Badge key={tag} variant="outline" className="text-xs">
+                                    {tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
                           </div>
                           <Badge
                             variant={
