@@ -203,36 +203,40 @@ export default function Estoque() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {materiaisFiltrados.map((material) => (
-            <Card key={material.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{material.nome}</CardTitle>
-                    <p className="text-sm text-muted-foreground font-mono">{material.id}</p>
+          {materiaisFiltrados.map((material) => {
+            const emUso = material.seriais?.filter((s: any) => s.status === 'em-uso').length || 0;
+            const manutencao = material.seriais?.filter((s: any) => s.status === 'manutencao').length || 0;
+            
+            return (
+              <Card key={material.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">{material.nome}</CardTitle>
+                      <p className="text-sm text-muted-foreground font-mono">{material.id}</p>
+                    </div>
+                    <Badge variant="outline">{material.categoria}</Badge>
                   </div>
-                  <Badge variant="outline">{material.categoria}</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-4 gap-2 mb-4">
-                  <div className="text-center">
-                    <p className="text-2xl font-bold">{material.quantidade_total || 0}</p>
-                    <p className="text-xs text-muted-foreground">Total</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-4 gap-2 mb-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold">{material.quantidadeTotal || 0}</p>
+                      <p className="text-xs text-muted-foreground">Total</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">{material.quantidadeDisponivel || 0}</p>
+                      <p className="text-xs text-muted-foreground">Disp.</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-orange-600">{emUso}</p>
+                      <p className="text-xs text-muted-foreground">Em Uso</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-destructive">{manutencao}</p>
+                      <p className="text-xs text-muted-foreground">Manut.</p>
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">{material.quantidade_disponivel || 0}</p>
-                    <p className="text-xs text-muted-foreground">Disp.</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-orange-600">0</p>
-                    <p className="text-xs text-muted-foreground">Em Uso</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-destructive">0</p>
-                    <p className="text-xs text-muted-foreground">Manut.</p>
-                  </div>
-                </div>
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => handleVerDetalhes(material)}>
                     <Eye className="h-4 w-4 mr-2" />Detalhes
@@ -245,8 +249,9 @@ export default function Estoque() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
 
