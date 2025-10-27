@@ -5,15 +5,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { useState, useEffect, useMemo } from 'react';
 import { useEstoque } from '@/hooks/estoque';
-import { useQueryClient } from '@tanstack/react-query';
-import { Search } from 'lucide-react';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { Search, CheckCircle2, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
+import { useEventosMateriaisAlocados } from '@/hooks/eventos';
+import { useToast } from '@/hooks/use-toast';
 
 interface AlocarMaterialDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  eventoId: string;
   itemId: string;
   materialNome: string;
   quantidadeNecessaria: number;
@@ -30,6 +34,7 @@ interface AlocarMaterialDialogProps {
 export function AlocarMaterialDialog({
   open,
   onOpenChange,
+  eventoId,
   itemId,
   materialNome,
   quantidadeNecessaria,
@@ -38,12 +43,29 @@ export function AlocarMaterialDialog({
 }: AlocarMaterialDialogProps) {
   const { buscarMaterialPorId } = useEstoque();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [tipoEnvio, setTipoEnvio] = useState<'antecipado' | 'com_tecnicos'>('antecipado');
   const [serial, setSerial] = useState('');
   const [transportadora, setTransportadora] = useState('');
   const [responsavel, setResponsavel] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [materialEstoque, setMaterialEstoque] = useState<any>(null);
+
+  // Buscar materiais já alocados neste evento
+  const { materiaisAlocados } = useEventosMateriaisAlocados(eventoId);
+
+  // Buscar TODOS os materiais alocados (qualquer evento)
+  const { data: todosMateriaisAlocados } = useQuery({
+    queryKey: ['todos-materiais-alocados'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('eventos_materiais_alocados')
+        .select('serial, evento_id, eventos(nome)');
+      if (error) throw error;
+      return data;
+    },
+    enabled: open,
+  });
 
   // Buscar material no estoque quando o dialog abrir
   useEffect(() => {
@@ -58,19 +80,50 @@ export function AlocarMaterialDialog({
     }
   }, [open, itemId, buscarMaterialPorId, queryClient]);
 
-  // Filtrar seriais disponíveis - usar useMemo para evitar recalcular a cada render
+  // Mapear seriais já alocados neste evento
+  const serialsAlocadosNesteEvento = useMemo(() => {
+    return materiaisAlocados
+      .filter(m => m.item_id === itemId)
+      .map(m => m.serial);
+  }, [materiaisAlocados, itemId]);
+
+  // Mapear seriais alocados em qualquer evento
+  const serialsAlocadosGlobal = useMemo(() => {
+    return (todosMateriaisAlocados || []).reduce((acc, m: any) => {
+      acc[m.serial] = {
+        eventoId: m.evento_id,
+        eventoNome: m.eventos?.nome || 'Evento desconhecido'
+      };
+      return acc;
+    }, {} as Record<string, { eventoId: string; eventoNome: string }>);
+  }, [todosMateriaisAlocados]);
+
+  // Filtrar e ordenar seriais
   const serialsFiltrados = useMemo(() => {
     if (!materialEstoque?.seriais) return [];
     
-    return materialEstoque.seriais
-      .filter((s: any) => s.numero.toLowerCase().includes(searchTerm.toLowerCase()))
+    const seriais = materialEstoque.seriais
+      .filter((s: any) => {
+        const matchSearch = s.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          s.localizacao.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchSearch;
+      })
       .sort((a: any, b: any) => {
-        // Disponíveis primeiro
-        if (a.status === 'disponivel' && b.status !== 'disponivel') return -1;
-        if (a.status !== 'disponivel' && b.status === 'disponivel') return 1;
+        // Ordenar: já alocados aqui primeiro (verde), depois disponíveis, depois bloqueados
+        const aAlocadoAqui = serialsAlocadosNesteEvento.includes(a.numero);
+        const bAlocadoAqui = serialsAlocadosNesteEvento.includes(b.numero);
+        const aAlocadoOutro = serialsAlocadosGlobal[a.numero] && serialsAlocadosGlobal[a.numero].eventoId !== eventoId;
+        const bAlocadoOutro = serialsAlocadosGlobal[b.numero] && serialsAlocadosGlobal[b.numero].eventoId !== eventoId;
+        
+        if (aAlocadoAqui && !bAlocadoAqui) return -1;
+        if (!aAlocadoAqui && bAlocadoAqui) return 1;
+        if (a.status === 'disponivel' && !aAlocadoOutro && (b.status !== 'disponivel' || bAlocadoOutro)) return -1;
+        if (b.status === 'disponivel' && !bAlocadoOutro && (a.status !== 'disponivel' || aAlocadoOutro)) return 1;
         return a.numero.localeCompare(b.numero);
       });
-  }, [materialEstoque?.seriais, searchTerm]);
+
+    return seriais;
+  }, [materialEstoque, searchTerm, serialsAlocadosNesteEvento, serialsAlocadosGlobal, eventoId]);
 
   const quantidadeRestante = quantidadeNecessaria - quantidadeJaAlocada;
 
@@ -166,47 +219,102 @@ export function AlocarMaterialDialog({
                     )}
                   </div>
                 ) : (
-                  serialsFiltrados.map((s) => (
-                    <Card
-                      key={s.numero}
-                      className={`cursor-pointer transition-colors ${
-                        serial === s.numero
-                          ? 'border-primary bg-primary/5'
-                          : 'hover:border-primary/50'
-                      } ${s.status !== 'disponivel' ? 'opacity-50' : ''}`}
-                      onClick={() => s.status === 'disponivel' && setSerial(s.numero)}
-                    >
-                      <CardContent className="p-3">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="font-medium">{s.numero}</p>
-                            <p className="text-sm text-muted-foreground">{s.localizacao}</p>
-                            
-                            {s.tags && s.tags.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {s.tags.map((tag) => (
-                                  <Badge key={tag} variant="outline" className="text-xs">
-                                    {tag}
+                  serialsFiltrados.map((s: any) => {
+                    const jaAlocadoAqui = serialsAlocadosNesteEvento.includes(s.numero);
+                    const alocadoEmOutro = serialsAlocadosGlobal[s.numero] && 
+                                          serialsAlocadosGlobal[s.numero].eventoId !== eventoId;
+                    const podeSelecionar = s.status === 'disponivel' && !jaAlocadoAqui && !alocadoEmOutro;
+
+                    return (
+                      <Card
+                        key={s.numero}
+                        className={`transition-colors ${
+                          serial === s.numero
+                            ? 'border-primary bg-primary/5'
+                            : jaAlocadoAqui
+                            ? 'border-green-500 bg-green-50 dark:bg-green-950/20'
+                            : alocadoEmOutro
+                            ? 'border-destructive/50 bg-destructive/5 opacity-60 cursor-not-allowed'
+                            : podeSelecionar
+                            ? 'hover:border-primary/50 cursor-pointer'
+                            : 'opacity-50 cursor-not-allowed'
+                        }`}
+                        onClick={() => {
+                          if (jaAlocadoAqui) {
+                            toast({
+                              title: "Material já alocado",
+                              description: "Este serial já está alocado neste evento",
+                              variant: "default",
+                            });
+                            return;
+                          }
+                          if (alocadoEmOutro) {
+                            toast({
+                              title: "Material indisponível",
+                              description: `Este serial está alocado em: ${serialsAlocadosGlobal[s.numero].eventoNome}`,
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          if (podeSelecionar) {
+                            setSerial(s.numero);
+                          }
+                        }}
+                      >
+                        <CardContent className="p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <p className="font-medium truncate">{s.numero}</p>
+                                {jaAlocadoAqui && (
+                                  <Badge variant="outline" className="bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700 flex items-center gap-1 shrink-0">
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    Já alocado
                                   </Badge>
-                                ))}
+                                )}
                               </div>
+                              <p className="text-sm text-muted-foreground truncate">
+                                {s.localizacao}
+                              </p>
+                              {alocadoEmOutro && (
+                                <Badge variant="destructive" className="mt-1 flex items-center gap-1 w-fit">
+                                  <Lock className="h-3 w-3" />
+                                  Alocado em: {serialsAlocadosGlobal[s.numero].eventoNome}
+                                </Badge>
+                              )}
+                              {s.tags && s.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {s.tags.map((tag: string) => (
+                                    <Badge key={tag} variant="outline" className="text-xs">
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            {!jaAlocadoAqui && !alocadoEmOutro && (
+                              <Badge
+                                variant={
+                                  s.status === 'disponivel'
+                                    ? 'default'
+                                    : s.status === 'em-uso'
+                                    ? 'secondary'
+                                    : 'destructive'
+                                }
+                                className="shrink-0"
+                              >
+                                {s.status === 'disponivel'
+                                  ? 'Disponível'
+                                  : s.status === 'em-uso'
+                                  ? 'Em Uso'
+                                  : 'Manutenção'}
+                              </Badge>
                             )}
                           </div>
-                          <Badge
-                            variant={
-                              s.status === 'disponivel'
-                                ? 'default'
-                                : s.status === 'em-uso'
-                                ? 'secondary'
-                                : 'destructive'
-                            }
-                          >
-                            {s.status}
-                          </Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
+                        </CardContent>
+                      </Card>
+                    );
+                  })
                 )}
               </div>
             </ScrollArea>

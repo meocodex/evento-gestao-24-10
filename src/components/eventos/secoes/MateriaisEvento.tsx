@@ -209,6 +209,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       <AlocarMaterialDialog
         open={showAlocarMaterial}
         onOpenChange={setShowAlocarMaterial}
+        eventoId={evento.id}
         itemId={selectedMaterial.itemId}
         materialNome={selectedMaterial.nome}
         quantidadeNecessaria={selectedMaterial.quantidadeNecessaria}
