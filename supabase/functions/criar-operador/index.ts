@@ -33,9 +33,69 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log('Criando usuário:', { email, nome, tipo, permissions: permissions.length });
+    console.log('Verificando usuário:', { email, nome, tipo, permissions: permissions.length });
 
-    // Criar usuário no Supabase Auth com senha
+    // 1. Verificar se usuário já existe por email
+    const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    
+    if (listError) {
+      console.error('Erro ao listar usuários:', listError);
+    }
+
+    const existingUser = existingUsers?.users?.find(u => u.email === email);
+
+    if (existingUser) {
+      console.log('⚠️ Usuário já existe, atualizando tipo e permissões:', existingUser.id);
+
+      // Atualizar tipo no profile
+      const { error: updateProfileError } = await supabaseAdmin
+        .from('profiles')
+        .update({ tipo })
+        .eq('id', existingUser.id);
+
+      if (updateProfileError) {
+        console.error('Erro ao atualizar profile:', updateProfileError);
+      }
+
+      // Deletar permissões antigas
+      await supabaseAdmin
+        .from('user_permissions')
+        .delete()
+        .eq('user_id', existingUser.id);
+
+      // Inserir novas permissões
+      if (permissions.length > 0) {
+        const permissionsData = permissions.map((permission_id: string) => ({
+          user_id: existingUser.id,
+          permission_id,
+        }));
+
+        const { error: permissionsError } = await supabaseAdmin
+          .from('user_permissions')
+          .insert(permissionsData);
+
+        if (permissionsError) {
+          console.error('Erro ao inserir permissões:', permissionsError);
+          return new Response(
+            JSON.stringify({ error: 'Erro ao definir permissões do usuário' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          user: existingUser,
+          message: 'Acesso atualizado com sucesso'
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // 2. Se não existe, criar normalmente
+    console.log('Criando novo usuário:', { email, nome, tipo });
+
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: senha,

@@ -66,7 +66,19 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // Verificar se é erro de email duplicado
+        if (error.message?.includes('already been registered') || error.message?.includes('email_exists') || error.message?.includes('User already registered')) {
+          toast({
+            title: 'Email já cadastrado',
+            description: `${membro.nome} já possui acesso ao sistema. Use "Gerenciar Permissões" para editar as permissões.`,
+            variant: 'destructive'
+          });
+          onOpenChange(false);
+          return;
+        }
+        throw error;
+      }
 
       toast({
         title: 'Acesso concedido!',

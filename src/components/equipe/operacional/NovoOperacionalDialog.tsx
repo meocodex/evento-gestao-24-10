@@ -5,16 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Plus } from 'lucide-react';
 import { useEquipe } from '@/hooks/equipe';
 import { useCategorias } from '@/hooks/categorias';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { TemplatesPermissoes } from '@/components/configuracoes/TemplatesPermissoes';
-import { GerenciarPermissoes } from '@/components/configuracoes/GerenciarPermissoes';
 
 interface NovoOperacionalDialogProps {
   open: boolean;
@@ -38,16 +32,9 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
     observacoes: ''
   });
 
-  const [concederAcesso, setConcederAcesso] = useState(false);
-  const [senha, setSenha] = useState('');
-  const [permissoesSelecionadas, setPermissoesSelecionadas] = useState<string[]>([]);
   const [criandoUsuario, setCriandoUsuario] = useState(false);
   const [mostrarAdicionarFuncao, setMostrarAdicionarFuncao] = useState(false);
   const [novaFuncaoNome, setNovaFuncaoNome] = useState('');
-
-  const handleTemplateSelect = (permissions: string[]) => {
-    setPermissoesSelecionadas(permissions);
-  };
 
   const handleSubmit = async () => {
     if (!formData.nome || !formData.telefone || !formData.funcao_principal) {
@@ -59,20 +46,11 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
       return;
     }
 
-    if (concederAcesso && (!formData.email || !senha)) {
-      toast({
-        title: 'Acesso ao sistema',
-        description: 'Para conceder acesso ao sistema, forneça email e senha.',
-        variant: 'destructive'
-      });
-      return;
-    }
-
     try {
       setCriandoUsuario(true);
 
-      // 1. Criar operacional
-      const operacionalCriado = await criarOperacional.mutateAsync({
+      // Criar apenas o operacional
+      await criarOperacional.mutateAsync({
         ...formData,
         funcoes_secundarias: null,
         foto: null,
@@ -80,32 +58,10 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
         status: 'ativo'
       });
 
-      // 2. Se conceder acesso, criar usuário
-      if (concederAcesso && formData.email && senha) {
-        const { data, error } = await supabase.functions.invoke('criar-operador', {
-          body: {
-            nome: formData.nome,
-            email: formData.email,
-            cpf: formData.cpf,
-            telefone: formData.telefone,
-            senha: senha,
-            tipo: 'ambos', // operacional + sistema
-            permissions: permissoesSelecionadas
-          }
-        });
-
-        if (error) throw error;
-
-        toast({
-          title: 'Sucesso!',
-          description: `Operacional criado e acesso ao sistema concedido.`
-        });
-      } else {
-        toast({
-          title: 'Operacional criado!',
-          description: `${formData.nome} foi cadastrado com sucesso.`
-        });
-      }
+      toast({
+        title: 'Membro cadastrado!',
+        description: `${formData.nome} foi cadastrado como operacional. Use "Conceder Acesso" para criar credenciais de sistema.`
+      });
 
       // Resetar form
       setFormData({
@@ -119,9 +75,6 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
         cnpj_pj: '',
         observacoes: ''
       });
-      setConcederAcesso(false);
-      setSenha('');
-      setPermissoesSelecionadas([]);
       setMostrarAdicionarFuncao(false);
       setNovaFuncaoNome('');
       onOpenChange(false);
@@ -143,14 +96,7 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
           <DialogTitle>Cadastrar Membro da Equipe Operacional</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="dados" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="dados">Dados Básicos</TabsTrigger>
-            <TabsTrigger value="acesso">Acesso Sistema</TabsTrigger>
-            <TabsTrigger value="permissoes">Permissões</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="dados" className="space-y-4 mt-4">
+        <div className="space-y-4 mt-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
                 <Label htmlFor="nome">Nome Completo *</Label>
@@ -313,59 +259,8 @@ export function NovoOperacionalDialog({ open, onOpenChange }: NovoOperacionalDia
                 />
               </div>
 
-              <div className="col-span-2">
-                <Separator className="my-2" />
-                <div className="flex items-center justify-between py-2">
-                  <div>
-                    <Label>Conceder acesso ao sistema</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Permitir que este operacional acesse a plataforma
-                    </p>
-                  </div>
-                  <Switch checked={concederAcesso} onCheckedChange={setConcederAcesso} />
-                </div>
-              </div>
             </div>
-          </TabsContent>
-
-          <TabsContent value="acesso" className="space-y-4 mt-4">
-            {!concederAcesso && (
-              <div className="bg-muted/50 border rounded-lg p-4 mb-4">
-                <p className="text-sm text-muted-foreground">
-                  ⚠️ Para habilitar o acesso ao sistema, ative o switch "Conceder acesso ao sistema" na aba Dados Básicos.
-                </p>
-              </div>
-            )}
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="senha">Senha *</Label>
-                <Input
-                  id="senha"
-                  type="password"
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
-                  placeholder="Senha de acesso"
-                  disabled={!concederAcesso}
-                />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                O email já foi informado nos dados básicos. Este operacional terá tipo "Sistema + Operacional".
-              </p>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="permissoes" className="space-y-4 mt-4">
-            <div className="space-y-4">
-              <TemplatesPermissoes onSelectTemplate={handleTemplateSelect} />
-              <Separator />
-              <GerenciarPermissoes
-                userId=""
-                userPermissions={permissoesSelecionadas}
-                onPermissionsChange={setPermissoesSelecionadas}
-              />
-            </div>
-          </TabsContent>
-        </Tabs>
+          </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

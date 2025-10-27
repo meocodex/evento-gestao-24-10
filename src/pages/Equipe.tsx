@@ -159,7 +159,7 @@ export default function Equipe() {
             <CardTitle>Todos os Membros</CardTitle>
             <Button onClick={() => setNovoDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Cadastrar Operacional
+              Novo Membro Operacional
             </Button>
           </div>
         </CardHeader>
