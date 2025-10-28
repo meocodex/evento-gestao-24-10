@@ -245,9 +245,9 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
 
                 {/* Itens do reembolso */}
                 <div>
-                  <h4 className="font-semibold mb-3">Itens do Reembolso ({demanda.dadosReembolso.itens.length})</h4>
+                  <h4 className="font-semibold mb-3">Itens do Reembolso ({demanda.dadosReembolso?.itens?.length || 0})</h4>
                   <div className="space-y-2">
-                    {demanda.dadosReembolso.itens.map((item) => (
+                    {(demanda.dadosReembolso?.itens || []).map((item) => (
                       <Card key={item.id}>
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start mb-2">
@@ -265,8 +265,8 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
                           )}
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Paperclip className="h-3 w-3" />
-                            {item.anexos.length} comprovante(s)
-                            {item.anexos.map((anexo) => (
+                            {item.anexos?.length || 0} comprovante(s)
+                            {(item.anexos || []).map((anexo) => (
                               <button
                                 key={anexo.id}
                                 onClick={() => {
@@ -575,13 +575,13 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
             </TabsContent>
 
             <TabsContent value="anexos" className="space-y-4 mt-4">
-              {demanda.anexos.length === 0 ? (
+              {(demanda.anexos?.length || 0) === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   Nenhum anexo
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {demanda.anexos.map((anexo) => (
+                  {(demanda.anexos || []).map((anexo) => (
                     <div
                       key={anexo.id}
                       className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/70 transition-colors"

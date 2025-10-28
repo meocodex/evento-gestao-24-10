@@ -44,7 +44,20 @@ export function transformDemanda(data: any): Demanda {
         }))
       : [],
     dadosReembolso: data.dados_reembolso ? {
-      itens: data.dados_reembolso.itens || [],
+      itens: Array.isArray(data.dados_reembolso.itens)
+        ? data.dados_reembolso.itens.map((item: any) => ({
+            ...item,
+            anexos: Array.isArray(item.anexos)
+              ? item.anexos.map((a: any) => ({
+                  id: a.id,
+                  nome: a.nome,
+                  url: a.url,
+                  tipo: a.tipo,
+                  tamanho: a.tamanho,
+                }))
+              : [],
+          }))
+        : [],
       valorTotal: data.dados_reembolso.valorTotal || 0,
       membroEquipeId: data.dados_reembolso.membroEquipeId,
       membroEquipeNome: data.dados_reembolso.membroEquipeNome,
