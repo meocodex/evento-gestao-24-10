@@ -45,7 +45,14 @@ export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string,
         if (error) throw error;
 
         return {
-          demandas: (data || []).map(transformDemanda),
+          demandas: (data || []).map((d: any) => {
+            const transformed = transformDemanda(d);
+            return {
+              ...transformed,
+              comentarios: transformed.comentarios || [],
+              anexos: transformed.anexos || [],
+            } as Demanda;
+          }),
           totalCount: (data || []).length
         };
       }
@@ -64,7 +71,14 @@ export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string,
       if (error) throw error;
       
       return {
-        demandas: (data || []).map(transformDemanda),
+        demandas: (data || []).map((d: any) => {
+          const transformed = transformDemanda(d);
+          return {
+            ...transformed,
+            comentarios: transformed.comentarios || [],
+            anexos: transformed.anexos || [],
+          } as Demanda;
+        }),
         totalCount: count || 0
       };
     },

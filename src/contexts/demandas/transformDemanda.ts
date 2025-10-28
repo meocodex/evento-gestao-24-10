@@ -22,18 +22,19 @@ export function transformDemanda(data: any): Demanda {
     podeResponder: data.status !== 'concluida' && data.status !== 'cancelada',
     tags: data.tags || [],
     arquivada: data.arquivada || false,
-    comentarios: Array.isArray(data.comentarios) 
-      ? data.comentarios.map((c: any) => ({
+    comentarios: (data?.comentarios === null || data?.comentarios === undefined || !Array.isArray(data?.comentarios))
+      ? []
+      : data.comentarios.map((c: any) => ({
           id: c.id,
           autor: c.autor,
           autorId: c.autor_id,
           conteudo: c.conteudo,
           dataHora: c.created_at,
           tipo: c.tipo,
-        }))
-      : [],
-    anexos: Array.isArray(data.anexos)
-      ? data.anexos.map((a: any) => ({
+        })),
+    anexos: (data?.anexos === null || data?.anexos === undefined || !Array.isArray(data?.anexos))
+      ? []
+      : data.anexos.map((a: any) => ({
           id: a.id,
           nome: a.nome,
           tipo: a.tipo,
@@ -41,8 +42,7 @@ export function transformDemanda(data: any): Demanda {
           url: a.url,
           uploadPor: a.upload_por,
           uploadEm: a.created_at,
-        }))
-      : [],
+        })),
     dadosReembolso: data.dados_reembolso ? {
       itens: Array.isArray(data.dados_reembolso.itens)
         ? data.dados_reembolso.itens.map((item: any) => ({
