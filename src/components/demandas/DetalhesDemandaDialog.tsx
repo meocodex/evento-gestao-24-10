@@ -517,7 +517,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
                     Nenhuma resposta ainda
                   </p>
                 ) : (
-                  demanda.comentarios.map((comentario) => (
+                  (demanda.comentarios || []).map((comentario) => (
                     <div
                       key={comentario.id}
                       className={`p-4 rounded-lg ${
