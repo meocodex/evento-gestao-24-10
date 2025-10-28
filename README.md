@@ -1,5 +1,9 @@
 # 🎉 Sistema de Gestão de Eventos
 
+![CI Status](https://github.com/SEU-USUARIO/SEU-REPO/workflows/CI%20-%20Build,%20Lint%20&%20Test/badge.svg)
+![E2E Tests](https://github.com/SEU-USUARIO/SEU-REPO/workflows/E2E%20Tests%20-%20Playwright/badge.svg)
+![Load Tests](https://github.com/SEU-USUARIO/SEU-REPO/workflows/Load%20Tests%20-%20K6/badge.svg)
+
 Sistema completo para gestão de eventos, clientes, demandas, estoque e operações logísticas. Desenvolvido com React, TypeScript e Lovable Cloud (Supabase).
 
 ## 📋 Índice
@@ -254,6 +258,80 @@ Não é necessário criar conta no Supabase separadamente.
 
 ## 🧪 Testes
 
+### Testes Automatizados
+
+Este projeto implementa uma estratégia completa de testes automatizados via **GitHub Actions**:
+
+#### 🔄 CI (Continuous Integration)
+- **Executado em**: Todo push e Pull Request para `main` e `develop`
+- **Inclui**:
+  - ✅ Lint (ESLint)
+  - ✅ Type checking (TypeScript)
+  - ✅ Testes de validação (Zod schemas)
+  - ✅ Build da aplicação
+- **Duração**: ~2-4 minutos
+- **Status**: Bloqueia merge se falhar
+
+#### 🎭 E2E Tests (End-to-End)
+- **Executado em**: Push para `main`, manual, ou agendado (segunda-feira 2am)
+- **Inclui**:
+  - ✅ Testes de autenticação (login, logout, proteção de rotas)
+  - ✅ Testes de gestão de eventos (CRUD completo)
+  - ✅ Testes de alocação de materiais
+- **Browsers**: Chromium, Firefox, WebKit
+- **Duração**: ~5-10 minutos
+- **Screenshots**: Capturados em caso de falha
+
+#### 📊 Load Tests (Performance)
+- **Executado em**: Manual ou agendado (segunda-feira 3am)
+- **Inclui**:
+  - ✅ Testes de carga com K6
+  - ✅ Simulação de 10-50 usuários simultâneos
+  - ✅ Validação de tempos de resposta
+- **Duração**: ~8-15 minutos
+- **Relatórios**: JSON e HTML disponíveis como artifacts
+
+### Executar Testes Localmente
+
+```bash
+# Testes de validação
+npm run test
+
+# Testes E2E (requer build)
+npm run build
+npm run test:e2e
+
+# Testes E2E com interface visual
+npm run test:e2e:ui
+
+# Ver relatório E2E
+npm run test:e2e:report
+
+# Type check
+npm run type-check
+```
+
+### Configurar Testes no GitHub
+
+1. **Adicionar Secrets no GitHub** (`Settings → Secrets and Variables → Actions`):
+   ```
+   VITE_SUPABASE_URL
+   VITE_SUPABASE_PUBLISHABLE_KEY
+   VITE_SUPABASE_PROJECT_ID
+   TEST_USER_EMAIL (usuário de teste)
+   TEST_USER_PASSWORD (senha de teste)
+   E2E_BASE_URL (URL da aplicação em staging/production)
+   ```
+
+2. **Configurar Branch Protection** (`Settings → Branches`):
+   - ✅ Require status checks (CI workflow)
+   - ✅ Require branches to be up to date before merging
+
+3. **Workflows criados**:
+   - `.github/workflows/ci.yml` - CI principal
+   - `.github/workflows/e2e.yml` - Testes E2E
+   - `.github/workflows/load-tests.yml` - Testes de carga
+
 ### Testes Manuais
 
 Um checklist completo de testes manuais está disponível em [`TESTING.md`](./TESTING.md).
@@ -264,13 +342,6 @@ Um checklist completo de testes manuais está disponível em [`TESTING.md`](./TE
 3. Marque cada item como ✅ (passou) ou ❌ (falhou)
 4. Anote observações na seção de notas
 5. Verifique critérios de aceitação antes do release
-
-### Testes Automatizados (Planejado)
-
-- [ ] Testes unitários com Vitest
-- [ ] Testes de integração
-- [ ] Testes E2E com Playwright
-- [ ] Testes de acessibilidade
 
 ---
 
