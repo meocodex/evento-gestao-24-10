@@ -62,6 +62,8 @@ E2E_BASE_URL
 # Exemplo: https://seu-app.lovable.app
 ```
 
+---
+
 ### 2. Criar Usuário de Teste
 
 1. Acesse sua aplicação em produção
@@ -69,16 +71,171 @@ E2E_BASE_URL
 3. Use esse email/senha nos secrets do GitHub
 4. **Importante**: Não use um usuário real com dados sensíveis!
 
+---
+
 ### 3. Configurar Branch Protection
 
-Acesse: **Repository → Settings → Branches → Add rule**
+⚠️ **Importante**: A interface do GitHub mudou! Escolha a opção disponível no seu repositório:
 
-Para a branch `main`:
+---
 
-- ✅ **Require status checks to pass before merging**
-  - Marque: `lint-and-test` (do workflow CI)
-- ✅ **Require branches to be up to date before merging**
-- ✅ **Include administrators** (opcional mas recomendado)
+#### **Opção A: Rulesets (Nova Interface - Recomendada)** 🆕
+
+Acesse: **Repository → Settings → Rules → Rulesets**
+
+**Configuração passo a passo:**
+
+1. Clique em **"New ruleset"** → **"New branch ruleset"**
+
+2. **General Settings**:
+   - **Ruleset Name**: `Proteção main`
+   - **Enforcement status**: Selecione `Active` ✅
+
+3. **Target branches**:
+   - Clique em **"Add target"** → **"Include by pattern"**
+   - Digite: `main`
+   - Clique em **"Add inclusion pattern"**
+
+4. **Branch protections** (marque estas opções):
+   - ✅ **Require status checks to pass**
+     - Clique em **"Add checks"**
+     - Digite: `lint-and-test`
+     - ⚠️ **Nota**: Este check só aparecerá **depois** do CI rodar pela primeira vez
+     - ✅ Marque: **"Require branches to be up to date before merging"**
+
+5. **Bypass list** (opcional):
+   - Se quiser que admins também sigam as regras, **desmarque** "Repository admin"
+   - Recomendado: deixar marcado para aplicar a todos
+
+6. Clique em **"Create"** no final da página
+
+---
+
+#### **Opção B: Branch Protection Rules (Interface Clássica)**
+
+⚠️ Esta opção pode não estar disponível em organizações ou novos repositórios.
+
+Acesse: **Repository → Settings → Branches**
+
+**Configuração passo a passo:**
+
+1. Clique em **"Add branch protection rule"** ou **"Add rule"**
+
+2. **Branch name pattern**: Digite `main`
+
+3. Marque as seguintes opções:
+   - ✅ **Require status checks to pass before merging**
+     - Na caixa de busca que aparece, digite: `lint-and-test`
+     - Selecione o job quando ele aparecer
+     - ⚠️ **Nota**: Só aparece depois do CI rodar pela primeira vez
+   - ✅ **Require branches to be up to date before merging**
+   - ✅ **Include administrators** (opcional mas recomendado)
+
+4. Clique em **"Create"** ou **"Save changes"**
+
+---
+
+#### **Opção C: Automação via GitHub CLI (Avançado)** 🤖
+
+Para automatizar a configuração, use o script incluído no projeto:
+
+**Pré-requisitos**:
+```bash
+# 1. Instalar GitHub CLI (se não tiver)
+# macOS:
+brew install gh
+
+# Linux (Ubuntu/Debian):
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+sudo apt update && sudo apt install gh
+
+# Windows (via winget):
+winget install --id GitHub.cli
+
+# 2. Autenticar no GitHub
+gh auth login
+```
+
+**Executar o script**:
+```bash
+# Dar permissão de execução
+chmod +x scripts/setup-branch-protection.sh
+
+# Executar (substitua pelos seus valores)
+OWNER=seu-usuario REPO=seu-repositorio ./scripts/setup-branch-protection.sh
+
+# Exemplo real:
+OWNER=joaosilva REPO=meu-projeto ./scripts/setup-branch-protection.sh
+```
+
+**O que o script configura**:
+- ✅ Require status checks: `lint-and-test`
+- ✅ Require branches to be up to date: `true`
+- ✅ Enforce for administrators: `true`
+- ✅ Dismiss stale reviews: `true`
+
+---
+
+#### **⚠️ Troubleshooting - Branch Protection**
+
+**Problema: Não vejo a aba "Settings"**
+- **Causa**: Você não tem permissões de administrador no repositório
+- **Solução**: 
+  - Peça ao dono do repo para te dar permissões de admin
+  - Ou peça para ele configurar as proteções
+
+---
+
+**Problema: Não encontro "Rules" ou "Rulesets"**
+- **Causa**: GitHub pode estar exibindo a interface clássica
+- **Solução**: Use a **Opção B** (Branch Protection Rules)
+
+---
+
+**Problema: Não encontro "Branches" em Settings**
+- **Causa**: GitHub migrou para Rulesets neste repositório
+- **Solução**: Use a **Opção A** (Rulesets)
+
+---
+
+**Problema: O job `lint-and-test` não aparece na lista**
+- **Causa**: O workflow CI ainda não rodou nenhuma vez
+- **Solução**: 
+  1. Faça um commit qualquer e push para `main`:
+     ```bash
+     git commit --allow-empty -m "ci: trigger workflow"
+     git push origin main
+     ```
+  2. Vá em **Actions** e aguarde o CI terminar
+  3. Volte nas configurações de proteção
+  4. Agora o job `lint-and-test` aparecerá na busca
+
+---
+
+**Problema: GitHub Actions não está habilitado**
+- **Causa**: Actions pode estar desabilitado no repositório
+- **Solução**: 
+  1. Vá em **Settings → Actions → General**
+  2. Em **"Actions permissions"**, marque:
+     - ✅ **"Allow all actions and reusable workflows"**
+  3. Clique em **"Save"**
+
+---
+
+**Problema: Script via CLI falha com "403 Forbidden"**
+- **Causa**: Token do GitHub CLI não tem permissões suficientes
+- **Solução**:
+  ```bash
+  # Re-autenticar com escopo correto
+  gh auth refresh -h github.com -s admin:repo_hook,repo
+  ```
+
+---
+
+**Problema: Só tenho acesso a "Rulesets" mas a doc antiga fala de "Branch protection"**
+- **Causa**: GitHub migrou a interface para Rulesets
+- **Solução**: Isso é normal! Use a **Opção A** - é a forma moderna e recomendada pelo GitHub
 
 ---
 
