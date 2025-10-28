@@ -729,6 +729,7 @@ export type Database = {
       }
       eventos: {
         Row: {
+          arquivado: boolean | null
           cardapio_arquivo: string | null
           cardapio_tipo: string | null
           cidade: string
@@ -761,6 +762,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          arquivado?: boolean | null
           cardapio_arquivo?: string | null
           cardapio_tipo?: string | null
           cidade: string
@@ -793,6 +795,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          arquivado?: boolean | null
           cardapio_arquivo?: string | null
           cardapio_tipo?: string | null
           cidade?: string
@@ -1988,6 +1991,10 @@ export type Database = {
         Args: { p_material_id: string }
         Returns: undefined
       }
+      materiais_devolvidos_completo: {
+        Args: { p_evento_id: string }
+        Returns: boolean
+      }
       notificar_cobrancas_atrasadas: { Args: never; Returns: undefined }
       notificar_demandas_urgentes: { Args: never; Returns: undefined }
       notificar_materiais_atrasados: { Args: never; Returns: undefined }
@@ -2116,6 +2123,7 @@ export type Database = {
         | "fechamento"
         | "cancelamento"
         | "financeiro"
+        | "arquivamento"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2313,6 +2321,7 @@ export const Constants = {
         "fechamento",
         "cancelamento",
         "financeiro",
+        "arquivamento",
       ],
     },
   },

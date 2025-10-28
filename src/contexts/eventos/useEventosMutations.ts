@@ -267,10 +267,59 @@ export function useEventosMutations() {
     }
   });
 
+  const arquivarEvento = useMutation({
+    mutationFn: async (id: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      // Verificar se tem materiais pendentes
+      const { data: pendentes, count } = await supabase
+        .from('eventos_materiais_alocados')
+        .select('id', { count: 'exact' })
+        .eq('evento_id', id)
+        .eq('status_devolucao', 'pendente');
+
+      if (count && count > 0) {
+        throw new Error('Não é possível arquivar evento com materiais pendentes de devolução');
+      }
+
+      const { error } = await supabase
+        .from('eventos')
+        .update({ arquivado: true })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // Adicionar à timeline
+      await supabase.from('eventos_timeline').insert({
+        evento_id: id,
+        tipo: 'arquivamento',
+        descricao: 'Evento arquivado',
+        usuario: user.email || 'Sistema'
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eventos'] });
+      queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
+      toast({ 
+        title: 'Evento arquivado', 
+        description: 'O evento foi movido para arquivados.' 
+      });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: 'Erro ao arquivar evento', 
+        description: error.message,
+        variant: 'destructive' 
+      });
+    }
+  });
+
   return {
     adicionarEvento: criarEvento,
     editarEvento: editarEvento,
     excluirEvento: excluirEvento,
     alterarStatus: alterarStatus,
+    arquivarEvento: arquivarEvento,
   };
 }

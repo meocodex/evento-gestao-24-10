@@ -2,3 +2,6 @@ project_id = "oizymmjlgmwiuevksxos"
 
 [functions.setup-first-admin]
 verify_jwt = false
+
+[functions.verificar-status-eventos]
+verify_jwt = false

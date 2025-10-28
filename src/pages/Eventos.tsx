@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Grid3x3, List, ArrowUpDown, Kanban, Sparkles, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Search, Grid3x3, List, ArrowUpDown, Kanban, Sparkles, Calendar, ChevronLeft, ChevronRight, Archive } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { Evento } from '@/types/eventos';
 import { EventosList } from '@/components/eventos/EventosList';
 import { EventosListAccordion } from '@/components/eventos/EventosListAccordion';
@@ -30,6 +32,7 @@ export default function Eventos() {
   const [page, setPage] = useState(1);
   const pageSize = 50;
   const [searchTerm, setSearchTerm] = useState('');
+  const [mostrarArquivados, setMostrarArquivados] = useState(false);
   const { eventos = [], totalCount = 0 } = useEventos(page, pageSize, searchTerm);
   const navigate = useNavigate();
   const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [] });
@@ -52,6 +55,9 @@ export default function Eventos() {
     const hoje = new Date();
     
     return eventos.filter(evento => {
+      // Filtro de arquivados
+      const matchArquivado = evento.arquivado === mostrarArquivados;
+      
       // Search filter
       const matchSearch = evento.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         evento.cliente.nome.toLowerCase().includes(searchTerm.toLowerCase());
@@ -92,7 +98,7 @@ export default function Eventos() {
         matchQuickFilter = evento.tags.includes('Alta Prioridade');
       }
       
-      return matchSearch && matchStatus && matchCidade && matchTags && matchTab && matchQuickFilter;
+      return matchArquivado && matchSearch && matchStatus && matchCidade && matchTags && matchTab && matchQuickFilter;
     });
   }, [eventos, searchTerm, filters, activeTab, quickFilter]);
 
@@ -248,12 +254,26 @@ export default function Eventos() {
 
           {/* Results counter with premium styling */}
           <div className="flex items-center justify-between gap-2 px-1">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Mostrando</span>
-              <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-base">{sortedEventos.length}</span>
-              <span className="text-muted-foreground">de</span>
-              <span className="px-2 py-1 rounded-lg bg-muted/50 font-semibold">{totalCount}</span>
-              <span className="text-muted-foreground">eventos</span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">Mostrando</span>
+                <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold text-base">{sortedEventos.length}</span>
+                <span className="text-muted-foreground">de</span>
+                <span className="px-2 py-1 rounded-lg bg-muted/50 font-semibold">{totalCount}</span>
+                <span className="text-muted-foreground">eventos</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="arquivados"
+                  checked={mostrarArquivados}
+                  onCheckedChange={setMostrarArquivados}
+                />
+                <Label htmlFor="arquivados" className="text-sm flex items-center gap-1 cursor-pointer">
+                  <Archive className="h-3 w-3" />
+                  Mostrar Arquivados
+                </Label>
+              </div>
             </div>
 
             {/* Pagination */}

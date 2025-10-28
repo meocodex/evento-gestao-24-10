@@ -211,6 +211,7 @@ export interface Evento {
   configuracaoBar?: ConfiguracaoBar;
   criadoEm: string;
   atualizadoEm: string;
+  arquivado?: boolean;
 }
 
 export interface EventoFormData {

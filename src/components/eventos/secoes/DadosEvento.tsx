@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EventoTimeline } from '@/components/shared/EventoTimeline';
-import { Calendar, MapPin, User, Building2, Mail, Phone, Edit, Trash2, RefreshCw, FileText, Image as ImageIcon } from 'lucide-react';
+import { Calendar, MapPin, User, Building2, Mail, Phone, Edit, Trash2, RefreshCw, FileText, Archive } from 'lucide-react';
 import { FileViewer } from '@/components/shared/FileViewer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -13,6 +13,8 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
 import { useEventos } from '@/hooks/eventos';
 import { AlterarStatusDialog } from '../modals/AlterarStatusDialog';
+import { MateriaisPendentesBadge } from '../MateriaisPendentesBadge';
+import { useMaterialPendente } from '@/hooks/eventos/useMaterialPendente';
 
 interface DadosEventoProps {
   evento: Evento;
@@ -20,7 +22,8 @@ interface DadosEventoProps {
 }
 
 export function DadosEvento({ evento, permissions }: DadosEventoProps) {
-  const { editarEvento, excluirEvento, alterarStatus } = useEventos();
+  const { editarEvento, excluirEvento, alterarStatus, arquivarEvento } = useEventos();
+  const { data: pendentes } = useMaterialPendente(evento.id);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
@@ -92,7 +95,27 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
           </div>
           <div>
             <p className="text-sm font-medium mb-1">Status</p>
-            <StatusBadge status={evento.status} />
+            <div className="flex items-center gap-2">
+              <StatusBadge status={evento.status} />
+              <MateriaisPendentesBadge eventoId={evento.id} status={evento.status} />
+              {evento.status === 'concluido' && !evento.arquivado && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pendentes?.temPendentes || arquivarEvento.isPending}
+                  onClick={() => arquivarEvento.mutate(evento.id)}
+                  title={pendentes?.temPendentes ? 'Devolva todos os materiais antes de arquivar' : 'Arquivar evento'}
+                >
+                  <Archive className="h-4 w-4 mr-2" />
+                  Arquivar Evento
+                </Button>
+              )}
+              {evento.arquivado && (
+                <span className="text-sm text-muted-foreground italic">
+                  (Arquivado)
+                </span>
+              )}
+            </div>
           </div>
           {evento.descricao && (
             <div>

@@ -13,6 +13,7 @@ export { useEventosChecklist } from '@/contexts/eventos/useEventosChecklist';
 export { useEventosArquivos } from '@/contexts/eventos/useEventosArquivos';
 export { useEventosPropostas } from '@/contexts/eventos/useEventosPropostas';
 export { useEventoDetalhes } from '@/contexts/eventos/useEventoDetalhes';
+export { useMaterialPendente } from './useMaterialPendente';
 
 // Wrapper para compatibilidade
 export function useEventos(page?: number, pageSize?: number, searchTerm?: string) {
@@ -27,5 +28,6 @@ export function useEventos(page?: number, pageSize?: number, searchTerm?: string
     editarEvento: mutations.editarEvento,
     excluirEvento: mutations.excluirEvento,
     alterarStatus: mutations.alterarStatus,
+    arquivarEvento: mutations.arquivarEvento,
   };
 }
