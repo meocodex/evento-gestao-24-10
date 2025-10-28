@@ -22,23 +22,27 @@ export function transformDemanda(data: any): Demanda {
     podeResponder: data.status !== 'concluida' && data.status !== 'cancelada',
     tags: data.tags || [],
     arquivada: data.arquivada || false,
-    comentarios: (data.comentarios || []).map((c: any) => ({
-      id: c.id,
-      autor: c.autor,
-      autorId: c.autor_id,
-      conteudo: c.conteudo,
-      dataHora: c.created_at,
-      tipo: c.tipo,
-    })),
-    anexos: (data.anexos || []).map((a: any) => ({
-      id: a.id,
-      nome: a.nome,
-      tipo: a.tipo,
-      tamanho: a.tamanho,
-      url: a.url,
-      uploadPor: a.upload_por,
-      uploadEm: a.created_at,
-    })),
+    comentarios: Array.isArray(data.comentarios) 
+      ? data.comentarios.map((c: any) => ({
+          id: c.id,
+          autor: c.autor,
+          autorId: c.autor_id,
+          conteudo: c.conteudo,
+          dataHora: c.created_at,
+          tipo: c.tipo,
+        }))
+      : [],
+    anexos: Array.isArray(data.anexos)
+      ? data.anexos.map((a: any) => ({
+          id: a.id,
+          nome: a.nome,
+          tipo: a.tipo,
+          tamanho: a.tamanho,
+          url: a.url,
+          uploadPor: a.upload_por,
+          uploadEm: a.created_at,
+        }))
+      : [],
     dadosReembolso: data.dados_reembolso ? {
       itens: data.dados_reembolso.itens || [],
       valorTotal: data.dados_reembolso.valorTotal || 0,

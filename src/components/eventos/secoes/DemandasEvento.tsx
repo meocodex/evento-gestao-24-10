@@ -123,7 +123,7 @@ export function DemandasEvento({ eventoId }: DemandasEventoProps) {
                   <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                     <span>#{demanda.id}</span>
                     {demanda.responsavel && <span>Responsável: {demanda.responsavel}</span>}
-                    <span>{demanda.comentarios.length} respostas</span>
+                    <span>{demanda.comentarios?.length || 0} respostas</span>
                   </div>
                 </div>
                 <Button

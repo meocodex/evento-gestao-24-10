@@ -501,18 +501,18 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="comentarios">
                 <MessageSquare className="mr-2 h-4 w-4" />
-                Respostas ({demanda.comentarios.length})
+                Respostas ({demanda.comentarios?.length || 0})
               </TabsTrigger>
               <TabsTrigger value="anexos">
                 <Paperclip className="mr-2 h-4 w-4" />
-                Anexos ({demanda.anexos.length})
+                Anexos ({demanda.anexos?.length || 0})
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="comentarios" className="space-y-4 mt-4">
               {/* Thread de comentários */}
               <div className="space-y-3 max-h-96 overflow-y-auto">
-                {demanda.comentarios.length === 0 ? (
+                {(demanda.comentarios?.length || 0) === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
                     Nenhuma resposta ainda
                   </p>

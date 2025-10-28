@@ -132,11 +132,11 @@ export function DemandaCard({ demanda, onDetalhes, onEditar, onExcluir }: Demand
         <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2 border-t">
           <div className="flex items-center gap-1">
             <MessageSquare className="h-4 w-4" />
-            <span>{demanda.comentarios.length}</span>
+            <span>{demanda.comentarios?.length || 0}</span>
           </div>
           <div className="flex items-center gap-1">
             <Paperclip className="h-4 w-4" />
-            <span>{demanda.anexos.length}</span>
+            <span>{demanda.anexos?.length || 0}</span>
           </div>
           <div className="ml-auto text-xs">
             Criado em {format(new Date(demanda.dataCriacao), "dd/MM/yyyy", { locale: ptBR })}
