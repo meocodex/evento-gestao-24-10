@@ -7,6 +7,7 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EventoCountdown } from './EventoCountdown';
+import { MateriaisPendentesBadge } from './MateriaisPendentesBadge';
 import { usePermissions } from '@/hooks/usePermissions';
 import {
   DropdownMenu,
@@ -56,7 +57,10 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
             <h3 className="text-base font-bold text-navy-800 leading-tight mb-2 line-clamp-2">
               {evento.nome}
             </h3>
-            <StatusBadge status={evento.status} />
+            <div className="flex flex-wrap gap-2 items-center">
+              <StatusBadge status={evento.status} />
+              <MateriaisPendentesBadge eventoId={evento.id} status={evento.status} />
+            </div>
           </div>
           
           {canEditEvent(evento) && (
