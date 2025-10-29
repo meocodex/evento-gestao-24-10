@@ -1,10 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTransportadoras } from '@/hooks/transportadoras';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Loader2 } from 'lucide-react';
+import { formatarCEP } from '@/lib/validations/cliente';
+import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
+import { useToast } from '@/hooks/use-toast';
 
 interface NovaTransportadoraSheetProps {
   open: boolean;
@@ -14,6 +18,8 @@ interface NovaTransportadoraSheetProps {
 export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportadoraSheetProps) {
   const { criarTransportadora } = useTransportadoras();
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+  const [buscandoCEP, setBuscandoCEP] = useState(false);
   const [formData, setFormData] = useState({
     nome: '',
     cnpj: '',
@@ -33,6 +39,51 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
     },
     rotasAtendidas: [],
   });
+
+  // Busca automática de CEP com debounce
+  useEffect(() => {
+    const cepLimpo = formData.endereco.cep.replace(/\D/g, '');
+    
+    if (cepLimpo.length !== 8) {
+      return;
+    }
+
+    const timeoutId = setTimeout(async () => {
+      setBuscandoCEP(true);
+      try {
+        const endereco = await buscarEnderecoPorCEP(formData.endereco.cep);
+        
+        if (endereco) {
+          setFormData({
+            ...formData,
+            endereco: {
+              ...formData.endereco,
+              rua: endereco.logradouro,
+              bairro: endereco.bairro,
+              cidade: endereco.localidade,
+              estado: endereco.uf,
+            }
+          });
+          
+          toast({
+            title: 'CEP encontrado!',
+            description: 'Endereço preenchido automaticamente.',
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
+        toast({
+          title: 'CEP não encontrado',
+          description: 'Preencha o endereço manualmente.',
+          variant: 'destructive',
+        });
+      } finally {
+        setBuscandoCEP(false);
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.endereco.cep]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,13 +202,26 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="cep" className="text-navy-700">CEP *</Label>
-                    <Input
-                      id="cep"
-                      required
-                      value={formData.endereco.cep}
-                      onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, cep: e.target.value } })}
-                      className="border-navy-200 focus:border-navy-400"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="cep"
+                        required
+                        value={formData.endereco.cep}
+                        onChange={(e) => {
+                          const formatted = formatarCEP(e.target.value);
+                          setFormData({ ...formData, endereco: { ...formData.endereco, cep: formatted } });
+                        }}
+                        placeholder="00000-000"
+                        maxLength={9}
+                        className={buscandoCEP ? "border-navy-200 pr-10" : "border-navy-200"}
+                      />
+                      {buscandoCEP && (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Digite o CEP para buscar automaticamente
+                    </p>
                   </div>
                   <div className="sm:col-span-2">
                     <Label htmlFor="rua" className="text-navy-700">Rua *</Label>
@@ -183,7 +247,7 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
                     />
                   </div>
                   <div>
-                    <Label htmlFor="complemento" className="text-navy-700">Complemento</Label>
+                    <Label htmlFor="complemento" className="text-navy-700">Complemento (Opcional)</Label>
                     <Input
                       id="complemento"
                       value={formData.endereco.complemento}

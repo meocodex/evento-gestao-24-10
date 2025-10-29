@@ -9,7 +9,8 @@ import { ClienteSelect } from '../ClienteSelect';
 import { ComercialSelect } from '../ComercialSelect';
 import { X, Save, XCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { buscarCEP } from '@/lib/api/viacep';
+import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
+import { formatarCEP } from '@/lib/validations/cliente';
 
 interface EditarDadosEventoProps {
   evento: Evento;
@@ -61,21 +62,24 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
     const timeoutId = setTimeout(async () => {
       setLoadingCep(true);
       try {
-        const dados = await buscarCEP(cepLimpo);
+        const dados = await buscarEnderecoPorCEP(cep);
         
-        setLogradouro(dados.logradouro);
-        setBairro(dados.bairro);
-        setCidade(dados.localidade);
-        setEstado(dados.uf);
+        if (dados) {
+          setLogradouro(dados.logradouro);
+          setBairro(dados.bairro);
+          setCidade(dados.localidade);
+          setEstado(dados.uf);
         
         const enderecoCompleto = `${dados.logradouro}${dados.bairro ? ', ' + dados.bairro : ''}`;
         setEndereco(enderecoCompleto);
 
-        toast({
-          title: 'CEP encontrado!',
-          description: 'Endereço preenchido automaticamente.',
-        });
+          toast({
+            title: 'CEP encontrado!',
+            description: 'Endereço preenchido automaticamente.',
+          });
+        }
       } catch (error: any) {
+        console.error('Erro ao buscar CEP:', error);
         toast({
           title: 'CEP não encontrado',
           description: 'Preencha o endereço manualmente.',
@@ -221,9 +225,8 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
               id="cep" 
               value={cep}
               onChange={(e) => {
-                const valor = e.target.value.replace(/\D/g, '');
-                const cepFormatado = valor.replace(/^(\d{5})(\d)/, '$1-$2');
-                setCep(cepFormatado);
+                const formatted = formatarCEP(e.target.value);
+                setCep(formatted);
               }}
               placeholder="00000-000"
               maxLength={9}

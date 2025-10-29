@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,8 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 import { ClienteSelect } from './ClienteSelect';
 import { ComercialSelect } from './ComercialSelect';
 import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
+import { X, Loader2 } from 'lucide-react';
 import { useEventos } from '@/hooks/eventos';
+import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
+import { formatarCEP } from '@/lib/validations/cliente';
 
 interface NovoEventoDialogProps {
   open: boolean;
@@ -54,42 +56,44 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
-  const handleBuscarCEP = async () => {
+  // Busca automática de CEP com debounce
+  useEffect(() => {
     const cepLimpo = cep.replace(/\D/g, '');
     
     if (cepLimpo.length !== 8) {
-      toast({
-        title: 'CEP inválido',
-        description: 'O CEP deve ter 8 dígitos.',
-        variant: 'destructive',
-      });
       return;
     }
 
-    setLoadingCep(true);
-    try {
-      const { buscarCEP: buscarCepApi } = await import('@/lib/api/viacep');
-      const dados = await buscarCepApi(cepLimpo);
-      
-      setLogradouro(dados.logradouro);
-      setBairro(dados.bairro);
-      setCidade(dados.localidade);
-      setEstado(dados.uf);
+    const timeoutId = setTimeout(async () => {
+      setLoadingCep(true);
+      try {
+        const dados = await buscarEnderecoPorCEP(cep);
+        
+        if (dados) {
+          setLogradouro(dados.logradouro);
+          setBairro(dados.bairro);
+          setCidade(dados.localidade);
+          setEstado(dados.uf);
 
-      toast({
-        title: 'CEP encontrado!',
-        description: 'Endereço preenchido automaticamente.',
-      });
-    } catch (error: any) {
-      toast({
-        title: 'Erro ao buscar CEP',
-        description: error.message || 'CEP não encontrado.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoadingCep(false);
-    }
-  };
+          toast({
+            title: 'CEP encontrado!',
+            description: 'Endereço preenchido automaticamente.',
+          });
+        }
+      } catch (error: any) {
+        console.error('Erro ao buscar CEP:', error);
+        toast({
+          title: 'CEP não encontrado',
+          description: 'Preencha o endereço manualmente.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoadingCep(false);
+      }
+    }, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [cep, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,27 +246,26 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
 
             <div>
               <Label htmlFor="cep">CEP</Label>
-              <div className="flex gap-2">
+              <div className="relative">
                 <Input 
                   id="cep" 
                   value={cep}
                   onChange={(e) => {
-                    const valor = e.target.value.replace(/\D/g, '');
-                    const cepFormatado = valor.replace(/^(\d{5})(\d)/, '$1-$2');
-                    setCep(cepFormatado);
+                    const formatted = formatarCEP(e.target.value);
+                    setCep(formatted);
                   }}
                   placeholder="00000-000"
                   maxLength={9}
+                  className={loadingCep ? "pr-10" : ""}
+                  disabled={loadingCep}
                 />
-                <Button 
-                  type="button"
-                  variant="secondary"
-                  onClick={handleBuscarCEP}
-                  disabled={loadingCep || cep.replace(/\D/g, '').length !== 8}
-                >
-                  {loadingCep ? 'Buscando...' : 'Buscar'}
-                </Button>
+                {loadingCep && (
+                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
               </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Digite o CEP para buscar automaticamente
+              </p>
             </div>
 
             <div>
@@ -288,7 +291,7 @@ export function NovoEventoDialog({ open, onOpenChange, onEventoCreated }: NovoEv
                 />
               </div>
               <div>
-                <Label htmlFor="complemento">Complemento</Label>
+                <Label htmlFor="complemento">Complemento (Opcional)</Label>
                 <Input 
                   id="complemento" 
                   value={complemento} 
