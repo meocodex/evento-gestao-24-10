@@ -155,6 +155,7 @@ export type Database = {
           endereco: Json
           id: string
           nome: string
+          responsavel_legal: Json | null
           search_vector: unknown
           telefone: string
           tipo: Database["public"]["Enums"]["tipo_cliente"]
@@ -169,6 +170,7 @@ export type Database = {
           endereco?: Json
           id?: string
           nome: string
+          responsavel_legal?: Json | null
           search_vector?: unknown
           telefone: string
           tipo: Database["public"]["Enums"]["tipo_cliente"]
@@ -183,6 +185,7 @@ export type Database = {
           endereco?: Json
           id?: string
           nome?: string
+          responsavel_legal?: Json | null
           search_vector?: unknown
           telefone?: string
           tipo?: Database["public"]["Enums"]["tipo_cliente"]
