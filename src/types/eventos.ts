@@ -248,12 +248,23 @@ export interface CadastroEventoPublico {
   endereco: string;
   cidade: string;
   estado: string;
+  observacoes?: string;
   produtor: {
     nome: string;
+    tipo: TipoCliente;
     documento: string;
     telefone: string;
     whatsapp: string;
     email: string;
+    endereco: {
+      cep: string;
+      logradouro: string;
+      numero: string;
+      complemento?: string;
+      bairro: string;
+      cidade: string;
+      estado: string;
+    };
   };
   configuracaoIngresso?: ConfiguracaoIngresso;
   configuracaoBar?: ConfiguracaoBar;

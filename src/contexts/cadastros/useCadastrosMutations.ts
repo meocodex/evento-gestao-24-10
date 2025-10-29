@@ -8,41 +8,43 @@ export function useCadastrosMutations() {
 
   const criarCadastro = useMutation({
     mutationFn: async (data: CadastroEventoPublico): Promise<string> => {
-      // Gerar protocolo
-      const ano = new Date().getFullYear();
-      const mes = String(new Date().getMonth() + 1).padStart(2, '0');
-      const dia = String(new Date().getDate()).padStart(2, '0');
-      
-      // Buscar contagem para número sequencial
-      const { count } = await supabase
-        .from('cadastros_publicos')
-        .select('*', { count: 'exact', head: true });
-      
-      const numero = String((count || 0) + 1).padStart(3, '0');
-      const protocolo = `CAD-${ano}${mes}${dia}-${numero}`;
+      // Chamar edge function para criar evento e cliente
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/criar-evento-publico`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
+            produtor: data.produtor,
+            evento: {
+              nome: data.nome,
+              tipoEvento: data.tipoEvento,
+              dataInicio: data.dataInicio,
+              dataFim: data.dataFim,
+              horaInicio: data.horaInicio,
+              horaFim: data.horaFim,
+              local: data.local,
+              endereco: data.endereco,
+              cidade: data.cidade,
+              estado: data.estado,
+              observacoes: data.observacoes,
+            },
+            configuracaoIngresso: data.configuracaoIngresso,
+            configuracaoBar: data.configuracaoBar,
+          }),
+        }
+      );
 
-      const { error } = await supabase
-        .from('cadastros_publicos')
-        .insert({
-          protocolo,
-          nome: data.nome,
-          tipo_evento: data.tipoEvento,
-          data_inicio: data.dataInicio,
-          data_fim: data.dataFim,
-          hora_inicio: data.horaInicio,
-          hora_fim: data.horaFim,
-          local: data.local,
-          cidade: data.cidade,
-          estado: data.estado,
-          endereco: data.endereco,
-          produtor: JSON.parse(JSON.stringify(data.produtor)),
-          configuracao_ingresso: data.configuracaoIngresso ? JSON.parse(JSON.stringify(data.configuracaoIngresso)) : null,
-          configuracao_bar: data.configuracaoBar ? JSON.parse(JSON.stringify(data.configuracaoBar)) : null,
-          status: 'pendente',
-        });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao criar evento');
+      }
 
-      if (error) throw error;
-      return protocolo;
+      const result = await response.json();
+      return result.protocolo;
     },
     onSuccess: (protocolo) => {
       queryClient.invalidateQueries({ queryKey: ['cadastros-publicos'] });
