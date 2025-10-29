@@ -51,6 +51,15 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
       return;
     }
 
+    if (permissoesSelecionadas.length === 0) {
+      toast({
+        title: 'Permissões obrigatórias',
+        description: 'Selecione pelo menos 1 permissão na aba "Permissões" antes de conceder acesso.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     try {
       setConcedendo(true);
 
@@ -120,7 +129,7 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
         <Tabs defaultValue="acesso" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="acesso">Credenciais</TabsTrigger>
-            <TabsTrigger value="permissoes">Permissões</TabsTrigger>
+            <TabsTrigger value="permissoes">Permissões *</TabsTrigger>
           </TabsList>
 
           <TabsContent value="acesso" className="space-y-4 mt-4">
@@ -165,6 +174,14 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
           </TabsContent>
 
           <TabsContent value="permissoes" className="space-y-4 mt-4">
+            <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 mb-4">
+              <p className="text-sm text-orange-800 dark:text-orange-300 font-semibold">
+                ⚠️ OBRIGATÓRIO: Selecione pelo menos 1 permissão antes de conceder acesso
+              </p>
+              <p className="text-xs text-orange-700 dark:text-orange-400 mt-1">
+                Permissões selecionadas: <strong>{permissoesSelecionadas.length}</strong>
+              </p>
+            </div>
             <div className="space-y-4">
               <TemplatesPermissoes onSelectTemplate={handleTemplateSelect} />
               <Separator />
@@ -183,7 +200,7 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
           </Button>
           <Button 
             onClick={handleSubmit}
-            disabled={concedendo || !email || !senha}
+            disabled={concedendo || !email || !senha || permissoesSelecionadas.length === 0}
           >
             {concedendo ? 'Concedendo...' : 'Conceder Acesso'}
           </Button>
