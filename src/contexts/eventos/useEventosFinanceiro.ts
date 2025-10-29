@@ -2,10 +2,12 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-export function useEventosFinanceiro(eventoId: string) {
+export function useEventosFinanceiro(eventoId?: string) {
   const { data: receitasData, isLoading: isLoadingReceitas } = useQuery({
     queryKey: ['eventos-receitas', eventoId],
+    enabled: !!eventoId,
     queryFn: async () => {
+      if (!eventoId) return [];
       const { data, error } = await supabase
         .from('eventos_financeiro')
         .select('*')
@@ -19,7 +21,9 @@ export function useEventosFinanceiro(eventoId: string) {
 
   const { data: despesasData, isLoading: isLoadingDespesas } = useQuery({
     queryKey: ['eventos-despesas', eventoId],
+    enabled: !!eventoId,
     queryFn: async () => {
+      if (!eventoId) return [];
       const { data, error } = await supabase
         .from('eventos_financeiro')
         .select('*')
@@ -32,6 +36,7 @@ export function useEventosFinanceiro(eventoId: string) {
   });
 
   const adicionarReceita = async (data: any) => {
+    if (!eventoId) return;
     const { error } = await supabase
       .from('eventos_financeiro')
       .insert({ ...data, evento_id: eventoId, tipo: 'receita' });
@@ -40,6 +45,7 @@ export function useEventosFinanceiro(eventoId: string) {
   };
 
   const adicionarDespesa = async (data: any) => {
+    if (!eventoId) return;
     const { error } = await supabase
       .from('eventos_financeiro')
       .insert({ ...data, evento_id: eventoId, tipo: 'despesa' });
@@ -48,6 +54,7 @@ export function useEventosFinanceiro(eventoId: string) {
   };
 
   const removerReceita = async (id: string) => {
+    if (!eventoId) return;
     const { error } = await supabase
       .from('eventos_financeiro')
       .delete()
@@ -57,6 +64,7 @@ export function useEventosFinanceiro(eventoId: string) {
   };
 
   const removerDespesa = async (id: string) => {
+    if (!eventoId) return;
     const { error } = await supabase
       .from('eventos_financeiro')
       .delete()

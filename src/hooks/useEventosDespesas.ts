@@ -8,7 +8,7 @@ import { useEventosFinanceiro } from '@/hooks/eventos';
  * entre EventosContext e DemandasContext.
  */
 export function useEventosDespesas(eventoId: string) {
-  const financeiro = useEventosFinanceiro(eventoId);
+  const financeiro = useEventosFinanceiro(eventoId || undefined as any);
 
   return {
     /**
@@ -16,6 +16,7 @@ export function useEventosDespesas(eventoId: string) {
      * Cria uma nova despesa no financeiro do evento com base nos dados do reembolso.
      */
     vincularReembolsoADespesa: async (demandaId: string, reembolso: any) => {
+      if (!eventoId) return; // no-op quando não há evento associado
       const valor = reembolso.valorTotal || reembolso.valor || 0;
       await financeiro.adicionarDespesa({
         descricao: reembolso.descricao || 'Reembolso',

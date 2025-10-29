@@ -63,7 +63,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
     marcarReembolsoPago,
   } = useDemandas();
   const { user } = useAuth();
-  const vincularReembolso = demanda?.eventoRelacionado ? useEventosDespesas(demanda.eventoRelacionado) : null;
+  const vincularReembolso = useEventosDespesas(demanda?.eventoRelacionado || '');
   const { usuarios } = useUsuarios();
   const [novoComentario, setNovoComentario] = useState('');
   const [showAprovarDialog, setShowAprovarDialog] = useState(false);
