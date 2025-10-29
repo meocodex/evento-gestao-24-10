@@ -3,25 +3,54 @@ import { useClientes } from '@/hooks/clientes';
 import { NovoClienteDialog } from '@/components/clientes/NovoClienteDialog';
 import { EditarClienteDialog } from '@/components/clientes/EditarClienteDialog';
 import { DetalhesClienteDialog } from '@/components/clientes/DetalhesClienteDialog';
-import { ClienteFilters } from '@/components/clientes/ClienteFilters';
-import { ClienteCard } from '@/components/clientes/ClienteCard';
+import { ClienteFiltersPopover, ClienteFiltersType } from '@/components/clientes/ClienteFiltersPopover';
 import { ClientesVirtualList } from '@/components/clientes/ClientesVirtualList';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Cliente } from '@/types/eventos';
-import { Users, User, Building2, Grid3x3, List, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Users, User, Building2, Grid3x3, List, Eye, Pencil, Trash2, Search } from 'lucide-react';
 
 export default function Clientes() {
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filtros, setFiltros] = useState<ClienteFiltersType>({
+    tipo: 'todos',
+    estado: 'todos',
+    cidade: 'todas',
+  });
+
   const pageSize = 20;
   const { clientes = [], totalCount = 0, excluirCliente } = useClientes(page, pageSize, searchTerm);
-  const clientesFiltrados = clientes;
+
+  // Filtrar clientes localmente
+  const clientesFiltrados = useMemo(() => {
+    return clientes.filter(cliente => {
+      // Filtro de tipo
+      if (filtros.tipo !== 'todos') {
+        if (filtros.tipo === 'cpf' && cliente.tipo !== 'CPF') return false;
+        if (filtros.tipo === 'cnpj' && cliente.tipo !== 'CNPJ') return false;
+      }
+
+      // Filtro de estado
+      if (filtros.estado !== 'todos' && cliente.endereco.estado !== filtros.estado) {
+        return false;
+      }
+
+      // Filtro de cidade
+      if (filtros.cidade !== 'todas' && cliente.endereco.cidade !== filtros.cidade) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [clientes, filtros]);
+
   const [visualizacao, setVisualizacao] = useState<'tabela' | 'cards'>('tabela');
   const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
   const [dialogAberto, setDialogAberto] = useState<'detalhes' | 'editar' | 'excluir' | null>(null);
@@ -31,6 +60,23 @@ export default function Clientes() {
   const totalClientes = totalCount;
   const totalCPF = clientes.filter((c) => c.tipo === 'CPF').length;
   const totalCNPJ = clientes.filter((c) => c.tipo === 'CNPJ').length;
+
+  // Extrair estados e cidades únicas
+  const estadosUnicos = useMemo(() => {
+    return Array.from(new Set(clientes.map(c => c.endereco.estado).filter(Boolean))).sort();
+  }, [clientes]);
+
+  const cidadesUnicas = useMemo(() => {
+    if (filtros.estado === 'todos') return [];
+    return Array.from(
+      new Set(
+        clientes
+          .filter(c => c.endereco.estado === filtros.estado)
+          .map(c => c.endereco.cidade)
+          .filter(Boolean)
+      )
+    ).sort();
+  }, [clientes, filtros.estado]);
 
   const handleExcluir = async () => {
     if (clienteSelecionado) {
@@ -45,7 +91,7 @@ export default function Clientes() {
 
   return (
     <div className="space-y-6">
-      {/* Header Navy */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-navy-800">Clientes</h1>
@@ -54,7 +100,7 @@ export default function Clientes() {
         <NovoClienteDialog />
       </div>
 
-      {/* Estatísticas Navy */}
+      {/* Estatísticas */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
           <StatCard
@@ -82,13 +128,29 @@ export default function Clientes() {
         </div>
       </div>
 
-      {/* Filtros */}
-      <ClienteFilters />
+      {/* Busca e Filtros */}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar clientes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <ClienteFiltersPopover
+          filtros={filtros}
+          onFiltrosChange={setFiltros}
+          estados={estadosUnicos}
+          cidades={cidadesUnicas}
+        />
+      </div>
 
       {/* Controles de Visualização */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-navy-600">
-          Mostrando {((page - 1) * pageSize) + 1}-{Math.min(page * pageSize, totalCount)} de {totalCount} clientes
+          Mostrando {clientesFiltrados.length} de {totalCount} clientes
         </p>
         <div className="flex gap-2">
           <Button

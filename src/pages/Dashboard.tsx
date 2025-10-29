@@ -39,7 +39,7 @@ const Dashboard = () => {
   const renderAdminDashboard = () => (
     <div className="space-y-8 animate-fade-in">
       {/* Premium Hero Section - Navy Theme */}
-      <div className="relative overflow-hidden rounded-2xl p-8 lg:p-12 bg-white border-2 border-navy-100">
+      <div className="relative overflow-hidden rounded-2xl p-6 lg:p-8 bg-white border-2 border-navy-100">
         <div className="relative z-10">
           <p className="text-sm font-medium text-navy-600 mb-2 tracking-wide uppercase">
             {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
@@ -99,17 +99,17 @@ const Dashboard = () => {
             <CardDescription className="text-navy-500">Resumo mensal</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex justify-between items-center p-4 bg-emerald-50 rounded-xl border-2 border-emerald-200">
+            <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-xl border-2 border-emerald-200">
               <span className="text-sm font-semibold text-navy-800">Receitas</span>
-              <span className="text-xl font-display font-bold text-success">{formatCurrency(stats?.receitaTotal || 0)}</span>
+              <span className="text-lg font-display font-bold text-success">{formatCurrency(stats?.receitaTotal || 0)}</span>
             </div>
-            <div className="flex justify-between items-center p-4 bg-red-50 rounded-xl border-2 border-red-200">
+            <div className="flex justify-between items-center p-3 bg-red-50 rounded-xl border-2 border-red-200">
               <span className="text-sm font-semibold text-navy-800">Despesas</span>
-              <span className="text-xl font-display font-bold text-destructive">{formatCurrency(stats?.despesaTotal || 0)}</span>
+              <span className="text-lg font-display font-bold text-destructive">{formatCurrency(stats?.despesaTotal || 0)}</span>
             </div>
-            <div className="flex justify-between items-center p-4 bg-navy-50 rounded-xl border-2 border-navy-200">
+            <div className="flex justify-between items-center p-3 bg-navy-50 rounded-xl border-2 border-navy-200">
               <span className="text-sm font-semibold text-navy-800">Lucro</span>
-              <span className="text-xl font-display font-bold text-navy-600">{formatCurrency(stats?.lucroLiquido || 0)}</span>
+              <span className="text-lg font-display font-bold text-navy-600">{formatCurrency(stats?.lucroLiquido || 0)}</span>
             </div>
           </CardContent>
         </Card>
@@ -196,7 +196,7 @@ const Dashboard = () => {
   const renderComercialDashboard = () => (
     <div className="space-y-12 animate-fade-in">
       {/* Premium Hero Section - Navy Theme */}
-      <div className="relative overflow-hidden rounded-2xl p-8 lg:p-12 bg-white border-2 border-navy-100">
+      <div className="relative overflow-hidden rounded-2xl p-6 lg:p-8 bg-white border-2 border-navy-100">
         <div className="relative z-10">
           <p className="text-sm font-medium text-navy-600 mb-2 tracking-wide uppercase">
             {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
@@ -350,7 +350,7 @@ const Dashboard = () => {
   const renderSuporteDashboard = () => (
     <div className="space-y-12 animate-fade-in">
       {/* Premium Hero Section - Navy Theme */}
-      <div className="relative overflow-hidden rounded-2xl p-8 lg:p-12 bg-white border-2 border-navy-100">
+      <div className="relative overflow-hidden rounded-2xl p-6 lg:p-8 bg-white border-2 border-navy-100">
         <div className="relative z-10">
           <p className="text-sm font-medium text-navy-600 mb-2 tracking-wide uppercase">
             {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}

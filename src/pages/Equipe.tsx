@@ -3,9 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Users, Search, Plus } from 'lucide-react';
+import { Users, Search, Plus, UserCheck, Briefcase, UserX } from 'lucide-react';
 import { useEquipe } from '@/hooks/equipe';
 import { MembrosUnificadosVirtualList } from '@/components/equipe/MembrosUnificadosVirtualList';
 import { NovoOperacionalDialog } from '@/components/equipe/operacional/NovoOperacionalDialog';
@@ -13,16 +12,19 @@ import { DetalhesOperacionalDialog } from '@/components/equipe/operacional/Detal
 import { EditarOperacionalDialog } from '@/components/equipe/operacional/EditarOperacionalDialog';
 import { ConcederAcessoSistemaDialog } from '@/components/equipe/ConcederAcessoSistemaDialog';
 import { GerenciarPermissoesMembroDialog } from '@/components/equipe/GerenciarPermissoesMembroDialog';
-import { OperacionalEquipe, MembroEquipeUnificado } from '@/types/equipe';
-import { Badge } from '@/components/ui/badge';
+import { EquipeFiltersPopover, EquipeFiltersType } from '@/components/equipe/EquipeFiltersPopover';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { MembroEquipeUnificado } from '@/types/equipe';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
 export default function Equipe() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const pageSize = 50;
   const { operacionais = [], data: profiles = [], isLoading: loadingMembros, excluirOperacional } = useEquipe(page, pageSize, {}, true);
+  
   const membrosUnificados = useMemo(() => {
     const unificados: any[] = [...operacionais.map(op => ({ 
       ...op, 
@@ -55,9 +57,11 @@ export default function Equipe() {
   }, [operacionais, profiles]);
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [funcaoFilter, setFuncaoFilter] = useState<string>('todos');
-  const [tipoMembroFilter, setTipoMembroFilter] = useState<string>('todos');
-  const [statusFilter, setStatusFilter] = useState<string>('todos');
+  const [filtros, setFiltros] = useState<EquipeFiltersType>({
+    tipoMembro: 'todos',
+    funcao: 'todas',
+    status: 'todos',
+  });
   
   const [novoDialogOpen, setNovoDialogOpen] = useState(false);
   const [membroSelecionado, setMembroSelecionado] = useState<MembroEquipeUnificado | null>(null);
@@ -71,7 +75,6 @@ export default function Equipe() {
     if (!membroParaExcluir) return;
 
     try {
-      // Se for tipo 'sistema' ou 'ambos', precisa excluir do auth também
       if (membroParaExcluir.tipo_membro === 'sistema' || membroParaExcluir.tipo_membro === 'ambos') {
         const { error } = await supabase.functions.invoke('excluir-usuario', {
           body: { user_id: membroParaExcluir.id }
@@ -79,11 +82,9 @@ export default function Equipe() {
         
         if (error) throw error;
 
-        // Invalidar queries após exclusão do Auth
         queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
         queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
       } else {
-        // Apenas operacional - excluir da tabela equipe_operacional
         await excluirOperacional.mutateAsync(membroParaExcluir.id);
       }
 
@@ -118,24 +119,24 @@ export default function Equipe() {
         }
       }
 
-      // Filtro de função
-      if (funcaoFilter !== 'todos' && membro.funcao_principal !== funcaoFilter) {
+      // Filtro de tipo de membro
+      if (filtros.tipoMembro !== 'todos' && membro.tipo_membro !== filtros.tipoMembro) {
         return false;
       }
 
-      // Filtro de tipo de membro
-      if (tipoMembroFilter !== 'todos' && membro.tipo_membro !== tipoMembroFilter) {
+      // Filtro de função
+      if (filtros.funcao !== 'todas' && membro.funcao_principal !== filtros.funcao) {
         return false;
       }
 
       // Filtro de status
-      if (statusFilter !== 'todos' && membro.status !== statusFilter) {
+      if (filtros.status !== 'todos' && membro.status !== filtros.status) {
         return false;
       }
 
       return true;
     });
-  }, [membrosUnificados, searchTerm, funcaoFilter, tipoMembroFilter, statusFilter]);
+  }, [membrosUnificados, searchTerm, filtros]);
 
   // Obter funções únicas para o filtro
   const funcoesUnicas = useMemo(() => {
@@ -168,31 +169,31 @@ export default function Equipe() {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">Total de Membros</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600">{stats.sistema}</div>
-            <p className="text-xs text-muted-foreground">Apenas Sistema</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">{stats.operacional}</div>
-            <p className="text-xs text-muted-foreground">Apenas Operacional</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-purple-600">{stats.ambos}</div>
-            <p className="text-xs text-muted-foreground">Sistema + Operacional</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Total de Membros"
+          value={stats.total.toString()}
+          icon={Users}
+          variant="default"
+        />
+        <StatCard
+          title="Apenas Sistema"
+          value={stats.sistema.toString()}
+          icon={UserCheck}
+          variant="primary"
+        />
+        <StatCard
+          title="Apenas Operacional"
+          value={stats.operacional.toString()}
+          icon={Briefcase}
+          variant="success"
+        />
+        <StatCard
+          title="Sistema + Operacional"
+          value={stats.ambos.toString()}
+          icon={UserX}
+          variant="default"
+        />
       </div>
 
       {/* Card Principal */}
@@ -207,10 +208,9 @@ export default function Equipe() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Filtros */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {/* Busca */}
-            <div className="relative md:col-span-2">
+          {/* Busca e Filtros */}
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por nome, email, telefone ou CPF..."
@@ -219,61 +219,11 @@ export default function Equipe() {
                 className="pl-10"
               />
             </div>
-
-            {/* Filtro por Tipo de Membro */}
-            <Select value={tipoMembroFilter} onValueChange={setTipoMembroFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Tipo de Membro" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos os Tipos</SelectItem>
-                <SelectItem value="sistema">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="default" className="text-xs">Sistema</Badge>
-                  </div>
-                </SelectItem>
-                <SelectItem value="operacional">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className="text-xs">Operacional</Badge>
-                  </div>
-                </SelectItem>
-                <SelectItem value="ambos">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">Ambos</Badge>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Filtro por Função */}
-            <Select value={funcaoFilter} onValueChange={setFuncaoFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Função" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todas as Funções</SelectItem>
-                {funcoesUnicas.map(funcao => (
-                  <SelectItem key={funcao} value={funcao}>
-                    {funcao}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Filtro de Status (segunda linha) */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="todos">Todos os Status</SelectItem>
-                <SelectItem value="ativo">Ativos</SelectItem>
-                <SelectItem value="inativo">Inativos</SelectItem>
-                <SelectItem value="bloqueado">Bloqueados</SelectItem>
-              </SelectContent>
-            </Select>
+            <EquipeFiltersPopover
+              filtros={filtros}
+              onFiltrosChange={setFiltros}
+              funcoes={funcoesUnicas}
+            />
           </div>
 
           {/* Contagem de Resultados */}
@@ -358,7 +308,7 @@ export default function Equipe() {
                 </>
               ) : membroParaExcluir?.tipo_membro === 'sistema' ? (
                 <>
-                  Tem certeza que deseja revogar o acesso de <strong>{membroParaExcluir?.nome}</strong>?
+                  Tem certeza que deseja revocar o acesso de <strong>{membroParaExcluir?.nome}</strong>?
                   <br /><br />
                   Este usuário perderá o acesso ao sistema e todas as suas permissões serão removidas.
                 </>
