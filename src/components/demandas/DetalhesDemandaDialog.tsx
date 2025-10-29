@@ -72,9 +72,9 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ url: string; nome: string; tipo: string } | null>(null);
 
-  if (!demanda) return null;
+  const { anexos, adicionarAnexo, removerAnexo } = useDemandasAnexos(demanda?.id || '');
   
-  const { anexos, adicionarAnexo, removerAnexo } = useDemandasAnexos(demanda.id);
+  if (!demanda) return null;
 
   const isAdmin = user?.role === 'admin';
 
