@@ -9,10 +9,9 @@ export function useEventosFinanceiro(eventoId?: string) {
     queryFn: async () => {
       if (!eventoId) return [];
       const { data, error } = await supabase
-        .from('eventos_financeiro')
+        .from('eventos_receitas')
         .select('*')
-        .eq('evento_id', eventoId)
-        .eq('tipo', 'receita');
+        .eq('evento_id', eventoId);
       
       if (error) throw error;
       return data;
@@ -25,10 +24,9 @@ export function useEventosFinanceiro(eventoId?: string) {
     queryFn: async () => {
       if (!eventoId) return [];
       const { data, error } = await supabase
-        .from('eventos_financeiro')
+        .from('eventos_despesas')
         .select('*')
-        .eq('evento_id', eventoId)
-        .eq('tipo', 'despesa');
+        .eq('evento_id', eventoId);
       
       if (error) throw error;
       return data;
@@ -38,8 +36,8 @@ export function useEventosFinanceiro(eventoId?: string) {
   const adicionarReceita = async (data: any) => {
     if (!eventoId) return;
     const { error } = await supabase
-      .from('eventos_financeiro')
-      .insert({ ...data, evento_id: eventoId, tipo: 'receita' });
+      .from('eventos_receitas')
+      .insert({ ...data, evento_id: eventoId });
     if (error) throw error;
     toast.success('Receita adicionada com sucesso!');
   };
@@ -47,8 +45,8 @@ export function useEventosFinanceiro(eventoId?: string) {
   const adicionarDespesa = async (data: any) => {
     if (!eventoId) return;
     const { error } = await supabase
-      .from('eventos_financeiro')
-      .insert({ ...data, evento_id: eventoId, tipo: 'despesa' });
+      .from('eventos_despesas')
+      .insert({ ...data, evento_id: eventoId });
     if (error) throw error;
     toast.success('Despesa adicionada com sucesso!');
   };
@@ -56,7 +54,7 @@ export function useEventosFinanceiro(eventoId?: string) {
   const removerReceita = async (id: string) => {
     if (!eventoId) return;
     const { error } = await supabase
-      .from('eventos_financeiro')
+      .from('eventos_receitas')
       .delete()
       .eq('id', id);
     if (error) throw error;
@@ -66,7 +64,7 @@ export function useEventosFinanceiro(eventoId?: string) {
   const removerDespesa = async (id: string) => {
     if (!eventoId) return;
     const { error } = await supabase
-      .from('eventos_financeiro')
+      .from('eventos_despesas')
       .delete()
       .eq('id', id);
     if (error) throw error;

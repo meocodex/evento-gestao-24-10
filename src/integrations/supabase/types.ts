@@ -251,6 +251,160 @@ export type Database = {
         }
         Relationships: []
       }
+      contas_pagar: {
+        Row: {
+          anexos: Json | null
+          categoria: string
+          created_at: string | null
+          created_by: string | null
+          data_pagamento: string | null
+          data_vencimento: string
+          descricao: string
+          forma_pagamento: string | null
+          fornecedor: string | null
+          id: string
+          observacoes: string | null
+          proxima_data_geracao: string | null
+          quantidade: number
+          recorrencia: string
+          recorrencia_origem_id: string | null
+          responsavel: string | null
+          status: string
+          updated_at: string | null
+          valor: number
+          valor_unitario: number
+        }
+        Insert: {
+          anexos?: Json | null
+          categoria: string
+          created_at?: string | null
+          created_by?: string | null
+          data_pagamento?: string | null
+          data_vencimento: string
+          descricao: string
+          forma_pagamento?: string | null
+          fornecedor?: string | null
+          id?: string
+          observacoes?: string | null
+          proxima_data_geracao?: string | null
+          quantidade?: number
+          recorrencia: string
+          recorrencia_origem_id?: string | null
+          responsavel?: string | null
+          status?: string
+          updated_at?: string | null
+          valor: number
+          valor_unitario: number
+        }
+        Update: {
+          anexos?: Json | null
+          categoria?: string
+          created_at?: string | null
+          created_by?: string | null
+          data_pagamento?: string | null
+          data_vencimento?: string
+          descricao?: string
+          forma_pagamento?: string | null
+          fornecedor?: string | null
+          id?: string
+          observacoes?: string | null
+          proxima_data_geracao?: string | null
+          quantidade?: number
+          recorrencia?: string
+          recorrencia_origem_id?: string | null
+          responsavel?: string | null
+          status?: string
+          updated_at?: string | null
+          valor?: number
+          valor_unitario?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contas_pagar_recorrencia_origem_id_fkey"
+            columns: ["recorrencia_origem_id"]
+            isOneToOne: false
+            referencedRelation: "contas_pagar"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contas_receber: {
+        Row: {
+          anexos: Json | null
+          cliente: string | null
+          created_at: string | null
+          created_by: string | null
+          data_recebimento: string | null
+          data_vencimento: string
+          descricao: string
+          forma_recebimento: string | null
+          id: string
+          observacoes: string | null
+          proxima_data_geracao: string | null
+          quantidade: number
+          recorrencia: string
+          recorrencia_origem_id: string | null
+          responsavel: string | null
+          status: string
+          tipo: string
+          updated_at: string | null
+          valor: number
+          valor_unitario: number
+        }
+        Insert: {
+          anexos?: Json | null
+          cliente?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          data_recebimento?: string | null
+          data_vencimento: string
+          descricao: string
+          forma_recebimento?: string | null
+          id?: string
+          observacoes?: string | null
+          proxima_data_geracao?: string | null
+          quantidade?: number
+          recorrencia: string
+          recorrencia_origem_id?: string | null
+          responsavel?: string | null
+          status?: string
+          tipo: string
+          updated_at?: string | null
+          valor: number
+          valor_unitario: number
+        }
+        Update: {
+          anexos?: Json | null
+          cliente?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          data_recebimento?: string | null
+          data_vencimento?: string
+          descricao?: string
+          forma_recebimento?: string | null
+          id?: string
+          observacoes?: string | null
+          proxima_data_geracao?: string | null
+          quantidade?: number
+          recorrencia?: string
+          recorrencia_origem_id?: string | null
+          responsavel?: string | null
+          status?: string
+          tipo?: string
+          updated_at?: string | null
+          valor?: number
+          valor_unitario?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contas_receber_recorrencia_origem_id_fkey"
+            columns: ["recorrencia_origem_id"]
+            isOneToOne: false
+            referencedRelation: "contas_receber"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contratos: {
         Row: {
           anexos: string[] | null
@@ -1998,6 +2152,7 @@ export type Database = {
         Args: { p_material_id: string }
         Returns: undefined
       }
+      marcar_contas_vencidas: { Args: never; Returns: undefined }
       materiais_devolvidos_completo: {
         Args: { p_evento_id: string }
         Returns: boolean
