@@ -13,7 +13,7 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { Card } from '@/components/ui/card';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Bell, Clock, AlertTriangle, Archive, XCircle } from 'lucide-react';
+import { Clock, AlertTriangle, XCircle, Bell } from 'lucide-react';
 
 export default function Demandas() {
   const [page, setPage] = useState(1);
@@ -80,14 +80,8 @@ export default function Demandas() {
           </div>
         </div>
 
-        {/* Stats Cards Navy */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <StatCard
-            title="Total"
-            value={estatisticas.total}
-            icon={Bell}
-            variant="default"
-          />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             title="Abertas"
             value={estatisticas.abertas}
@@ -111,12 +105,6 @@ export default function Demandas() {
             value={estatisticas.prazosVencidos}
             icon={XCircle}
             variant="danger"
-          />
-          <StatCard
-            title="Arquivadas"
-            value={estatisticas.arquivadas}
-            icon={Archive}
-            variant="default"
           />
         </div>
 
