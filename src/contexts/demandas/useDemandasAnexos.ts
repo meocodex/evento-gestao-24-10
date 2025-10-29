@@ -2,6 +2,22 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
+// Helper para extrair o caminho do storage de URLs antigas ou novas
+function extractStoragePath(url: string): string {
+  try {
+    // Se já é um path simples (demandaId/filename)
+    if (!url.includes('http') && !url.includes('storage') && !url.includes('sign')) {
+      return url;
+    }
+    
+    // Extrair de URL completa: .../demandas/PATH
+    const match = url.match(/\/demandas\/(.+?)(\?|$)/);
+    return match ? match[1] : url;
+  } catch {
+    return url;
+  }
+}
+
 export function useDemandasAnexos(demandaId: string) {
   const queryClient = useQueryClient();
 
@@ -23,8 +39,8 @@ export function useDemandasAnexos(demandaId: string) {
       const anexosComUrls = await Promise.all(
         (data || []).map(async (anexo) => {
           try {
-            const urlParts = anexo.url.split('/');
-            const filePath = urlParts.slice(-2).join('/'); // demandaId/filename
+            // Usar o caminho armazenado (já está limpo ou será extraído)
+            const filePath = extractStoragePath(anexo.url);
             
             const { data: signedData, error: signedError } = await supabase.storage
               .from('demandas')
@@ -32,7 +48,15 @@ export function useDemandasAnexos(demandaId: string) {
             
             if (signedError) {
               console.error('Erro ao gerar URL assinada:', signedError);
-              return anexo;
+              return {
+                id: anexo.id,
+                nome: anexo.nome,
+                url: anexo.url,
+                tipo: anexo.tipo,
+                tamanho: anexo.tamanho,
+                uploadPor: anexo.upload_por,
+                uploadEm: anexo.created_at,
+              };
             }
             
             return {
@@ -89,16 +113,7 @@ export function useDemandasAnexos(demandaId: string) {
 
       if (uploadError) throw uploadError;
 
-      // Obter URL assinada (válida por 1 hora)
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from('demandas')
-        .createSignedUrl(filePath, 3600);
-
-      if (signedError) throw signedError;
-
-      const publicUrl = signedData?.signedUrl || '';
-
-      // Criar registro no banco
+      // Criar registro no banco com PATH relativo (não URL completa)
       const { error: dbError } = await supabase
         .from('demandas_anexos')
         .insert({
@@ -106,13 +121,13 @@ export function useDemandasAnexos(demandaId: string) {
           nome: arquivo.name,
           tipo: arquivo.type,
           tamanho: arquivo.size,
-          url: publicUrl,
+          url: filePath, // Salvar apenas o path relativo
           upload_por: uploadPor,
         });
 
       if (dbError) throw dbError;
 
-      return publicUrl;
+      return filePath;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
@@ -126,9 +141,8 @@ export function useDemandasAnexos(demandaId: string) {
 
   const removerAnexo = useMutation({
     mutationFn: async ({ demandaId, anexoId, url }: { demandaId: string; anexoId: string; url: string }) => {
-      // Extrair path do Storage da URL
-      const urlParts = url.split('/');
-      const filePath = urlParts.slice(-2).join('/'); // demandaId/filename
+      // Extrair path do Storage (compatível com URLs antigas e novas)
+      const filePath = extractStoragePath(url);
 
       // Remover do Storage
       const { error: storageError } = await supabase.storage
