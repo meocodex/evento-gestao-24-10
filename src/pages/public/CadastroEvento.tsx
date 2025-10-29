@@ -536,71 +536,66 @@ export default function CadastroEvento() {
               <CardDescription>Passo 2 de 6</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label>Nome do Evento</Label>
-                <Input 
-                  value={nome} 
-                  onChange={(e) => setNome(e.target.value)} 
-                  maxLength={200}
-                />
+              {/* Nome do Evento + Local */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                  <Label>Nome do Evento</Label>
+                  <Input 
+                    value={nome} 
+                    onChange={(e) => setNome(e.target.value)} 
+                    maxLength={200}
+                    placeholder="Festival de Verão 2025"
+                  />
+                </div>
+                <div>
+                  <Label>Local</Label>
+                  <Input 
+                    value={local} 
+                    onChange={(e) => setLocal(e.target.value)} 
+                    placeholder="Arena XYZ"
+                    maxLength={200}
+                  />
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-[200px_200px_1fr] gap-4">
+              {/* Data Início + Data Fim + Hora Início + Hora Fim */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <Label>Data de Início</Label>
+                  <Label>Data Início</Label>
                   <Input 
                     type="date" 
                     value={dataInicio} 
                     onChange={(e) => setDataInicio(e.target.value)}
-                    className="w-full"
                   />
                 </div>
                 <div>
-                  <Label>Data de Fim</Label>
+                  <Label>Data Fim</Label>
                   <Input 
                     type="date" 
                     value={dataFim} 
                     onChange={(e) => setDataFim(e.target.value)}
-                    className="w-full"
                   />
                 </div>
-                <div></div>
-              </div>
-
-              <div className="grid grid-cols-2 lg:grid-cols-[150px_150px_1fr] gap-4">
                 <div>
-                  <Label>Hora de Início</Label>
+                  <Label>Hora Início</Label>
                   <Input 
                     type="time" 
                     value={horaInicio} 
                     onChange={(e) => setHoraInicio(e.target.value)}
-                    className="w-full"
                   />
                 </div>
                 <div>
-                  <Label>Hora de Fim</Label>
+                  <Label>Hora Fim</Label>
                   <Input 
                     type="time" 
                     value={horaFim} 
                     onChange={(e) => setHoraFim(e.target.value)}
-                    className="w-full"
                   />
                 </div>
-                <div></div>
               </div>
 
-              <div>
-                <Label>Local</Label>
-                <Input 
-                  value={local} 
-                  onChange={(e) => setLocal(e.target.value)} 
-                  placeholder="Nome do local"
-                  maxLength={200}
-                />
-              </div>
-
-              {/* CEP + Número */}
-              <div className="grid grid-cols-[150px_1fr] gap-3">
+              {/* CEP + Logradouro + Número */}
+              <div className="grid grid-cols-[140px_1fr_120px] gap-3">
                 <div>
                   <Label>CEP</Label>
                   <div className="relative">
@@ -613,7 +608,6 @@ export default function CadastroEvento() {
                       placeholder="00000-000"
                       maxLength={9}
                       disabled={buscandoCEPEvento}
-                      className="w-full"
                     />
                     {buscandoCEPEvento && (
                       <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
@@ -625,30 +619,28 @@ export default function CadastroEvento() {
                 </div>
                 
                 <div>
+                  <Label>Logradouro</Label>
+                  <Input 
+                    value={logradouro} 
+                    onChange={(e) => setLogradouro(e.target.value)} 
+                    placeholder="Rua, Avenida..."
+                    maxLength={200}
+                  />
+                </div>
+
+                <div>
                   <Label>Número *</Label>
                   <Input 
                     value={numero} 
                     onChange={(e) => setNumero(e.target.value)} 
                     placeholder="123"
                     maxLength={10}
-                    className="w-full"
                   />
                 </div>
               </div>
 
-              {/* Logradouro */}
-              <div>
-                <Label>Logradouro</Label>
-                <Input 
-                  value={logradouro} 
-                  onChange={(e) => setLogradouro(e.target.value)} 
-                  placeholder="Rua, Avenida..."
-                  maxLength={200}
-                />
-              </div>
-
-              {/* Bairro + Complemento */}
-              <div className="grid grid-cols-[1fr_200px] gap-3">
+              {/* Bairro + Complemento + Cidade + Estado */}
+              <div className="grid grid-cols-2 lg:grid-cols-[1fr_180px_1fr_100px] gap-3">
                 <div>
                   <Label>Bairro</Label>
                   <Input 
@@ -659,7 +651,7 @@ export default function CadastroEvento() {
                   />
                 </div>
                 <div>
-                  <Label>Complemento (Opcional)</Label>
+                  <Label>Complemento</Label>
                   <Input 
                     value={complemento} 
                     onChange={(e) => setComplemento(e.target.value)} 
@@ -667,22 +659,19 @@ export default function CadastroEvento() {
                     maxLength={50}
                   />
                 </div>
-              </div>
-
-              {/* Cidade + Estado */}
-              <div className="grid grid-cols-[1fr_100px] gap-4">
                 <div>
                   <Label>Cidade</Label>
                   <Input 
                     value={cidade} 
                     onChange={(e) => setCidade(e.target.value)}
+                    placeholder="São Paulo"
                     maxLength={100}
                   />
                 </div>
                 <div>
                   <Label>Estado</Label>
                   <Select value={estado} onValueChange={setEstado}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger>
                       <SelectValue placeholder="UF" />
                     </SelectTrigger>
                     <SelectContent>
