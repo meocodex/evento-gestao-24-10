@@ -30,9 +30,14 @@ export default function CadastroEvento() {
   const [horaInicio, setHoraInicio] = useState('');
   const [horaFim, setHoraFim] = useState('');
   const [local, setLocal] = useState('');
-  const [endereco, setEndereco] = useState('');
+  const [cep, setCep] = useState('');
+  const [logradouro, setLogradouro] = useState('');
+  const [numero, setNumero] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [complemento, setComplemento] = useState('');
   const [cidade, setCidade] = useState('');
   const [estado, setEstado] = useState('');
+  const [buscandoCEPEvento, setBuscandoCEPEvento] = useState(false);
 
   // Dados do produtor
   const [produtorNome, setProdutorNome] = useState('');
@@ -79,7 +84,7 @@ export default function CadastroEvento() {
   ]);
   const [mapaLocal, setMapaLocal] = useState('');
   
-  // Busca automática de endereço por CEP
+  // Busca automática de endereço por CEP do produtor
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (produtorCep.replace(/\D/g, '').length === 8) {
@@ -101,6 +106,38 @@ export default function CadastroEvento() {
     }, 800);
     return () => clearTimeout(timer);
   }, [produtorCep]);
+
+  // Busca automática de endereço por CEP do evento
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (cep.replace(/\D/g, '').length === 8) {
+        setBuscandoCEPEvento(true);
+        try {
+          const endereco = await buscarEnderecoPorCEP(cep);
+          if (endereco) {
+            setLogradouro(endereco.logradouro);
+            setBairro(endereco.bairro);
+            setCidade(endereco.localidade);
+            setEstado(endereco.uf);
+            toast({
+              title: 'CEP encontrado!',
+              description: 'Endereço preenchido automaticamente.',
+            });
+          }
+        } catch (error) {
+          console.error('Erro ao buscar CEP do evento:', error);
+          toast({
+            title: 'CEP não encontrado',
+            description: 'Preencha o endereço manualmente.',
+            variant: 'destructive',
+          });
+        } finally {
+          setBuscandoCEPEvento(false);
+        }
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [cep, toast]);
 
   // Configuração de Ingresso
   const [setores, setSetores] = useState<SetorEvento[]>([]);
@@ -203,7 +240,7 @@ export default function CadastroEvento() {
         horaInicio,
         horaFim,
         local,
-        endereco,
+        endereco: `${logradouro}, ${numero}${complemento ? ', ' + complemento : ''} - ${bairro}`,
         cidade,
         estado,
         observacoes,
@@ -531,11 +568,70 @@ export default function CadastroEvento() {
                 <Input value={local} onChange={(e) => setLocal(e.target.value)} placeholder="Nome do local" />
               </div>
 
+              {/* CEP com busca automática */}
               <div>
-                <Label>Endereço Completo</Label>
-                <Input value={endereco} onChange={(e) => setEndereco(e.target.value)} />
+                <Label>CEP</Label>
+                <div className="relative">
+                  <Input
+                    value={cep}
+                    onChange={(e) => {
+                      const formatted = formatarCEP(e.target.value);
+                      setCep(formatted);
+                    }}
+                    placeholder="00000-000"
+                    maxLength={9}
+                    disabled={buscandoCEPEvento}
+                  />
+                  {buscandoCEPEvento && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Digite o CEP para buscar automaticamente
+                </p>
               </div>
 
+              {/* Logradouro + Número */}
+              <div className="grid md:grid-cols-[1fr_120px] gap-3">
+                <div>
+                  <Label>Logradouro</Label>
+                  <Input 
+                    value={logradouro} 
+                    onChange={(e) => setLogradouro(e.target.value)} 
+                    placeholder="Rua, Avenida..."
+                  />
+                </div>
+                <div>
+                  <Label>Número *</Label>
+                  <Input 
+                    value={numero} 
+                    onChange={(e) => setNumero(e.target.value)} 
+                    placeholder="123"
+                  />
+                </div>
+              </div>
+
+              {/* Bairro + Complemento */}
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <Label>Bairro</Label>
+                  <Input 
+                    value={bairro} 
+                    onChange={(e) => setBairro(e.target.value)} 
+                    placeholder="Centro"
+                  />
+                </div>
+                <div>
+                  <Label>Complemento (Opcional)</Label>
+                  <Input 
+                    value={complemento} 
+                    onChange={(e) => setComplemento(e.target.value)} 
+                    placeholder="Apt, Sala..."
+                  />
+                </div>
+              </div>
+
+              {/* Cidade + Estado */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label>Cidade</Label>
@@ -563,7 +659,7 @@ export default function CadastroEvento() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
-            <Button onClick={() => setStep(3)} disabled={!nome || !dataInicio}>
+            <Button onClick={() => setStep(3)} disabled={!nome || !dataInicio || !logradouro || !numero || !bairro}>
               Próximo
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
