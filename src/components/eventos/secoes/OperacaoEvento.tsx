@@ -68,13 +68,17 @@ export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {
           )}
         </CardHeader>
         <CardContent>
-          {evento.equipe.length === 0 ? (
+          {equipeHook.loading ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              Carregando equipe...
+            </p>
+          ) : equipeHook.equipe.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">
               Nenhum membro alocado
             </p>
           ) : (
             <div className="space-y-3">
-              {evento.equipe.map((membro) => (
+              {equipeHook.equipe.map((membro) => (
                 <div key={membro.id} className="p-4 border rounded-lg space-y-2">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
