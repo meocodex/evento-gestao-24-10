@@ -12,6 +12,36 @@ export type TipoCliente = 'CPF' | 'CNPJ';
 
 export type StatusMaterial = 'reservado' | 'separado' | 'em_transito' | 'entregue' | 'preparado';
 
+export interface ResponsavelLegal {
+  nome: string;
+  cpf: string;
+  dataNascimento: string;
+}
+
+export interface PontoVenda {
+  id: string;
+  nome: string;
+  responsavel: string;
+  telefone: string;
+  endereco: {
+    cep: string;
+    logradouro: string;
+    numero: string;
+    complemento?: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+  };
+}
+
+export interface EstabelecimentoBar {
+  id: string;
+  nome: string;
+  quantidadeMaquinas: number;
+  cardapioUrl?: string;
+  copiadoDeId?: string;
+}
+
 export type StatusFinanceiro = 'pendente' | 'pago' | 'cancelado' | 'em_negociacao';
 
 export type TipoReceita = 'fixo' | 'quantidade';
@@ -44,15 +74,13 @@ export interface Lote {
 }
 
 export interface ConfiguracaoBar {
-  quantidadeMaquinas: number;
-  quantidadeBares: number;
-  temCardapio: boolean;
-  cardapioUrl?: string;
+  estabelecimentos: EstabelecimentoBar[];
   mapaLocal?: string;
 }
 
 export interface ConfiguracaoIngresso {
   setores: SetorEvento[];
+  pontosVenda: PontoVenda[];
   mapaEvento?: string;
   banners?: {
     bannerPrincipal?: string;
@@ -78,6 +106,7 @@ export interface Cliente {
     cidade: string;
     estado: string;
   };
+  responsavelLegal?: ResponsavelLegal;
 }
 
 export interface Comercial {
@@ -265,6 +294,7 @@ export interface CadastroEventoPublico {
       cidade: string;
       estado: string;
     };
+    responsavelLegal?: ResponsavelLegal;
   };
   configuracaoIngresso?: ConfiguracaoIngresso;
   configuracaoBar?: ConfiguracaoBar;

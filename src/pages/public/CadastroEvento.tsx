@@ -10,10 +10,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCadastros } from '@/hooks/cadastros';
-import { TipoEvento, SetorEvento } from '@/types/eventos';
+import { TipoEvento, SetorEvento, PontoVenda, EstabelecimentoBar, TipoIngresso } from '@/types/eventos';
 import { estados, formatarDocumento, formatarTelefone, formatarCEP, validarCPF, validarCNPJ } from '@/lib/validations/cliente';
 import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
 import { toast } from '@/hooks/use-toast';
+import { X } from 'lucide-react';
 
 export default function CadastroEvento() {
   const navigate = useNavigate();
@@ -51,11 +52,32 @@ export default function CadastroEvento() {
   const [produtorEstado, setProdutorEstado] = useState('');
   const [buscandoCEP, setBuscandoCEP] = useState(false);
 
+  // Responsável Legal (CNPJ)
+  const [responsavelNome, setResponsavelNome] = useState('');
+  const [responsavelCpf, setResponsavelCpf] = useState('');
+  const [responsavelDataNascimento, setResponsavelDataNascimento] = useState('');
+
   // Honeypot anti-bot (campo oculto que humanos não preenchem)
   const [honeypot, setHoneypot] = useState('');
   
   // Observações
   const [observacoes, setObservacoes] = useState('');
+  
+  // Pontos de Venda (Ingresso)
+  const [pontosVenda, setPontosVenda] = useState<PontoVenda[]>([]);
+  const [pdvCepBusca, setPdvCepBusca] = useState<Record<string, boolean>>({});
+  
+  // Banners e Mapa (Ingresso)
+  const [bannerPrincipal, setBannerPrincipal] = useState('');
+  const [bannerMobile, setBannerMobile] = useState('');
+  const [bannerSite, setBannerSite] = useState('');
+  const [mapaEvento, setMapaEvento] = useState('');
+  
+  // Estabelecimentos de Bar
+  const [estabelecimentosBares, setEstabelecimentosBares] = useState<EstabelecimentoBar[]>([
+    { id: '1', nome: 'Bar Principal', quantidadeMaquinas: 1 }
+  ]);
+  const [mapaLocal, setMapaLocal] = useState('');
   
   // Busca automática de endereço por CEP
   useEffect(() => {
@@ -82,11 +104,6 @@ export default function CadastroEvento() {
 
   // Configuração de Ingresso
   const [setores, setSetores] = useState<SetorEvento[]>([]);
-
-  // Configuração de Bar
-  const [quantidadeMaquinas, setQuantidadeMaquinas] = useState(1);
-  const [quantidadeBares, setQuantidadeBares] = useState(1);
-  const [temCardapio, setTemCardapio] = useState(false);
 
   const handleSubmit = async () => {
     // Proteção anti-bot: se honeypot foi preenchido, é um bot
@@ -116,8 +133,68 @@ export default function CadastroEvento() {
       return;
     }
 
+    // Validar responsável legal se for CNPJ
+    if (produtorTipo === 'CNPJ') {
+      const cpfResponsavel = responsavelCpf.replace(/\D/g, '');
+      if (!validarCPF(cpfResponsavel)) {
+        toast({
+          title: 'CPF do responsável legal inválido',
+          description: 'Por favor, verifique o número do CPF informado.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Validar idade mínima (18 anos)
+      const dataNasc = new Date(responsavelDataNascimento);
+      const hoje = new Date();
+      const idade = hoje.getFullYear() - dataNasc.getFullYear();
+      const mesAtual = hoje.getMonth();
+      const diaAtual = hoje.getDate();
+      const mesNasc = dataNasc.getMonth();
+      const diaNasc = dataNasc.getDate();
+      
+      const idadeReal = mesAtual < mesNasc || (mesAtual === mesNasc && diaAtual < diaNasc) 
+        ? idade - 1 
+        : idade;
+
+      if (idadeReal < 18) {
+        toast({
+          title: 'Responsável legal menor de idade',
+          description: 'O responsável legal deve ter no mínimo 18 anos.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     setLoading(true);
     try {
+      // Montar objeto de responsável legal
+      const responsavelLegal = produtorTipo === 'CNPJ' ? {
+        nome: responsavelNome,
+        cpf: responsavelCpf.replace(/\D/g, ''),
+        dataNascimento: responsavelDataNascimento,
+      } : undefined;
+
+      // Montar configuração de ingresso
+      const configuracaoIngresso = (tipoEvento === 'ingresso' || tipoEvento === 'hibrido') ? {
+        setores: setores,
+        pontosVenda: pontosVenda,
+        mapaEvento: mapaEvento || undefined,
+        banners: {
+          bannerPrincipal: bannerPrincipal || undefined,
+          bannerMobile: bannerMobile || undefined,
+          bannerSite: bannerSite || undefined,
+        },
+      } : undefined;
+
+      // Montar configuração de bar
+      const configuracaoBar = (tipoEvento === 'bar' || tipoEvento === 'hibrido') ? {
+        estabelecimentos: estabelecimentosBares,
+        mapaLocal: mapaLocal || undefined,
+      } : undefined;
+
       const protocolo = await criarCadastro.mutateAsync({
         tipoEvento: tipoEvento!,
         nome,
@@ -146,15 +223,10 @@ export default function CadastroEvento() {
             cidade: produtorCidade,
             estado: produtorEstado,
           },
+          responsavelLegal,
         },
-        configuracaoIngresso: (tipoEvento === 'ingresso' || tipoEvento === 'hibrido') ? {
-          setores,
-        } : undefined,
-        configuracaoBar: (tipoEvento === 'bar' || tipoEvento === 'hibrido') ? {
-          quantidadeMaquinas,
-          quantidadeBares,
-          temCardapio,
-        } : undefined,
+        configuracaoIngresso,
+        configuracaoBar,
       });
 
       navigate(`/cadastro-evento/${protocolo}`);
@@ -178,6 +250,16 @@ export default function CadastroEvento() {
     }]);
   };
 
+  const removerSetor = (setorId: string) => {
+    setSetores(setores.filter(s => s.id !== setorId));
+  };
+
+  const atualizarSetor = (setorId: string, campo: string, valor: any) => {
+    setSetores(setores.map(s => 
+      s.id === setorId ? { ...s, [campo]: valor } : s
+    ));
+  };
+
   const adicionarTipoIngresso = (setorId: string) => {
     setSetores(setores.map(s => s.id === setorId ? {
       ...s,
@@ -187,6 +269,183 @@ export default function CadastroEvento() {
         lotes: [],
       }],
     } : s));
+  };
+
+  const removerTipoIngresso = (setorId: string, tipoId: string) => {
+    setSetores(setores.map(s => {
+      if (s.id === setorId) {
+        return {
+          ...s,
+          tiposIngresso: s.tiposIngresso.filter(t => t.id !== tipoId),
+        };
+      }
+      return s;
+    }));
+  };
+
+  const atualizarTipoIngresso = (setorId: string, tipoId: string, campo: string, valor: any) => {
+    setSetores(setores.map(s => {
+      if (s.id === setorId) {
+        return {
+          ...s,
+          tiposIngresso: s.tiposIngresso.map(t =>
+            t.id === tipoId ? { ...t, [campo]: valor } : t
+          ),
+        };
+      }
+      return s;
+    }));
+  };
+
+  const atualizarLote = (
+    setorId: string, 
+    tipoId: string, 
+    numeroLote: number, 
+    campo: string, 
+    valor: any
+  ) => {
+    setSetores(setores.map(s => {
+      if (s.id === setorId) {
+        return {
+          ...s,
+          tiposIngresso: s.tiposIngresso.map(t => {
+            if (t.id === tipoId) {
+              const loteExistente = t.lotes.findIndex(l => l.numero === numeroLote);
+              
+              if (loteExistente >= 0) {
+                const novosLotes = [...t.lotes];
+                novosLotes[loteExistente] = {
+                  ...novosLotes[loteExistente],
+                  [campo]: valor,
+                };
+                return { ...t, lotes: novosLotes };
+              } else {
+                return {
+                  ...t,
+                  lotes: [
+                    ...t.lotes,
+                    {
+                      numero: numeroLote as 1 | 2 | 3 | 4,
+                      quantidade: campo === 'quantidade' ? valor : 0,
+                      preco: campo === 'preco' ? valor : 0,
+                      dataAberturaOnline: campo === 'dataAberturaOnline' ? valor : '',
+                      dataAberturaPDV: campo === 'dataAberturaPDV' ? valor : '',
+                      dataFechamentoOnline: campo === 'dataFechamentoOnline' ? valor : '',
+                      dataFechamentoPDV: campo === 'dataFechamentoPDV' ? valor : '',
+                    },
+                  ],
+                };
+              }
+            }
+            return t;
+          }),
+        };
+      }
+      return s;
+    }));
+  };
+
+  // Funções para PDVs
+  const adicionarPontoVenda = () => {
+    const novoPDV: PontoVenda = {
+      id: Date.now().toString(),
+      nome: '',
+      responsavel: '',
+      telefone: '',
+      endereco: {
+        cep: '',
+        logradouro: '',
+        numero: '',
+        bairro: '',
+        cidade: '',
+        estado: '',
+      },
+    };
+    setPontosVenda([...pontosVenda, novoPDV]);
+  };
+
+  const removerPontoVenda = (pdvId: string) => {
+    setPontosVenda(pontosVenda.filter(p => p.id !== pdvId));
+  };
+
+  const atualizarPDV = (pdvId: string, campo: string, valor: any) => {
+    setPontosVenda(pontosVenda.map(p => {
+      if (p.id === pdvId) {
+        if (campo.startsWith('endereco.')) {
+          const campoEndereco = campo.split('.')[1];
+          return {
+            ...p,
+            endereco: {
+              ...p.endereco,
+              [campoEndereco]: valor,
+            },
+          };
+        }
+        return { ...p, [campo]: valor };
+      }
+      return p;
+    }));
+  };
+
+  const buscarCEPParaPDV = async (pdvId: string, cep: string) => {
+    setPdvCepBusca({ ...pdvCepBusca, [pdvId]: true });
+    try {
+      const endereco = await buscarEnderecoPorCEP(cep);
+      if (endereco) {
+        setPontosVenda(pontosVenda.map(p => {
+          if (p.id === pdvId) {
+            return {
+              ...p,
+              endereco: {
+                ...p.endereco,
+                logradouro: endereco.logradouro,
+                bairro: endereco.bairro,
+                cidade: endereco.localidade,
+                estado: endereco.uf,
+              },
+            };
+          }
+          return p;
+        }));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar CEP do PDV:', error);
+    } finally {
+      setPdvCepBusca({ ...pdvCepBusca, [pdvId]: false });
+    }
+  };
+
+  // Funções para estabelecimentos de bar
+  const adicionarEstabelecimento = () => {
+    const novoEstab: EstabelecimentoBar = {
+      id: Date.now().toString(),
+      nome: '',
+      quantidadeMaquinas: 1,
+    };
+    setEstabelecimentosBares([...estabelecimentosBares, novoEstab]);
+  };
+
+  const removerEstabelecimento = (estabId: string) => {
+    setEstabelecimentosBares(estabelecimentosBares.filter(e => e.id !== estabId));
+  };
+
+  const atualizarEstabelecimento = (estabId: string, campo: string, valor: any) => {
+    setEstabelecimentosBares(estabelecimentosBares.map(e =>
+      e.id === estabId ? { ...e, [campo]: valor } : e
+    ));
+  };
+
+  const copiarCardapio = (estabDestinoId: string, estabOrigemId: string) => {
+    const origem = estabelecimentosBares.find(e => e.id === estabOrigemId);
+    if (origem?.cardapioUrl) {
+      setEstabelecimentosBares(estabelecimentosBares.map(e =>
+        e.id === estabDestinoId ? { ...e, cardapioUrl: origem.cardapioUrl, copiadoDeId: estabOrigemId } : e
+      ));
+      toast({
+        title: 'Cardápio copiado',
+        description: 'Cardápio copiado com sucesso!',
+      });
+    }
   };
 
   // Passo 1: Escolher tipo de evento
@@ -456,6 +715,57 @@ export default function CadastroEvento() {
                   onChange={(e) => setHoneypot(e.target.value)}
                 />
               </div>
+
+              {/* Responsável Legal (obrigatório para CNPJ) */}
+              {produtorTipo === 'CNPJ' && (
+                <div className="border-t pt-4 mt-4">
+                  <h3 className="font-semibold mb-4 text-amber-600">
+                    ⚠️ Responsável Legal (Obrigatório para CNPJ)
+                  </h3>
+                  
+                  <Alert className="mb-4">
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
+                      Para empresas (CNPJ), é obrigatório informar um responsável legal com CPF válido e maior de 18 anos
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Nome Completo do Responsável *</Label>
+                      <Input 
+                        value={responsavelNome} 
+                        onChange={(e) => setResponsavelNome(e.target.value)}
+                        placeholder="Nome completo"
+                      />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div>
+                        <Label>CPF do Responsável *</Label>
+                        <Input
+                          value={responsavelCpf}
+                          onChange={(e) => {
+                            const formatted = formatarDocumento(e.target.value, 'CPF');
+                            setResponsavelCpf(formatted);
+                          }}
+                          placeholder="000.000.000-00"
+                          maxLength={14}
+                        />
+                      </div>
+                      <div>
+                        <Label>Data de Nascimento *</Label>
+                        <Input
+                          type="date"
+                          value={responsavelDataNascimento}
+                          onChange={(e) => setResponsavelDataNascimento(e.target.value)}
+                          max={new Date().toISOString().split('T')[0]}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -476,7 +786,8 @@ export default function CadastroEvento() {
                 !produtorNumero ||
                 !produtorBairro ||
                 !produtorCidade ||
-                !produtorEstado
+                !produtorEstado ||
+                (produtorTipo === 'CNPJ' && (!responsavelNome || !responsavelCpf || !responsavelDataNascimento))
               }
             >
               Próximo
@@ -558,32 +869,93 @@ export default function CadastroEvento() {
 
               {(tipoEvento === 'bar' || tipoEvento === 'hibrido') && (
                 <div className="space-y-4">
-                  <div>
-                    <Label>Quantas máquinas de bar você precisa?</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={quantidadeMaquinas}
-                      onChange={(e) => setQuantidadeMaquinas(Number(e.target.value))}
-                    />
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-semibold">Estabelecimentos de Bar</h3>
+                    <Button onClick={adicionarEstabelecimento} size="sm">
+                      + Adicionar Estabelecimento
+                    </Button>
                   </div>
 
-                  <div>
-                    <Label>Quantos bares terá no local?</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={quantidadeBares}
-                      onChange={(e) => setQuantidadeBares(Number(e.target.value))}
-                    />
-                  </div>
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
+                      Se houver múltiplos bares no local (Ex: Bar Central, Bar Arena), cadastre todos aqui
+                    </AlertDescription>
+                  </Alert>
 
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      checked={temCardapio}
-                      onCheckedChange={(checked) => setTemCardapio(checked as boolean)}
+                  {estabelecimentosBares.map((estab, idx) => (
+                    <Card key={estab.id} className="border-amber-200">
+                      <CardHeader>
+                        <CardTitle className="text-base flex justify-between items-center">
+                          <span>Bar {idx + 1}: {estab.nome || 'Sem nome'}</span>
+                          {estabelecimentosBares.length > 1 && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => removerEstabelecimento(estab.id)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <Label>Nome do Estabelecimento *</Label>
+                          <Input
+                            value={estab.nome}
+                            onChange={(e) => atualizarEstabelecimento(estab.id, 'nome', e.target.value)}
+                            placeholder="Ex: Bar Central, Bar Arena"
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Quantidade de Máquinas *</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            value={estab.quantidadeMaquinas}
+                            onChange={(e) => atualizarEstabelecimento(estab.id, 'quantidadeMaquinas', Number(e.target.value))}
+                            placeholder="Quantas máquinas neste bar?"
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Link do Cardápio (opcional)</Label>
+                          <Input
+                            value={estab.cardapioUrl || ''}
+                            onChange={(e) => atualizarEstabelecimento(estab.id, 'cardapioUrl', e.target.value)}
+                            placeholder="https://..."
+                            type="url"
+                          />
+                        </div>
+
+                        {idx > 0 && estabelecimentosBares.length > 1 && estabelecimentosBares[0].cardapioUrl && (
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => copiarCardapio(estab.id, estabelecimentosBares[0].id)}
+                            >
+                              📋 Copiar cardápio do {estabelecimentosBares[0].nome}
+                            </Button>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+
+                  <div className="space-y-2 mt-4">
+                    <Label>Mapa do Local</Label>
+                    <Input
+                      value={mapaLocal}
+                      onChange={(e) => setMapaLocal(e.target.value)}
+                      placeholder="https://..."
+                      type="url"
                     />
-                    <Label>Já possui cardápio definido</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Planta baixa mostrando localização dos bares
+                    </p>
                   </div>
                 </div>
               )}

@@ -116,6 +116,44 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Validar responsável legal se for CNPJ
+    if (produtor.tipo === 'CNPJ') {
+      if (!produtor.responsavelLegal) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Responsável legal obrigatório para CNPJ' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+
+      const cpfResponsavel = produtor.responsavelLegal.cpf.replace(/\D/g, '');
+      if (!validarCPF(cpfResponsavel)) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'CPF do responsável legal inválido' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+
+      // Validar idade mínima (18 anos)
+      const dataNasc = new Date(produtor.responsavelLegal.dataNascimento);
+      const hoje = new Date();
+      const idade = hoje.getFullYear() - dataNasc.getFullYear();
+      const mesAtual = hoje.getMonth();
+      const diaAtual = hoje.getDate();
+      const mesNasc = dataNasc.getMonth();
+      const diaNasc = dataNasc.getDate();
+      
+      const idadeReal = mesAtual < mesNasc || (mesAtual === mesNasc && diaAtual < diaNasc) 
+        ? idade - 1 
+        : idade;
+
+      if (idadeReal < 18) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Responsável legal deve ter no mínimo 18 anos' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+        );
+      }
+    }
+
     // 2. Buscar cliente existente por documento
     const { data: clienteExistente, error: searchError } = await supabase
       .from('clientes')
@@ -166,25 +204,36 @@ Deno.serve(async (req) => {
       // Cliente novo
       clienteStatus = 'novo';
       
+      const clienteData: any = {
+        nome: produtor.nome,
+        tipo: produtor.tipo,
+        documento: documentoLimpo,
+        email: produtor.email,
+        telefone: produtor.telefone.replace(/\D/g, ''),
+        whatsapp: produtor.whatsapp?.replace(/\D/g, ''),
+        endereco: {
+          cep: produtor.endereco.cep.replace(/\D/g, ''),
+          logradouro: produtor.endereco.logradouro,
+          numero: produtor.endereco.numero,
+          complemento: produtor.endereco.complemento || '',
+          bairro: produtor.endereco.bairro,
+          cidade: produtor.endereco.cidade,
+          estado: produtor.endereco.estado,
+        },
+      };
+
+      // Adicionar responsável legal se for CNPJ
+      if (produtor.tipo === 'CNPJ' && produtor.responsavelLegal) {
+        clienteData.responsavel_legal = {
+          nome: produtor.responsavelLegal.nome,
+          cpf: produtor.responsavelLegal.cpf.replace(/\D/g, ''),
+          data_nascimento: produtor.responsavelLegal.dataNascimento,
+        };
+      }
+
       const { data: novoCliente, error: insertError } = await supabase
         .from('clientes')
-        .insert({
-          nome: produtor.nome,
-          tipo: produtor.tipo,
-          documento: documentoLimpo,
-          email: produtor.email,
-          telefone: produtor.telefone.replace(/\D/g, ''),
-          whatsapp: produtor.whatsapp?.replace(/\D/g, ''),
-          endereco: {
-            cep: produtor.endereco.cep.replace(/\D/g, ''),
-            logradouro: produtor.endereco.logradouro,
-            numero: produtor.endereco.numero,
-            complemento: produtor.endereco.complemento || '',
-            bairro: produtor.endereco.bairro,
-            cidade: produtor.endereco.cidade,
-            estado: produtor.endereco.estado,
-          },
-        })
+        .insert(clienteData)
         .select('id')
         .single();
 

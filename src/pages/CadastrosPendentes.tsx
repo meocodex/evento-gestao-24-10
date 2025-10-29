@@ -255,18 +255,16 @@ export default function CadastrosPendentes() {
                   <div>
                     <h3 className="font-semibold mb-2">Configuração de Bar</h3>
                     <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <Label>Máquinas de Bar</Label>
-                        <p>{selectedCadastro.configuracaoBar.quantidadeMaquinas}</p>
-                      </div>
-                      <div>
-                        <Label>Quantidade de Bares</Label>
-                        <p>{selectedCadastro.configuracaoBar.quantidadeBares}</p>
-                      </div>
                       <div className="col-span-2">
-                        <Label>Cardápio</Label>
-                        <p>{selectedCadastro.configuracaoBar.temCardapio ? 'Sim' : 'Não'}</p>
+                        <Label>Estabelecimentos</Label>
+                        <p>{selectedCadastro.configuracaoBar.estabelecimentos?.length || 0} estabelecimento(s) cadastrado(s)</p>
                       </div>
+                      {selectedCadastro.configuracaoBar.estabelecimentos?.map((estab: any, idx: number) => (
+                        <div key={idx} className="col-span-2 border-l-2 pl-2">
+                          <p className="font-medium">{estab.nome}</p>
+                          <p className="text-xs text-muted-foreground">{estab.quantidadeMaquinas} máquina(s)</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
