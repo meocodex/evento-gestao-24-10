@@ -14,21 +14,54 @@ export function useEventosEquipe(eventoId: string) {
         .eq('evento_id', eventoId);
       
       if (error) throw error;
-      return data;
+      
+      // Transform snake_case to camelCase for UI
+      return data?.map(row => ({
+        id: row.id,
+        eventoId: row.evento_id,
+        nome: row.nome,
+        funcao: row.funcao,
+        telefone: row.telefone,
+        whatsapp: row.whatsapp,
+        dataInicio: row.data_inicio,
+        dataFim: row.data_fim,
+        observacoes: row.observacoes,
+        operacionalId: row.operacional_id,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      })) || [];
     },
   });
 
   const adicionarMembroEquipe = useMutation({
     mutationFn: async (data: any) => {
+      const payload = {
+        evento_id: eventoId,
+        nome: data.nome,
+        funcao: data.funcao,
+        telefone: data.telefone,
+        whatsapp: data.whatsapp ?? null,
+        data_inicio: data.dataInicio ?? null,
+        data_fim: data.dataFim ?? null,
+        observacoes: data.observacoes ?? null,
+        operacional_id: data.operacionalId ?? null,
+      };
+      
       const { error } = await supabase
         .from('eventos_equipe')
-        .insert({ ...data, evento_id: eventoId });
+        .insert([payload])
+        .select();
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eventos-equipe', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       toast.success('Membro adicionado à equipe!');
+    },
+    onError: (error: any) => {
+      toast.error('Não foi possível adicionar o membro', {
+        description: error.message,
+      });
     },
   });
 
