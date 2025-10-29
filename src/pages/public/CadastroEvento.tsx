@@ -538,87 +538,124 @@ export default function CadastroEvento() {
             <CardContent className="space-y-4">
               <div>
                 <Label>Nome do Evento</Label>
-                <Input value={nome} onChange={(e) => setNome(e.target.value)} />
+                <Input 
+                  value={nome} 
+                  onChange={(e) => setNome(e.target.value)} 
+                  maxLength={200}
+                />
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-[200px_200px_1fr] gap-4">
                 <div>
                   <Label>Data de Início</Label>
-                  <Input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} />
+                  <Input 
+                    type="date" 
+                    value={dataInicio} 
+                    onChange={(e) => setDataInicio(e.target.value)}
+                    className="w-full"
+                  />
                 </div>
                 <div>
                   <Label>Data de Fim</Label>
-                  <Input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} />
+                  <Input 
+                    type="date" 
+                    value={dataFim} 
+                    onChange={(e) => setDataFim(e.target.value)}
+                    className="w-full"
+                  />
                 </div>
+                <div></div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-[150px_150px_1fr] gap-4">
                 <div>
                   <Label>Hora de Início</Label>
-                  <Input type="time" value={horaInicio} onChange={(e) => setHoraInicio(e.target.value)} />
+                  <Input 
+                    type="time" 
+                    value={horaInicio} 
+                    onChange={(e) => setHoraInicio(e.target.value)}
+                    className="w-full"
+                  />
                 </div>
                 <div>
                   <Label>Hora de Fim</Label>
-                  <Input type="time" value={horaFim} onChange={(e) => setHoraFim(e.target.value)} />
+                  <Input 
+                    type="time" 
+                    value={horaFim} 
+                    onChange={(e) => setHoraFim(e.target.value)}
+                    className="w-full"
+                  />
                 </div>
+                <div></div>
               </div>
 
               <div>
                 <Label>Local</Label>
-                <Input value={local} onChange={(e) => setLocal(e.target.value)} placeholder="Nome do local" />
+                <Input 
+                  value={local} 
+                  onChange={(e) => setLocal(e.target.value)} 
+                  placeholder="Nome do local"
+                  maxLength={200}
+                />
               </div>
 
-              {/* CEP com busca automática */}
-              <div>
-                <Label>CEP</Label>
-                <div className="relative">
-                  <Input
-                    value={cep}
-                    onChange={(e) => {
-                      const formatted = formatarCEP(e.target.value);
-                      setCep(formatted);
-                    }}
-                    placeholder="00000-000"
-                    maxLength={9}
-                    disabled={buscandoCEPEvento}
-                  />
-                  {buscandoCEPEvento && (
-                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Digite o CEP para buscar automaticamente
-                </p>
-              </div>
-
-              {/* Logradouro + Número */}
-              <div className="grid md:grid-cols-[1fr_120px] gap-3">
+              {/* CEP + Número */}
+              <div className="grid grid-cols-[150px_1fr] gap-3">
                 <div>
-                  <Label>Logradouro</Label>
-                  <Input 
-                    value={logradouro} 
-                    onChange={(e) => setLogradouro(e.target.value)} 
-                    placeholder="Rua, Avenida..."
-                  />
+                  <Label>CEP</Label>
+                  <div className="relative">
+                    <Input
+                      value={cep}
+                      onChange={(e) => {
+                        const formatted = formatarCEP(e.target.value);
+                        setCep(formatted);
+                      }}
+                      placeholder="00000-000"
+                      maxLength={9}
+                      disabled={buscandoCEPEvento}
+                      className="w-full"
+                    />
+                    {buscandoCEPEvento && (
+                      <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Digite o CEP
+                  </p>
                 </div>
+                
                 <div>
                   <Label>Número *</Label>
                   <Input 
                     value={numero} 
                     onChange={(e) => setNumero(e.target.value)} 
                     placeholder="123"
+                    maxLength={10}
+                    className="w-full"
                   />
                 </div>
               </div>
 
+              {/* Logradouro */}
+              <div>
+                <Label>Logradouro</Label>
+                <Input 
+                  value={logradouro} 
+                  onChange={(e) => setLogradouro(e.target.value)} 
+                  placeholder="Rua, Avenida..."
+                  maxLength={200}
+                />
+              </div>
+
               {/* Bairro + Complemento */}
-              <div className="grid md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-[1fr_200px] gap-3">
                 <div>
                   <Label>Bairro</Label>
                   <Input 
                     value={bairro} 
                     onChange={(e) => setBairro(e.target.value)} 
                     placeholder="Centro"
+                    maxLength={100}
                   />
                 </div>
                 <div>
@@ -626,22 +663,27 @@ export default function CadastroEvento() {
                   <Input 
                     value={complemento} 
                     onChange={(e) => setComplemento(e.target.value)} 
-                    placeholder="Apt, Sala..."
+                    placeholder="Apt 101"
+                    maxLength={50}
                   />
                 </div>
               </div>
 
               {/* Cidade + Estado */}
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-[1fr_100px] gap-4">
                 <div>
                   <Label>Cidade</Label>
-                  <Input value={cidade} onChange={(e) => setCidade(e.target.value)} />
+                  <Input 
+                    value={cidade} 
+                    onChange={(e) => setCidade(e.target.value)}
+                    maxLength={100}
+                  />
                 </div>
                 <div>
                   <Label>Estado</Label>
                   <Select value={estado} onValueChange={setEstado}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione" />
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="UF" />
                     </SelectTrigger>
                     <SelectContent>
                       {estados.map((uf) => (
