@@ -7,7 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContratos } from '@/hooks/contratos';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { X } from 'lucide-react';
+import { UploadPapelTimbrado } from '@/components/propostas/UploadPapelTimbrado';
 
 interface NovoTemplateDialogProps {
   open: boolean;
@@ -30,6 +32,7 @@ export function NovoTemplateDialog({ open, onOpenChange }: NovoTemplateDialogPro
   const [conteudo, setConteudo] = useState('');
   const [variaveis, setVariaveis] = useState<string[]>([]);
   const [novaVariavel, setNovaVariavel] = useState('');
+  const [papelTimbrado, setPapelTimbrado] = useState<string | undefined>();
 
   const handleSubmit = async () => {
     await criarTemplate.mutateAsync({
@@ -40,6 +43,7 @@ export function NovoTemplateDialog({ open, onOpenChange }: NovoTemplateDialogPro
       variaveis,
       status: 'ativo',
       versao: 1,
+      papelTimbrado,
     });
     resetForm();
     onOpenChange(false);
@@ -52,6 +56,7 @@ export function NovoTemplateDialog({ open, onOpenChange }: NovoTemplateDialogPro
     setConteudo('');
     setVariaveis([]);
     setNovaVariavel('');
+    setPapelTimbrado(undefined);
   };
 
   const adicionarVariavel = (variavel: string) => {
@@ -179,6 +184,19 @@ export function NovoTemplateDialog({ open, onOpenChange }: NovoTemplateDialogPro
             />
             <p className="text-xs text-muted-foreground mt-1">
               Dica: Clique nas variáveis acima para inseri-las no conteúdo
+            </p>
+          </div>
+
+          <Separator className="my-6" />
+
+          <div>
+            <Label>Papel Timbrado</Label>
+            <UploadPapelTimbrado
+              value={papelTimbrado}
+              onChange={setPapelTimbrado}
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              💡 O papel timbrado será usado automaticamente em todas propostas e contratos gerados com este template
             </p>
           </div>
         </div>

@@ -35,6 +35,7 @@ export function EditarTemplateDialog({ open, onOpenChange, template }: EditarTem
   const [variaveis, setVariaveis] = useState<string[]>([]);
   const [status, setStatus] = useState<'ativo' | 'inativo'>('ativo');
   const [novaVariavel, setNovaVariavel] = useState('');
+  const [papelTimbrado, setPapelTimbrado] = useState<string | undefined>();
 
   useEffect(() => {
     if (template) {
@@ -44,6 +45,7 @@ export function EditarTemplateDialog({ open, onOpenChange, template }: EditarTem
       setConteudo(template.conteudo);
       setVariaveis(template.variaveis);
       setStatus(template.status);
+      setPapelTimbrado(template.papelTimbrado);
     }
   }, [template]);
 
@@ -59,6 +61,7 @@ export function EditarTemplateDialog({ open, onOpenChange, template }: EditarTem
           variaveis,
           status,
           versao: template.versao + 1,
+          papelTimbrado,
         }
       });
       onOpenChange(false);
@@ -202,6 +205,19 @@ export function EditarTemplateDialog({ open, onOpenChange, template }: EditarTem
               rows={12}
               className="font-mono text-sm"
             />
+          </div>
+
+          <Separator className="my-6" />
+
+          <div>
+            <Label>Papel Timbrado</Label>
+            <UploadPapelTimbrado
+              value={papelTimbrado}
+              onChange={setPapelTimbrado}
+            />
+            <p className="text-xs text-muted-foreground mt-2">
+              💡 Alterações no papel timbrado afetarão todos novos documentos gerados com este template
+            </p>
           </div>
         </div>
 
