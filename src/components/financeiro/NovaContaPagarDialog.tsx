@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +12,9 @@ import { AnexosUpload } from './AnexosUpload';
 import { useContasPagar } from '@/hooks/financeiro';
 import { contaPagarSchema } from '@/lib/validations/financeiro';
 import { toast } from 'sonner';
-import type { ContaPagar, AnexoFinanceiro } from '@/types/financeiro';
+import type { AnexoFinanceiro } from '@/types/financeiro';
+
+type ContaPagarFormData = z.infer<typeof contaPagarSchema>;
 
 interface NovaContaPagarDialogProps {
   open: boolean;
@@ -24,12 +27,12 @@ export function NovaContaPagarDialog({ open, onOpenChange }: NovaContaPagarDialo
   const [quantidade, setQuantidade] = useState(1);
   const [valorUnitario, setValorUnitario] = useState(0);
 
-  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<ContaPagarFormData>({
     resolver: zodResolver(contaPagarSchema),
     defaultValues: {
       quantidade: 1,
-      recorrencia: 'unico' as const,
-      status: 'pendente' as const,
+      recorrencia: 'unico',
+      status: 'pendente',
     }
   });
 
@@ -38,13 +41,13 @@ export function NovaContaPagarDialog({ open, onOpenChange }: NovaContaPagarDialo
 
   const valorTotal = quantidade * valorUnitario;
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: ContaPagarFormData) => {
     try {
       await criar.mutateAsync({
         ...data,
         valor: valorTotal,
         anexos,
-      });
+      } as any);
       reset();
       setAnexos([]);
       onOpenChange(false);
@@ -64,14 +67,14 @@ export function NovaContaPagarDialog({ open, onOpenChange }: NovaContaPagarDialo
           <div>
             <Label htmlFor="descricao">Descrição *</Label>
             <Input id="descricao" {...register('descricao')} />
-            {errors.descricao && <p className="text-sm text-destructive">{errors.descricao.message as string}</p>}
+            {errors.descricao && <p className="text-sm text-destructive">{errors.descricao.message}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="categoria">Categoria *</Label>
               <Input id="categoria" {...register('categoria')} placeholder="Ex: Infraestrutura" />
-              {errors.categoria && <p className="text-sm text-destructive">{errors.categoria.message as string}</p>}
+              {errors.categoria && <p className="text-sm text-destructive">{errors.categoria.message}</p>}
             </div>
 
             <div>
@@ -89,7 +92,7 @@ export function NovaContaPagarDialog({ open, onOpenChange }: NovaContaPagarDialo
                 {...register('quantidade', { valueAsNumber: true })}
                 onChange={(e) => setQuantidade(Number(e.target.value))}
               />
-              {errors.quantidade && <p className="text-sm text-destructive">{errors.quantidade.message as string}</p>}
+              {errors.quantidade && <p className="text-sm text-destructive">{errors.quantidade.message}</p>}
             </div>
 
             <div>
@@ -101,7 +104,7 @@ export function NovaContaPagarDialog({ open, onOpenChange }: NovaContaPagarDialo
                 {...register('valor_unitario', { valueAsNumber: true })}
                 onChange={(e) => setValorUnitario(Number(e.target.value))}
               />
-              {errors.valor_unitario && <p className="text-sm text-destructive">{errors.valor_unitario.message as string}</p>}
+              {errors.valor_unitario && <p className="text-sm text-destructive">{errors.valor_unitario.message}</p>}
             </div>
 
             <div>
@@ -113,7 +116,7 @@ export function NovaContaPagarDialog({ open, onOpenChange }: NovaContaPagarDialo
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="recorrencia">Recorrência *</Label>
-              <Select {...register('recorrencia')} onValueChange={(value) => setValue('recorrencia', value as any)}>
+              <Select value={recorrencia} onValueChange={(value) => setValue('recorrencia', value as any)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -130,14 +133,14 @@ export function NovaContaPagarDialog({ open, onOpenChange }: NovaContaPagarDialo
             <div>
               <Label htmlFor="data_vencimento">Data de Vencimento *</Label>
               <Input id="data_vencimento" type="date" {...register('data_vencimento')} />
-              {errors.data_vencimento && <p className="text-sm text-destructive">{errors.data_vencimento.message as string}</p>}
+              {errors.data_vencimento && <p className="text-sm text-destructive">{errors.data_vencimento.message}</p>}
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="status">Status *</Label>
-              <Select {...register('status')} onValueChange={(value) => setValue('status', value as any)}>
+              <Select value={status} onValueChange={(value) => setValue('status', value as any)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -160,7 +163,7 @@ export function NovaContaPagarDialog({ open, onOpenChange }: NovaContaPagarDialo
           {status === 'pago' && (
             <div>
               <Label htmlFor="forma_pagamento">Forma de Pagamento *</Label>
-              <Select {...register('forma_pagamento')} onValueChange={(value) => setValue('forma_pagamento', value)}>
+              <Select onValueChange={(value) => setValue('forma_pagamento', value)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
