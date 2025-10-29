@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MainLayout } from '@/components/layout/MainLayout';
 import { useEventos } from '@/hooks/eventos';
 import { useDemandas } from '@/hooks/demandas';
 import { useContasPagar, useContasReceber } from '@/hooks/financeiro';
@@ -133,8 +132,7 @@ export default function Financeiro() {
   };
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div>
           <h1 className="text-4xl font-bold">Financeiro</h1>
           <p className="text-muted-foreground mt-1">Visão consolidada das finanças</p>
@@ -497,7 +495,6 @@ export default function Financeiro() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
 
       {selectedEvento && (
         <EventoDetailsDialog
@@ -531,6 +528,6 @@ export default function Financeiro() {
         title="Excluir Conta"
         description={`Tem certeza que deseja excluir a conta "${contaSelecionada?.descricao}"? Esta ação não pode ser desfeita.`}
       />
-    </MainLayout>
+    </div>
   );
 }
