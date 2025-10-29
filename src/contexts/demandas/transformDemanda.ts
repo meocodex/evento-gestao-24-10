@@ -3,6 +3,7 @@ import { Demanda } from '@/types/demandas';
 export function transformDemanda(data: any): Demanda {
   return {
     id: data.id,
+    numeroId: data.numero_id,
     titulo: data.titulo,
     descricao: data.descricao,
     categoria: data.categoria,

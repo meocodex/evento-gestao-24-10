@@ -2,7 +2,7 @@ import { Demanda } from '@/types/demandas';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, User, MessageSquare, Paperclip, Eye, Edit, Trash2, DollarSign, CheckCircle, Clock, XCircle, CalendarDays, Archive } from 'lucide-react';
+import { Calendar, User, MessageSquare, Paperclip, Eye, Edit, Trash2, DollarSign, CheckCircle, Clock, XCircle, CalendarDays, Archive, Hash } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PrazoIndicador } from './PrazoIndicador';
@@ -50,8 +50,11 @@ export function DemandaCard({ demanda, onDetalhes, onEditar, onExcluir }: Demand
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h3 className="font-display font-semibold text-lg text-navy-800 truncate">{demanda.titulo}</h3>
+              <Badge variant="outline" className="font-mono text-xs shrink-0">
+                #{demanda.numeroId}
+              </Badge>
               {isReembolso && (
-                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300">
+                <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 shrink-0">
                   <DollarSign className="h-3 w-3 mr-1" />
                   Reembolso
                 </Badge>

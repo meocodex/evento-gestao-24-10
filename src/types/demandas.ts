@@ -45,6 +45,7 @@ export interface DadosReembolso {
 
 export interface Demanda {
   id: string;
+  numeroId: number;
   titulo: string;
   descricao: string;
   categoria: CategoriaDemanda;

@@ -417,6 +417,7 @@ export type Database = {
           evento_id: string | null
           evento_nome: string | null
           id: string
+          numero_id: number | null
           prazo: string | null
           prioridade: Database["public"]["Enums"]["prioridade_demanda"]
           resolvida: boolean | null
@@ -440,6 +441,7 @@ export type Database = {
           evento_id?: string | null
           evento_nome?: string | null
           id?: string
+          numero_id?: number | null
           prazo?: string | null
           prioridade?: Database["public"]["Enums"]["prioridade_demanda"]
           resolvida?: boolean | null
@@ -463,6 +465,7 @@ export type Database = {
           evento_id?: string | null
           evento_nome?: string | null
           id?: string
+          numero_id?: number | null
           prazo?: string | null
           prioridade?: Database["public"]["Enums"]["prioridade_demanda"]
           resolvida?: boolean | null
@@ -1968,6 +1971,7 @@ export type Database = {
         Args: { p_material_id: string }
         Returns: undefined
       }
+      gerar_numero_demanda: { Args: never; Returns: number }
       has_permission: {
         Args: { _permission_id: string; _user_id: string }
         Returns: boolean

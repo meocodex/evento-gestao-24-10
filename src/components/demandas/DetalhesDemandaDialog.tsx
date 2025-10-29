@@ -72,7 +72,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ url: string; nome: string; tipo: string } | null>(null);
 
-  const { anexos, adicionarAnexo, removerAnexo } = useDemandasAnexos(demanda?.id || '');
+  const { anexos, isLoading: anexosLoading, adicionarAnexo, removerAnexo } = useDemandasAnexos(demanda?.id || '');
   
   if (!demanda) return null;
 
@@ -163,8 +163,13 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
         <DialogHeader>
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <DialogTitle className="text-2xl">{demanda.titulo}</DialogTitle>
-              <p className="text-muted-foreground mt-1">#{demanda.id}</p>
+              <div className="flex items-center gap-2">
+                <DialogTitle className="text-2xl">{demanda.titulo}</DialogTitle>
+                <Badge variant="outline" className="font-mono text-xs">
+                  #{demanda.numeroId}
+                </Badge>
+              </div>
+              <p className="text-muted-foreground mt-1 text-xs">ID: {demanda.id}</p>
             </div>
             <div className="flex gap-2">
               {isReembolso && (
@@ -575,13 +580,17 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
             </TabsContent>
 
             <TabsContent value="anexos" className="space-y-4 mt-4">
-              {(demanda.anexos?.length || 0) === 0 ? (
+              {anexosLoading ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Carregando anexos...
+                </div>
+              ) : (anexos?.length || 0) === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   Nenhum anexo
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {(demanda.anexos || []).map((anexo) => (
+                  {(anexos || []).map((anexo) => (
                     <div
                       key={anexo.id}
                       className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/70 transition-colors"
