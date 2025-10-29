@@ -47,17 +47,17 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 
   };
 
   return (
-    <Card className={`${variantStyles[variant]} hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden relative group`}>
+    <Card className={`${variantStyles[variant]} hover:shadow-lg transition-all duration-300 rounded-xl overflow-hidden relative group`}>
       {/* Accent bar lateral */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentBarColors[variant]}`} />
       
-      <CardContent className="p-6 relative">
+      <CardContent className="p-4 relative">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wider text-navy-400 mb-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-navy-400 mb-1">
               {title}
             </p>
-            <h3 className="text-4xl font-display font-bold text-navy-800 mb-2 tracking-tight">
+            <h3 className="text-2xl font-display font-bold text-navy-800 mb-1 tracking-tight">
               {value}
             </h3>
             {subtitle && (
@@ -66,7 +66,7 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 
               </p>
             )}
             {trend && (
-              <div className="flex items-center gap-1 mt-3">
+              <div className="flex items-center gap-1 mt-2">
                 <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
                   trend.isPositive 
                     ? 'bg-success/10 text-success'
@@ -78,8 +78,8 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 
               </div>
             )}
           </div>
-          <div className={`p-4 rounded-xl transition-all duration-300 ${iconBgColors[variant]}`}>
-            <Icon className={`h-8 w-8 ${iconColors[variant]}`} />
+          <div className={`p-3 rounded-xl transition-all duration-300 ${iconBgColors[variant]}`}>
+            <Icon className={`h-6 w-6 ${iconColors[variant]}`} />
           </div>
         </div>
       </CardContent>

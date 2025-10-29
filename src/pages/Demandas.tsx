@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback } from 'react';
 import { FiltroDemandas } from '@/types/demandas';
 import { useDemandas } from '@/hooks/demandas';
-import { Demanda } from '@/types/demandas';
+import { Demanda, StatusDemanda, PrioridadeDemanda } from '@/types/demandas';
 import { DemandaCard } from '@/components/demandas/DemandaCard';
 import { DemandasVirtualList } from '@/components/demandas/DemandasVirtualList';
-import { DemandaFilters } from '@/components/demandas/DemandaFilters';
+import { DemandaFiltersPopover, DemandaFiltersType } from '@/components/demandas/DemandaFiltersPopover';
 import { NovaDemandaSheet } from '@/components/demandas/NovaDemandaSheet';
 import { NovaDemandaReembolsoDialog } from '@/components/demandas/NovaDemandaReembolsoDialog';
 import { EditarDemandaDialog } from '@/components/demandas/EditarDemandaDialog';
@@ -14,14 +14,36 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { Card } from '@/components/ui/card';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Clock, AlertTriangle, XCircle, Bell } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 export default function Demandas() {
   const [page, setPage] = useState(1);
   const pageSize = 20;
-  const [filtros, setFiltros] = useState<FiltroDemandas>({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [filtros, setFiltros] = useState<DemandaFiltersType>({
+    status: [],
+    prioridade: [],
+  });
+  
   const { demandas = [], totalCount = 0, excluirDemanda } = useDemandas(page, pageSize, searchTerm);
-  const demandasFiltradas = demandas;
+  
+  // Aplicar filtros localmente
+  const demandasFiltradas = useMemo(() => {
+    return demandas.filter(demanda => {
+      if (filtros.status.length > 0 && !filtros.status.includes(demanda.status)) return false;
+      if (filtros.prioridade.length > 0 && !filtros.prioridade.includes(demanda.prioridade)) return false;
+      if (filtros.responsavel && demanda.responsavel_id !== filtros.responsavel) return false;
+      if (filtros.prazoVencido && demanda.prazo && new Date(demanda.prazo) >= new Date()) return false;
+      if (filtros.prazoProximo) {
+        const prazo = demanda.prazo ? new Date(demanda.prazo) : null;
+        const hoje = new Date();
+        const tresDias = new Date(hoje.getTime() + 3 * 24 * 60 * 60 * 1000);
+        if (!prazo || prazo < hoje || prazo > tresDias) return false;
+      }
+      return true;
+    });
+  }, [demandas, filtros]);
   const totalPages = Math.ceil(totalCount / pageSize);
   const estatisticas = useMemo(() => ({
     total: demandas.length,
@@ -69,12 +91,13 @@ export default function Demandas() {
     <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Hero Section */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-900 dark:text-navy-50">Demandas</h1>
             <p className="text-sm sm:text-base text-navy-600 dark:text-navy-400 mt-1">Gerencie todas as solicitações e tarefas da equipe</p>
           </div>
           <div className="flex gap-2">
+            <DemandaFiltersPopover filters={filtros} onFiltersChange={setFiltros} />
             <NovaDemandaSheet />
             <NovaDemandaReembolsoDialog />
           </div>
@@ -108,23 +131,19 @@ export default function Demandas() {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Filtros */}
-          <div className="lg:col-span-1">
-            <DemandaFilters 
-              filtros={filtros} 
-              setFiltros={(newFiltros) => {
-                setFiltros(newFiltros);
-                // Atualizar searchTerm quando o filtro de busca mudar
-                if (newFiltros.busca !== undefined) {
-                  setSearchTerm(newFiltros.busca);
-                }
-              }} 
-            />
-          </div>
+        {/* Busca */}
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por título, descrição..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9"
+          />
+        </div>
 
-          {/* Lista de Demandas */}
-          <div className="lg:col-span-3 space-y-4">
+        {/* Lista de Demandas */}
+        <div className="space-y-4">
             {demandasFiltradas.length === 0 ? (
               <Card className="p-12">
                 <div className="text-center text-muted-foreground">
@@ -177,7 +196,6 @@ export default function Demandas() {
                 </Pagination>
               </>
             )}
-          </div>
         </div>
       </div>
 
