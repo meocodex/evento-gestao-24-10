@@ -23,6 +23,7 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
+  SidebarMenuButton,
   SidebarHeader,
   SidebarFooter,
 } from '@/components/ui/sidebar';
@@ -118,28 +119,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu className="space-y-1 px-2">
               {filteredItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <Link
-                    to={item.url}
-                    aria-current={isActive(item.url) ? 'page' : undefined}
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={isActive(item.url)}
                     className={cn(
-                      "group relative flex items-center gap-3 px-3 md:px-4 py-3 rounded-xl mx-2 transition-all duration-200 min-h-[44px] w-full",
-                      isActive(item.url)
-                        ? "bg-sidebar-accent border-l-4 border-accent text-sidebar-foreground shadow-md"
-                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+                      "mx-2 min-h-[44px] transition-all duration-200",
+                      isActive(item.url) && "border-l-4 border-accent shadow-md"
                     )}
+                    tooltip={state === 'collapsed' ? item.title : undefined}
                   >
-                    <item.icon className="h-5 w-5 flex-shrink-0" />
-                    {state !== 'collapsed' && (
-                      <>
-                        <span className="font-medium">
-                          {item.title}
-                        </span>
-                        {isActive(item.url) && (
-                          <div className="absolute right-3 w-2 h-2 rounded-full bg-accent animate-pulse" />
-                        )}
-                      </>
-                    )}
-                  </Link>
+                    <Link to={item.url}>
+                      <item.icon className="h-5 w-5" />
+                      <span className="font-medium">{item.title}</span>
+                      {isActive(item.url) && (
+                        <div className="ml-auto w-2 h-2 rounded-full bg-accent animate-pulse" />
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
