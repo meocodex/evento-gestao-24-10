@@ -137,6 +137,14 @@ export function MembroEquipeCard({
                   {getTipoMembroLabel(membro.tipo_membro)}
                 </Badge>
                 
+                {/* Badge de Acesso ao Sistema - visual destacado para tipo_membro === 'ambos' */}
+                {membro.tipo_membro === 'ambos' && (
+                  <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                    <Lock className="h-3 w-3 mr-1" />
+                    Com Acesso ao Sistema
+                  </Badge>
+                )}
+                
                 {/* Badge de Nível de Acesso - só para membros com acesso ao sistema */}
                 {(membro.tipo_membro === 'sistema' || membro.tipo_membro === 'ambos') && membro.role && (
                   <Badge variant={getRoleBadgeVariant(membro.role) as any}>

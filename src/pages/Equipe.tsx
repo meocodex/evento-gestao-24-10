@@ -26,15 +26,43 @@ export default function Equipe() {
   const { operacionais = [], data: profiles = [], isLoading: loadingMembros, excluirOperacional } = useEquipe(page, pageSize, {}, true);
   
   const membrosUnificados = useMemo(() => {
-    const unificados: any[] = [...operacionais.map(op => ({ 
-      ...op, 
-      tipo_membro: 'operacional' as const,
-      avatar_url: op.foto || null
-    }))];
+    const unificados: any[] = [];
+    
+    // Processar operacionais e verificar se têm acesso ao sistema
+    operacionais.forEach(op => {
+      const profileCorrespondente = profiles.find(p => p.email && op.email && p.email.toLowerCase() === op.email.toLowerCase());
+      
+      if (profileCorrespondente) {
+        // Membro tem AMBOS: operacional + sistema
+        unificados.push({
+          ...op,
+          tipo_membro: 'ambos' as const,
+          avatar_url: op.foto || profileCorrespondente.avatar_url,
+          role: profileCorrespondente.role,
+          permissions: profileCorrespondente.permissions,
+          // Garantir que mantém o ID do profile para operações do sistema
+          profile_id: profileCorrespondente.id
+        });
+      } else {
+        // Membro é apenas operacional
+        unificados.push({
+          ...op,
+          tipo_membro: 'operacional' as const,
+          avatar_url: op.foto || null
+        });
+      }
+    });
+    
+    // Adicionar profiles que não têm correspondente operacional
     profiles.forEach(p => {
-      if (!operacionais.find(op => op.email === p.email)) {
-        unificados.push({ 
-          ...p, 
+      const jaAdicionado = unificados.some(u => 
+        u.profile_id === p.id || 
+        (p.email && u.email && p.email.toLowerCase() === u.email.toLowerCase())
+      );
+      
+      if (!jaAdicionado) {
+        unificados.push({
+          ...p,
           tipo_membro: 'sistema' as const,
           funcao_principal: p.funcao_principal || 'Sistema',
           funcoes_secundarias: [],
@@ -53,6 +81,14 @@ export default function Equipe() {
         });
       }
     });
+    
+    console.log('📊 Membros Unificados:', {
+      total: unificados.length,
+      operacional: unificados.filter(m => m.tipo_membro === 'operacional').length,
+      sistema: unificados.filter(m => m.tipo_membro === 'sistema').length,
+      ambos: unificados.filter(m => m.tipo_membro === 'ambos').length
+    });
+    
     return unificados;
   }, [operacionais, profiles]);
   
