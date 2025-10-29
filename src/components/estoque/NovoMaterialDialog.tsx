@@ -31,6 +31,10 @@ const materialSchema = z.object({
   tipoControle: z.enum(['serial', 'quantidade'] as const).default('serial'),
   descricao: z.string().optional(),
   valorUnitario: z.coerce.number().positive('Valor deve ser positivo').optional().or(z.literal('')),
+  // Campos de estoque inicial
+  quantidadeSeriais: z.coerce.number().min(0).optional(),
+  quantidadeInicial: z.coerce.number().min(0).optional(),
+  localizacaoPadrao: z.string().optional(),
 });
 
 type MaterialFormData = z.infer<typeof materialSchema>;
@@ -57,9 +61,16 @@ export function NovoMaterialDialog({ open, onOpenChange }: NovoMaterialDialogPro
     reset,
   } = useForm<MaterialFormData>({
     resolver: zodResolver(materialSchema),
+    defaultValues: {
+      tipoControle: 'serial',
+      localizacaoPadrao: 'Depósito Principal',
+    },
   });
 
   const categoria = watch('categoria');
+  const tipoControle = watch('tipoControle');
+  const quantidadeSeriais = watch('quantidadeSeriais');
+  const nome = watch('nome');
 
   const onSubmit = async (data: MaterialFormData) => {
     if (!podeEditar) {
@@ -79,6 +90,9 @@ export function NovoMaterialDialog({ open, onOpenChange }: NovoMaterialDialogPro
         tipoControle: data.tipoControle,
         descricao: data.descricao || undefined,
         valorUnitario: data.valorUnitario ? Number(data.valorUnitario) : undefined,
+        quantidadeSeriais: data.quantidadeSeriais,
+        quantidadeInicial: data.quantidadeInicial,
+        localizacaoPadrao: data.localizacaoPadrao,
       });
       reset();
       onOpenChange(false);
@@ -131,6 +145,70 @@ export function NovoMaterialDialog({ open, onOpenChange }: NovoMaterialDialogPro
               <p className="text-sm text-destructive">{errors.categoria.message}</p>
             )}
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="tipoControle">Tipo de Controle *</Label>
+            <Select value={tipoControle} onValueChange={(value) => setValue('tipoControle', value as 'serial' | 'quantidade')}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="serial">
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">📦 Serial</span>
+                    <span className="text-xs text-muted-foreground">Controle individual por número de série</span>
+                  </div>
+                </SelectItem>
+                <SelectItem value="quantidade">
+                  <div className="flex flex-col items-start">
+                    <span className="font-medium">🔢 Quantidade</span>
+                    <span className="text-xs text-muted-foreground">Controle por quantidade total</span>
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Campos condicionais de estoque inicial */}
+          {tipoControle === 'serial' ? (
+            <div className="space-y-2 p-4 border border-border rounded-md bg-muted/50">
+              <Label htmlFor="quantidadeSeriais">Quantos seriais criar? (opcional)</Label>
+              <Input
+                id="quantidadeSeriais"
+                type="number"
+                min="0"
+                placeholder="Ex: 10"
+                {...register('quantidadeSeriais')}
+              />
+              {quantidadeSeriais && Number(quantidadeSeriais) > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  ℹ️ Serão criados {quantidadeSeriais} seriais automaticamente: {nome?.slice(0, 3).toUpperCase() || 'XXX'}-001 até {nome?.slice(0, 3).toUpperCase() || 'XXX'}-{String(quantidadeSeriais).padStart(3, '0')}
+                </p>
+              )}
+              <Label htmlFor="localizacaoPadrao" className="mt-2">Localização padrão</Label>
+              <Input
+                id="localizacaoPadrao"
+                placeholder="Depósito Principal"
+                {...register('localizacaoPadrao')}
+              />
+            </div>
+          ) : (
+            <div className="space-y-2 p-4 border border-border rounded-md bg-muted/50">
+              <Label htmlFor="quantidadeInicial">Quantidade inicial em estoque (opcional)</Label>
+              <Input
+                id="quantidadeInicial"
+                type="number"
+                min="0"
+                placeholder="Ex: 500"
+                {...register('quantidadeInicial')}
+              />
+              {watch('quantidadeInicial') && Number(watch('quantidadeInicial')) > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  ✓ {watch('quantidadeInicial')} unidades serão adicionadas ao estoque
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="descricao">Descrição</Label>

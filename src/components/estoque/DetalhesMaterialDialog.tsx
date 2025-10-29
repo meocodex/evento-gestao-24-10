@@ -23,6 +23,7 @@ import { NovoSerialDialog } from './NovoSerialDialog';
 import { EditarMaterialDialog } from './EditarMaterialDialog';
 import { EditarSerialDialog } from './EditarSerialDialog';
 import { HistoricoMaterialTimeline } from './HistoricoMaterialTimeline';
+import { GerenciarQuantidadeDialog } from './GerenciarQuantidadeDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useEstoque } from '@/hooks/estoque';
 import { statusConfig } from '@/lib/estoqueStatus';
@@ -43,9 +44,12 @@ export function DetalhesMaterialDialog({
   const [showNovoSerial, setShowNovoSerial] = useState(false);
   const [showEditarMaterial, setShowEditarMaterial] = useState(false);
   const [showEditarSerial, setShowEditarSerial] = useState(false);
+  const [showGerenciarQuantidade, setShowGerenciarQuantidade] = useState(false);
   const [serialParaEditar, setSerialParaEditar] = useState<SerialEstoque | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [serialParaExcluir, setSerialParaExcluir] = useState<string | null>(null);
+
+  const isQuantidadeTipo = material.tipoControle === 'quantidade';
 
   // Calcular estatísticas a partir dos seriais atualizados
   const totalAtualizado = seriaisAtualizados.length;
@@ -77,20 +81,34 @@ export function DetalhesMaterialDialog({
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
+                {isQuantidadeTipo ? '🔢' : '📦'}
                 {material.nome}
               </div>
-              <Button variant="outline" size="sm" onClick={() => setShowEditarMaterial(true)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Editar Material
-              </Button>
+              <div className="flex items-center gap-2">
+                {isQuantidadeTipo && (
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={() => setShowGerenciarQuantidade(true)}
+                  >
+                    <Package className="h-4 w-4 mr-2" />
+                    Gerenciar Quantidade
+                  </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => setShowEditarMaterial(true)}>
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar Material
+                </Button>
+              </div>
             </DialogTitle>
           </DialogHeader>
 
           <Tabs defaultValue="geral" className="mt-4">
             <TabsList>
               <TabsTrigger value="geral">Geral</TabsTrigger>
-              <TabsTrigger value="seriais">Seriais ({totalAtualizado})</TabsTrigger>
+              {!isQuantidadeTipo && (
+                <TabsTrigger value="seriais">Seriais ({totalAtualizado})</TabsTrigger>
+              )}
               <TabsTrigger value="historico">
                 <History className="h-4 w-4 mr-2" />
                 Histórico Completo
@@ -116,18 +134,18 @@ export function DetalhesMaterialDialog({
             {/* Estatísticas */}
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <p className="text-2xl font-bold">{totalAtualizado}</p>
+                <p className="text-2xl font-bold">{isQuantidadeTipo ? material.quantidadeTotal : totalAtualizado}</p>
                 <p className="text-sm text-muted-foreground">Total</p>
               </div>
               <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <p className="text-2xl font-bold text-primary">{disponivelAtualizado}</p>
+                <p className="text-2xl font-bold text-primary">{isQuantidadeTipo ? material.quantidadeDisponivel : disponivelAtualizado}</p>
                 <p className="text-sm text-muted-foreground">Disponível</p>
               </div>
               <div className="text-center p-4 bg-muted/50 rounded-lg">
                 <p className="text-2xl font-bold text-destructive">
-                  {emUsoManutencao}
+                  {isQuantidadeTipo ? (material.quantidadeTotal - material.quantidadeDisponivel) : emUsoManutencao}
                 </p>
-                <p className="text-sm text-muted-foreground">Em Uso/Manutenção</p>
+                <p className="text-sm text-muted-foreground">{isQuantidadeTipo ? 'Em Uso' : 'Em Uso/Manutenção'}</p>
               </div>
             </div>
 
@@ -145,7 +163,8 @@ export function DetalhesMaterialDialog({
           </div>
         </TabsContent>
 
-        <TabsContent value="seriais" className="mt-4">
+        {!isQuantidadeTipo && (
+          <TabsContent value="seriais" className="mt-4">
           <div className="space-y-4">
 
             {/* Lista de Seriais */}
@@ -229,6 +248,7 @@ export function DetalhesMaterialDialog({
             </div>
           </div>
         </TabsContent>
+        )}
 
         <TabsContent value="historico" className="mt-4">
           <HistoricoMaterialTimeline materialId={material.id} />
@@ -237,12 +257,24 @@ export function DetalhesMaterialDialog({
         </DialogContent>
       </Dialog>
 
-      <NovoSerialDialog
-        open={showNovoSerial}
-        onOpenChange={setShowNovoSerial}
-        materialId={material.id}
-        materialNome={material.nome}
-      />
+      {!isQuantidadeTipo && (
+        <NovoSerialDialog
+          open={showNovoSerial}
+          onOpenChange={setShowNovoSerial}
+          materialId={material.id}
+          materialNome={material.nome}
+        />
+      )}
+
+      {isQuantidadeTipo && (
+        <GerenciarQuantidadeDialog
+          open={showGerenciarQuantidade}
+          onOpenChange={setShowGerenciarQuantidade}
+          materialId={material.id}
+          materialNome={material.nome}
+          quantidadeAtual={material.quantidadeTotal}
+        />
+      )}
 
       <EditarMaterialDialog
         open={showEditarMaterial}

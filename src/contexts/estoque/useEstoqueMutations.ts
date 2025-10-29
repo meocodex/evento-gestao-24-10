@@ -9,7 +9,11 @@ export const useEstoqueMutations = () => {
   const queryClient = useQueryClient();
 
   const adicionarMaterial = useMutation({
-    mutationFn: async (dados: Omit<MaterialEstoque, 'id' | 'seriais' | 'quantidadeTotal' | 'quantidadeDisponivel' | 'unidade'>) => {
+    mutationFn: async (dados: Omit<MaterialEstoque, 'id' | 'seriais' | 'quantidadeTotal' | 'quantidadeDisponivel' | 'unidade'> & {
+      quantidadeSeriais?: number;
+      quantidadeInicial?: number;
+      localizacaoPadrao?: string;
+    }) => {
       // Buscar o maior ID atual para gerar sequencial
       const { data: materiais } = await supabase
         .from('materiais_estoque')
@@ -30,22 +34,62 @@ export const useEstoqueMutations = () => {
 
       const novoId = `MAT${proximoNumero}`;
 
+      // Calcular quantidades iniciais baseado no tipo de controle
+      let quantidadeTotal = 0;
+      let quantidadeDisponivel = 0;
+
+      if (dados.tipoControle === 'serial' && dados.quantidadeSeriais && dados.quantidadeSeriais > 0) {
+        quantidadeTotal = dados.quantidadeSeriais;
+        quantidadeDisponivel = dados.quantidadeSeriais; // Todos disponíveis por padrão
+      } else if (dados.tipoControle === 'quantidade' && dados.quantidadeInicial && dados.quantidadeInicial > 0) {
+        quantidadeTotal = dados.quantidadeInicial;
+        quantidadeDisponivel = dados.quantidadeInicial;
+      }
+
       const { data, error } = await supabase
         .from('materiais_estoque')
         .insert({
           id: novoId,
           nome: dados.nome,
           categoria: dados.categoria,
+          tipo_controle: dados.tipoControle,
           descricao: dados.descricao,
           foto: dados.foto,
           valor_unitario: dados.valorUnitario,
-          quantidade_total: 0,
-          quantidade_disponivel: 0,
+          quantidade_total: quantidadeTotal,
+          quantidade_disponivel: quantidadeDisponivel,
         })
         .select()
         .single();
 
       if (error) throw error;
+
+      // Se for tipo serial e tiver quantidade especificada, criar seriais automaticamente
+      if (dados.tipoControle === 'serial' && dados.quantidadeSeriais && dados.quantidadeSeriais > 0) {
+        const prefix = dados.nome.slice(0, 3).toUpperCase();
+        const localizacao = dados.localizacaoPadrao || 'Depósito Principal';
+        
+        const seriais = [];
+        for (let i = 1; i <= dados.quantidadeSeriais; i++) {
+          seriais.push({
+            material_id: novoId,
+            numero: `${prefix}-${String(i).padStart(3, '0')}`,
+            status: 'disponivel',
+            localizacao: localizacao,
+            tags: [],
+          });
+        }
+
+        const { error: seriaisError } = await supabase
+          .from('materiais_seriais')
+          .insert(seriais);
+
+        if (seriaisError) {
+          console.error('Erro ao criar seriais:', seriaisError);
+          // Não falhar toda a operação se houver erro nos seriais
+        }
+      }
+
       return data;
     },
     onSuccess: (data) => {
