@@ -39,22 +39,22 @@ const Dashboard = () => {
   const renderAdminDashboard = () => (
     <div className="space-y-8 animate-fade-in">
       {/* Premium Hero Section - Navy Theme */}
-      <div className="relative overflow-hidden rounded-2xl p-6 lg:p-8 bg-white border-2 border-navy-100">
+      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 bg-white border-2 border-navy-100">
         <div className="relative z-10">
-          <p className="text-sm font-medium text-navy-600 mb-2 tracking-wide uppercase">
+          <p className="text-xs sm:text-sm font-medium text-navy-600 mb-2 tracking-wide uppercase">
             {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
           </p>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-display font-bold text-navy-800 mb-3 tracking-tight">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-bold text-navy-800 mb-2 sm:mb-3 tracking-tight break-words">
             {user?.name}
           </h1>
-          <p className="text-lg text-navy-600 max-w-2xl">
+          <p className="text-sm sm:text-base lg:text-lg text-navy-600 max-w-2xl">
             Visão geral do sistema e métricas principais
           </p>
         </div>
       </div>
 
       {/* Stats Grid Navy */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 lg:grid-cols-4">
         <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
           <StatCard
             title="Eventos Mês"

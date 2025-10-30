@@ -138,16 +138,16 @@ export default function Eventos() {
   };
 
   return (
-    <div className="min-h-full">
-      {/* Container with premium max-width and spacing */}
-      <div className="mx-auto max-w-[1600px] px-6 py-6 space-y-4 animate-fade-in bg-navy-50 dark:bg-navy-950">
+    <div className="min-h-full overflow-x-hidden">
+      {/* Container responsivo sem max-width fixo */}
+      <div className="w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4 animate-fade-in bg-navy-50 dark:bg-navy-950">
         {/* Navy Hero Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-900 dark:text-navy-50">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-navy-900 dark:text-navy-50">
             Eventos
           </h1>
-          <p className="text-navy-600 dark:text-navy-400 mt-1">
-            Gerencie todos os eventos da sua empresa com eficiência e profissionalismo
+          <p className="text-sm sm:text-base text-navy-600 dark:text-navy-400 mt-1">
+            Gerencie todos os eventos da sua empresa
           </p>
         </div>
 
@@ -157,12 +157,12 @@ export default function Eventos() {
         {/* Navigation Tabs - Premium style */}
         <div className="relative">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full justify-start overflow-x-auto scrollbar-hide snap-x snap-mandatory bg-card/60 backdrop-blur-xl border border-border/40 p-1">
-              <TabsTrigger value="todos" className="snap-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
-              <TabsTrigger value="proximos7" className="snap-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap">Próximos 7 Dias</TabsTrigger>
-              <TabsTrigger value="esteMes" className="snap-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap">Este Mês</TabsTrigger>
-              <TabsTrigger value="proximoMes" className="snap-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground whitespace-nowrap">Próximo Mês</TabsTrigger>
-              <TabsTrigger value="finalizados" className="snap-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Finalizados</TabsTrigger>
+            <TabsList className="w-full justify-start overflow-x-auto scrollbar-hide snap-x snap-mandatory bg-card/60 backdrop-blur-xl border border-border/40 p-1 flex-nowrap">
+              <TabsTrigger value="todos" className="snap-start whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
+              <TabsTrigger value="proximos7" className="snap-start whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">7 Dias</TabsTrigger>
+              <TabsTrigger value="esteMes" className="snap-start whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Este Mês</TabsTrigger>
+              <TabsTrigger value="proximoMes" className="snap-start whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Próximo</TabsTrigger>
+              <TabsTrigger value="finalizados" className="snap-start whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Finalizados</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
@@ -176,79 +176,87 @@ export default function Eventos() {
           />
           
           {/* Search, Filters, Sort and View Toggle - Premium glassmorphic container */}
-          <div className="flex flex-col lg:flex-row gap-3 p-4 rounded-2xl bg-card/40 backdrop-blur-xl border border-border/40">
-            <div className="relative flex-1 group">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+          <div className="flex flex-col gap-3 p-3 sm:p-4 rounded-2xl bg-card/40 backdrop-blur-xl border border-border/40">
+            {/* Search */}
+            <div className="relative w-full group">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar eventos por nome, cliente..."
-                className="pl-10 h-10 bg-background/60 border-border/60 focus:border-primary/50 focus:bg-background transition-all"
+                placeholder="Buscar eventos..."
+                className="pl-10 h-9 sm:h-10 text-sm bg-background/60"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
-            <div className="flex gap-2 flex-wrap">
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-[200px] h-10 bg-background/60 border-border/60">
-                  <ArrowUpDown className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Ordenar por" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="dataProxima">Data Mais Próxima</SelectItem>
-                  <SelectItem value="dataDistante">Data Mais Distante</SelectItem>
-                  <SelectItem value="nomeAZ">Nome (A-Z)</SelectItem>
-                  <SelectItem value="status">Status</SelectItem>
-                  <SelectItem value="ultimaAtualizacao">Última Atualização</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Filtros e Controles - Stack em mobile */}
+            <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
+              {/* Linha 1: Sort e Filtros */}
+              <div className="flex gap-2 flex-1 min-w-0">
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="flex-1 sm:w-[180px] h-9 sm:h-10 text-xs sm:text-sm">
+                    <ArrowUpDown className="h-4 w-4 mr-1 sm:mr-2 flex-shrink-0" />
+                    <SelectValue placeholder="Ordenar" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dataProxima">Data Próxima</SelectItem>
+                    <SelectItem value="dataDistante">Data Distante</SelectItem>
+                    <SelectItem value="nomeAZ">Nome (A-Z)</SelectItem>
+                    <SelectItem value="status">Status</SelectItem>
+                    <SelectItem value="ultimaAtualizacao">Última Atualização</SelectItem>
+                  </SelectContent>
+                </Select>
 
-              <EventoFilters
-                filters={filters}
-                onFiltersChange={setFilters}
-                availableCities={availableCities}
-                availableTags={availableTags}
-              />
+                <EventoFilters
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  availableCities={availableCities}
+                  availableTags={availableTags}
+                />
+              </div>
 
-              <div className="flex border border-border/60 rounded-xl overflow-hidden bg-background/40">
-                <Button
-                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                  size="icon"
-                  className="rounded-none h-10 w-10 hover:bg-primary/10"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid3x3 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                  size="icon"
-                  className="rounded-none h-10 w-10 hover:bg-primary/10"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
-                  size="icon"
-                  className="rounded-none h-10 w-10 hover:bg-primary/10"
-                  onClick={() => setViewMode('kanban')}
-                >
-                  <Kanban className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
-                  size="icon"
-                  className="rounded-none h-10 w-10 hover:bg-primary/10"
-                  onClick={() => setViewMode('calendar')}
-                >
-                  <Calendar className="h-4 w-4" />
+              {/* Linha 2: View Mode e Criar */}
+              <div className="flex gap-2 justify-between sm:justify-start">
+                <div className="flex border border-border/60 rounded-xl overflow-hidden bg-background/40">
+                  <Button
+                    variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                    size="icon"
+                    className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
+                    onClick={() => setViewMode('grid')}
+                  >
+                    <Grid3x3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                    size="icon"
+                    className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
+                    onClick={() => setViewMode('list')}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                    size="icon"
+                    className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
+                    onClick={() => setViewMode('kanban')}
+                  >
+                    <Kanban className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+                    size="icon"
+                    className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
+                    onClick={() => setViewMode('calendar')}
+                  >
+                    <Calendar className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <Button onClick={() => setQuickCreateOpen(true)} className="gap-1 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+                  <Sparkles className="h-4 w-4" />
+                  <span className="hidden xs:inline">Criação Rápida</span>
+                  <span className="xs:hidden">Criar</span>
                 </Button>
               </div>
-              
-              <Button onClick={() => setQuickCreateOpen(true)} className="gap-2">
-                <Sparkles className="h-4 w-4" />
-                Criação Rápida
-              </Button>
-
             </div>
           </div>
 

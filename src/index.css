@@ -119,10 +119,24 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
+  
+  html, body, #root {
+    @apply overflow-x-hidden;
+    /* Safe areas para notch iPhone */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    /* Previne zoom acidental em inputs iOS */
+    touch-action: manipulation;
+  }
+  
+  /* Fix para inputs em iOS */
+  input, select, textarea {
+    font-size: 16px !important; /* Previne zoom automático */
   }
 
   h1, h2, h3, h4, h5, h6 {

@@ -58,18 +58,19 @@ export function EventosQuickFilters({ eventos, activeFilter, onFilterChange }: E
   ];
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex gap-2 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1">
       {filters.map(filter => (
         <Badge
           key={filter.id}
           variant={activeFilter === filter.id ? filter.variant : 'outline'}
-          className={`cursor-pointer transition-all duration-200 hover:scale-105 ${
-            activeFilter === filter.id ? 'ring-2 ring-ring ring-offset-2' : ''
+          className={`cursor-pointer transition-all snap-start whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5 ${
+            activeFilter === filter.id ? 'ring-2 ring-ring ring-offset-1' : ''
           }`}
           onClick={() => onFilterChange(activeFilter === filter.id ? null : filter.id)}
         >
-          <filter.icon className="h-3 w-3 mr-1" />
-          {filter.label}
+          <filter.icon className="h-3 w-3 mr-1 flex-shrink-0" />
+          <span className="hidden xs:inline">{filter.label}</span>
+          <span className="xs:hidden">{filter.label.substring(0, 4)}</span>
           <span className="ml-1 font-bold">({filter.count})</span>
         </Badge>
       ))}

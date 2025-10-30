@@ -172,20 +172,21 @@ export default function Clientes() {
 
       {/* Lista de Clientes */}
       {visualizacao === 'tabela' ? (
-        <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Cliente</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Documento</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Telefone</TableHead>
-                <TableHead>Localização</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="min-w-[150px]">Cliente</TableHead>
+                  <TableHead className="min-w-[80px]">Tipo</TableHead>
+                  <TableHead className="min-w-[120px]">Documento</TableHead>
+                  <TableHead className="min-w-[180px]">Email</TableHead>
+                  <TableHead className="min-w-[120px]">Telefone</TableHead>
+                  <TableHead className="min-w-[150px]">Localização</TableHead>
+                  <TableHead className="text-right min-w-[120px]">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
               {clientesFiltrados.map((cliente) => (
                 <TableRow key={cliente.id}>
                   <TableCell className="font-medium">{cliente.nome}</TableCell>
@@ -239,6 +240,7 @@ export default function Clientes() {
               ))}
             </TableBody>
           </Table>
+          </div>
         </Card>
       ) : (
         <ClientesVirtualList
