@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, MapPin, Calendar, TrendingUp, Edit, DollarSign, Trash2 } from 'lucide-react';
+import { Package, MapPin, Calendar, TrendingUp, Edit, DollarSign, Trash2, FileCheck, Download } from 'lucide-react';
 import { Envio } from '@/types/transportadoras';
 import { useTransportadoras } from '@/hooks/transportadoras';
 import { useEventos } from '@/hooks/eventos';
@@ -10,6 +10,8 @@ import { EditarEnvioSheet } from './EditarEnvioSheet';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EnvioCardProps {
   envio: Envio;
@@ -37,6 +39,23 @@ export function EnvioCard({ envio }: EnvioCardProps) {
   const transportadora = transportadoras.find((t) => t.id === envio.transportadoraId);
   const evento = eventos.find((e) => e.id === envio.eventoId);
 
+  // Verificar se há declaração de transporte vinculada
+  const { data: declaracao } = useQuery({
+    queryKey: ['envio-declaracao', envio.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('eventos_materiais_alocados')
+        .select('declaracao_transporte_url')
+        .eq('envio_id', envio.id)
+        .not('declaracao_transporte_url', 'is', null)
+        .limit(1)
+        .single();
+      
+      return data?.declaracao_transporte_url || null;
+    },
+    enabled: !!envio.id,
+  });
+
   const handleStatusChange = () => {
     const statusOrder: Envio['status'][] = ['pendente', 'em_transito', 'entregue'];
     const currentIndex = statusOrder.indexOf(envio.status);
@@ -52,21 +71,29 @@ export function EnvioCard({ envio }: EnvioCardProps) {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
               <Package className="h-5 w-5 text-primary" />
-              <div>
-                <CardTitle className="text-base">{transportadora?.nome}</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {envio.tipo === 'ida' ? 'Ida' : 'Volta'} - {envio.rastreio || 'Sem rastreio'}
+            <div>
+              <CardTitle className="text-base">{transportadora?.nome}</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {envio.tipo === 'ida' ? 'Ida' : 'Volta'} - {envio.rastreio || 'Sem rastreio'}
+              </p>
+              {evento && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  📦 {evento.nome}
                 </p>
-                {evento && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    📦 {evento.nome}
-                  </p>
-                )}
-              </div>
+              )}
             </div>
+          </div>
+          <div className="flex flex-col gap-2 items-end">
             <Badge className={statusColors[envio.status]}>
               {statusLabels[envio.status]}
             </Badge>
+            {declaracao && (
+              <Badge variant="default" className="gap-1 bg-green-500 hover:bg-green-600">
+                <FileCheck className="h-3 w-3" />
+                Declaração Gerada
+              </Badge>
+            )}
+          </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -108,6 +135,17 @@ export function EnvioCard({ envio }: EnvioCardProps) {
             )}
 
             <div className="flex gap-2 pt-2">
+              {declaracao && (
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => window.open(declaracao, '_blank')}
+                  className="flex-1"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Baixar Declaração
+                </Button>
+              )}
               {envio.status !== 'entregue' && envio.status !== 'cancelado' && (
                 <Button size="sm" onClick={handleStatusChange} className="flex-1">
                   Avançar Status

@@ -6,12 +6,18 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { DocumentUpload } from '@/components/shared/DocumentUpload';
+import { SelecionarMaterialParaDocumentoDialog } from '@/components/eventos/modals/SelecionarMaterialParaDocumentoDialog';
+import { GerarDeclaracaoTransporteDialog } from '@/components/eventos/modals/GerarDeclaracaoTransporteDialog';
 import { useTransportadoras } from '@/hooks/transportadoras';
 import { useEventos } from '@/hooks/eventos';
+import { useEventosMateriaisAlocados } from '@/contexts/eventos/useEventosMateriaisAlocados';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AlertCircle } from 'lucide-react';
 import { addDays, format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface NovoEnvioSheetProps {
   open: boolean;
@@ -36,6 +42,17 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
     comprovantePagamento: '',
     observacoes: '',
   });
+
+  // Estados para o fluxo de geração de declaração
+  const [showGerarDeclaracao, setShowGerarDeclaracao] = useState(false);
+  const [showSelecionarMateriais, setShowSelecionarMateriais] = useState(false);
+  const [showGerarDeclaracaoFinal, setShowGerarDeclaracaoFinal] = useState(false);
+  const [envioRecemCriado, setEnvioRecemCriado] = useState<any>(null);
+  const [materiaisParaDeclaracao, setMateriaisParaDeclaracao] = useState<any[]>([]);
+  
+  // Buscar materiais do evento selecionado
+  const { materiaisAlocados } = useEventosMateriaisAlocados(eventoSelecionado);
+  const { gerarDeclaracaoTransporte } = useEventosMateriaisAlocados(eventoSelecionado);
 
   const transportadorasFiltradas = useMemo(() => {
     if (eventoSelecionado) {
@@ -93,12 +110,25 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
     }
   }, [formData.transportadoraId, eventoSelecionado, transportadoras, eventos, formData.origem, formData.destino, formData.dataEntregaPrevista, formData.valor]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!eventoSelecionado) return;
     
-    criarEnvio.mutateAsync({ ...formData, eventoId: eventoSelecionado, status: 'pendente' });
-    onOpenChange(false);
+    try {
+      const novoEnvio = await criarEnvio.mutateAsync({ 
+        ...formData, 
+        eventoId: eventoSelecionado, 
+        status: 'pendente' 
+      });
+      
+      setEnvioRecemCriado(novoEnvio);
+      setShowGerarDeclaracao(true);
+    } catch (error) {
+      console.error('Erro ao criar envio:', error);
+    }
+  };
+
+  const limparFormulario = () => {
     setFormData({
       transportadoraId: '',
       eventoId: '',
@@ -112,6 +142,8 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
       observacoes: '',
     });
     setEventoSelecionado('');
+    setEnvioRecemCriado(null);
+    setMateriaisParaDeclaracao([]);
   };
 
   return (
@@ -295,6 +327,99 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
           </SheetFooter>
         </form>
       </SheetContent>
+
+      {/* Dialog: Perguntar se quer gerar declaração */}
+      <AlertDialog open={showGerarDeclaracao} onOpenChange={setShowGerarDeclaracao}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Gerar Declaração de Transporte?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja gerar agora a declaração de transporte para este envio? 
+              Você poderá selecionar os materiais que serão enviados.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setShowGerarDeclaracao(false);
+              limparFormulario();
+              onOpenChange(false);
+            }}>
+              Não, gerar depois
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => {
+              setShowGerarDeclaracao(false);
+              setShowSelecionarMateriais(true);
+            }}>
+              Sim, gerar agora
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Dialog: Selecionar Materiais */}
+      {showSelecionarMateriais && eventoSelecionado && (
+        <SelecionarMaterialParaDocumentoDialog
+          open={showSelecionarMateriais}
+          onOpenChange={setShowSelecionarMateriais}
+          materiais={materiaisAlocados.filter(m => 
+            m.tipo_envio === 'antecipado' && 
+            m.transportadora &&
+            !m.declaracao_transporte_url
+          )}
+          titulo="Selecionar Materiais para Declaração"
+          onConfirmar={async (materiaisSelecionadosIds) => {
+            const { data: materiaisCompletos } = await supabase
+              .from('eventos_materiais_alocados')
+              .select('*')
+              .in('id', materiaisSelecionadosIds);
+            
+            if (materiaisCompletos) {
+              setMateriaisParaDeclaracao(materiaisCompletos);
+              setShowSelecionarMateriais(false);
+              setShowGerarDeclaracaoFinal(true);
+            }
+          }}
+        />
+      )}
+
+      {/* Dialog: Gerar Declaração Final */}
+      {showGerarDeclaracaoFinal && envioRecemCriado && (
+        <GerarDeclaracaoTransporteDialog
+          open={showGerarDeclaracaoFinal}
+          onOpenChange={setShowGerarDeclaracaoFinal}
+          materiais={materiaisParaDeclaracao}
+          cliente={eventos.find(e => e.id === eventoSelecionado)?.cliente}
+          transportadora={transportadoras.find(t => t.id === formData.transportadoraId)}
+          onConfirmar={async (dados) => {
+            try {
+              // Garantir que todos os campos obrigatórios estão presentes
+              const dadosCompletos = {
+                alocacaoIds: materiaisParaDeclaracao.map(m => m.id),
+                remetenteTipo: dados.remetenteTipo,
+                remetenteMembroId: dados.remetenteMembroId,
+                valoresDeclarados: dados.valoresDeclarados || {},
+                observacoes: dados.observacoes || '',
+              };
+              
+              await gerarDeclaracaoTransporte.mutateAsync(dadosCompletos);
+              
+              // Vincular materiais ao envio
+              await supabase
+                .from('eventos_materiais_alocados')
+                .update({ envio_id: envioRecemCriado.id })
+                .in('id', materiaisParaDeclaracao.map(m => m.id));
+              
+              toast.success('Declaração gerada e vinculada ao envio!');
+              setShowGerarDeclaracaoFinal(false);
+              limparFormulario();
+              onOpenChange(false);
+            } catch (error) {
+              console.error('Erro ao gerar declaração:', error);
+              toast.error('Erro ao gerar declaração');
+            }
+          }}
+        />
+      )}
     </Sheet>
   );
 }
