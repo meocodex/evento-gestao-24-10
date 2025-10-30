@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { gerarTermoRetirada } from '@/utils/termoRetiradaPDF';
+import { gerarDeclaracaoTransporte as gerarDeclaracaoPDF } from '@/utils/declaracaoTransportePDF';
 
 export function useEventosMateriaisAlocados(eventoId: string) {
   const queryClient = useQueryClient();
@@ -384,6 +386,171 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     },
   });
 
+  // Mutation para reimprimir documento
+  const reimprimirDocumento = useMutation({
+    mutationFn: async ({ 
+      materialId, 
+      tipoDocumento 
+    }: { 
+      materialId: string; 
+      tipoDocumento: 'termo' | 'declaracao';
+    }) => {
+      // 1. Buscar dados do material
+      const { data: materialData, error: fetchError } = await supabase
+        .from('eventos_materiais_alocados')
+        .select(`
+          *,
+          eventos!inner (
+            *,
+            clientes:cliente_id (*)
+          )
+        `)
+        .eq('id', materialId)
+        .single();
+
+      if (fetchError || !materialData) {
+        throw new Error('Material não encontrado');
+      }
+
+      const evento = materialData.eventos;
+
+      // 2. Buscar configurações da empresa
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { data: config } = await supabase
+        .from('configuracoes_usuario')
+        .select('empresa')
+        .eq('user_id', user.id)
+        .single();
+
+      const dadosEmpresa = config?.empresa || {
+        nome: 'Empresa',
+        cnpj: '',
+        telefone: '',
+        endereco: '',
+      };
+
+      let pdfBlob: Blob;
+      let fileName: string;
+      let urlColumn: string;
+
+      if (tipoDocumento === 'termo') {
+        // Gerar Termo de Retirada
+        const dadosRetirada = {
+          retiradoPorNome: materialData.retirado_por_nome || '',
+          retiradoPorDocumento: materialData.retirado_por_documento || '',
+          retiradoPorTelefone: materialData.retirado_por_telefone || '',
+          materiais: [{
+            serial: materialData.serial,
+            nome: materialData.nome,
+            localizacao: 'Estoque',
+            valorDeclarado: materialData.valor_declarado,
+          }],
+          eventoNome: evento.nome,
+          eventoLocal: `${evento.local}, ${evento.endereco || ''}, ${evento.cidade || ''}`,
+          eventoData: new Date(evento.data_inicio).toLocaleDateString('pt-BR'),
+          eventoHora: evento.hora_inicio || '',
+          dadosEmpresa,
+        };
+
+        pdfBlob = await gerarTermoRetirada(dadosRetirada);
+        fileName = `termo-retirada-${eventoId}-${materialId}-${Date.now()}.pdf`;
+        urlColumn = 'termo_retirada_url';
+      } else {
+        // Gerar Declaração de Transporte
+        const { data: membroData } = await supabase
+          .from('operacionais')
+          .select('*')
+          .eq('id', materialData.remetente_membro_id || '')
+          .single();
+
+        const dadosDeclaracao = {
+          remetenteTipo: materialData.remetente_tipo || 'empresa',
+          remetenteNome: materialData.remetente_tipo === 'membro' && membroData
+            ? membroData.nome
+            : dadosEmpresa.nome,
+          remetenteDocumento: materialData.remetente_tipo === 'membro' && membroData
+            ? membroData.cpf
+            : dadosEmpresa.cnpj,
+          remetenteCPF: materialData.remetente_tipo === 'membro' && membroData
+            ? membroData.cpf
+            : dadosEmpresa.cnpj,
+          remetenteTelefone: materialData.remetente_tipo === 'membro' && membroData
+            ? membroData.telefone
+            : dadosEmpresa.telefone,
+          remetenteEndereco: materialData.remetente_tipo === 'membro' && membroData
+            ? `${membroData.endereco?.logradouro || ''}, ${membroData.endereco?.numero || ''}`
+            : dadosEmpresa.endereco,
+          destinatarioNome: evento.clientes?.nome || '',
+          destinatarioDocumento: evento.clientes?.cpf || evento.clientes?.cnpj || '',
+          destinatarioCPF: evento.clientes?.cpf || evento.clientes?.cnpj || '',
+          destinatarioTelefone: evento.clientes?.telefone || '',
+          destinatarioEndereco: `${evento.clientes?.endereco?.logradouro || ''}, ${evento.clientes?.endereco?.numero || ''}`,
+          transportadoraNome: materialData.transportadora || '',
+          eventoNome: evento.nome,
+          eventoLocal: `${evento.local}, ${evento.endereco || ''}, ${evento.cidade || ''}`,
+          eventoData: new Date(evento.data_inicio).toLocaleDateString('pt-BR'),
+          eventoHora: evento.hora_inicio || '',
+          materiais: [{
+            serial: materialData.serial,
+            nome: materialData.nome,
+            valorDeclarado: materialData.valor_declarado || 0,
+          }],
+          observacoes: '',
+        };
+
+        pdfBlob = await gerarDeclaracaoPDF(dadosDeclaracao);
+        fileName = `declaracao-transporte-${eventoId}-${materialId}-${Date.now()}.pdf`;
+        urlColumn = 'declaracao_transporte_url';
+      }
+
+      // 3. Deletar arquivo antigo (opcional)
+      const urlAntiga = tipoDocumento === 'termo' 
+        ? materialData.termo_retirada_url 
+        : materialData.declaracao_transporte_url;
+      
+      if (urlAntiga) {
+        const oldFileName = urlAntiga.split('/').pop();
+        if (oldFileName) {
+          await supabase.storage
+            .from('documentos-transporte')
+            .remove([oldFileName]);
+        }
+      }
+
+      // 4. Upload do novo PDF
+      const { error: uploadError } = await supabase.storage
+        .from('documentos-transporte')
+        .upload(fileName, pdfBlob, {
+          contentType: 'application/pdf',
+          upsert: false,
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('documentos-transporte')
+        .getPublicUrl(fileName);
+
+      // 5. Atualizar URL no banco
+      const { error: updateError } = await supabase
+        .from('eventos_materiais_alocados')
+        .update({ [urlColumn]: publicUrl })
+        .eq('id', materialId);
+
+      if (updateError) throw updateError;
+
+      return publicUrl;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
+    },
+    onError: (error: any) => {
+      console.error('Erro ao reimprimir documento:', error);
+    },
+  });
+
   return {
     materiaisAlocados: materiaisData || [],
     loading: isLoading,
@@ -393,5 +560,6 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     removerMaterialAlocado,
     registrarRetirada,
     gerarDeclaracaoTransporte,
+    reimprimirDocumento,
   };
 }
