@@ -1303,71 +1303,120 @@ export type Database = {
       eventos_materiais_alocados: {
         Row: {
           created_at: string | null
+          dados_destinatario: Json | null
+          dados_transportadora: Json | null
           data_devolucao: string | null
           data_envio: string | null
+          data_retirada: string | null
+          declaracao_transporte_url: string | null
+          envio_id: string | null
           evento_id: string
           fotos_devolucao: string[] | null
           id: string
           item_id: string
           nome: string
           observacoes_devolucao: string | null
+          observacoes_transporte: string | null
           quantidade_alocada: number | null
           quantidade_devolvida: number | null
           rastreamento: string | null
+          remetente_dados: Json | null
+          remetente_membro_id: string | null
+          remetente_tipo: string | null
           responsavel: string | null
           responsavel_devolucao: string | null
+          retirado_por_documento: string | null
+          retirado_por_nome: string | null
+          retirado_por_telefone: string | null
           serial: string | null
           status: Database["public"]["Enums"]["status_material"]
           status_devolucao: string | null
+          termo_retirada_url: string | null
           tipo_envio: Database["public"]["Enums"]["tipo_envio"]
           transportadora: string | null
           updated_at: string | null
+          valor_declarado: number | null
         }
         Insert: {
           created_at?: string | null
+          dados_destinatario?: Json | null
+          dados_transportadora?: Json | null
           data_devolucao?: string | null
           data_envio?: string | null
+          data_retirada?: string | null
+          declaracao_transporte_url?: string | null
+          envio_id?: string | null
           evento_id: string
           fotos_devolucao?: string[] | null
           id?: string
           item_id: string
           nome: string
           observacoes_devolucao?: string | null
+          observacoes_transporte?: string | null
           quantidade_alocada?: number | null
           quantidade_devolvida?: number | null
           rastreamento?: string | null
+          remetente_dados?: Json | null
+          remetente_membro_id?: string | null
+          remetente_tipo?: string | null
           responsavel?: string | null
           responsavel_devolucao?: string | null
+          retirado_por_documento?: string | null
+          retirado_por_nome?: string | null
+          retirado_por_telefone?: string | null
           serial?: string | null
           status?: Database["public"]["Enums"]["status_material"]
           status_devolucao?: string | null
+          termo_retirada_url?: string | null
           tipo_envio: Database["public"]["Enums"]["tipo_envio"]
           transportadora?: string | null
           updated_at?: string | null
+          valor_declarado?: number | null
         }
         Update: {
           created_at?: string | null
+          dados_destinatario?: Json | null
+          dados_transportadora?: Json | null
           data_devolucao?: string | null
           data_envio?: string | null
+          data_retirada?: string | null
+          declaracao_transporte_url?: string | null
+          envio_id?: string | null
           evento_id?: string
           fotos_devolucao?: string[] | null
           id?: string
           item_id?: string
           nome?: string
           observacoes_devolucao?: string | null
+          observacoes_transporte?: string | null
           quantidade_alocada?: number | null
           quantidade_devolvida?: number | null
           rastreamento?: string | null
+          remetente_dados?: Json | null
+          remetente_membro_id?: string | null
+          remetente_tipo?: string | null
           responsavel?: string | null
           responsavel_devolucao?: string | null
+          retirado_por_documento?: string | null
+          retirado_por_nome?: string | null
+          retirado_por_telefone?: string | null
           serial?: string | null
           status?: Database["public"]["Enums"]["status_material"]
           status_devolucao?: string | null
+          termo_retirada_url?: string | null
           tipo_envio?: Database["public"]["Enums"]["tipo_envio"]
           transportadora?: string | null
           updated_at?: string | null
+          valor_declarado?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "eventos_materiais_alocados_envio_id_fkey"
+            columns: ["envio_id"]
+            isOneToOne: false
+            referencedRelation: "envios"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "eventos_materiais_alocados_evento_id_fkey"
             columns: ["evento_id"]
@@ -1381,6 +1430,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "vw_financeiro_eventos"
             referencedColumns: ["evento_id"]
+          },
+          {
+            foreignKeyName: "eventos_materiais_alocados_remetente_membro_id_fkey"
+            columns: ["remetente_membro_id"]
+            isOneToOne: false
+            referencedRelation: "equipe_operacional"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "eventos_materiais_alocados_responsavel_devolucao_fkey"

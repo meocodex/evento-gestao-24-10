@@ -67,6 +67,58 @@ export interface HistoricoMovimentacao {
   fotosComprovantes?: string[];
 }
 
+export interface DadosRetirada {
+  retiradoPorNome: string;
+  retiradoPorDocumento: string;
+  retiradoPorTelefone: string;
+  materiais: {
+    serial: string;
+    nome: string;
+    localizacao: string;
+    valorDeclarado?: number;
+  }[];
+  eventoNome: string;
+  eventoLocal: string;
+  eventoData: string;
+  eventoHora: string;
+  dadosEmpresa: {
+    nome: string;
+    cnpj: string;
+    telefone: string;
+    endereco: string;
+  };
+}
+
+export interface DadosDeclaracaoTransporte {
+  remetenteTipo: 'empresa' | 'membro_equipe';
+  remetenteNome: string;
+  remetenteDocumento: string;
+  remetenteTelefone: string;
+  remetenteEndereco?: string;
+  remetenteVinculo?: string;
+  
+  destinatarioNome: string;
+  destinatarioDocumento: string;
+  destinatarioTelefone: string;
+  destinatarioEndereco: string;
+  
+  transportadoraNome?: string;
+  transportadoraCNPJ?: string;
+  transportadoraTelefone?: string;
+  
+  materiais: {
+    serial: string;
+    nome: string;
+    valorDeclarado: number;
+  }[];
+  
+  eventoNome: string;
+  eventoLocal: string;
+  eventoData: string;
+  eventoHora: string;
+  observacoes?: string;
+}
+
 export interface MaterialAlocado {
   id: string;
   eventoId: string;
@@ -82,4 +134,22 @@ export interface MaterialAlocado {
   dataDevolucao?: string;
   observacoesDevolucao?: string;
   fotosDevolucao?: string[];
+  
+  // Novos campos para documentos de transporte
+  retiradoPorNome?: string;
+  retiradoPorDocumento?: string;
+  retiradoPorTelefone?: string;
+  termoRetiradaUrl?: string;
+  dataRetirada?: string;
+  
+  declaracaoTransporteUrl?: string;
+  valorDeclarado?: number;
+  remetenteTipo?: 'empresa' | 'membro_equipe';
+  remetenteMembroId?: string;
+  remetenteDados?: any;
+  dadosDestinatario?: any;
+  dadosTransportadora?: any;
+  observacoesTransporte?: string;
+  
+  envioId?: string;
 }
