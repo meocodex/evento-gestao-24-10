@@ -135,6 +135,8 @@ export interface MaterialAntecipado extends MaterialAlocado {
   transportadora: string;
   dataEnvio: string;
   rastreamento?: string;
+  termoRetiradaUrl?: string;
+  declaracaoTransporteUrl?: string;
 }
 
 export interface MaterialComTecnicos extends MaterialAlocado {

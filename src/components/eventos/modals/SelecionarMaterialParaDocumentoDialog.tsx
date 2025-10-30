@@ -91,21 +91,26 @@ export function SelecionarMaterialParaDocumentoDialog({
 
           <div className="space-y-2">
             {materiais.map((material) => {
-              const temDocumento =
-                material.termoRetiradaUrl || material.declaracaoTransporteUrl;
+              const temDocumento = !!(
+                material.termoRetiradaUrl || material.declaracaoTransporteUrl
+              );
               const isSelecionado = selecionados.has(material.id);
 
               return (
                 <div
                   key={material.id}
                   className={`p-3 border rounded-lg transition-colors ${
-                    isSelecionado ? 'bg-primary/5 border-primary' : ''
+                    selecionados.has(material.id) ? 'bg-primary/5 border-primary' : ''
                   } ${temDocumento ? 'opacity-50' : ''}`}
                 >
                   <div className="flex items-center gap-3">
                     <Checkbox
-                      checked={isSelecionado}
-                      onCheckedChange={() => toggleMaterial(material.id)}
+                      checked={selecionados.has(material.id)}
+                      onCheckedChange={(checked: boolean | "indeterminate") => {
+                        if (checked === true || checked === false) {
+                          toggleMaterial(material.id);
+                        }
+                      }}
                       disabled={temDocumento}
                     />
                     

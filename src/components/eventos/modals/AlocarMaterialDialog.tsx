@@ -14,6 +14,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useEventosMateriaisAlocados } from '@/hooks/eventos';
 import { useToast } from '@/hooks/use-toast';
+import { RegistrarRetiradaDialog } from './RegistrarRetiradaDialog';
+import { GerarDeclaracaoTransporteDialog } from './GerarDeclaracaoTransporteDialog';
 
 interface AlocarMaterialDialogProps {
   open: boolean;
@@ -45,7 +47,7 @@ export function AlocarMaterialDialog({
   const { buscarMaterialPorId } = useEstoque();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const { alocarMaterialLote } = useEventosMateriaisAlocados(eventoId);
+  const { alocarMaterialLote, registrarRetirada, gerarDeclaracaoTransporte } = useEventosMateriaisAlocados(eventoId);
   const [tipoEnvio, setTipoEnvio] = useState<'antecipado' | 'com_tecnicos'>('antecipado');
   const [serialsSelecionados, setSerialsSelecionados] = useState<string[]>([]);
   const [transportadora, setTransportadora] = useState('');
@@ -54,6 +56,9 @@ export function AlocarMaterialDialog({
   const [materialEstoque, setMaterialEstoque] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedCount, setProcessedCount] = useState(0);
+  const [showRegistrarRetirada, setShowRegistrarRetirada] = useState(false);
+  const [showGerarDeclaracao, setShowGerarDeclaracao] = useState(false);
+  const [materiaisAlocadosTemp, setMateriaisAlocadosTemp] = useState<any[]>([]);
 
   // Buscar materiais já alocados neste evento
   const { materiaisAlocados } = useEventosMateriaisAlocados(eventoId);
@@ -150,13 +155,21 @@ export function AlocarMaterialDialog({
     });
   };
 
+  const limparFormulario = () => {
+    setSerialsSelecionados([]);
+    setTransportadora('');
+    setResponsavel('');
+    setSearchTerm('');
+    setMateriaisAlocadosTemp([]);
+  };
+
   const handleSubmitLote = async () => {
     if (serialsSelecionados.length === 0) return;
 
-    if (tipoEnvio === 'antecipado' && !transportadora) {
+    if (tipoEnvio === 'antecipado' && !transportadora.trim()) {
       toast({
         title: "Campo obrigatório",
-        description: "Informe a transportadora para envio antecipado",
+        description: "Informe a transportadora para envio antecipado (ou deixe vazio para retirada por terceiro)",
         variant: "destructive",
       });
       return;
@@ -180,17 +193,36 @@ export function AlocarMaterialDialog({
         nome: materialNome,
         tipo_envio: tipoEnvio,
         serial,
-        ...(tipoEnvio === 'antecipado' ? { transportadora } : { responsavel }),
+        ...(tipoEnvio === 'antecipado' ? { transportadora: transportadora || '' } : { responsavel }),
       }));
 
       await alocarMaterialLote.mutateAsync(dados);
 
-      // Limpar form
-      setSerialsSelecionados([]);
-      setTransportadora('');
-      setResponsavel('');
-      setSearchTerm('');
-      onOpenChange(false);
+      // Buscar materiais recém-alocados
+      const { data: materiaisRecentes } = await supabase
+        .from('eventos_materiais_alocados')
+        .select('*')
+        .eq('evento_id', eventoId)
+        .in('serial', serialsSelecionados)
+        .order('created_at', { ascending: false })
+        .limit(serialsSelecionados.length);
+      
+      setMateriaisAlocadosTemp(materiaisRecentes || []);
+
+      // Verificar se precisa gerar documento
+      if (tipoEnvio === 'antecipado') {
+        if (!transportadora || transportadora.trim() === '') {
+          // Sem transportadora = Retirada por terceiro
+          setShowRegistrarRetirada(true);
+        } else {
+          // Com transportadora = Envio via transportadora
+          setShowGerarDeclaracao(true);
+        }
+      } else {
+        // Com técnicos - não precisa documento
+        limparFormulario();
+        onOpenChange(false);
+      }
     } catch (error) {
       console.error('Erro ao alocar em lote:', error);
     } finally {
@@ -475,6 +507,56 @@ export function AlocarMaterialDialog({
           </div>
         </DialogFooter>
       </DialogContent>
+
+      {/* Dialogs de Documentos */}
+      <RegistrarRetiradaDialog
+        open={showRegistrarRetirada}
+        onOpenChange={(open) => {
+          setShowRegistrarRetirada(open);
+          if (!open) {
+            limparFormulario();
+            onOpenChange(false);
+          }
+        }}
+        materiais={materiaisAlocadosTemp}
+        onConfirmar={async (dados) => {
+          await registrarRetirada.mutateAsync({
+            alocacaoIds: materiaisAlocadosTemp.map(m => m.id),
+            retiradoPorNome: dados.retiradoPorNome,
+            retiradoPorDocumento: dados.retiradoPorDocumento,
+            retiradoPorTelefone: dados.retiradoPorTelefone,
+          });
+          setShowRegistrarRetirada(false);
+          limparFormulario();
+          onOpenChange(false);
+        }}
+      />
+
+      <GerarDeclaracaoTransporteDialog
+        open={showGerarDeclaracao}
+        onOpenChange={(open) => {
+          setShowGerarDeclaracao(open);
+          if (!open) {
+            limparFormulario();
+            onOpenChange(false);
+          }
+        }}
+        materiais={materiaisAlocadosTemp}
+        cliente={null}
+        transportadora={undefined}
+        onConfirmar={async (dados) => {
+          await gerarDeclaracaoTransporte.mutateAsync({
+            alocacaoIds: materiaisAlocadosTemp.map(m => m.id),
+            remetenteTipo: dados.remetenteTipo,
+            remetenteMembroId: dados.remetenteMembroId,
+            valoresDeclarados: dados.valoresDeclarados,
+            observacoes: dados.observacoes,
+          });
+          setShowGerarDeclaracao(false);
+          limparFormulario();
+          onOpenChange(false);
+        }}
+      />
     </Dialog>
   );
 }

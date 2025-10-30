@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Plus, PackagePlus, Trash2, RotateCcw, CheckSquare } from 'lucide-react';
+import { Plus, PackagePlus, Trash2, RotateCcw, CheckSquare, FileText, AlertCircle, Download } from 'lucide-react';
 import { AdicionarMaterialDialog } from '../modals/AdicionarMaterialDialog';
 import { AlocarMaterialDialog } from '../modals/AlocarMaterialDialog';
 import { DevolverMaterialDialog } from '../modals/DevolverMaterialDialog';
@@ -149,24 +149,67 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                 </p>
               ) : (
                 <div className="space-y-2">
-                  {evento.materiaisAlocados.antecipado.map((item) => (
-                    <div key={item.id} className="p-3 border rounded flex justify-between items-start">
-                      <div>
-                        <p className="font-medium">{item.nome}</p>
-                        <p className="text-sm text-muted-foreground">Serial: {item.serial}</p>
-                        <p className="text-sm">Transportadora: {item.transportadora}</p>
+                  {evento.materiaisAlocados.antecipado.map((item) => {
+                    const temDocumento = item.termoRetiradaUrl || item.declaracaoTransporteUrl;
+                    
+                    return (
+                      <div key={item.id} className="p-3 border rounded space-y-2">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-medium">{item.nome}</p>
+                              {temDocumento ? (
+                                <Badge variant="default" className="gap-1">
+                                  <FileText className="h-3 w-3" />
+                                  Documento OK
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="gap-1">
+                                  <AlertCircle className="h-3 w-3" />
+                                  Sem Documento
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">Serial: {item.serial}</p>
+                            <p className="text-sm">Transportadora: {item.transportadora || 'Retirada por terceiro'}</p>
+                          </div>
+                          {permissions.canAllocate && (
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => handleDeleteClick(item.id, 'alocado')}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {/* Botões de Documento */}
+                        <div className="flex gap-2 flex-wrap">
+                          {item.termoRetiradaUrl && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(item.termoRetiradaUrl, '_blank')}
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              Termo de Retirada
+                            </Button>
+                          )}
+                          {item.declaracaoTransporteUrl && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(item.declaracaoTransporteUrl, '_blank')}
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              Declaração de Transporte
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      {permissions.canAllocate && (
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          onClick={() => handleDeleteClick(item.id, 'alocado')}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>
@@ -184,21 +227,26 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
               ) : (
                 <div className="space-y-2">
                   {evento.materiaisAlocados.comTecnicos.map((item) => (
-                    <div key={item.id} className="p-3 border rounded flex justify-between items-start">
-                      <div>
-                        <p className="font-medium">{item.nome}</p>
-                        <p className="text-sm text-muted-foreground">Serial: {item.serial}</p>
-                        <p className="text-sm">Responsável: {item.responsavel}</p>
+                    <div key={item.id} className="p-3 border rounded space-y-2">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-medium">{item.nome}</p>
+                            <Badge variant="outline">Equipe Técnica</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">Serial: {item.serial}</p>
+                          <p className="text-sm">Responsável: {item.responsavel}</p>
+                        </div>
+                        {permissions.canAllocate && (
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={() => handleDeleteClick(item.id, 'alocado')}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
                       </div>
-                      {permissions.canAllocate && (
-                        <Button 
-                          size="sm" 
-                          variant="ghost"
-                          onClick={() => handleDeleteClick(item.id, 'alocado')}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      )}
                     </div>
                   ))}
                 </div>

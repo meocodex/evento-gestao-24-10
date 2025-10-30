@@ -42,7 +42,7 @@ export function GerarDeclaracaoTransporteDialog({
   onConfirmar,
 }: GerarDeclaracaoTransporteDialogProps) {
   const [loading, setLoading] = useState(false);
-  const { operacionaisData } = useOperacionalQueries();
+  const operacionais = useOperacionalQueries();
 
   const {
     register,
@@ -134,7 +134,7 @@ export function GerarDeclaracaoTransporteDialog({
                       <SelectValue placeholder="Selecione um membro" />
                     </SelectTrigger>
                     <SelectContent>
-                      {operacionaisData?.map((membro) => (
+                      {operacionais.operacionais?.map((membro: any) => (
                         <SelectItem key={membro.id} value={membro.id}>
                           <div className="flex flex-col">
                             <span>{membro.nome}</span>
@@ -180,7 +180,7 @@ export function GerarDeclaracaoTransporteDialog({
                   <span className="text-muted-foreground">Endereço:</span>{' '}
                   <span className="font-medium">
                     {typeof cliente.endereco === 'object'
-                      ? `${cliente.endereco.rua}, ${cliente.endereco.numero} - ${cliente.endereco.cidade}/${cliente.endereco.estado}`
+                      ? `${cliente.endereco.logradouro}, ${cliente.endereco.numero} - ${cliente.endereco.cidade}/${cliente.endereco.estado}`
                       : cliente.endereco}
                   </span>
                 </div>
