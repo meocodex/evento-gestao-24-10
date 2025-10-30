@@ -12,6 +12,7 @@ import { DemandasEvento } from '@/components/eventos/secoes/DemandasEvento';
 import { ContratosEvento } from '@/components/eventos/secoes/ContratosEvento';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
+import { EventoCountdown } from '@/components/eventos/EventoCountdown';
 
 export default function EventoDetalhes() {
   const { id } = useParams<{ id: string }>();
@@ -63,6 +64,7 @@ export default function EventoDetalhes() {
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
                   <StatusBadge status={evento.status} />
+                  <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} />
                 </div>
               </div>
             </div>

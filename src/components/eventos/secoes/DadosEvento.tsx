@@ -15,6 +15,7 @@ import { useEventos } from '@/hooks/eventos';
 import { AlterarStatusDialog } from '../modals/AlterarStatusDialog';
 import { MateriaisPendentesBadge } from '../MateriaisPendentesBadge';
 import { useMaterialPendente } from '@/hooks/eventos/useMaterialPendente';
+import { EventoCountdown } from '../EventoCountdown';
 
 interface DadosEventoProps {
   evento: Evento;
@@ -93,6 +94,12 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
               </div>
             </div>
           </div>
+          
+          {/* Contador Regressivo */}
+          <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+            <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} />
+          </div>
+          
           <div>
             <p className="text-sm font-medium mb-1">Status</p>
             <div className="flex items-center gap-2">
