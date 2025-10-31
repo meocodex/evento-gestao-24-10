@@ -141,7 +141,13 @@ export function AlocarMaterialDialog({
   const quantidadeRestante = quantidadeNecessaria - quantidadeJaAlocada;
 
   // Hook para gerenciar quantidade em materiais controlados por quantidade
-  const { quantidadeAlocar, handleQuantidadeChange, resetQuantidade } = useAlocacaoQuantidade({
+  const { 
+    quantidadeAlocar, 
+    handleQuantidadeChange, 
+    resetQuantidade,
+    maxAllowed,
+    isValid
+  } = useAlocacaoQuantidade({
     quantidadeRestante,
     quantidadeDisponivel: materialEstoque?.quantidadeDisponivel || 0,
   });
@@ -175,6 +181,18 @@ export function AlocarMaterialDialog({
 
   const handleSubmitLote = async () => {
     const isQuantidade = materialEstoque?.tipoControle === 'quantidade';
+    
+    // 🔍 DEBUG LOG - Remover depois de verificar funcionamento
+    console.log('[AlocarMaterial] Iniciando alocação:', {
+      isQuantidade,
+      tipoControle: materialEstoque?.tipoControle,
+      quantidadeAlocar,
+      quantidadeRestante,
+      quantidadeDisponivel: materialEstoque?.quantidadeDisponivel,
+      maxAllowed,
+      materialId: materialEstoque?.id,
+      itemId,
+    });
     
     // Validar baseado no tipo de controle
     if (!isQuantidade && serialsSelecionados.length === 0) return;
@@ -310,13 +328,14 @@ export function AlocarMaterialDialog({
               <Input
                 type="number"
                 min="1"
-                max={Math.min(quantidadeRestante, materialEstoque?.quantidadeDisponivel || 0)}
+                max={maxAllowed}
                 value={quantidadeAlocar}
                 onChange={handleQuantidadeChange}
                 placeholder="Quantidade"
               />
               <p className="text-xs text-muted-foreground">
-                Disponível em estoque: {materialEstoque?.quantidadeDisponivel || 0} unidades
+                Disponível: {materialEstoque?.quantidadeDisponivel || 0} unidades | 
+                Máximo: {maxAllowed} unidades
               </p>
             </div>
           ) : (
@@ -545,9 +564,10 @@ export function AlocarMaterialDialog({
             <Button
               onClick={handleSubmitLote}
               disabled={
+                !materialEstoque ||
                 isProcessing ||
-                (materialEstoque?.tipoControle !== 'quantidade' && serialsSelecionados.length === 0) ||
-                (materialEstoque?.tipoControle === 'quantidade' && quantidadeAlocar <= 0) ||
+                (materialEstoque.tipoControle === 'serial' && serialsSelecionados.length === 0) ||
+                (materialEstoque.tipoControle === 'quantidade' && (quantidadeAlocar <= 0 || quantidadeAlocar > maxAllowed)) ||
                 (tipoEnvio === 'com_tecnicos' && !responsavel)
               }
             >
