@@ -42,7 +42,12 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const [materialReimprimir, setMaterialReimprimir] = useState<any>(null);
   const [showVincularFrete, setShowVincularFrete] = useState(false);
 
-  const { checklist: checklistData = [], loading: loadingChecklist } = useEventosChecklist(evento.id);
+  const { 
+    checklist: checklistData = [], 
+    loading: loadingChecklist,
+    adicionarMaterialChecklist,
+    removerMaterialChecklist
+  } = useEventosChecklist(evento.id);
   const { 
     materiaisAlocados, 
     loading: loadingAlocados, 
@@ -101,7 +106,11 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
     try {
-      await removerMaterialAlocado.mutateAsync(itemToDelete.id);
+      if (itemToDelete.type === 'checklist') {
+        await removerMaterialChecklist.mutateAsync(itemToDelete.id);
+      } else {
+        await removerMaterialAlocado.mutateAsync(itemToDelete.id);
+      }
       setShowConfirmDelete(false);
       setItemToDelete(null);
     } catch (error: any) {
@@ -522,8 +531,13 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       <AdicionarMaterialDialog
         open={showAdicionarMaterial}
         onOpenChange={setShowAdicionarMaterial}
-        onAdicionar={(data) => {
-          setShowAdicionarMaterial(false);
+        onAdicionar={async (data) => {
+          try {
+            await adicionarMaterialChecklist.mutateAsync(data);
+            setShowAdicionarMaterial(false);
+          } catch (error: any) {
+            console.error('Erro ao adicionar material:', error);
+          }
         }}
         itensJaNoChecklist={checklistData.map((item: any) => item.item_id)}
       />
