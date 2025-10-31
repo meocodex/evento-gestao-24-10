@@ -315,7 +315,11 @@ export function AlocarMaterialDialog({
                 min="1"
                 max={Math.min(quantidadeRestante, materialEstoque?.quantidade_disponivel || 0)}
                 value={quantidadeAlocar}
-                onChange={(e) => setQuantidadeAlocar(Math.max(1, parseInt(e.target.value) || 1))}
+                  onChange={(e) => {
+                    const maxAllowed = Math.min(quantidadeRestante, materialEstoque?.quantidade_disponivel || 0);
+                    const valor = Math.max(1, Math.min(maxAllowed, parseInt(e.target.value) || 1));
+                    setQuantidadeAlocar(valor);
+                  }}
                 placeholder="Quantidade"
               />
               <p className="text-xs text-muted-foreground">
@@ -549,14 +553,17 @@ export function AlocarMaterialDialog({
               onClick={handleSubmitLote}
               disabled={
                 isProcessing ||
-                serialsSelecionados.length === 0 ||
+                (materialEstoque?.tipo_controle !== 'quantidade' && serialsSelecionados.length === 0) ||
+                (materialEstoque?.tipo_controle === 'quantidade' && quantidadeAlocar <= 0) ||
                 (tipoEnvio === 'antecipado' && !transportadora) ||
                 (tipoEnvio === 'com_tecnicos' && !responsavel)
               }
             >
               {isProcessing 
-                ? `Alocando... (${processedCount}/${serialsSelecionados.length})`
-                : `Alocar ${serialsSelecionados.length} ${serialsSelecionados.length === 1 ? 'Serial' : 'Seriais'}`
+                ? 'Alocando...'
+                : materialEstoque?.tipo_controle === 'quantidade'
+                  ? `Alocar ${quantidadeAlocar} ${quantidadeAlocar === 1 ? 'Unidade' : 'Unidades'}`
+                  : `Alocar ${serialsSelecionados.length} ${serialsSelecionados.length === 1 ? 'Serial' : 'Seriais'}`
               }
             </Button>
           </div>
