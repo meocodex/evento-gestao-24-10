@@ -32,6 +32,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
+      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+      console.log('[useEventosMateriaisAlocados] Cache invalidado após alocação');
       toast.success('Material alocado com sucesso!');
     },
     onError: (error: any) => {
@@ -58,6 +60,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
+      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+      console.log('[useEventosMateriaisAlocados] Cache invalidado após alocação em lote');
       toast.success(`${count} ${count === 1 ? 'material alocado' : 'materiais alocados'} com sucesso!`);
     },
     onError: (error: any) => {
