@@ -88,8 +88,8 @@ export default function Demandas() {
   };
 
   return (
-    <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen overflow-x-hidden">
+      <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in bg-navy-50 dark:bg-navy-950">
         {/* Hero Section */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -104,7 +104,7 @@ export default function Demandas() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <StatCard
             title="Abertas"
             value={estatisticas.abertas}
@@ -132,13 +132,13 @@ export default function Demandas() {
         </div>
 
         {/* Busca */}
-        <div className="relative max-w-md">
+        <div className="relative w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar por título, descrição..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9"
+            className="pl-9 h-9 sm:h-10 text-sm"
           />
         </div>
 

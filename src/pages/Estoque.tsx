@@ -152,23 +152,23 @@ export default function Estoque() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-display font-bold text-navy-800">Estoque</h1>
-          <p className="text-navy-600 mt-1">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-bold text-navy-800">Estoque</h1>
+          <p className="text-sm sm:text-base text-navy-600 mt-1">
             Gerencie materiais e controle de seriais
           </p>
         </div>
-        <Button onClick={() => setShowNovoMaterial(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Material
+        <Button onClick={() => setShowNovoMaterial(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+          <Plus className="h-4 w-4 sm:mr-2" />
+          <span className="hidden xs:inline">Novo Material</span>
         </Button>
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Total de Itens"
           value={stats.totalItens.toString()}
@@ -200,14 +200,14 @@ export default function Estoque() {
       </div>
 
       {/* Busca e Filtros */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Buscar materiais..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-9 sm:h-10 text-sm"
           />
         </div>
         <EstoqueFiltersPopover

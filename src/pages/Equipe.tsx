@@ -190,22 +190,22 @@ export default function Equipe() {
   }, [membrosUnificados]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Users className="h-8 w-8" />
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2">
+            <Users className="h-6 w-6 sm:h-8 sm:w-8" />
             Membros da Equipe
           </h1>
-          <p className="text-muted-foreground mt-1">
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Gestão unificada de equipe operacional e usuários do sistema
           </p>
         </div>
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Total de Membros"
           value={stats.total.toString()}
@@ -235,24 +235,25 @@ export default function Equipe() {
       {/* Card Principal */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Todos os Membros</CardTitle>
-            <Button onClick={() => setNovoDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Membro Operacional
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <CardTitle className="text-base sm:text-lg">Todos os Membros</CardTitle>
+            <Button onClick={() => setNovoDialogOpen(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden xs:inline">Novo Membro Operacional</span>
+              <span className="xs:hidden">Novo</span>
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Busca e Filtros */}
-          <div className="flex items-center gap-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por nome, email, telefone ou CPF..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 h-9 sm:h-10 text-sm"
               />
             </div>
             <EquipeFiltersPopover

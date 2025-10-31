@@ -13,14 +13,14 @@ export default function Relatorios() {
   ];
 
   return (
-    <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen overflow-x-hidden">
+      <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in bg-navy-50 dark:bg-navy-950">
         <div>
-          <h1 className="text-4xl font-bold text-navy-900 dark:text-navy-50">Relatórios</h1>
-          <p className="text-navy-600 dark:text-navy-400 mt-1">Análises e exportações de dados</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-navy-900 dark:text-navy-50">Relatórios</h1>
+          <p className="text-sm sm:text-base text-navy-600 dark:text-navy-400 mt-1">Análises e exportações de dados</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {relatorios.map((relatorio) => (
             <Card key={relatorio.id} className="hover:shadow-md transition-shadow">
               <CardHeader>

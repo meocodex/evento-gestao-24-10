@@ -132,14 +132,14 @@ export default function Financeiro() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
         <div>
-          <h1 className="text-4xl font-bold">Financeiro</h1>
-          <p className="text-muted-foreground mt-1">Visão consolidada das finanças</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">Financeiro</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">Visão consolidada das finanças</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">

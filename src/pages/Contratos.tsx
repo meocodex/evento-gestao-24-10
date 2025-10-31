@@ -118,32 +118,32 @@ export default function Contratos() {
   const totalPagesTemplates = Math.ceil(totalTemplates / pageSizeTemplates);
 
   return (
-    <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen overflow-x-hidden">
+      <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in bg-navy-50 dark:bg-navy-950">
         {/* Hero Section */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-navy-900 dark:text-navy-50">Contratos & Propostas</h1>
-            <p className="text-navy-600 dark:text-navy-400 mt-1">Gestão de propostas comerciais, contratos e templates</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-navy-900 dark:text-navy-50">Contratos & Propostas</h1>
+            <p className="text-sm sm:text-base text-navy-600 dark:text-navy-400 mt-1">Gestão de propostas comerciais, contratos e templates</p>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={() => setMostrarNovaProposta(true)}>
-              <FileText className="h-4 w-4" />
-              Nova Proposta
+          <div className="flex gap-2 flex-wrap">
+            <Button onClick={() => setMostrarNovaProposta(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+              <FileText className="h-4 w-4 sm:mr-1" />
+              <span className="hidden xs:inline">Nova Proposta</span>
             </Button>
-            <Button onClick={() => setMostrarNovoContrato(true)} variant="outline">
-              <FileSignature className="h-4 w-4" />
-              Novo Contrato
+            <Button onClick={() => setMostrarNovoContrato(true)} variant="outline" className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+              <FileSignature className="h-4 w-4 sm:mr-1" />
+              <span className="hidden xs:inline">Novo Contrato</span>
             </Button>
-            <Button onClick={() => setMostrarNovoTemplate(true)} variant="outline">
-              <FileSignature className="h-4 w-4" />
-              Novo Template
+            <Button onClick={() => setMostrarNovoTemplate(true)} variant="outline" className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+              <FileSignature className="h-4 w-4 sm:mr-1" />
+              <span className="hidden xs:inline">Novo Template</span>
             </Button>
           </div>
         </div>
 
         {/* Stats Cards Navy */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <StatCard
             title="Propostas"
             value={totalPropostas}
@@ -182,18 +182,18 @@ export default function Contratos() {
           </TabsList>
 
           <TabsContent value="contratos" className="space-y-4">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar contratos e propostas..."
                   value={searchContratos}
                   onChange={(e) => setSearchContratos(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 h-9 sm:h-10 text-sm"
                 />
               </div>
               <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-full sm:w-[180px] md:w-[200px] h-9 sm:h-10 text-xs sm:text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -275,14 +275,14 @@ export default function Contratos() {
           </TabsContent>
 
           <TabsContent value="templates" className="space-y-4">
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center gap-2 sm:gap-4 mb-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar templates..."
                   value={searchTemplates}
                   onChange={(e) => setSearchTemplates(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 h-9 sm:h-10 text-sm"
                 />
               </div>
             </div>

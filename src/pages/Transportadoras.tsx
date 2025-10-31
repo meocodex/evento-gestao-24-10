@@ -43,28 +43,28 @@ export default function Transportadoras() {
   const enviosFinalizados = useMemo(() => envios.filter(e => e.status === 'entregue' || e.status === 'cancelado'), [envios]);
 
   return (
-    <div className="min-h-screen p-6 bg-navy-50 dark:bg-navy-950">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen overflow-x-hidden">
+      <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in bg-navy-50 dark:bg-navy-950">
         {/* Hero Section */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-navy-900 dark:text-navy-50">Transportadoras</h1>
-            <p className="text-navy-600 dark:text-navy-400 mt-1">Gestão de transportadoras e envios</p>
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-navy-900 dark:text-navy-50">Transportadoras</h1>
+            <p className="text-sm sm:text-base text-navy-600 dark:text-navy-400 mt-1">Gestão de transportadoras e envios</p>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={() => setNovoEnvioOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Envio
+          <div className="flex gap-2 flex-wrap">
+            <Button onClick={() => setNovoEnvioOpen(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden xs:inline">Novo Envio</span>
             </Button>
-            <Button onClick={() => setNovaTransportadoraOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nova Transportadora
+            <Button onClick={() => setNovaTransportadoraOpen(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden xs:inline">Nova Transportadora</span>
             </Button>
           </div>
         </div>
 
         {/* Stats Cards Navy */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <StatCard
             title="Total"
             value={transportadoras.length}
@@ -111,10 +111,10 @@ export default function Transportadoras() {
                   placeholder="Buscar por nome ou CNPJ..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-9 sm:h-10 text-sm"
                 />
               </div>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0">
                 <Filter className="h-4 w-4" />
               </Button>
             </div>
