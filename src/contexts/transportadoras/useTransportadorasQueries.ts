@@ -45,8 +45,21 @@ export function useTransportadorasQueries(
 
       if (error) throw error;
 
+      // Transformar rotas para formato camelCase esperado pelo código
+      const transportadorasTransformadas = (data || []).map(t => ({
+        ...t,
+        rotasAtendidas: (t.rotas || []).map((r: any) => ({
+          id: r.id,
+          cidadeDestino: r.cidade_destino,
+          estadoDestino: r.estado_destino,
+          prazoEntrega: r.prazo_entrega,
+          valorBase: r.valor_base,
+          ativa: r.ativa,
+        }))
+      }));
+
       return {
-        transportadoras: data || [],
+        transportadoras: transportadorasTransformadas,
         totalCount: count || 0,
       };
     },

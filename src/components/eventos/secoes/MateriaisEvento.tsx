@@ -95,7 +95,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
 
   // Materiais elegíveis para vincular a frete
   const materiaisParaFrete = materiaisAlocados.filter((m: any) =>
-    m.tipo_envio === 'antecipado' && !m.envio_id && !m.devolvido
+    m.tipo_envio === 'antecipado' && !m.envio_id && m.status_devolucao === 'pendente'
   );
 
   const handleConfirmDelete = async () => {

@@ -43,11 +43,12 @@ export function VincularFreteDialog({
   const { enderecoFormatado: enderecoEmpresa } = useEnderecoEmpresa();
 
   // Filtrar transportadoras pela região do evento
-  const transportadorasDisponiveis = transportadoras.filter((t) =>
-    t.rotasAtendidas?.some(
-      (r: any) => r.cidadeDestino === evento.cidade && r.estadoDestino === evento.estado && r.ativa
-    )
-  );
+  const transportadorasDisponiveis = transportadoras.filter((t) => {
+    if (!t.rotasAtendidas || t.rotasAtendidas.length === 0) return false;
+    return t.rotasAtendidas.some(
+      (r: any) => r.cidadeDestino === evento.cidade && r.estadoDestino === evento.estado && r.ativa === true
+    );
+  });
 
   // Dados calculados
   const transportadora = transportadoras.find((t) => t.id === transportadoraSelecionada);
