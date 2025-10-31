@@ -551,6 +551,65 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     },
   });
 
+  const vincularMaterialesAFrete = useMutation({
+    mutationFn: async (dados: {
+      materialIds: string[];
+      transportadoraId: string;
+      transportadoraNome: string;
+      dadosEnvio: {
+        origem: string;
+        destino: string;
+        dataEntregaPrevista: string;
+        valor: number;
+        formaPagamento: 'antecipado' | 'na_entrega' | 'a_combinar';
+        observacoes?: string;
+      };
+    }) => {
+      // 1. Criar registro em 'envios'
+      const { data: novoEnvio, error: envioError } = await supabase
+        .from('envios')
+        .insert({
+          evento_id: eventoId,
+          transportadora_id: dados.transportadoraId,
+          tipo: 'ida',
+          status: 'pendente',
+          origem: dados.dadosEnvio.origem,
+          destino: dados.dadosEnvio.destino,
+          data_entrega_prevista: dados.dadosEnvio.dataEntregaPrevista,
+          valor: dados.dadosEnvio.valor,
+          forma_pagamento: dados.dadosEnvio.formaPagamento,
+          observacoes: dados.dadosEnvio.observacoes,
+        })
+        .select()
+        .single();
+      
+      if (envioError) throw envioError;
+      
+      // 2. Atualizar materiais alocados com envio_id e transportadora
+      const { error: updateError } = await supabase
+        .from('eventos_materiais_alocados')
+        .update({
+          envio_id: novoEnvio.id,
+          transportadora: dados.transportadoraNome,
+        })
+        .in('id', dados.materialIds);
+      
+      if (updateError) throw updateError;
+      
+      return novoEnvio;
+    },
+    onSuccess: (envio, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
+      queryClient.invalidateQueries({ queryKey: ['envios'] });
+      queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
+      toast.success(`Frete criado! ${variables.materialIds.length} materiais vinculados.`);
+    },
+    onError: (error: any) => {
+      console.error('Erro ao vincular frete:', error);
+      toast.error(`Erro ao vincular frete: ${error.message}`);
+    },
+  });
+
   return {
     materiaisAlocados: materiaisData || [],
     loading: isLoading,
@@ -561,5 +620,6 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     registrarRetirada,
     gerarDeclaracaoTransporte,
     reimprimirDocumento,
+    vincularMaterialesAFrete,
   };
 }

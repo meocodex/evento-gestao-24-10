@@ -14,6 +14,7 @@ import { DevolverMaterialDialog } from "../modals/DevolverMaterialDialog";
 import { DevolverMaterialLoteDialog } from "../modals/DevolverMaterialLoteDialog";
 import { RegistrarRetiradaDialog } from "../modals/RegistrarRetiradaDialog";
 import { GerarDeclaracaoTransporteDialog } from "../modals/GerarDeclaracaoTransporteDialog";
+import { VincularFreteDialog } from "../modals/VincularFreteDialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useEventosMateriaisAlocados } from "@/contexts/eventos/useEventosMateriaisAlocados";
 import { useEventosChecklist } from "@/hooks/eventos";
@@ -39,6 +40,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const [materiaisRetroativos, setMateriaisRetroativos] = useState<any[]>([]);
   const [showConfirmReimprimir, setShowConfirmReimprimir] = useState(false);
   const [materialReimprimir, setMaterialReimprimir] = useState<any>(null);
+  const [showVincularFrete, setShowVincularFrete] = useState(false);
 
   const { checklist: checklistData = [], loading: loadingChecklist } = useEventosChecklist(evento.id);
   const { 
@@ -47,7 +49,8 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
     removerMaterialAlocado,
     registrarRetirada,
     gerarDeclaracaoTransporte,
-    reimprimirDocumento
+    reimprimirDocumento,
+    vincularMaterialesAFrete,
   } = useEventosMateriaisAlocados(evento.id);
 
   // Filtrar materiais pendentes
@@ -88,6 +91,11 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   // Materiais sem documento para geração retroativa
   const materiaisSemDocumento = materiaisAlocados.filter((m: any) =>
     m.tipo_envio === 'antecipado' && !m.termoRetiradaUrl && !m.declaracaoTransporteUrl
+  );
+
+  // Materiais elegíveis para vincular a frete
+  const materiaisParaFrete = materiaisAlocados.filter((m: any) =>
+    m.tipo_envio === 'antecipado' && !m.envio_id && !m.devolvido
   );
 
   const handleConfirmDelete = async () => {
@@ -239,6 +247,18 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                   Gerar Documentos ({materiaisSemDocumento.length})
                 </Button>
               )}
+              
+              {permissions.canEdit && materiaisParaFrete.length > 0 && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setShowVincularFrete(true)}
+                  className="gap-2"
+                >
+                  <Truck className="h-4 w-4" />
+                  Adicionar Frete ({materiaisParaFrete.length})
+                </Button>
+              )}
             </div>
           </div>
 
@@ -287,6 +307,13 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                                       <Badge variant="secondary" className="gap-1">
                                         <AlertCircle className="h-3 w-3" />
                                         Sem Documento
+                                      </Badge>
+                                    )}
+                                    
+                                    {material.envio_id && (
+                                      <Badge variant="outline" className="gap-1 bg-blue-50 border-blue-300 text-blue-700">
+                                        <Truck className="h-3 w-3" />
+                                        Frete #{material.envio_id.substring(0, 8)}
                                       </Badge>
                                     )}
                                     
@@ -618,6 +645,15 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         }}
         title="Reimprimir documento"
         description="O documento anterior será substituído pelo novo. Deseja continuar?"
+      />
+
+      {/* Dialog Vincular Frete */}
+      <VincularFreteDialog
+        open={showVincularFrete}
+        onOpenChange={setShowVincularFrete}
+        evento={evento}
+        materiais={materiaisParaFrete}
+        onVincular={vincularMaterialesAFrete}
       />
     </div>
   );
