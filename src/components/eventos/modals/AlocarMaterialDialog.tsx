@@ -57,6 +57,7 @@ export function AlocarMaterialDialog({
   const [responsavel, setResponsavel] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [materialEstoque, setMaterialEstoque] = useState<any>(null);
+  const [quantidadeAlocar, setQuantidadeAlocar] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedCount, setProcessedCount] = useState(0);
   const [showRegistrarRetirada, setShowRegistrarRetirada] = useState(false);
@@ -167,7 +168,11 @@ export function AlocarMaterialDialog({
   };
 
   const handleSubmitLote = async () => {
-    if (serialsSelecionados.length === 0) return;
+    const isQuantidade = materialEstoque?.tipo_controle === 'quantidade';
+    
+    // Validar baseado no tipo de controle
+    if (!isQuantidade && serialsSelecionados.length === 0) return;
+    if (isQuantidade && quantidadeAlocar <= 0) return;
 
     if (tipoEnvio === 'antecipado' && !transportadora.trim()) {
       toast({
@@ -191,24 +196,54 @@ export function AlocarMaterialDialog({
     setProcessedCount(0);
 
     try {
-      const dados = serialsSelecionados.map(serial => ({
-        item_id: itemId,
-        nome: materialNome,
-        tipo_envio: tipoEnvio,
-        serial,
-        ...(tipoEnvio === 'antecipado' ? { transportadora: transportadora || '' } : { responsavel }),
-      }));
+      let dados;
+      
+      if (isQuantidade) {
+        // Material por quantidade - criar UMA alocação com a quantidade
+        dados = [{
+          item_id: itemId,
+          nome: materialNome,
+          tipo_envio: tipoEnvio,
+          serial: null,
+          quantidade_alocada: quantidadeAlocar,
+          ...(tipoEnvio === 'antecipado' ? { transportadora: transportadora || '' } : { responsavel }),
+        }];
+      } else {
+        // Material por serial - criar uma alocação por serial
+        dados = serialsSelecionados.map(serial => ({
+          item_id: itemId,
+          nome: materialNome,
+          tipo_envio: tipoEnvio,
+          serial,
+          quantidade_alocada: 1,
+          ...(tipoEnvio === 'antecipado' ? { transportadora: transportadora || '' } : { responsavel }),
+        }));
+      }
 
       await alocarMaterialLote.mutateAsync(dados);
 
       // Buscar materiais recém-alocados
-      const { data: materiaisRecentes } = await supabase
-        .from('eventos_materiais_alocados')
-        .select('*')
-        .eq('evento_id', eventoId)
-        .in('serial', serialsSelecionados)
-        .order('created_at', { ascending: false })
-        .limit(serialsSelecionados.length);
+      let materiaisRecentes;
+      if (isQuantidade) {
+        const { data } = await supabase
+          .from('eventos_materiais_alocados')
+          .select('*')
+          .eq('evento_id', eventoId)
+          .eq('item_id', itemId)
+          .is('serial', null)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        materiaisRecentes = data;
+      } else {
+        const { data } = await supabase
+          .from('eventos_materiais_alocados')
+          .select('*')
+          .eq('evento_id', eventoId)
+          .in('serial', serialsSelecionados)
+          .order('created_at', { ascending: false })
+          .limit(serialsSelecionados.length);
+        materiaisRecentes = data;
+      }
       
       setMateriaisAlocadosTemp(materiaisRecentes || []);
 
@@ -272,18 +307,34 @@ export function AlocarMaterialDialog({
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label>Serial do Material</Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          {materialEstoque?.tipo_controle === 'quantidade' ? (
+            <div className="space-y-2">
+              <Label>Quantidade a Alocar</Label>
               <Input
-                placeholder="Buscar serial..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
+                type="number"
+                min="1"
+                max={Math.min(quantidadeRestante, materialEstoque?.quantidade_disponivel || 0)}
+                value={quantidadeAlocar}
+                onChange={(e) => setQuantidadeAlocar(Math.max(1, parseInt(e.target.value) || 1))}
+                placeholder="Quantidade"
               />
+              <p className="text-xs text-muted-foreground">
+                Disponível em estoque: {materialEstoque?.quantidade_disponivel || 0} unidades
+              </p>
             </div>
-            <ScrollArea className="h-[200px] mt-2">
+          ) : (
+            <div className="space-y-2">
+              <Label>Serial do Material</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar serial..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <ScrollArea className="h-[200px] mt-2">
               {serialsFiltrados.length > 0 && (
                 <div className="flex items-center justify-between p-3 bg-muted rounded-lg mb-3">
                   <div className="flex items-center gap-2">
@@ -447,7 +498,8 @@ export function AlocarMaterialDialog({
                 )}
               </div>
             </ScrollArea>
-          </div>
+            </div>
+          )}
 
           {tipoEnvio === 'antecipado' ? (
             <div className="space-y-2">

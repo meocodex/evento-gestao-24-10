@@ -67,23 +67,31 @@ export function useEventosMateriaisAlocados(eventoId: string) {
   });
 
   const registrarDevolucao = useMutation({
-    mutationFn: async ({ alocacaoId, statusDevolucao, observacoes, fotos }: {
+    mutationFn: async ({ alocacaoId, statusDevolucao, observacoes, fotos, quantidadeDevolvida }: {
       alocacaoId: string;
       statusDevolucao: string;
       observacoes: string;
       fotos?: string[];
+      quantidadeDevolvida?: number;
     }) => {
       const { data: user } = await supabase.auth.getUser();
       
+      const updateData: any = {
+        status_devolucao: statusDevolucao,
+        data_devolucao: new Date().toISOString(),
+        responsavel_devolucao: user.user?.id,
+        observacoes_devolucao: observacoes,
+        fotos_devolucao: fotos,
+      };
+      
+      // Adicionar quantidade devolvida se fornecida (materiais por quantidade)
+      if (quantidadeDevolvida !== undefined) {
+        updateData.quantidade_devolvida = quantidadeDevolvida;
+      }
+      
       const { error } = await supabase
         .from('eventos_materiais_alocados')
-        .update({
-          status_devolucao: statusDevolucao,
-          data_devolucao: new Date().toISOString(),
-          responsavel_devolucao: user.user?.id,
-          observacoes_devolucao: observacoes,
-          fotos_devolucao: fotos,
-        })
+        .update(updateData)
         .eq('id', alocacaoId);
       
       if (error) throw error;

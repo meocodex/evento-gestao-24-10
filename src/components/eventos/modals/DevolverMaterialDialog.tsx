@@ -17,6 +17,7 @@ interface DevolverMaterialDialogProps {
     statusDevolucao: StatusDevolucao;
     observacoes: string;
     fotos?: string[];
+    quantidadeDevolvida?: number;
   }) => void;
 }
 
@@ -29,6 +30,7 @@ export function DevolverMaterialDialog({
   const [statusDevolucao, setStatusDevolucao] = useState<StatusDevolucao>('devolvido_ok');
   const [observacoes, setObservacoes] = useState('');
   const [fotos, setFotos] = useState<string[]>([]);
+  const [quantidadeDevolvida, setQuantidadeDevolvida] = useState<number>(material?.quantidadeAlocada || 1);
 
   if (!material) return null;
 
@@ -41,12 +43,14 @@ export function DevolverMaterialDialog({
       statusDevolucao,
       observacoes,
       fotos: fotos.length > 0 ? fotos : undefined,
+      quantidadeDevolvida: material?.serial ? undefined : quantidadeDevolvida,
     });
 
     // Limpar form
     setStatusDevolucao('devolvido_ok');
     setObservacoes('');
     setFotos([]);
+    setQuantidadeDevolvida(material?.quantidadeAlocada || 1);
   };
 
   return (
@@ -63,6 +67,24 @@ export function DevolverMaterialDialog({
         </DialogHeader>
 
         <div className="space-y-4">
+          {!material.serial && (
+            <div>
+              <Label htmlFor="quantidadeDevolvida">Quantidade Devolvida</Label>
+              <Input
+                id="quantidadeDevolvida"
+                type="number"
+                min="0"
+                max={material.quantidadeAlocada}
+                value={quantidadeDevolvida}
+                onChange={(e) => setQuantidadeDevolvida(Math.min(material.quantidadeAlocada, Math.max(0, parseInt(e.target.value) || 0)))}
+                className="mt-2"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Alocado: {material.quantidadeAlocada} unidades | Restante será considerado consumido
+              </p>
+            </div>
+          )}
+
           <div>
             <Label>Status da Devolução</Label>
             <RadioGroup value={statusDevolucao} onValueChange={(v) => setStatusDevolucao(v as StatusDevolucao)} className="mt-2 space-y-3">

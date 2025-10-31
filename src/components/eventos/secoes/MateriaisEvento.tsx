@@ -52,6 +52,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
     materiaisAlocados, 
     loading: loadingAlocados, 
     removerMaterialAlocado,
+    registrarDevolucao,
     registrarRetirada,
     gerarDeclaracaoTransporte,
     reimprimirDocumento,
@@ -563,8 +564,19 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         open={showDevolverMaterial}
         onOpenChange={setShowDevolverMaterial}
         material={materialParaDevolucao}
-        onConfirmar={(dados) => {
+        onConfirmar={async (dados) => {
+          if (!materialParaDevolucao) return;
+          
+          await registrarDevolucao.mutateAsync({
+            alocacaoId: materialParaDevolucao.id,
+            statusDevolucao: dados.statusDevolucao,
+            observacoes: dados.observacoes,
+            fotos: dados.fotos,
+            quantidadeDevolvida: dados.quantidadeDevolvida,
+          });
+          
           setShowDevolverMaterial(false);
+          setMaterialParaDevolucao(null);
         }}
       />
 
