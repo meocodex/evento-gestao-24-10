@@ -17,6 +17,7 @@ import { useEventosMateriaisAlocados } from '@/hooks/eventos';
 import { useToast } from '@/hooks/use-toast';
 import { RegistrarRetiradaDialog } from './RegistrarRetiradaDialog';
 import { GerarDeclaracaoTransporteDialog } from './GerarDeclaracaoTransporteDialog';
+import { useAlocacaoQuantidade } from '@/hooks/useAlocacaoQuantidade';
 
 interface AlocarMaterialDialogProps {
   open: boolean;
@@ -57,7 +58,6 @@ export function AlocarMaterialDialog({
   const [responsavel, setResponsavel] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [materialEstoque, setMaterialEstoque] = useState<any>(null);
-  const [quantidadeAlocar, setQuantidadeAlocar] = useState<number>(1);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedCount, setProcessedCount] = useState(0);
   const [showRegistrarRetirada, setShowRegistrarRetirada] = useState(false);
@@ -139,6 +139,12 @@ export function AlocarMaterialDialog({
   }, [materialEstoque, searchTerm, serialsAlocadosNesteEvento, serialsAlocadosGlobal, eventoId]);
 
   const quantidadeRestante = quantidadeNecessaria - quantidadeJaAlocada;
+
+  // Hook para gerenciar quantidade em materiais controlados por quantidade
+  const { quantidadeAlocar, handleQuantidadeChange, resetQuantidade } = useAlocacaoQuantidade({
+    quantidadeRestante,
+    quantidadeDisponivel: materialEstoque?.quantidade_disponivel || 0,
+  });
 
   const toggleSerial = (numero: string) => {
     setSerialsSelecionados(prev => {
@@ -315,11 +321,7 @@ export function AlocarMaterialDialog({
                 min="1"
                 max={Math.min(quantidadeRestante, materialEstoque?.quantidade_disponivel || 0)}
                 value={quantidadeAlocar}
-                  onChange={(e) => {
-                    const maxAllowed = Math.min(quantidadeRestante, materialEstoque?.quantidade_disponivel || 0);
-                    const valor = Math.max(1, Math.min(maxAllowed, parseInt(e.target.value) || 1));
-                    setQuantidadeAlocar(valor);
-                  }}
+                onChange={handleQuantidadeChange}
                 placeholder="Quantidade"
               />
               <p className="text-xs text-muted-foreground">

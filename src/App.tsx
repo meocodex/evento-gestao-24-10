@@ -31,8 +31,49 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const CadastroEvento = lazy(() => import("./pages/public/CadastroEvento"));
 const AcompanharCadastro = lazy(() => import("./pages/public/AcompanharCadastro"));
 
-// Componente de loading para Suspense
-function PageLoader() {
+// Componente de loading para Suspense com fallback de erro
+function PageLoader({ error }: { error?: Error }) {
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="max-w-md w-full space-y-4 text-center">
+          <div className="text-4xl">⚠️</div>
+          <h2 className="text-2xl font-bold">Erro ao carregar página</h2>
+          <p className="text-muted-foreground">
+            Houve um problema ao carregar os recursos da página. 
+            Tente recarregar ou limpar o cache do navegador.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            >
+              Recarregar Página
+            </button>
+            <button 
+              onClick={() => {
+                if ('caches' in window) {
+                  caches.keys().then(keys => {
+                    keys.forEach(key => caches.delete(key));
+                  }).then(() => window.location.reload());
+                }
+              }}
+              className="px-4 py-2 border border-border rounded-md hover:bg-accent transition-colors"
+            >
+              Limpar Cache
+            </button>
+          </div>
+          {error.message && (
+            <details className="text-xs text-left p-3 bg-muted rounded-md">
+              <summary className="cursor-pointer font-medium mb-2">Detalhes técnicos</summary>
+              <code className="text-destructive">{error.message}</code>
+            </details>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 lg:py-8">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -114,14 +155,16 @@ const App = () => (
       <InstallPrompt />
       <Toaster />
       <Sonner />
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/auth" element={<AuthRoutes />} />
-          <Route path="/cadastro-evento" element={<CadastroEvento />} />
-          <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
-          <Route path="/*" element={<ProtectedRoutes />} />
-        </Routes>
-      </Suspense>
+      <GlobalErrorBoundary>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/auth" element={<AuthRoutes />} />
+            <Route path="/cadastro-evento" element={<CadastroEvento />} />
+            <Route path="/cadastro-evento/:protocolo" element={<AcompanharCadastro />} />
+            <Route path="/*" element={<ProtectedRoutes />} />
+          </Routes>
+        </Suspense>
+      </GlobalErrorBoundary>
     </AppProviders>
   </GlobalErrorBoundary>
 );

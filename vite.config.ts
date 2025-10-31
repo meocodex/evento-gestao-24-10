@@ -40,14 +40,16 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     // Otimizações de build
+    modulePreload: {
+      polyfill: true,
+    },
     rollupOptions: {
       output: {
         manualChunks: {
-          // Vendor chunks separados
-          "react-vendor": ["react", "react-dom", "react-router-dom"],
-          "ui-vendor": ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-select"],
-          "query-vendor": ["@tanstack/react-query"],
-          "chart-vendor": ["recharts"],
+          // Chunks otimizados - menos fragmentação
+          "vendor": ["react", "react-dom", "react-router-dom"],
+          "ui": ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-select", "@radix-ui/react-tabs", "@radix-ui/react-popover"],
+          "data": ["@tanstack/react-query", "@supabase/supabase-js"],
         },
       },
     },

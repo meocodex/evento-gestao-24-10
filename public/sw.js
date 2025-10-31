@@ -1,5 +1,5 @@
 // Service Worker PWA Online-First
-const CACHE_NAME = 'gercao-v2';
+const CACHE_NAME = 'gercao-v3';
 
 // Cache apenas assets estáticos essenciais
 const STATIC_ASSETS = [
