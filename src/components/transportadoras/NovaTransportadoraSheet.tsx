@@ -163,13 +163,13 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="responsavel" className="text-navy-700">Responsável *</Label>
+                <Label htmlFor="responsavel" className="text-navy-700">Responsável</Label>
                 <Input
                   id="responsavel"
-                  required
                   value={formData.responsavel}
                   onChange={(e) => setFormData({ ...formData, responsavel: e.target.value })}
                   className="border-navy-200 focus:border-navy-400"
+                  placeholder="Nome do responsável (opcional)"
                 />
               </div>
               <div>

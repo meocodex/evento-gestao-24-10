@@ -6,6 +6,8 @@ import { useTransportadorasQueries as useTransportadorasQueriesImpl, useEnviosQu
 import { useTransportadorasMutations as useTransportadorasMutationsImpl } from '@/contexts/transportadoras/useTransportadorasMutations';
 
 export { useEnviosQueries };
+export { useClienteEvento } from './useClienteEvento';
+export { useEnderecoEmpresa } from './useEnderecoEmpresa';
 
 // Wrapper para compatibilidade - retorna objetos completos das mutations
 export function useTransportadoras() {
