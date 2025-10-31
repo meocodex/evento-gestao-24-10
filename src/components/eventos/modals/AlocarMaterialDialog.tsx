@@ -143,7 +143,7 @@ export function AlocarMaterialDialog({
   // Hook para gerenciar quantidade em materiais controlados por quantidade
   const { quantidadeAlocar, handleQuantidadeChange, resetQuantidade } = useAlocacaoQuantidade({
     quantidadeRestante,
-    quantidadeDisponivel: materialEstoque?.quantidade_disponivel || 0,
+    quantidadeDisponivel: materialEstoque?.quantidadeDisponivel || 0,
   });
 
   const toggleSerial = (numero: string) => {
@@ -174,20 +174,11 @@ export function AlocarMaterialDialog({
   };
 
   const handleSubmitLote = async () => {
-    const isQuantidade = materialEstoque?.tipo_controle === 'quantidade';
+    const isQuantidade = materialEstoque?.tipoControle === 'quantidade';
     
     // Validar baseado no tipo de controle
     if (!isQuantidade && serialsSelecionados.length === 0) return;
     if (isQuantidade && quantidadeAlocar <= 0) return;
-
-    if (tipoEnvio === 'antecipado' && !transportadora.trim()) {
-      toast({
-        title: "Campo obrigatório",
-        description: "Informe a transportadora para envio antecipado (ou deixe vazio para retirada por terceiro)",
-        variant: "destructive",
-      });
-      return;
-    }
 
     if (tipoEnvio === 'com_tecnicos' && !responsavel) {
       toast({
@@ -313,19 +304,19 @@ export function AlocarMaterialDialog({
             </Select>
           </div>
 
-          {materialEstoque?.tipo_controle === 'quantidade' ? (
+          {materialEstoque?.tipoControle === 'quantidade' ? (
             <div className="space-y-2">
               <Label>Quantidade a Alocar</Label>
               <Input
                 type="number"
                 min="1"
-                max={Math.min(quantidadeRestante, materialEstoque?.quantidade_disponivel || 0)}
+                max={Math.min(quantidadeRestante, materialEstoque?.quantidadeDisponivel || 0)}
                 value={quantidadeAlocar}
                 onChange={handleQuantidadeChange}
                 placeholder="Quantidade"
               />
               <p className="text-xs text-muted-foreground">
-                Disponível em estoque: {materialEstoque?.quantidade_disponivel || 0} unidades
+                Disponível em estoque: {materialEstoque?.quantidadeDisponivel || 0} unidades
               </p>
             </div>
           ) : (
@@ -555,15 +546,14 @@ export function AlocarMaterialDialog({
               onClick={handleSubmitLote}
               disabled={
                 isProcessing ||
-                (materialEstoque?.tipo_controle !== 'quantidade' && serialsSelecionados.length === 0) ||
-                (materialEstoque?.tipo_controle === 'quantidade' && quantidadeAlocar <= 0) ||
-                (tipoEnvio === 'antecipado' && !transportadora) ||
+                (materialEstoque?.tipoControle !== 'quantidade' && serialsSelecionados.length === 0) ||
+                (materialEstoque?.tipoControle === 'quantidade' && quantidadeAlocar <= 0) ||
                 (tipoEnvio === 'com_tecnicos' && !responsavel)
               }
             >
               {isProcessing 
                 ? 'Alocando...'
-                : materialEstoque?.tipo_controle === 'quantidade'
+                : materialEstoque?.tipoControle === 'quantidade'
                   ? `Alocar ${quantidadeAlocar} ${quantidadeAlocar === 1 ? 'Unidade' : 'Unidades'}`
                   : `Alocar ${serialsSelecionados.length} ${serialsSelecionados.length === 1 ? 'Serial' : 'Seriais'}`
               }

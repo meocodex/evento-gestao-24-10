@@ -16,6 +16,7 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
         .from('materiais_estoque')
         .select(`
           *,
+          tipo_controle,
         materiais_seriais (
           numero,
           status,
@@ -52,6 +53,7 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
         valorUnitario: m.valor_unitario || undefined,
         quantidadeTotal: m.quantidade_total,
         quantidadeDisponivel: m.quantidade_disponivel,
+        tipoControle: m.tipo_controle,
         unidade: 'un',
         seriais: (m.materiais_seriais || []).map((s: any) => ({
           numero: s.numero,
@@ -121,6 +123,7 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
         valor_unitario,
         quantidade_total,
         quantidade_disponivel,
+        tipo_controle,
         materiais_seriais (
           numero,
           status,
@@ -146,6 +149,7 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
       valorUnitario: data.valor_unitario || undefined,
       quantidadeTotal: data.quantidade_total,
       quantidadeDisponivel: data.quantidade_disponivel,
+      tipoControle: data.tipo_controle,
       unidade: 'un',
       seriais: (data.materiais_seriais || []).map((s: any) => ({
         numero: s.numero,
