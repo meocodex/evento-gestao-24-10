@@ -547,6 +547,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
           open={showAlocarMaterial}
           onOpenChange={setShowAlocarMaterial}
           eventoId={evento.id}
+          evento={evento}
           itemId={itemSelecionado.item_id}
           materialNome={itemSelecionado.nome}
           quantidadeNecessaria={itemSelecionado.quantidade}

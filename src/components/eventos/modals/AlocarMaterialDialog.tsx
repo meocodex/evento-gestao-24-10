@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import type { Evento } from '@/types/eventos';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
@@ -21,6 +22,7 @@ interface AlocarMaterialDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   eventoId: string;
+  evento: Evento;
   itemId: string;
   materialNome: string;
   quantidadeNecessaria: number;
@@ -38,6 +40,7 @@ export function AlocarMaterialDialog({
   open,
   onOpenChange,
   eventoId,
+  evento,
   itemId,
   materialNome,
   quantidadeNecessaria,
@@ -542,7 +545,7 @@ export function AlocarMaterialDialog({
           }
         }}
         materiais={materiaisAlocadosTemp}
-        cliente={null}
+        cliente={evento.cliente}
         transportadora={undefined}
         onConfirmar={async (dados) => {
           await gerarDeclaracaoTransporte.mutateAsync({
