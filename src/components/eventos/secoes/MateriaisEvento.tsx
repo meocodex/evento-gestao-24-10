@@ -147,7 +147,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
             <p className="text-sm text-muted-foreground">
               Materiais necessários para o evento
             </p>
-            {permissions.canEdit && (
+            {permissions.canEditChecklist && (
               <Button size="sm" onClick={() => setShowAdicionarMaterial(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar
@@ -180,7 +180,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                         <Badge variant={item.alocado >= item.quantidade ? 'default' : 'secondary'}>
                           {item.alocado}/{item.quantidade}
                         </Badge>
-                        {permissions.canEdit && item.alocado < item.quantidade && (
+                        {permissions.canAllocate && item.alocado < item.quantidade && (
                           <Button
                             size="sm"
                             variant="outline"
@@ -192,7 +192,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                             Alocar
                           </Button>
                         )}
-                        {permissions.canEdit && (
+                        {permissions.canEditChecklist && (
                           <Button
                             size="sm"
                             variant="ghost"
@@ -257,7 +257,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                 </Button>
               )}
               
-              {permissions.canEdit && materiaisParaFrete.length > 0 && (
+              {permissions.canEditOperations && materiaisParaFrete.length > 0 && (
                 <Button
                   variant="default"
                   size="sm"
@@ -392,7 +392,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                                   </div>
                                 </div>
 
-                                {permissions.canEdit && (
+                                {permissions.canEditOperations && (
                                   <Button
                                     size="sm"
                                     variant="ghost"
@@ -441,7 +441,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                                   </p>
                                 )}
                               </div>
-                              {permissions.canEdit && (
+                              {permissions.canEditOperations && (
                                 <Button
                                   size="sm"
                                   variant="ghost"

@@ -59,7 +59,7 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
               <RefreshCw className="h-4 w-4 mr-2" />
               Alterar Status
             </Button>
-            {permissions.canEdit && (
+            {permissions.canEditEvent(evento) && (
               <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
                 <Edit className="h-4 w-4 mr-2" />
                 Editar
