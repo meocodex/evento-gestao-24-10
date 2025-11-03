@@ -82,8 +82,8 @@ export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string,
         totalCount: count || 0
       };
     },
-    staleTime: 1000 * 60 * 3, // 3 minutos (demandas são voláteis)
-    gcTime: 1000 * 60 * 20,
+    staleTime: 1000 * 30, // 30 segundos para atualizações mais rápidas
+    gcTime: 1000 * 60 * 15,
   });
 
   // Realtime listeners para demandas e tabelas relacionadas
@@ -98,12 +98,18 @@ export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string,
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'demandas_comentarios' },
-        () => queryClient.invalidateQueries({ queryKey: ['demandas'] })
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['demandas'] });
+          queryClient.refetchQueries({ queryKey: ['demandas'], type: 'active' });
+        }
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'demandas_anexos' },
-        () => queryClient.invalidateQueries({ queryKey: ['demandas'] })
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['demandas'] });
+          queryClient.refetchQueries({ queryKey: ['demandas'], type: 'active' });
+        }
       )
       .subscribe();
 

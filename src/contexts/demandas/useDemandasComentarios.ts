@@ -29,13 +29,52 @@ export function useDemandasComentarios() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
-      toast({ title: 'Comentário adicionado', description: 'Seu comentário foi publicado.' });
+    onMutate: async ({ demandaId, conteudo, autor, autorId }) => {
+      await queryClient.cancelQueries({ queryKey: ['demandas'] });
+      
+      const previousData = queryClient.getQueryData(['demandas']);
+      
+      // Atualizar cache localmente ANTES da resposta do servidor
+      queryClient.setQueriesData({ queryKey: ['demandas'] }, (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          demandas: old.demandas?.map((d: any) => 
+            d.id === demandaId 
+              ? {
+                  ...d,
+                  comentarios: [
+                    ...(d.comentarios || []),
+                    {
+                      id: 'temp-' + Date.now(),
+                      autor,
+                      autorId,
+                      conteudo,
+                      dataHora: new Date().toISOString(),
+                      tipo: 'comentario'
+                    }
+                  ]
+                }
+              : d
+          )
+        };
+      });
+      
+      return { previousData };
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
+      // Se der erro, reverter para estado anterior
+      if (context?.previousData) {
+        queryClient.setQueryData(['demandas'], context.previousData);
+      }
       console.error('Erro ao adicionar comentário:', error);
       toast({ title: 'Erro ao adicionar comentário', variant: 'destructive' });
+    },
+    onSuccess: () => {
+      toast({ title: 'Comentário adicionado', description: 'Seu comentário foi publicado.' });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['demandas'] });
     },
   });
 

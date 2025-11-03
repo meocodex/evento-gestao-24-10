@@ -17,6 +17,17 @@ export function useDemandasMutations() {
       solicitante: string; 
       solicitanteId: string;
     }) => {
+      // Buscar nome do evento se houver evento relacionado
+      let eventoNome = null;
+      if (data.eventoRelacionado) {
+        const { data: evento } = await supabase
+          .from('eventos')
+          .select('nome')
+          .eq('id', data.eventoRelacionado)
+          .single();
+        eventoNome = evento?.nome;
+      }
+
       const { data: demanda, error } = await supabase
         .from('demandas')
         .insert({
@@ -29,6 +40,7 @@ export function useDemandasMutations() {
           responsavel_id: data.responsavelId,
           prazo: data.prazo,
           evento_id: data.eventoRelacionado,
+          evento_nome: eventoNome,
           tags: data.tags || [],
           status: 'aberta',
         })
@@ -83,7 +95,21 @@ export function useDemandasMutations() {
       if (data.prioridade) updateData.prioridade = data.prioridade;
       if (data.responsavelId !== undefined) updateData.responsavel_id = data.responsavelId;
       if (data.prazo !== undefined) updateData.prazo = data.prazo;
-      if (data.eventoRelacionado !== undefined) updateData.evento_id = data.eventoRelacionado;
+      if (data.eventoRelacionado !== undefined) {
+        updateData.evento_id = data.eventoRelacionado;
+        
+        // Buscar nome do evento
+        if (data.eventoRelacionado) {
+          const { data: evento } = await supabase
+            .from('eventos')
+            .select('nome')
+            .eq('id', data.eventoRelacionado)
+            .single();
+          updateData.evento_nome = evento?.nome;
+        } else {
+          updateData.evento_nome = null;
+        }
+      }
       if (data.tags !== undefined) updateData.tags = data.tags;
 
       const { error } = await supabase
