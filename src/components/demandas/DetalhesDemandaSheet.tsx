@@ -85,7 +85,7 @@ export function DetalhesDemandaSheet({ demanda, open, onOpenChange, onEditar }: 
               Dados
             </TabsTrigger>
             <TabsTrigger value="comentarios" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
-              Comentários
+              Conversa
             </TabsTrigger>
             <TabsTrigger value="anexos" className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none bg-transparent">
               Anexos
