@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Demanda } from '@/types/demandas';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,31 +9,80 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUsuarios } from '@/hooks/useUsuarios';
 import { format } from 'date-fns';
 import { Send, MessageSquare } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface DemandaComentariosProps {
   demanda: Demanda;
 }
 
 export function DemandaComentarios({ demanda }: DemandaComentariosProps) {
-  const { adicionarComentario } = useDemandas();
+  const { adicionarMensagem } = useDemandas();
   const { user } = useAuth();
   const { usuarios } = useUsuarios();
-  const [novoComentario, setNovoComentario] = useState('');
+  const [novaMensagem, setNovaMensagem] = useState('');
+  const queryClient = useQueryClient();
 
-  const handleEnviarComentario = () => {
-    if (!novoComentario.trim() || !user) return;
+  // Real-time listener específico para esta demanda
+  useEffect(() => {
+    const channel = supabase
+      .channel(`demanda-${demanda.id}-comentarios`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'demandas_comentarios',
+          filter: `demanda_id=eq.${demanda.id}`
+        },
+        (payload) => {
+          queryClient.setQueriesData({ queryKey: ['demandas'] }, (old: any) => {
+            if (!old) return old;
+            return {
+              ...old,
+              demandas: old.demandas?.map((d: any) => 
+                d.id === demanda.id 
+                  ? {
+                      ...d,
+                      comentarios: [
+                        ...(d.comentarios || []),
+                        {
+                          id: payload.new.id,
+                          autor: payload.new.autor,
+                          autorId: payload.new.autor_id,
+                          conteudo: payload.new.conteudo,
+                          dataHora: payload.new.created_at,
+                          tipo: payload.new.tipo
+                        }
+                      ]
+                    }
+                  : d
+              )
+            };
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [demanda.id, queryClient]);
+
+  const handleEnviarMensagem = () => {
+    if (!novaMensagem.trim() || !user) return;
 
     const usuarioAtual = (usuarios || []).find(u => u.id === user.id);
-    adicionarComentario.mutate({
+    adicionarMensagem.mutate({
       demandaId: demanda.id,
-      conteudo: novoComentario,
+      conteudo: novaMensagem,
       autor: usuarioAtual?.nome || user.email,
       autorId: user.id
     });
-    setNovoComentario('');
+    setNovaMensagem('');
   };
 
-  const comentariosOrdenados = [...(demanda.comentarios || [])].sort(
+  const mensagensOrdenadas = [...(demanda.comentarios || [])].sort(
     (a, b) => new Date(b.dataHora).getTime() - new Date(a.dataHora).getTime()
   );
 
@@ -44,15 +93,15 @@ export function DemandaComentarios({ demanda }: DemandaComentariosProps) {
         <CardContent className="pt-6">
           <div className="space-y-3">
             <Textarea
-              placeholder="Escrever um comentário..."
-              value={novoComentario}
-              onChange={(e) => setNovoComentario(e.target.value)}
+              placeholder="Escrever uma mensagem..."
+              value={novaMensagem}
+              onChange={(e) => setNovaMensagem(e.target.value)}
               className="min-h-[100px]"
             />
             <div className="flex justify-end">
               <Button 
-                onClick={handleEnviarComentario}
-                disabled={!novoComentario.trim() || adicionarComentario.isPending}
+                onClick={handleEnviarMensagem}
+                disabled={!novaMensagem.trim() || adicionarMensagem.isPending}
               >
                 <Send className="mr-2 h-4 w-4" />
                 Enviar
@@ -62,21 +111,21 @@ export function DemandaComentarios({ demanda }: DemandaComentariosProps) {
         </CardContent>
       </Card>
 
-      {/* Lista de comentários */}
+      {/* Lista de mensagens */}
       <div className="space-y-3">
         <h3 className="font-semibold text-sm flex items-center gap-2">
           <MessageSquare className="h-4 w-4" />
-          Comentários ({comentariosOrdenados.length})
+          Conversa ({mensagensOrdenadas.length})
         </h3>
         
-        {comentariosOrdenados.length === 0 ? (
+        {mensagensOrdenadas.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center text-muted-foreground">
-              Nenhum comentário ainda
+              Nenhuma mensagem ainda
             </CardContent>
           </Card>
         ) : (
-          comentariosOrdenados.map((comentario) => (
+          mensagensOrdenadas.map((comentario) => (
             <Card key={comentario.id}>
               <CardContent className="pt-6">
                 <div className="flex gap-3">

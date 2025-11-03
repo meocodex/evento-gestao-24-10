@@ -57,7 +57,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
     reabrirDemanda,
     arquivarDemanda,
     desarquivarDemanda,
-    adicionarComentario,
+    adicionarMensagem,
     aprovarReembolso,
     recusarReembolso,
     marcarReembolsoPago,
@@ -65,7 +65,7 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
   const { user } = useAuth();
   const vincularReembolso = useEventosDespesas(demanda?.eventoRelacionado || '');
   const { usuarios } = useUsuarios();
-  const [novoComentario, setNovoComentario] = useState('');
+  const [novaMensagem, setNovaMensagem] = useState('');
   const [showAprovarDialog, setShowAprovarDialog] = useState(false);
   const [showPagoDialog, setShowPagoDialog] = useState(false);
   const [showRecusarDialog, setShowRecusarDialog] = useState(false);
@@ -89,17 +89,17 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
     }
   };
 
-  const handleEnviarComentario = () => {
-    if (!novoComentario.trim() || !user) return;
+  const handleEnviarMensagem = () => {
+    if (!novaMensagem.trim() || !user) return;
 
     const usuarioAtual = (usuarios || []).find(u => u.id === user.id);
-    adicionarComentario.mutate({
+    adicionarMensagem.mutate({
       demandaId: demanda.id,
-      conteudo: novoComentario,
+      conteudo: novaMensagem,
       autor: usuarioAtual?.nome || user.email,
       autorId: user.id
     });
-    setNovoComentario('');
+    setNovaMensagem('');
   };
 
   const handleMarcarResolvida = () => {
@@ -501,12 +501,12 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
             </div>
           </div>
 
-          {/* Tabs de comentários e anexos */}
+          {/* Tabs de conversa e anexos */}
           <Tabs defaultValue="comentarios" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="comentarios">
                 <MessageSquare className="mr-2 h-4 w-4" />
-                Respostas ({demanda.comentarios?.length || 0})
+                Conversa ({demanda.comentarios?.length || 0})
               </TabsTrigger>
               <TabsTrigger value="anexos">
                 <Paperclip className="mr-2 h-4 w-4" />
@@ -515,11 +515,11 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
             </TabsList>
 
             <TabsContent value="comentarios" className="space-y-4 mt-4">
-              {/* Thread de comentários */}
+              {/* Thread de mensagens */}
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {(demanda.comentarios?.length || 0) === 0 ? (
                   <p className="text-center text-muted-foreground py-8">
-                    Nenhuma resposta ainda
+                    Nenhuma mensagem ainda
                   </p>
                 ) : (
                   (demanda.comentarios || []).map((comentario) => (
@@ -557,15 +557,15 @@ export function DetalhesDemandaDialog({ demanda, open, onOpenChange }: DetalhesD
               {demanda.podeResponder ? (
                 <div className="space-y-2">
                   <Textarea
-                    placeholder="Digite sua resposta..."
-                    value={novoComentario}
-                    onChange={(e) => setNovoComentario(e.target.value)}
+                    placeholder="Digite sua mensagem..."
+                    value={novaMensagem}
+                    onChange={(e) => setNovaMensagem(e.target.value)}
                     rows={3}
                   />
                   <div className="flex justify-end">
-                    <Button onClick={handleEnviarComentario} disabled={!novoComentario.trim()}>
+                    <Button onClick={handleEnviarMensagem} disabled={!novaMensagem.trim()}>
                       <Send className="mr-2 h-4 w-4" />
-                      Enviar Resposta
+                      Enviar Mensagem
                     </Button>
                   </div>
                 </div>

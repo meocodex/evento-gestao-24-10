@@ -2,10 +2,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
-export function useDemandasComentarios() {
+export function useDemandasConversa() {
   const queryClient = useQueryClient();
 
-  const adicionarComentario = useMutation({
+  const adicionarMensagem = useMutation({
     mutationFn: async ({ 
       demandaId, 
       conteudo, 
@@ -67,11 +67,11 @@ export function useDemandasComentarios() {
       if (context?.previousData) {
         queryClient.setQueryData(['demandas'], context.previousData);
       }
-      console.error('Erro ao adicionar comentário:', error);
-      toast({ title: 'Erro ao adicionar comentário', variant: 'destructive' });
+      console.error('Erro ao adicionar mensagem:', error);
+      toast({ title: 'Erro ao adicionar mensagem', variant: 'destructive' });
     },
     onSuccess: () => {
-      toast({ title: 'Comentário adicionado', description: 'Seu comentário foi publicado.' });
+      toast({ title: 'Mensagem enviada', description: 'Sua mensagem foi publicada.' });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
@@ -79,6 +79,6 @@ export function useDemandasComentarios() {
   });
 
   return {
-    adicionarComentario,
+    adicionarMensagem,
   };
 }

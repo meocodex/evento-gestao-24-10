@@ -18,7 +18,7 @@ export function DemandasVirtualList({
   const rowVirtualizer = useVirtualizer({
     count: demandas.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 180,
+    estimateSize: () => 220,
     overscan: 3,
   });
 
