@@ -3,10 +3,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
-import { Search } from "lucide-react";
+import { Search, CheckSquare, Square } from "lucide-react";
 
 interface Permission {
   id: string;
@@ -80,6 +81,16 @@ export function GerenciarPermissoes({
     }
   };
 
+  const selecionarTodas = () => {
+    if (disabled) return;
+    onPermissionsChange(permissions.map(p => p.id));
+  };
+
+  const limparTodas = () => {
+    if (disabled) return;
+    onPermissionsChange([]);
+  };
+
   if (isLoading) {
     return <div className="text-sm text-muted-foreground">Carregando permissões...</div>;
   }
@@ -87,10 +98,34 @@ export function GerenciarPermissoes({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Permissões do Usuário</CardTitle>
-        <CardDescription>
-          Selecione as permissões específicas que este usuário terá no sistema
-        </CardDescription>
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle>Permissões do Usuário</CardTitle>
+            <CardDescription>
+              Selecione as permissões específicas que este usuário terá no sistema
+            </CardDescription>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={selecionarTodas}
+              disabled={disabled || userPermissions.length === permissions.length}
+            >
+              <CheckSquare className="h-4 w-4 mr-2" />
+              Selecionar Todas
+            </Button>
+            <Button 
+              size="sm" 
+              variant="outline" 
+              onClick={limparTodas}
+              disabled={disabled || userPermissions.length === 0}
+            >
+              <Square className="h-4 w-4 mr-2" />
+              Limpar Todas
+            </Button>
+          </div>
+        </div>
         
         <div className="relative mt-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -135,26 +170,34 @@ export function GerenciarPermissoes({
                         <Badge variant="outline">{categoria}</Badge>
                       </TableCell>
                     </TableRow>
-                    {permissoesCategoria.map((permission) => (
-                      <TableRow key={permission.id}>
-                        <TableCell>
-                          <Checkbox
-                            checked={userPermissions.includes(permission.id)}
-                            onCheckedChange={() => togglePermission(permission.id)}
-                            disabled={disabled}
-                          />
-                        </TableCell>
-                        <TableCell>{permission.descricao}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="text-xs">
-                            {permission.modulo}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right text-xs text-muted-foreground">
-                          {permission.acao}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {permissoesCategoria.map((permission) => {
+                      const isSelected = userPermissions.includes(permission.id);
+                      return (
+                        <TableRow 
+                          key={permission.id}
+                          className={isSelected ? "bg-primary/5 hover:bg-primary/10" : ""}
+                        >
+                          <TableCell>
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => togglePermission(permission.id)}
+                              disabled={disabled}
+                            />
+                          </TableCell>
+                          <TableCell className={isSelected ? "font-medium" : ""}>
+                            {permission.descricao}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="text-xs">
+                              {permission.modulo}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right text-xs text-muted-foreground">
+                            {permission.acao}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </>
                 );
               })}

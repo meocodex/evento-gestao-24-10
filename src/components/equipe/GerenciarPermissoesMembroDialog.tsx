@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { GerenciarPermissoes } from '@/components/configuracoes/GerenciarPermissoes';
 import { MembroEquipeUnificado } from '@/types/equipe';
-import { Loader2, Lightbulb } from 'lucide-react';
+import { Loader2, ChevronDown } from 'lucide-react';
 
 interface GerenciarPermissoesMembroDialogProps {
   open: boolean;
@@ -26,50 +28,27 @@ export function GerenciarPermissoesMembroDialog({ open, onOpenChange, membro }: 
     queryKey: ['membro_permissions_dialog', membro?.id, open],
     enabled: open && !!membro?.id,
     queryFn: async () => {
-      const [
-        { data: up }, 
-        { data: roleData },
-        { data: allPerms }
-      ] = await Promise.all([
-        supabase
-          .from('user_permissions')
-          .select('permission_id')
-          .eq('user_id', membro!.id),
-        supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', membro!.id)
-          .single(),
-        supabase
-          .from('permissions')
-          .select('id')
-      ]);
+      const { data: up } = await supabase
+        .from('user_permissions')
+        .select('permission_id')
+        .eq('user_id', membro!.id);
       
       const selectedPerms = up?.map(p => p.permission_id) || [];
-      const isAdmin = roleData?.role === 'admin';
-      const totalPerms = allPerms?.map(p => p.id) || [];
       
       console.log('🔍 GerenciarPermissoesMembro carregou:', {
         membroId: membro!.id,
         membroNome: membro!.nome,
-        isAdmin,
-        selectedCount: selectedPerms.length,
-        totalCount: totalPerms.length
+        selectedCount: selectedPerms.length
       });
       
-      // Se admin e permissões não batem, forçar todas
-      if (isAdmin && selectedPerms.length < totalPerms.length) {
-        return { permissions: totalPerms, role: 'admin' };
-      }
-      
-      return { permissions: selectedPerms, role: roleData?.role || 'comercial' };
+      return selectedPerms;
     }
   });
 
   // Atualizar estado quando carregar
   useEffect(() => {
     if (open && membroPermsData) {
-      setPermissoesSelecionadas(membroPermsData.permissions);
+      setPermissoesSelecionadas(membroPermsData);
     }
   }, [open, membroPermsData]);
 
@@ -136,56 +115,64 @@ export function GerenciarPermissoesMembroDialog({ open, onOpenChange, membro }: 
     );
   }
 
+  const progressPercentage = Math.round((permissoesSelecionadas.length / 56) * 100);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            Gerenciar Permissões ({permissoesSelecionadas.length}/56)
-          </DialogTitle>
+          <DialogTitle>Gerenciar Permissões - {membro?.nome}</DialogTitle>
+          <DialogDescription>
+            {permissoesSelecionadas.length} de 56 permissões ativas
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="mb-4">
-          <p className="text-sm text-muted-foreground">
-            Editando permissões de: <strong>{membro?.nome}</strong>
-          </p>
-        </div>
-
         <div className="space-y-4">
-          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200">
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-blue-600" />
-                Sugestões por Função
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-xs">
-              <div>
-                <strong className="text-blue-900 dark:text-blue-300">🎯 Comercial:</strong>
-                <p className="text-blue-700 dark:text-blue-400 ml-4">
-                  eventos (criar, visualizar, editar próprios), clientes, contratos, financeiro (próprios)
-                </p>
-              </div>
-              <div>
-                <strong className="text-purple-900 dark:text-purple-300">🔧 Suporte:</strong>
-                <p className="text-purple-700 dark:text-purple-400 ml-4">
-                  estoque (completo), transportadoras, demandas, equipe, eventos (visualizar)
-                </p>
-              </div>
-              <div>
-                <strong className="text-green-900 dark:text-green-300">👷 Operacional:</strong>
-                <p className="text-green-700 dark:text-green-400 ml-4">
-                  eventos (visualizar), estoque (visualizar), demandas (criar)
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="flex items-center gap-3">
+            <Progress value={progressPercentage} className="flex-1" />
+            <span className="text-xs text-muted-foreground font-medium min-w-[3rem] text-right">
+              {progressPercentage}%
+            </span>
+          </div>
 
           <GerenciarPermissoes
             userId={membro?.id || ''}
             userPermissions={permissoesSelecionadas}
             onPermissionsChange={setPermissoesSelecionadas}
           />
+
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-full justify-between">
+                <span className="text-xs text-muted-foreground">💡 Ver sugestões por função</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <Alert className="mt-2">
+                <AlertDescription className="space-y-2 text-xs">
+                  <div>
+                    <strong className="text-foreground">🎯 Comercial:</strong>
+                    <p className="text-muted-foreground ml-4">
+                      eventos (criar, visualizar, editar próprios), clientes, contratos, financeiro (próprios)
+                    </p>
+                  </div>
+                  <div>
+                    <strong className="text-foreground">🔧 Suporte:</strong>
+                    <p className="text-muted-foreground ml-4">
+                      estoque (completo), transportadoras, demandas, equipe, eventos (visualizar)
+                    </p>
+                  </div>
+                  <div>
+                    <strong className="text-foreground">👷 Operacional:</strong>
+                    <p className="text-muted-foreground ml-4">
+                      eventos (visualizar), estoque (visualizar), demandas (criar)
+                    </p>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
 
         <DialogFooter>
