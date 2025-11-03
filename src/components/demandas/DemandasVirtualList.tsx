@@ -6,16 +6,12 @@ import { CardSkeleton } from '@/components/shared/LoadingSkeleton';
 
 interface DemandasVirtualListProps {
   demandas: Demanda[];
-  onDetalhes: (demanda: Demanda) => void;
-  onEditar: (demanda: Demanda) => void;
-  onExcluir: (demanda: Demanda) => void;
+  onClick: (demanda: Demanda) => void;
 }
 
 export function DemandasVirtualList({ 
   demandas, 
-  onDetalhes, 
-  onEditar, 
-  onExcluir 
+  onClick 
 }: DemandasVirtualListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
   
@@ -62,9 +58,7 @@ export function DemandasVirtualList({
             >
               <DemandaCard
                 demanda={demanda}
-                onDetalhes={() => onDetalhes(demanda)}
-                onEditar={() => onEditar(demanda)}
-                onExcluir={() => onExcluir(demanda)}
+                onClick={() => onClick(demanda)}
               />
             </div>
           );

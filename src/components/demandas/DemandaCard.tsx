@@ -1,18 +1,10 @@
 import { Demanda } from '@/types/demandas';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Calendar, User, MessageSquare, Paperclip, Eye, Edit, Trash2, DollarSign, CheckCircle, Clock, XCircle, CalendarDays, Archive, Hash } from 'lucide-react';
+import { Calendar, User, MessageSquare, Paperclip, DollarSign, CheckCircle, Clock, XCircle, CalendarDays, Archive } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PrazoIndicador } from './PrazoIndicador';
-
-interface DemandaCardProps {
-  demanda: Demanda;
-  onDetalhes: () => void;
-  onEditar: () => void;
-  onExcluir: () => void;
-}
 
 const statusConfig = {
   aberta: { label: 'Aberta', variant: 'default' as const },
@@ -35,7 +27,12 @@ const statusPagamentoConfig = {
   recusado: { label: 'Recusado', icon: XCircle, className: 'bg-red-500/10 text-red-500' },
 };
 
-export function DemandaCard({ demanda, onDetalhes, onEditar, onExcluir }: DemandaCardProps) {
+interface DemandaCardProps {
+  demanda: Demanda;
+  onClick: () => void;
+}
+
+export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
   const statusConf = statusConfig[demanda.status];
   const prioridadeConf = prioridadeConfig[demanda.prioridade];
   const isReembolso = demanda.categoria === 'reembolso';
@@ -44,7 +41,10 @@ export function DemandaCard({ demanda, onDetalhes, onEditar, onExcluir }: Demand
     : null;
 
   return (
-    <Card className="group p-4 border-2 border-navy-100 hover:border-navy-300 hover:shadow-lg transition-all duration-300 rounded-2xl bg-white">
+    <Card 
+      className="group p-4 border-2 border-navy-100 hover:border-navy-300 hover:shadow-lg transition-all duration-300 rounded-2xl bg-white cursor-pointer hover:scale-[1.02]"
+      onClick={onClick}
+    >
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
@@ -69,16 +69,10 @@ export function DemandaCard({ demanda, onDetalhes, onEditar, onExcluir }: Demand
               </p>
             )}
           </div>
-          <div className="flex gap-1 shrink-0">
-            <Button variant="ghost" size="icon" onClick={onDetalhes}>
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={onEditar}>
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={onExcluir}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          <div className="shrink-0 self-center">
+            <svg className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </div>
         </div>
 

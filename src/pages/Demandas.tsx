@@ -7,8 +7,8 @@ import { DemandasVirtualList } from '@/components/demandas/DemandasVirtualList';
 import { DemandaFiltersPopover, DemandaFiltersType } from '@/components/demandas/DemandaFiltersPopover';
 import { NovaDemandaSheet } from '@/components/demandas/NovaDemandaSheet';
 import { NovaDemandaReembolsoDialog } from '@/components/demandas/NovaDemandaReembolsoDialog';
-import { EditarDemandaDialog } from '@/components/demandas/EditarDemandaDialog';
-import { DetalhesDemandaDialog } from '@/components/demandas/DetalhesDemandaDialog';
+import { DetalhesDemandaSheet } from '@/components/demandas/DetalhesDemandaSheet';
+import { EditarDemandaSheet } from '@/components/demandas/EditarDemandaSheet';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { Card } from '@/components/ui/card';
@@ -57,24 +57,9 @@ export default function Demandas() {
   }), [demandas]);
 
   const [demandaSelecionada, setDemandaSelecionada] = useState<Demanda | null>(null);
-  const [dialogDetalhes, setDialogDetalhes] = useState(false);
-  const [dialogEditar, setDialogEditar] = useState(false);
+  const [sheetDetalhes, setSheetDetalhes] = useState(false);
+  const [sheetEditar, setSheetEditar] = useState(false);
   const [dialogExcluir, setDialogExcluir] = useState(false);
-
-  const handleDetalhes = (demanda: Demanda) => {
-    setDemandaSelecionada(demanda);
-    setDialogDetalhes(true);
-  };
-
-  const handleEditar = (demanda: Demanda) => {
-    setDemandaSelecionada(demanda);
-    setDialogEditar(true);
-  };
-
-  const handleExcluir = (demanda: Demanda) => {
-    setDemandaSelecionada(demanda);
-    setDialogExcluir(true);
-  };
 
   const confirmarExclusao = async () => {
     if (demandaSelecionada) {
@@ -156,9 +141,10 @@ export default function Demandas() {
               <>
                 <DemandasVirtualList
                   demandas={demandasFiltradas}
-                  onDetalhes={handleDetalhes}
-                  onEditar={handleEditar}
-                  onExcluir={handleExcluir}
+                  onClick={(demanda) => {
+                    setDemandaSelecionada(demanda);
+                    setSheetDetalhes(true);
+                  }}
                 />
                 
                 {/* Paginação */}
@@ -200,16 +186,20 @@ export default function Demandas() {
       </div>
 
       {/* Dialogs */}
-      <DetalhesDemandaDialog
+      <DetalhesDemandaSheet
         demanda={demandaSelecionada}
-        open={dialogDetalhes}
-        onOpenChange={setDialogDetalhes}
+        open={sheetDetalhes}
+        onOpenChange={setSheetDetalhes}
+        onEditar={() => {
+          setSheetDetalhes(false);
+          setSheetEditar(true);
+        }}
       />
 
-      <EditarDemandaDialog
+      <EditarDemandaSheet
         demanda={demandaSelecionada}
-        open={dialogEditar}
-        onOpenChange={setDialogEditar}
+        open={sheetEditar}
+        onOpenChange={setSheetEditar}
       />
 
       <ConfirmDialog
