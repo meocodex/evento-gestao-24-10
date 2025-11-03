@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Hydrate user profile, roles, and permissions separately with debouncing
+  // Hydrate user profile and permissions (sistema 100% granular)
   useEffect(() => {
     if (!session?.user?.id) return;
     
@@ -83,29 +83,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userId = session.user.id;
         const [
           { data: profile }, 
-          { data: roles }, 
-          { data: perms },
-          { data: isAdminRpc },
-          { count: totalPerms }
+          { data: perms }
         ] = await Promise.all([
           supabase.from('profiles').select('nome, tipo').eq('id', userId).single(),
-          supabase.from('user_roles').select('role').eq('user_id', userId),
           supabase.from('user_permissions').select('permission_id').eq('user_id', userId),
-          supabase.rpc('has_role', { _user_id: userId, _role: 'admin' }),
-          supabase.from('permissions').select('*', { count: 'exact', head: true }),
         ]);
         
         if (isCancelled) return;
         
-        // Detecção robusta de admin: RPC ou todas as permissões
-        const isAdminFinal = isAdminRpc === true || (perms && totalPerms && perms.length === totalPerms);
-        const finalRole = isAdminFinal ? 'admin' : ((roles?.[0]?.role as UserRole) || 'comercial');
+        // Detecção de admin: verifica se possui admin.full_access
+        const isAdminFinal = perms?.some(p => p.permission_id === 'admin.full_access') ?? false;
+        const finalRole: UserRole = isAdminFinal ? 'admin' : 'comercial';
         
         console.log('✅ Profile hydrated:', { 
           profile, 
-          rolesLen: roles?.length, 
-          permsLen: perms?.length, 
-          totalPerms 
+          permsLen: perms?.length,
+          hasAdminFullAccess: isAdminFinal
         });
         console.log('👑 isAdmin=', isAdminFinal, 'finalRole=', finalRole);
         
@@ -120,20 +113,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }));
       } catch (e) {
         if (!isCancelled) {
-          console.warn('⚠️ Não foi possível hidratar perfil/roles/permissões:', e);
+          console.warn('⚠️ Não foi possível hidratar perfil/permissões:', e);
         }
       } finally {
         if (!isCancelled) {
           setHydrating(false);
         }
       }
-    }, 50); // Debounce reduzido para 50ms (mais responsivo)
+    }, 50);
     
     return () => {
       isCancelled = true;
       clearTimeout(timeoutId);
     };
-  }, [session?.user?.id]); // Apenas ID - dispara sempre que muda
+  }, [session?.user?.id]);
 
   const logout = async () => {
     await supabase.auth.signOut();
