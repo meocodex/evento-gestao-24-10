@@ -36,12 +36,13 @@ export default function Equipe() {
         // Membro tem AMBOS: operacional + sistema
         unificados.push({
           ...op,
+          id: profileCorrespondente.id, // ✅ USAR ID DO PROFILE para operações de sistema
+          profile_id: profileCorrespondente.id,
+          operacional_id: op.id, // ⭐ Guardar ID operacional separado
           tipo_membro: 'ambos' as const,
           avatar_url: op.foto || profileCorrespondente.avatar_url,
           role: profileCorrespondente.role,
           permissions: profileCorrespondente.permissions,
-          // Garantir que mantém o ID do profile para operações do sistema
-          profile_id: profileCorrespondente.id
         });
       } else {
         // Membro é apenas operacional

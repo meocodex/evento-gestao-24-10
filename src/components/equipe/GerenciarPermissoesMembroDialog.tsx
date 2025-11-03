@@ -55,12 +55,25 @@ export function GerenciarPermissoesMembroDialog({
     queryKey: ['user-permissions', membro?.id],
     enabled: open && !!membro?.id,
     queryFn: async () => {
+      // ⭐ USAR O ID CORRETO baseado no tipo de membro
+      const userId = membro!.profile_id || membro!.id;
+      
+      console.log('🔍 Buscando permissões para:', {
+        nome: membro!.nome,
+        tipo: membro!.tipo_membro,
+        userId: userId,
+        profile_id: membro!.profile_id,
+        id: membro!.id
+      });
+
       const { data, error } = await supabase
         .from('user_permissions')
         .select('permission_id')
-        .eq('user_id', membro!.id);
+        .eq('user_id', userId);
 
       if (error) throw error;
+      
+      console.log('✅ Permissões encontradas:', data?.length || 0);
       return data?.map(p => p.permission_id) || [];
     }
   });
@@ -164,11 +177,21 @@ export function GerenciarPermissoesMembroDialog({
   // Mutation para salvar permissões
   const salvarMutation = useMutation({
     mutationFn: async () => {
+      // ⭐ USAR O ID CORRETO baseado no tipo de membro
+      const userId = membro.profile_id || membro.id;
+      
+      console.log('💾 Salvando permissões:', {
+        nome: membro.nome,
+        tipo: membro.tipo_membro,
+        userId: userId,
+        total: permissoesSelecionadas.length
+      });
+
       // Deletar permissões antigas
       await supabase
         .from('user_permissions')
         .delete()
-        .eq('user_id', membro.id);
+        .eq('user_id', userId);
 
       // Inserir novas permissões
       if (permissoesSelecionadas.length > 0) {
@@ -176,13 +199,15 @@ export function GerenciarPermissoesMembroDialog({
           .from('user_permissions')
           .insert(
             permissoesSelecionadas.map(permId => ({
-              user_id: membro.id,
+              user_id: userId, // ✅ ID correto
               permission_id: permId
             }))
           );
 
         if (error) throw error;
       }
+      
+      console.log('✅ Permissões salvas com sucesso');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-permissions'] });

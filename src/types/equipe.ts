@@ -38,6 +38,8 @@ export interface MembroEquipeEvento {
 
 export interface MembroEquipeUnificado {
   id: string;
+  profile_id?: string; // ID do auth.users/profiles quando tipo_membro = 'ambos'
+  operacional_id?: string; // ID da equipe_operacional quando tipo_membro = 'ambos'
   nome: string;
   email: string;
   telefone: string | null;
