@@ -3,14 +3,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
-import { TemplatesPermissoes } from '@/components/configuracoes/TemplatesPermissoes';
 import { GerenciarPermissoes } from '@/components/configuracoes/GerenciarPermissoes';
 import { MembroEquipeUnificado } from '@/types/equipe';
+import { AlertCircle, Lightbulb } from 'lucide-react';
 
 interface ConcederAcessoSistemaDialogProps {
   open: boolean;
@@ -33,10 +34,6 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
     }
   }, [membro]);
 
-  const handleTemplateSelect = (permissions: string[]) => {
-    setPermissoesSelecionadas(permissions);
-  };
-
   const handleSubmit = async () => {
     if (!membro) {
       return;
@@ -54,7 +51,7 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
     if (permissoesSelecionadas.length === 0) {
       toast({
         title: 'Permissões obrigatórias',
-        description: 'Selecione pelo menos 1 permissão na aba "Permissões" antes de conceder acesso.',
+        description: 'Você deve selecionar pelo menos 1 permissão para conceder acesso ao sistema.',
         variant: 'destructive'
       });
       return;
@@ -91,7 +88,7 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
 
       toast({
         title: 'Acesso concedido!',
-        description: `${membro.nome} agora tem acesso ao sistema.`
+        description: `${membro.nome} agora tem acesso ao sistema com ${permissoesSelecionadas.length} permissões.`
       });
 
       // Invalidar queries
@@ -129,7 +126,9 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
         <Tabs defaultValue="acesso" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="acesso">Credenciais</TabsTrigger>
-            <TabsTrigger value="permissoes">Permissões *</TabsTrigger>
+            <TabsTrigger value="permissoes">
+              Permissões ({permissoesSelecionadas.length}/56) {permissoesSelecionadas.length === 0 && "⚠️"}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="acesso" className="space-y-4 mt-4">
@@ -174,23 +173,51 @@ export function ConcederAcessoSistemaDialog({ open, onOpenChange, membro }: Conc
           </TabsContent>
 
           <TabsContent value="permissoes" className="space-y-4 mt-4">
-            <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-3 mb-4">
-              <p className="text-sm text-orange-800 dark:text-orange-300 font-semibold">
-                ⚠️ OBRIGATÓRIO: Selecione pelo menos 1 permissão antes de conceder acesso
-              </p>
-              <p className="text-xs text-orange-700 dark:text-orange-400 mt-1">
-                Permissões selecionadas: <strong>{permissoesSelecionadas.length}</strong>
-              </p>
-            </div>
-            <div className="space-y-4">
-              <TemplatesPermissoes onSelectTemplate={handleTemplateSelect} />
-              <Separator />
-              <GerenciarPermissoes
-                userId=""
-                userPermissions={permissoesSelecionadas}
-                onPermissionsChange={setPermissoesSelecionadas}
-              />
-            </div>
+            {permissoesSelecionadas.length === 0 && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Atenção: Seleção Manual Obrigatória</AlertTitle>
+                <AlertDescription>
+                  Você deve selecionar manualmente cada permissão que este usuário terá.
+                  Não há mais templates pré-definidos.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200">
+              <CardHeader>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-blue-600" />
+                  Sugestões por Função
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-xs">
+                <div>
+                  <strong className="text-blue-900 dark:text-blue-300">🎯 Comercial:</strong>
+                  <p className="text-blue-700 dark:text-blue-400 ml-4">
+                    eventos (criar, visualizar, editar próprios), clientes, contratos, financeiro (próprios)
+                  </p>
+                </div>
+                <div>
+                  <strong className="text-purple-900 dark:text-purple-300">🔧 Suporte:</strong>
+                  <p className="text-purple-700 dark:text-purple-400 ml-4">
+                    estoque (completo), transportadoras, demandas, equipe, eventos (visualizar)
+                  </p>
+                </div>
+                <div>
+                  <strong className="text-green-900 dark:text-green-300">👷 Operacional:</strong>
+                  <p className="text-green-700 dark:text-green-400 ml-4">
+                    eventos (visualizar), estoque (visualizar), demandas (criar)
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <GerenciarPermissoes
+              userId=""
+              userPermissions={permissoesSelecionadas}
+              onPermissionsChange={setPermissoesSelecionadas}
+            />
           </TabsContent>
         </Tabs>
 

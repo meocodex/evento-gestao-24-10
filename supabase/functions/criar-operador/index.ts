@@ -25,15 +25,27 @@ Deno.serve(async (req) => {
 
     const { nome, email, cpf, telefone, senha, tipo, permissions } = await req.json();
 
-    // Validações básicas
-    if (!nome || !email || !senha || !permissions || !Array.isArray(permissions)) {
+    console.log('📥 Recebida requisição criar-operador:', { email, nome, tipo, permissionsCount: permissions?.length });
+
+    // Validar dados obrigatórios
+    if (!nome || !email || !senha) {
+      console.error('❌ Dados obrigatórios faltando');
       return new Response(
-        JSON.stringify({ error: 'Dados obrigatórios faltando' }),
+        JSON.stringify({ error: 'Dados obrigatórios faltando: nome, email e senha são obrigatórios' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Verificando usuário:', { email, nome, tipo, permissions: permissions.length });
+    // Validar permissões (MÍNIMO 1)
+    if (!permissions || !Array.isArray(permissions) || permissions.length === 0) {
+      console.error('❌ Permissões vazias ou inválidas');
+      return new Response(
+        JSON.stringify({ error: 'É obrigatório selecionar pelo menos 1 permissão para criar usuário do sistema' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log(`✅ Validação OK: ${permissions.length} permissões recebidas`);
 
     // 1. Verificar se usuário já existe por email
     const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
@@ -55,33 +67,53 @@ Deno.serve(async (req) => {
 
       if (updateProfileError) {
         console.error('Erro ao atualizar profile:', updateProfileError);
+        throw updateProfileError;
       }
 
+      console.log('✅ Tipo de perfil atualizado:', tipo);
+
       // Deletar permissões antigas
-      await supabaseAdmin
+      const { error: deleteError } = await supabaseAdmin
         .from('user_permissions')
         .delete()
         .eq('user_id', existingUser.id);
 
-      // Inserir novas permissões
-      if (permissions.length > 0) {
-        const permissionsData = permissions.map((permission_id: string) => ({
-          user_id: existingUser.id,
-          permission_id,
-        }));
-
-        const { error: permissionsError } = await supabaseAdmin
-          .from('user_permissions')
-          .insert(permissionsData);
-
-        if (permissionsError) {
-          console.error('Erro ao inserir permissões:', permissionsError);
-          return new Response(
-            JSON.stringify({ error: 'Erro ao definir permissões do usuário' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
+      if (deleteError) {
+        console.error('⚠️ Erro ao deletar permissões antigas:', deleteError);
+        throw deleteError;
       }
+
+      console.log('✅ Permissões antigas removidas');
+
+      // Inserir novas permissões
+      console.log(`🔄 Inserindo ${permissions.length} novas permissões...`);
+      
+      const userPermissions = permissions.map((permissionId: string) => ({
+        user_id: existingUser.id,
+        permission_id: permissionId,
+      }));
+
+      const { error: permError } = await supabaseAdmin
+        .from('user_permissions')
+        .insert(userPermissions);
+
+      if (permError) {
+        console.error('❌ Erro ao inserir permissões:', permError);
+        throw permError;
+      }
+
+      // Validação pós-inserção
+      const { count } = await supabaseAdmin
+        .from('user_permissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', existingUser.id);
+
+      if (count !== permissions.length) {
+        console.error(`⚠️ Esperado ${permissions.length} permissões, inserido ${count}`);
+        throw new Error(`Falha ao inserir todas as permissões (${count}/${permissions.length})`);
+      }
+
+      console.log(`✅ ${count} permissões inseridas e validadas com sucesso`);
 
       return new Response(
         JSON.stringify({ 
@@ -127,29 +159,40 @@ Deno.serve(async (req) => {
 
       if (profileError) {
         console.error('Erro ao atualizar tipo do perfil:', profileError);
+        throw profileError;
       }
-    }
 
-    // Inserir permissões do usuário
-    if (authData.user && permissions.length > 0) {
-      console.log('Inserindo permissões:', permissions.length);
+      console.log('✅ Tipo de perfil atualizado:', tipo);
 
-      const permissionsData = permissions.map((permission_id: string) => ({
+      // Inserir permissões (SEM role - sistema granular)
+      console.log(`🔄 Inserindo ${permissions.length} permissões para novo usuário...`);
+      
+      const userPermissions = permissions.map((permissionId: string) => ({
         user_id: authData.user!.id,
-        permission_id,
+        permission_id: permissionId,
       }));
 
-      const { error: permissionsError } = await supabaseAdmin
+      const { error: permError } = await supabaseAdmin
         .from('user_permissions')
-        .insert(permissionsData);
+        .insert(userPermissions);
 
-      if (permissionsError) {
-        console.error('Erro ao inserir permissões:', permissionsError);
-        return new Response(
-          JSON.stringify({ error: 'Erro ao definir permissões do usuário' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      if (permError) {
+        console.error('❌ Erro ao inserir permissões:', permError);
+        throw permError;
       }
+
+      // Validação pós-inserção
+      const { count } = await supabaseAdmin
+        .from('user_permissions')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', authData.user!.id);
+
+      if (count !== permissions.length) {
+        console.error(`⚠️ Esperado ${permissions.length} permissões, inserido ${count}`);
+        throw new Error(`Falha ao inserir todas as permissões (${count}/${permissions.length})`);
+      }
+
+      console.log(`✅ ${count} permissões inseridas e validadas com sucesso`);
     }
 
     return new Response(

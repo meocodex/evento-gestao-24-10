@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
-import { TemplatesPermissoes } from '@/components/configuracoes/TemplatesPermissoes';
 import { GerenciarPermissoes } from '@/components/configuracoes/GerenciarPermissoes';
 import { MembroEquipeUnificado } from '@/types/equipe';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lightbulb } from 'lucide-react';
 
 interface GerenciarPermissoesMembroDialogProps {
   open: boolean;
@@ -74,10 +73,6 @@ export function GerenciarPermissoesMembroDialog({ open, onOpenChange, membro }: 
     }
   }, [open, membroPermsData]);
 
-  const handleTemplateSelect = (permissions: string[]) => {
-    setPermissoesSelecionadas(permissions);
-  };
-
   const handleSubmit = async () => {
     if (!membro) return;
 
@@ -108,7 +103,7 @@ export function GerenciarPermissoesMembroDialog({ open, onOpenChange, membro }: 
 
       toast({
         title: 'Permissões atualizadas!',
-        description: `Permissões de ${membro.nome} foram atualizadas com sucesso.`
+        description: `${permissoesSelecionadas.length} permissões foram salvas para ${membro.nome}.`
       });
 
       queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
@@ -145,7 +140,9 @@ export function GerenciarPermissoesMembroDialog({ open, onOpenChange, membro }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Gerenciar Permissões</DialogTitle>
+          <DialogTitle>
+            Gerenciar Permissões ({permissoesSelecionadas.length}/56)
+          </DialogTitle>
         </DialogHeader>
 
         <div className="mb-4">
@@ -155,8 +152,35 @@ export function GerenciarPermissoesMembroDialog({ open, onOpenChange, membro }: 
         </div>
 
         <div className="space-y-4">
-          <TemplatesPermissoes onSelectTemplate={handleTemplateSelect} />
-          <Separator />
+          <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200">
+            <CardHeader>
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Lightbulb className="h-4 w-4 text-blue-600" />
+                Sugestões por Função
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-xs">
+              <div>
+                <strong className="text-blue-900 dark:text-blue-300">🎯 Comercial:</strong>
+                <p className="text-blue-700 dark:text-blue-400 ml-4">
+                  eventos (criar, visualizar, editar próprios), clientes, contratos, financeiro (próprios)
+                </p>
+              </div>
+              <div>
+                <strong className="text-purple-900 dark:text-purple-300">🔧 Suporte:</strong>
+                <p className="text-purple-700 dark:text-purple-400 ml-4">
+                  estoque (completo), transportadoras, demandas, equipe, eventos (visualizar)
+                </p>
+              </div>
+              <div>
+                <strong className="text-green-900 dark:text-green-300">👷 Operacional:</strong>
+                <p className="text-green-700 dark:text-green-400 ml-4">
+                  eventos (visualizar), estoque (visualizar), demandas (criar)
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           <GerenciarPermissoes
             userId={membro?.id || ''}
             userPermissions={permissoesSelecionadas}
