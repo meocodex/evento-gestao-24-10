@@ -94,6 +94,53 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
               </div>
             </div>
           </div>
+
+          <div>
+            <div className="flex items-start gap-2">
+              <MapPin className="h-4 w-4 mt-1 text-muted-foreground" />
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Endereço do Evento</p>
+                <p className="text-sm text-muted-foreground">{evento.endereco}</p>
+                <p className="text-sm text-muted-foreground">
+                  {evento.cidade}/{evento.estado}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {evento.tags && evento.tags.length > 0 && (
+            <div>
+              <p className="text-sm font-medium mb-2">Tags</p>
+              <div className="flex flex-wrap gap-2">
+                {evento.tags.map((tag, idx) => (
+                  <span 
+                    key={idx}
+                    className="px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {evento.contatosAdicionais && (
+            <div>
+              <p className="text-sm font-medium mb-1">Contatos Adicionais</p>
+              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                {evento.contatosAdicionais}
+              </p>
+            </div>
+          )}
+
+          {evento.redesSociais && (
+            <div>
+              <p className="text-sm font-medium mb-1">Redes Sociais</p>
+              <p className="text-sm text-muted-foreground whitespace-pre-line">
+                {evento.redesSociais}
+              </p>
+            </div>
+          )}
           
           {/* Contador Regressivo */}
           <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
@@ -137,22 +184,66 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
         <CardHeader>
           <CardTitle>Cliente</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           <div className="flex items-center gap-2">
             {evento.cliente.tipo === 'CPF' ? <User className="h-4 w-4" /> : <Building2 className="h-4 w-4" />}
             <div>
+              <p className="text-sm text-muted-foreground">
+                {evento.cliente.tipo === 'CPF' ? 'Cliente (CPF)' : 'Cliente (CNPJ)'}
+              </p>
               <p className="font-medium">{evento.cliente.nome}</p>
               <p className="text-sm text-muted-foreground">{evento.cliente.documento}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Phone className="h-4 w-4" />
-            <span>{evento.cliente.telefone}</span>
+
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              <span>{evento.cliente.telefone}</span>
+            </div>
+            
+            {evento.cliente.whatsapp && evento.cliente.whatsapp !== evento.cliente.telefone && (
+              <div className="flex items-center gap-2 text-sm">
+                <Phone className="h-4 w-4 text-green-600" />
+                <span className="text-green-600">{evento.cliente.whatsapp} (WhatsApp)</span>
+              </div>
+            )}
+            
+            <div className="flex items-center gap-2 text-sm">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span>{evento.cliente.email}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <Mail className="h-4 w-4" />
-            <span>{evento.cliente.email}</span>
+
+          <div>
+            <div className="flex items-start gap-2 text-sm">
+              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
+              <div className="space-y-0.5">
+                <p className="font-medium">Endereço</p>
+                <p className="text-muted-foreground">
+                  {evento.cliente.endereco.logradouro}, {evento.cliente.endereco.numero}
+                  {evento.cliente.endereco.complemento && ` - ${evento.cliente.endereco.complemento}`}
+                </p>
+                <p className="text-muted-foreground">
+                  {evento.cliente.endereco.bairro} - CEP: {evento.cliente.endereco.cep}
+                </p>
+                <p className="text-muted-foreground">
+                  {evento.cliente.endereco.cidade}/{evento.cliente.endereco.estado}
+                </p>
+              </div>
+            </div>
           </div>
+
+          {evento.cliente.tipo === 'CNPJ' && evento.cliente.responsavelLegal && (
+            <div className="pt-3 border-t">
+              <p className="text-sm font-medium mb-2">Responsável Legal</p>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p><strong>Nome:</strong> {evento.cliente.responsavelLegal.nome}</p>
+                <p><strong>CPF:</strong> {evento.cliente.responsavelLegal.cpf}</p>
+                <p><strong>Data de Nascimento:</strong> {evento.cliente.responsavelLegal.dataNascimento}</p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
