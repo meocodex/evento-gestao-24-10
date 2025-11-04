@@ -10,11 +10,11 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { useContratos } from '@/hooks/contratos';
 import { gerarPDFContrato } from '@/utils/pdfGenerator';
 import { NovoContratoSheet } from '@/components/contratos/NovoContratoSheet';
-import { EditarContratoDialog } from '@/components/contratos/EditarContratoDialog';
-import { DetalhesContratoDialog } from '@/components/contratos/DetalhesContratoDialog';
-import { NovoTemplateDialog } from '@/components/contratos/NovoTemplateDialog';
-import { EditarTemplateDialog } from '@/components/contratos/EditarTemplateDialog';
-import { DetalhesTemplateDialog } from '@/components/contratos/DetalhesTemplateDialog';
+import { EditarContratoSheet } from '@/components/contratos/EditarContratoSheet';
+import { DetalhesContratoSheet } from '@/components/contratos/DetalhesContratoSheet';
+import { NovoTemplateSheet } from '@/components/contratos/NovoTemplateSheet';
+import { EditarTemplateSheet } from '@/components/contratos/EditarTemplateSheet';
+import { DetalhesTemplateSheet } from '@/components/contratos/DetalhesTemplateSheet';
 import { SimularAssinaturaDialog } from '@/components/contratos/SimularAssinaturaDialog';
 import { NovaPropostaDialog } from '@/components/propostas/NovaPropostaDialog';
 import { ConverterContratoDialog } from '@/components/propostas/ConverterContratoDialog';
@@ -350,7 +350,7 @@ export default function Contratos() {
       {/* Dialogs */}
       <NovoContratoSheet open={mostrarNovoContrato} onOpenChange={setMostrarNovoContrato} />
       <NovaPropostaDialog open={mostrarNovaProposta} onOpenChange={setMostrarNovaProposta} />
-      <DetalhesContratoDialog
+      <DetalhesContratoSheet
         open={mostrarDetalhesContrato}
         onOpenChange={setMostrarDetalhesContrato}
         contrato={contratoSelecionado}
@@ -363,13 +363,13 @@ export default function Contratos() {
           setMostrarConverterContrato(true);
         }}
       />
-      <EditarContratoDialog
+      <EditarContratoSheet
         open={mostrarEditarContrato}
         onOpenChange={setMostrarEditarContrato}
         contrato={contratoSelecionado}
       />
-      <NovoTemplateDialog open={mostrarNovoTemplate} onOpenChange={setMostrarNovoTemplate} />
-      <DetalhesTemplateDialog
+      <NovoTemplateSheet open={mostrarNovoTemplate} onOpenChange={setMostrarNovoTemplate} />
+      <DetalhesTemplateSheet
         open={mostrarDetalhesTemplate}
         onOpenChange={setMostrarDetalhesTemplate}
         template={templateSelecionado}
@@ -378,7 +378,7 @@ export default function Contratos() {
           setMostrarEditarTemplate(true);
         }}
       />
-      <EditarTemplateDialog
+      <EditarTemplateSheet
         open={mostrarEditarTemplate}
         onOpenChange={setMostrarEditarTemplate}
         template={templateSelecionado}
