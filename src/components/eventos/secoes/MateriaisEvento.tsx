@@ -46,12 +46,11 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const podeRemoverMaterial = (material: any) => {
     const dataHoraEvento = new Date(`${evento.dataInicio}T${evento.horaInicio}`);
     const eventoIniciou = dataHoraEvento <= new Date();
-    const temDocumento = material.termoRetiradaUrl || material.declaracaoTransporteUrl;
     const vinculadoFrete = material.envio_id;
     const jaDevolvido = material.status_devolucao !== 'pendente';
     const statusPermiteRemocao = ['orcamento', 'confirmado'].includes(evento.status);
 
-    return !eventoIniciou && !temDocumento && !vinculadoFrete && !jaDevolvido && statusPermiteRemocao;
+    return !eventoIniciou && !vinculadoFrete && !jaDevolvido && statusPermiteRemocao;
   };
 
   const getMotivoNaoRemocao = (material: any) => {
@@ -59,7 +58,6 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
     const eventoIniciou = dataHoraEvento <= new Date();
     
     if (eventoIniciou) return 'Evento já iniciado - material não pode ser removido';
-    if (material.termoRetiradaUrl || material.declaracaoTransporteUrl) return 'Material com documento gerado não pode ser removido';
     if (material.envio_id) return 'Material vinculado a frete não pode ser removido';
     if (material.status_devolucao !== 'pendente') return 'Material já devolvido não pode ser removido';
     if (!['orcamento', 'confirmado'].includes(evento.status)) return 'Status do evento não permite remoção';
@@ -660,22 +658,27 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         materiais={materiaisRetroativos}
         cliente={evento.cliente}
         transportadora={materiaisRetroativos[0]?.transportadora}
-        onConfirmar={async (dados) => {
-          try {
-            await gerarDeclaracaoTransporte.mutateAsync({
-              alocacaoIds: materiaisRetroativos.map(m => m.id),
-              remetenteTipo: dados.remetenteTipo || 'empresa',
-              remetenteMembroId: dados.remetenteMembroId,
-              valoresDeclarados: dados.valoresDeclarados || {},
-              observacoes: dados.observacoes,
-            });
-            toast.success('Declarações de transporte geradas com sucesso!');
-            setShowGerarDeclaracaoRetroativo(false);
-            setMateriaisRetroativos([]);
-          } catch (error: any) {
-            toast.error(`Erro ao gerar declarações: ${error.message}`);
-          }
-        }}
+              onConfirmar={async (dados) => {
+                try {
+                  console.log('🚀 Gerando declaração de transporte para materiais:', {
+                    materiaisCount: materiaisRetroativos.length,
+                    dados
+                  });
+                  await gerarDeclaracaoTransporte.mutateAsync({
+                    alocacaoIds: materiaisRetroativos.map(m => m.id),
+                    remetenteTipo: dados.remetenteTipo || 'empresa',
+                    remetenteMembroId: dados.remetenteMembroId,
+                    valoresDeclarados: dados.valoresDeclarados || {},
+                    observacoes: dados.observacoes,
+                  });
+                  toast.success('Declarações de transporte geradas com sucesso!');
+                  setShowGerarDeclaracaoRetroativo(false);
+                  setMateriaisRetroativos([]);
+                } catch (error: any) {
+                  console.error('❌ Erro ao gerar declarações:', error);
+                  toast.error(`Erro ao gerar declarações: ${error.message}`);
+                }
+              }}
       />
 
       {/* Confirm Dialog - Reimprimir */}

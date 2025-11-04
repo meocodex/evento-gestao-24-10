@@ -139,22 +139,17 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         throw new Error('Não é possível remover materiais de eventos já iniciados');
       }
 
-      // Validação 2: Tem documento gerado?
-      if (material.termo_retirada_url || material.declaracao_transporte_url) {
-        throw new Error('Não é possível remover material com documento gerado. Entre em contato com o suporte.');
-      }
-
-      // Validação 3: Está vinculado a frete?
+      // Validação 2: Está vinculado a frete?
       if (material.envio_id) {
         throw new Error('Não é possível remover material vinculado a frete. Remova o frete primeiro.');
       }
 
-      // Validação 4: Já foi devolvido?
+      // Validação 3: Já foi devolvido?
       if (material.status_devolucao !== 'pendente') {
         throw new Error('Não é possível remover material já devolvido');
       }
 
-      // Validação 5: Status do evento permite remoção?
+      // Validação 4: Status do evento permite remoção?
       if (!['orcamento', 'confirmado'].includes(evento.status)) {
         throw new Error('Não é possível remover materiais de eventos em andamento ou concluídos');
       }
@@ -223,10 +218,11 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       retiradoPorDocumento: string;
       retiradoPorTelefone: string;
     }) => {
+      console.log('📝 Iniciando geração de termo:', dados);
       const { gerarTermoRetirada, uploadTermoRetirada } = await import('@/utils/termoRetiradaPDF');
       
       // Buscar dados dos materiais e evento
-      const { data: materiaisData } = await supabase
+      const { data: materiaisData, error: fetchError } = await supabase
         .from('eventos_materiais_alocados')
         .select(`
           *,
@@ -234,7 +230,14 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         `)
         .in('id', dados.alocacaoIds);
       
+      console.log('📦 Materiais encontrados:', materiaisData?.length);
+
+      if (fetchError) {
+        console.error('❌ Erro ao buscar materiais:', fetchError);
+        throw fetchError;
+      }
       if (!materiaisData || materiaisData.length === 0) {
+        console.error('❌ Nenhum material encontrado para os IDs:', dados.alocacaoIds);
         throw new Error('Materiais não encontrados');
       }
 
@@ -305,13 +308,14 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       return publicUrl;
     },
     onSuccess: () => {
+      console.log('✅ Termo gerado com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
       toast.success('Termo de retirada gerado com sucesso!');
     },
     onError: (error: any) => {
-      console.error('Erro ao gerar termo:', error);
+      console.error('❌ Erro ao gerar termo:', error);
       toast.error(`Erro ao gerar termo: ${error.message || 'Erro desconhecido'}`);
     },
   });
@@ -324,10 +328,11 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       valoresDeclarados: Record<string, number>;
       observacoes?: string;
     }) => {
+      console.log('📝 Iniciando geração de declaração:', dados);
       const { gerarDeclaracaoTransporte: gerarPDF } = await import('@/utils/declaracaoTransportePDF');
       
       // Buscar dados dos materiais e evento
-      const { data: materiaisData } = await supabase
+      const { data: materiaisData, error: fetchError } = await supabase
         .from('eventos_materiais_alocados')
         .select(`
           *,
@@ -338,7 +343,14 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         `)
         .in('id', dados.alocacaoIds);
       
+      console.log('📦 Materiais encontrados:', materiaisData?.length);
+
+      if (fetchError) {
+        console.error('❌ Erro ao buscar materiais:', fetchError);
+        throw fetchError;
+      }
       if (!materiaisData || materiaisData.length === 0) {
+        console.error('❌ Nenhum material encontrado para os IDs:', dados.alocacaoIds);
         throw new Error('Materiais não encontrados');
       }
 
@@ -445,13 +457,14 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       return publicUrl;
     },
     onSuccess: () => {
+      console.log('✅ Declaração gerada com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
       toast.success('Declaração de transporte gerada com sucesso!');
     },
     onError: (error: any) => {
-      console.error('Erro ao gerar declaração:', error);
+      console.error('❌ Erro ao gerar declaração:', error);
       toast.error(`Erro ao gerar declaração: ${error.message || 'Erro desconhecido'}`);
     },
   });

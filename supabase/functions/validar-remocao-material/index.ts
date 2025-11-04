@@ -75,18 +75,7 @@ serve(async (req) => {
       );
     }
 
-    // 2. Verificar se tem documento gerado
-    if (material.termo_retirada_url || material.declaracao_transporte_url) {
-      return new Response(
-        JSON.stringify({ 
-          podeRemover: false, 
-          motivo: 'Não é possível remover material com documento gerado. Entre em contato com o suporte.' 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-      );
-    }
-
-    // 3. Verificar se está vinculado a frete
+    // 2. Verificar se está vinculado a frete
     if (material.envio_id) {
       return new Response(
         JSON.stringify({ 
@@ -97,7 +86,7 @@ serve(async (req) => {
       );
     }
 
-    // 4. Verificar se já foi devolvido
+    // 3. Verificar se já foi devolvido
     if (material.status_devolucao !== 'pendente') {
       return new Response(
         JSON.stringify({ 
@@ -108,7 +97,7 @@ serve(async (req) => {
       );
     }
 
-    // 5. Verificar status do evento
+    // 4. Verificar status do evento
     if (!['orcamento', 'confirmado'].includes(evento.status)) {
       return new Response(
         JSON.stringify({ 
@@ -127,7 +116,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro na validação:', error);
     return new Response(
       JSON.stringify({ 
