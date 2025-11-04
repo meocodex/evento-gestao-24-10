@@ -7,9 +7,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Users, Search, Plus, UserCheck, Briefcase, UserX } from 'lucide-react';
 import { useEquipe } from '@/hooks/equipe';
 import { MembrosUnificadosVirtualList } from '@/components/equipe/MembrosUnificadosVirtualList';
-import { NovoOperacionalDialog } from '@/components/equipe/operacional/NovoOperacionalDialog';
-import { DetalhesOperacionalDialog } from '@/components/equipe/operacional/DetalhesOperacionalDialog';
-import { EditarOperacionalDialog } from '@/components/equipe/operacional/EditarOperacionalDialog';
+import { NovoOperacionalSheet } from '@/components/equipe/operacional/NovoOperacionalSheet';
+import { DetalhesOperacionalSheet } from '@/components/equipe/operacional/DetalhesOperacionalSheet';
+import { EditarOperacionalSheet } from '@/components/equipe/operacional/EditarOperacionalSheet';
 import { ConcederAcessoSistemaDialog } from '@/components/equipe/ConcederAcessoSistemaDialog';
 import { GerenciarPermissoesMembroDialog } from '@/components/equipe/GerenciarPermissoesMembroDialog';
 import { EquipeFiltersPopover, EquipeFiltersType } from '@/components/equipe/EquipeFiltersPopover';
@@ -286,13 +286,13 @@ export default function Equipe() {
       </Card>
 
       {/* Dialogs */}
-      <NovoOperacionalDialog
+      <NovoOperacionalSheet
         open={novoDialogOpen}
         onOpenChange={setNovoDialogOpen}
       />
 
       {membroSelecionado?.tipo_membro !== 'sistema' && membroSelecionado && (
-        <DetalhesOperacionalDialog
+        <DetalhesOperacionalSheet
           operacional={membroSelecionado as any}
           open={!!membroSelecionado}
           onOpenChange={(open) => !open && setMembroSelecionado(null)}
@@ -308,7 +308,7 @@ export default function Equipe() {
       )}
 
       {editarMembro?.tipo_membro !== 'sistema' && editarMembro && (
-        <EditarOperacionalDialog
+        <EditarOperacionalSheet
           operacional={editarMembro as any}
           open={!!editarMembro}
           onOpenChange={(open) => !open && setEditarMembro(null)}
