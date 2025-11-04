@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useClientes } from '@/hooks/clientes';
-import { NovoClienteDialog } from '@/components/clientes/NovoClienteDialog';
-import { EditarClienteDialog } from '@/components/clientes/EditarClienteDialog';
-import { DetalhesClienteDialog } from '@/components/clientes/DetalhesClienteDialog';
+import { NovoClienteSheet } from '@/components/clientes/NovoClienteSheet';
+import { EditarClienteSheet } from '@/components/clientes/EditarClienteSheet';
+import { DetalhesClienteSheet } from '@/components/clientes/DetalhesClienteSheet';
 import { ClienteFiltersPopover, ClienteFiltersType } from '@/components/clientes/ClienteFiltersPopover';
 import { ClientesVirtualList } from '@/components/clientes/ClientesVirtualList';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
@@ -97,7 +97,7 @@ export default function Clientes() {
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-navy-800">Clientes</h1>
           <p className="text-sm sm:text-base text-navy-600 mt-1">Gerencie seus clientes e contatos</p>
         </div>
-        <NovoClienteDialog />
+        <NovoClienteSheet />
       </div>
 
       {/* Estatísticas */}
@@ -294,7 +294,7 @@ export default function Clientes() {
       {/* Dialogs */}
       {clienteSelecionado && (
         <>
-          <DetalhesClienteDialog
+          <DetalhesClienteSheet
             cliente={clienteSelecionado}
             open={dialogAberto === 'detalhes'}
             onOpenChange={(open) => {
@@ -304,7 +304,7 @@ export default function Clientes() {
               }
             }}
           />
-          <EditarClienteDialog
+          <EditarClienteSheet
             cliente={clienteSelecionado}
             open={dialogAberto === 'editar'}
             onOpenChange={(open) => {
