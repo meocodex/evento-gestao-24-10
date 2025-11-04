@@ -10,8 +10,8 @@ import { useContasPagar, useContasReceber } from '@/hooks/financeiro';
 import { Evento } from '@/types/eventos';
 import type { ContaPagar, ContaReceber } from '@/types/financeiro';
 import { EventoDetailsDialog } from '@/components/eventos/EventoDetailsDialog';
-import { NovaContaPagarDialog } from '@/components/financeiro/NovaContaPagarDialog';
-import { NovaContaReceberDialog } from '@/components/financeiro/NovaContaReceberDialog';
+import { NovaContaPagarSheet } from '@/components/financeiro/NovaContaPagarSheet';
+import { NovaContaReceberSheet } from '@/components/financeiro/NovaContaReceberSheet';
 import { TabelaContasPagar } from '@/components/financeiro/TabelaContasPagar';
 import { TabelaContasReceber } from '@/components/financeiro/TabelaContasReceber';
 import { MarcarPagoDialog } from '@/components/financeiro/MarcarPagoDialog';
@@ -504,8 +504,8 @@ export default function Financeiro() {
         />
       )}
 
-      <NovaContaPagarDialog open={dialogNovaPagar} onOpenChange={setDialogNovaPagar} />
-      <NovaContaReceberDialog open={dialogNovaReceber} onOpenChange={setDialogNovaReceber} />
+      <NovaContaPagarSheet open={dialogNovaPagar} onOpenChange={setDialogNovaPagar} />
+      <NovaContaReceberSheet open={dialogNovaReceber} onOpenChange={setDialogNovaReceber} />
 
       <MarcarPagoDialog
         open={dialogMarcarPago}
