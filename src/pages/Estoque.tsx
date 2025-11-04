@@ -4,9 +4,9 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { EstoqueFiltersPopover, EstoqueFiltersType } from '@/components/estoque/EstoqueFiltersPopover';
-import { NovoMaterialDialog } from '@/components/estoque/NovoMaterialDialog';
-import { EditarMaterialDialog } from '@/components/estoque/EditarMaterialDialog';
-import { DetalhesMaterialDialog } from '@/components/estoque/DetalhesMaterialDialog';
+import { NovoMaterialSheet } from '@/components/estoque/NovoMaterialSheet';
+import { EditarMaterialSheet } from '@/components/estoque/EditarMaterialSheet';
+import { DetalhesMaterialSheet } from '@/components/estoque/DetalhesMaterialSheet';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { EstoqueVirtualList } from '@/components/estoque/EstoqueVirtualList';
 import { useEstoque, type MaterialEstoque } from '@/hooks/estoque';
@@ -279,11 +279,11 @@ export default function Estoque() {
         </Pagination>
       )}
 
-      <NovoMaterialDialog open={showNovoMaterial} onOpenChange={setShowNovoMaterial} />
+      <NovoMaterialSheet open={showNovoMaterial} onOpenChange={setShowNovoMaterial} />
       {materialSelecionado && (
         <>
-          <DetalhesMaterialDialog open={showDetalhes} onOpenChange={setShowDetalhes} material={materialSelecionado} />
-          <EditarMaterialDialog open={showEditarMaterial} onOpenChange={setShowEditarMaterial} material={materialSelecionado} />
+          <DetalhesMaterialSheet open={showDetalhes} onOpenChange={setShowDetalhes} material={materialSelecionado} />
+          <EditarMaterialSheet open={showEditarMaterial} onOpenChange={setShowEditarMaterial} material={materialSelecionado} />
         </>
       )}
       <ConfirmDialog
