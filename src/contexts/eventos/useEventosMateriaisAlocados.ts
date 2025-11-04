@@ -116,10 +116,68 @@ export function useEventosMateriaisAlocados(eventoId: string) {
 
   const removerMaterialAlocado = useMutation({
     mutationFn: async (id: string) => {
+      // 1️⃣ Buscar dados do material e evento
+      const { data: material, error: fetchError } = await supabase
+        .from('eventos_materiais_alocados')
+        .select(`
+          *,
+          eventos!inner (data_inicio, hora_inicio, status)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (!material) throw new Error('Material não encontrado');
+
+      // 2️⃣ Validações Frontend (primeira linha de defesa)
+      const evento = material.eventos as any;
+      const dataHoraEvento = new Date(`${evento.data_inicio}T${evento.hora_inicio}`);
+      const agora = new Date();
+
+      // Validação 1: Evento já iniciou?
+      if (dataHoraEvento <= agora) {
+        throw new Error('Não é possível remover materiais de eventos já iniciados');
+      }
+
+      // Validação 2: Tem documento gerado?
+      if (material.termo_retirada_url || material.declaracao_transporte_url) {
+        throw new Error('Não é possível remover material com documento gerado. Entre em contato com o suporte.');
+      }
+
+      // Validação 3: Está vinculado a frete?
+      if (material.envio_id) {
+        throw new Error('Não é possível remover material vinculado a frete. Remova o frete primeiro.');
+      }
+
+      // Validação 4: Já foi devolvido?
+      if (material.status_devolucao !== 'pendente') {
+        throw new Error('Não é possível remover material já devolvido');
+      }
+
+      // Validação 5: Status do evento permite remoção?
+      if (!['orcamento', 'confirmado'].includes(evento.status)) {
+        throw new Error('Não é possível remover materiais de eventos em andamento ou concluídos');
+      }
+
+      // 3️⃣ Chamar Edge Function para validação dupla (segurança backend)
+      const { data: validacao, error: validacaoError } = await supabase.functions.invoke(
+        'validar-remocao-material',
+        {
+          body: { alocacaoId: id }
+        }
+      );
+
+      if (validacaoError) throw validacaoError;
+      if (!validacao?.podeRemover) {
+        throw new Error(validacao?.motivo || 'Não é possível remover este material');
+      }
+
+      // 4️⃣ Executar DELETE
       const { error } = await supabase
         .from('eventos_materiais_alocados')
         .delete()
         .eq('id', id);
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -130,7 +188,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     },
     onError: (error: any) => {
       console.error('Erro ao remover material:', error);
-      toast.error(`Erro ao remover material: ${error.message || 'Erro desconhecido'}`);
+      toast.error(error.message || 'Erro ao remover material');
     },
   });
 

@@ -42,6 +42,30 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const [materialReimprimir, setMaterialReimprimir] = useState<any>(null);
   const [showVincularFrete, setShowVincularFrete] = useState(false);
 
+  // Helper para verificar se material pode ser removido
+  const podeRemoverMaterial = (material: any) => {
+    const dataHoraEvento = new Date(`${evento.dataInicio}T${evento.horaInicio}`);
+    const eventoIniciou = dataHoraEvento <= new Date();
+    const temDocumento = material.termoRetiradaUrl || material.declaracaoTransporteUrl;
+    const vinculadoFrete = material.envio_id;
+    const jaDevolvido = material.status_devolucao !== 'pendente';
+    const statusPermiteRemocao = ['orcamento', 'confirmado'].includes(evento.status);
+
+    return !eventoIniciou && !temDocumento && !vinculadoFrete && !jaDevolvido && statusPermiteRemocao;
+  };
+
+  const getMotivoNaoRemocao = (material: any) => {
+    const dataHoraEvento = new Date(`${evento.dataInicio}T${evento.horaInicio}`);
+    const eventoIniciou = dataHoraEvento <= new Date();
+    
+    if (eventoIniciou) return 'Evento já iniciado - material não pode ser removido';
+    if (material.termoRetiradaUrl || material.declaracaoTransporteUrl) return 'Material com documento gerado não pode ser removido';
+    if (material.envio_id) return 'Material vinculado a frete não pode ser removido';
+    if (material.status_devolucao !== 'pendente') return 'Material já devolvido não pode ser removido';
+    if (!['orcamento', 'confirmado'].includes(evento.status)) return 'Status do evento não permite remoção';
+    return 'Remover material';
+  };
+
   const { 
     checklist: checklistData = [], 
     loading: loadingChecklist,
@@ -397,6 +421,8 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                                   <Button
                                     size="sm"
                                     variant="ghost"
+                                    disabled={!podeRemoverMaterial(material)}
+                                    title={getMotivoNaoRemocao(material)}
                                     onClick={() => {
                                       setItemToDelete({ id: material.id, type: 'alocado' });
                                       setShowConfirmDelete(true);
@@ -446,6 +472,8 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                                 <Button
                                   size="sm"
                                   variant="ghost"
+                                  disabled={!podeRemoverMaterial(material)}
+                                  title={getMotivoNaoRemocao(material)}
                                   onClick={() => {
                                     setItemToDelete({ id: material.id, type: 'alocado' });
                                     setShowConfirmDelete(true);
