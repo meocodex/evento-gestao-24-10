@@ -64,6 +64,12 @@ export function EditarMaterialSheet({ open, onOpenChange, material }: EditarMate
         categoria: data.categoria,
       }
     });
+    reset();
+    onOpenChange(false);
+  };
+
+  const handleCancel = () => {
+    reset();
     onOpenChange(false);
   };
 
@@ -73,6 +79,7 @@ export function EditarMaterialSheet({ open, onOpenChange, material }: EditarMate
       onOpenChange={onOpenChange}
       title="Editar Material"
       onSubmit={handleSubmit(onSubmit)}
+      onCancel={handleCancel}
       isLoading={editarMaterial.isPending}
       submitText="Salvar Alterações"
       size="lg"

@@ -83,10 +83,16 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
   const onSubmit = async (data: ClienteFormData) => {
     try {
       await editarCliente.mutateAsync({ id: cliente.id, data });
+      reset();
       onOpenChange(false);
     } catch (error) {
       // Erro já tratado no contexto
     }
+  };
+
+  const handleCancel = () => {
+    reset();
+    onOpenChange(false);
   };
 
   return (
@@ -96,6 +102,7 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
       title="Editar Cliente"
       description="Atualize as informações do cliente"
       onSubmit={handleSubmit(onSubmit)}
+      onCancel={handleCancel}
       isLoading={loading}
       submitText="Salvar Alterações"
       size="lg"

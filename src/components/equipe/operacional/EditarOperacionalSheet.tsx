@@ -62,6 +62,34 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
       ...formData
     });
 
+    setFormData({
+      nome: operacional.nome,
+      cpf: operacional.cpf || '',
+      telefone: operacional.telefone,
+      whatsapp: operacional.whatsapp || '',
+      email: operacional.email || '',
+      funcao_principal: operacional.funcao_principal,
+      tipo_vinculo: operacional.tipo_vinculo,
+      cnpj_pj: operacional.cnpj_pj || '',
+      status: operacional.status,
+      observacoes: operacional.observacoes || ''
+    });
+    onOpenChange(false);
+  };
+
+  const handleCancel = () => {
+    setFormData({
+      nome: operacional.nome,
+      cpf: operacional.cpf || '',
+      telefone: operacional.telefone,
+      whatsapp: operacional.whatsapp || '',
+      email: operacional.email || '',
+      funcao_principal: operacional.funcao_principal,
+      tipo_vinculo: operacional.tipo_vinculo,
+      cnpj_pj: operacional.cnpj_pj || '',
+      status: operacional.status,
+      observacoes: operacional.observacoes || ''
+    });
     onOpenChange(false);
   };
 
@@ -71,6 +99,7 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
       onOpenChange={onOpenChange}
       title="Editar Membro da Equipe"
       onSubmit={handleSubmit}
+      onCancel={handleCancel}
       isLoading={editarOperacional.isPending}
       submitText="Salvar Alterações"
       size="xl"

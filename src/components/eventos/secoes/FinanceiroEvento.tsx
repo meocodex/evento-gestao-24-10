@@ -8,8 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2, FileText, Receipt, Paperclip } from 'lucide-react';
 import { FileViewer } from '@/components/shared/FileViewer';
-import { AdicionarReceitaDialog } from '../modals/AdicionarReceitaDialog';
-import { AdicionarDespesaDialog } from '../modals/AdicionarDespesaDialog';
+import { AdicionarReceitaSheet } from '../modals/AdicionarReceitaSheet';
+import { AdicionarDespesaSheet } from '../modals/AdicionarDespesaSheet';
 import { RelatorioFechamentoDialog } from '../modals/RelatorioFechamentoDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
@@ -304,7 +304,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
         </CardContent>
       </Card>
 
-      <AdicionarReceitaDialog
+      <AdicionarReceitaSheet
         open={showAddReceita}
         onOpenChange={setShowAddReceita}
         onAdicionar={async (data) => {
@@ -313,7 +313,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
         }}
       />
 
-      <AdicionarDespesaDialog
+      <AdicionarDespesaSheet
         open={showAddDespesa}
         onOpenChange={setShowAddDespesa}
         onAdicionar={async (data) => {

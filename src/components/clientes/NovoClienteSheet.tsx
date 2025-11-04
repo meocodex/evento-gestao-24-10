@@ -87,7 +87,7 @@ export function NovoClienteSheet() {
   return (
     <FormSheet
       open={isOpen}
-      onOpenChange={open}
+      onOpenChange={(v) => v ? open() : close()}
       trigger={
         <Button>
           <Plus className="mr-2 h-4 w-4" />
