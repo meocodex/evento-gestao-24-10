@@ -7,7 +7,7 @@ describe('Validações de Demanda', () => {
       const result = demandaSchema.safeParse({
         titulo: 'Demanda de Teste',
         descricao: 'Descrição detalhada da demanda',
-        categoria: 'logistica',
+        categoria: 'operacional',
         prioridade: 'alta',
         prazo: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
       });
@@ -85,7 +85,7 @@ describe('Validações de Demanda', () => {
       const result = demandaSchema.safeParse({
         titulo: 'Demanda Teste',
         descricao: 'Descrição',
-        categoria: 'logistica',
+        categoria: 'operacional',
         prioridade: 'alta',
         prazo: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
       });

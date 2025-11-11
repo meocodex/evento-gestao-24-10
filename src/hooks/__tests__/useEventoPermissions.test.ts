@@ -1,28 +1,48 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useEventoPermissions } from '../useEventoPermissions';
+import { useAuth } from '@/contexts/AuthContext';
 import { Evento } from '@/types/eventos';
 
-// Mock do AuthContext
-const mockUser = {
-  id: 'user-123',
-  role: 'comercial',
-};
+vi.mock('@/contexts/AuthContext');
 
-vi.mock('@/contexts/AuthContext', () => ({
-  useAuth: vi.fn(() => ({ user: mockUser })),
-}));
+describe('useEventoPermissions (DEPRECATED)', () => {
+  const mockUseAuth = vi.mocked(useAuth);
 
-describe('useEventoPermissions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset user para comercial padrão
-    mockUser.role = 'comercial';
+    mockUseAuth.mockReturnValue({
+      user: {
+        id: 'user-123',
+        name: 'Test User',
+        email: 'test@example.com',
+        tipo: 'sistema',
+        role: 'comercial',
+        permissions: [],
+        isAdmin: false,
+      },
+      logout: vi.fn(),
+      isAuthenticated: true,
+      loading: false,
+    });
   });
 
   describe('Permissões de Admin', () => {
     it('deve dar todas as permissões para admin', () => {
-      mockUser.role = 'admin';
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: 'admin-123',
+          name: 'Admin User',
+          email: 'admin@example.com',
+          tipo: 'sistema',
+          role: 'admin',
+          permissions: [],
+          isAdmin: true,
+        },
+        logout: vi.fn(),
+        isAuthenticated: true,
+        loading: false,
+      });
       
       const { result } = renderHook(() => useEventoPermissions());
 
@@ -40,7 +60,20 @@ describe('useEventoPermissions', () => {
 
   describe('Permissões de Comercial', () => {
     it('deve permitir criar eventos', () => {
-      mockUser.role = 'comercial';
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: 'user-123',
+          name: 'Comercial User',
+          email: 'comercial@example.com',
+          tipo: 'sistema',
+          role: 'comercial',
+          permissions: [],
+          isAdmin: false,
+        },
+        logout: vi.fn(),
+        isAuthenticated: true,
+        loading: false,
+      });
       
       const { result } = renderHook(() => useEventoPermissions());
 
@@ -48,7 +81,20 @@ describe('useEventoPermissions', () => {
     });
 
     it('deve permitir editar apenas seus próprios eventos', () => {
-      mockUser.role = 'comercial';
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: 'user-123',
+          name: 'Comercial User',
+          email: 'comercial@example.com',
+          tipo: 'sistema',
+          role: 'comercial',
+          permissions: [],
+          isAdmin: false,
+        },
+        logout: vi.fn(),
+        isAuthenticated: true,
+        loading: false,
+      });
       
       const eventoPropio: Partial<Evento> = {
         id: 'evento-1',
@@ -72,16 +118,12 @@ describe('useEventoPermissions', () => {
     });
 
     it('não deve permitir alocar materiais', () => {
-      mockUser.role = 'comercial';
-      
       const { result } = renderHook(() => useEventoPermissions());
 
       expect(result.current.canAllocate).toBe(false);
     });
 
     it('não deve ver financeiro', () => {
-      mockUser.role = 'comercial';
-      
       const { result } = renderHook(() => useEventoPermissions());
 
       expect(result.current.canViewFinancial).toBe(false);
@@ -89,15 +131,26 @@ describe('useEventoPermissions', () => {
     });
 
     it('não deve deletar eventos', () => {
-      mockUser.role = 'comercial';
-      
       const { result } = renderHook(() => useEventoPermissions());
 
       expect(result.current.canDeleteEvent).toBe(false);
     });
 
     it('deve editar checklist de seus eventos', () => {
-      mockUser.role = 'comercial';
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: 'user-123',
+          name: 'Comercial User',
+          email: 'comercial@example.com',
+          tipo: 'sistema',
+          role: 'comercial',
+          permissions: [],
+          isAdmin: false,
+        },
+        logout: vi.fn(),
+        isAuthenticated: true,
+        loading: false,
+      });
       
       const eventoPropio: Partial<Evento> = {
         id: 'evento-1',
@@ -114,7 +167,20 @@ describe('useEventoPermissions', () => {
 
   describe('Permissões de Suporte', () => {
     it('deve permitir alocar materiais', () => {
-      mockUser.role = 'suporte';
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: 'user-suporte',
+          name: 'Suporte User',
+          email: 'suporte@example.com',
+          tipo: 'sistema',
+          role: 'suporte',
+          permissions: [],
+          isAdmin: false,
+        },
+        logout: vi.fn(),
+        isAuthenticated: true,
+        loading: false,
+      });
       
       const { result } = renderHook(() => useEventoPermissions());
 
@@ -122,7 +188,20 @@ describe('useEventoPermissions', () => {
     });
 
     it('não deve permitir editar eventos', () => {
-      mockUser.role = 'suporte';
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: 'user-suporte',
+          name: 'Suporte User',
+          email: 'suporte@example.com',
+          tipo: 'sistema',
+          role: 'suporte',
+          permissions: [],
+          isAdmin: false,
+        },
+        logout: vi.fn(),
+        isAuthenticated: true,
+        loading: false,
+      });
       
       const { result } = renderHook(() => useEventoPermissions());
 
@@ -130,7 +209,20 @@ describe('useEventoPermissions', () => {
     });
 
     it('não deve ver financeiro', () => {
-      mockUser.role = 'suporte';
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: 'user-suporte',
+          name: 'Suporte User',
+          email: 'suporte@example.com',
+          tipo: 'sistema',
+          role: 'suporte',
+          permissions: [],
+          isAdmin: false,
+        },
+        logout: vi.fn(),
+        isAuthenticated: true,
+        loading: false,
+      });
       
       const { result } = renderHook(() => useEventoPermissions());
 
@@ -139,7 +231,20 @@ describe('useEventoPermissions', () => {
     });
 
     it('não deve criar eventos', () => {
-      mockUser.role = 'suporte';
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: 'user-suporte',
+          name: 'Suporte User',
+          email: 'suporte@example.com',
+          tipo: 'sistema',
+          role: 'suporte',
+          permissions: [],
+          isAdmin: false,
+        },
+        logout: vi.fn(),
+        isAuthenticated: true,
+        loading: false,
+      });
       
       const { result } = renderHook(() => useEventoPermissions());
 
@@ -147,7 +252,20 @@ describe('useEventoPermissions', () => {
     });
 
     it('deve editar operações', () => {
-      mockUser.role = 'suporte';
+      mockUseAuth.mockReturnValue({
+        user: {
+          id: 'user-suporte',
+          name: 'Suporte User',
+          email: 'suporte@example.com',
+          tipo: 'sistema',
+          role: 'suporte',
+          permissions: [],
+          isAdmin: false,
+        },
+        logout: vi.fn(),
+        isAuthenticated: true,
+        loading: false,
+      });
       
       const { result } = renderHook(() => useEventoPermissions());
 
@@ -157,9 +275,12 @@ describe('useEventoPermissions', () => {
 
   describe('Sem usuário autenticado', () => {
     it('deve retornar todas as permissões como false', () => {
-      vi.mock('@/contexts/AuthContext', () => ({
-        useAuth: vi.fn(() => ({ user: null })),
-      }));
+      mockUseAuth.mockReturnValue({
+        user: null,
+        logout: vi.fn(),
+        isAuthenticated: false,
+        loading: false,
+      });
 
       const { result } = renderHook(() => useEventoPermissions());
 

@@ -71,15 +71,18 @@ describe('Validações de Cliente', () => {
     it('deve validar cliente PF com dados corretos', () => {
       const result = clienteSchema.safeParse({
         nome: 'João Silva',
-        tipo: 'pf',
+        tipo: 'CPF',
         documento: '12345678909',
         email: 'joao@exemplo.com',
         telefone: '11999999999',
-        cep: '01310100',
-        endereco: 'Av. Paulista',
-        numero: '1000',
-        cidade: 'São Paulo',
-        estado: 'SP'
+        endereco: {
+          cep: '01310100',
+          logradouro: 'Av. Paulista',
+          numero: '1000',
+          bairro: 'Bela Vista',
+          cidade: 'São Paulo',
+          estado: 'SP'
+        }
       });
       
       expect(result.success).toBe(true);
@@ -88,15 +91,18 @@ describe('Validações de Cliente', () => {
     it('deve validar cliente PJ com dados corretos', () => {
       const result = clienteSchema.safeParse({
         nome: 'Empresa LTDA',
-        tipo: 'pj',
+        tipo: 'CNPJ',
         documento: '11222333000181',
         email: 'contato@empresa.com',
         telefone: '1133334444',
-        cep: '01310100',
-        endereco: 'Av. Paulista',
-        numero: '2000',
-        cidade: 'São Paulo',
-        estado: 'SP'
+        endereco: {
+          cep: '01310100',
+          logradouro: 'Av. Paulista',
+          numero: '2000',
+          bairro: 'Bela Vista',
+          cidade: 'São Paulo',
+          estado: 'SP'
+        }
       });
       
       expect(result.success).toBe(true);
@@ -105,10 +111,18 @@ describe('Validações de Cliente', () => {
     it('deve rejeitar CPF inválido para PF', () => {
       const result = clienteSchema.safeParse({
         nome: 'João Silva',
-        tipo: 'pf',
+        tipo: 'CPF',
         documento: '00000000000',
         email: 'joao@exemplo.com',
-        telefone: '11999999999'
+        telefone: '11999999999',
+        endereco: {
+          cep: '01310100',
+          logradouro: 'Av. Paulista',
+          numero: '1000',
+          bairro: 'Bela Vista',
+          cidade: 'São Paulo',
+          estado: 'SP'
+        }
       });
       
       expect(result.success).toBe(false);
@@ -117,10 +131,18 @@ describe('Validações de Cliente', () => {
     it('deve rejeitar CNPJ inválido para PJ', () => {
       const result = clienteSchema.safeParse({
         nome: 'Empresa LTDA',
-        tipo: 'pj',
+        tipo: 'CNPJ',
         documento: '00000000000000',
         email: 'contato@empresa.com',
-        telefone: '1133334444'
+        telefone: '1133334444',
+        endereco: {
+          cep: '01310100',
+          logradouro: 'Av. Paulista',
+          numero: '2000',
+          bairro: 'Bela Vista',
+          cidade: 'São Paulo',
+          estado: 'SP'
+        }
       });
       
       expect(result.success).toBe(false);
@@ -129,9 +151,17 @@ describe('Validações de Cliente', () => {
     it('deve validar email obrigatório', () => {
       const result = clienteSchema.safeParse({
         nome: 'João Silva',
-        tipo: 'pf',
+        tipo: 'CPF',
         documento: '12345678909',
-        telefone: '11999999999'
+        telefone: '11999999999',
+        endereco: {
+          cep: '01310100',
+          logradouro: 'Av. Paulista',
+          numero: '1000',
+          bairro: 'Bela Vista',
+          cidade: 'São Paulo',
+          estado: 'SP'
+        }
       });
       
       expect(result.success).toBe(false);
@@ -140,11 +170,18 @@ describe('Validações de Cliente', () => {
     it('deve validar estado válido', () => {
       const result = clienteSchema.safeParse({
         nome: 'João Silva',
-        tipo: 'pf',
+        tipo: 'CPF',
         documento: '12345678909',
         email: 'joao@exemplo.com',
         telefone: '11999999999',
-        estado: 'XX' // Estado inválido
+        endereco: {
+          cep: '01310100',
+          logradouro: 'Av. Paulista',
+          numero: '1000',
+          bairro: 'Bela Vista',
+          cidade: 'São Paulo',
+          estado: 'XX' // Estado inválido
+        }
       });
       
       expect(result.success).toBe(false);
