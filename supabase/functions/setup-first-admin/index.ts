@@ -8,7 +8,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -16,7 +15,7 @@ serve(async (req) => {
   try {
     console.log('🔧 Setup First Admin - Iniciando...');
 
-    // Criar cliente Supabase com service role (admin)
+    // Criar cliente admin primeiro
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -28,25 +27,24 @@ serve(async (req) => {
       }
     );
 
-    // ✅ PROTEÇÃO 1: Verificar se sistema já tem usuários (usando RPC function)
+    // 🔐 FASE 2.3 PROTEÇÃO 1: Verificar se sistema já tem usuários
     const { data: hasUsers } = await supabaseAdmin.rpc('system_has_users');
 
     if (hasUsers) {
       console.warn('⚠️ Sistema já possui usuários');
       return new Response(
         JSON.stringify({ 
-          error: 'Sistema já inicializado',
-          message: 'O sistema já possui usuários. Use o painel administrativo para criar novos usuários.'
+          error: 'O sistema já possui usuários. Use o painel administrativo para criar novos usuários.' 
         }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // ✅ PROTEÇÃO 2: Rate Limiting por IP
+    // 🔐 PROTEÇÃO 2: Rate Limiting
     const clientIp = req.headers.get('x-forwarded-for') || 
                      req.headers.get('x-real-ip') || 
                      'unknown';
-
+    
     const { data: canProceed } = await supabaseAdmin.rpc('check_auth_rate_limit', {
       p_identifier: clientIp,
       p_attempt_type: 'setup_admin',
@@ -58,19 +56,14 @@ serve(async (req) => {
     if (!canProceed) {
       console.warn('⚠️ Rate limit atingido para IP:', clientIp);
       return new Response(
-        JSON.stringify({ 
-          error: 'Muitas tentativas',
-          message: 'Limite de tentativas excedido. Aguarde 2 horas e tente novamente.'
-        }),
+        JSON.stringify({ error: 'Muitas tentativas. Aguarde 2 horas antes de tentar novamente.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('✅ Verificações de segurança OK, criando primeiro admin...');
-
-    // ✅ VALIDAR ENTRADA
     const { nome, email, password, telefone, cpf } = await req.json();
 
+    // Validações
     if (!nome || !email || !password) {
       throw new Error('Nome, email e senha são obrigatórios');
     }
@@ -79,11 +72,13 @@ serve(async (req) => {
       throw new Error('Senha deve ter no mínimo 8 caracteres');
     }
 
+    console.log('✅ Sistema vazio e rate limit OK, criando primeiro admin...');
+
     // Criar usuário
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Auto-confirmar email
+      email_confirm: true,
       user_metadata: {
         nome,
         telefone,
@@ -98,7 +93,7 @@ serve(async (req) => {
 
     console.log('✅ Usuário criado:', authData.user.id);
 
-    // Upsert profile (idempotente - não falha se já existir)
+    // Upsert profile
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .upsert(
@@ -114,14 +109,12 @@ serve(async (req) => {
 
     if (profileError) {
       console.error('⚠️ Aviso ao criar/atualizar profile:', profileError);
-      // Não falhar aqui - continuar com o processo
       console.log('⏭️ Continuando apesar do erro no profile...');
     } else {
       console.log('✅ Profile criado/atualizado');
     }
 
-    // Garantir role admin de forma idempotente
-    // Deletar qualquer role existente e inserir admin
+    // Garantir role admin
     await supabaseAdmin
       .from('user_roles')
       .delete()
@@ -141,7 +134,7 @@ serve(async (req) => {
 
     console.log('✅ Role admin criada');
 
-    // Buscar TODAS as permissões disponíveis
+    // Buscar e inserir todas as permissões
     const { data: allPermissions, error: permError } = await supabaseAdmin
       .from('permissions')
       .select('id');
@@ -153,8 +146,6 @@ serve(async (req) => {
 
     console.log(`✅ ${allPermissions.length} permissões encontradas`);
 
-    // Garantir permissões de forma idempotente
-    // Deletar permissões existentes e reinserir todas
     await supabaseAdmin
       .from('user_permissions')
       .delete()
@@ -222,7 +213,6 @@ serve(async (req) => {
     console.error('❌ Erro no setup:', error);
     let errorMessage = error instanceof Error ? error.message : 'Erro ao criar primeiro administrador';
     
-    // Mensagens mais amigáveis para erros específicos
     if (errorMessage.includes('duplicate key') || errorMessage.includes('already registered')) {
       errorMessage = 'Este email já está cadastrado. Por favor, faça login com suas credenciais.';
     }

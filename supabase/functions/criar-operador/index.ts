@@ -6,24 +6,42 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Schema de validação Zod para entrada
+// 🔐 FASE 2.1: Schema de validação Zod
 const OperadorSchema = z.object({
   nome: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres').max(200, 'Nome muito longo'),
-  email: z.string().trim().email('Email inválido').max(255, 'Email muito longo'),
+  email: z.string().email('Email inválido').max(255, 'Email muito longo'),
   cpf: z.string().regex(/^\d{11}$/, 'CPF deve ter 11 dígitos').optional(),
-  telefone: z.string().regex(/^\d{10,11}$/, 'Telefone inválido (10-11 dígitos)').optional(),
+  telefone: z.string().regex(/^\d{10,11}$/, 'Telefone inválido').optional(),
   senha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres').max(100, 'Senha muito longa'),
-  tipo: z.enum(['operacional', 'suporte', 'sistema'], { errorMap: () => ({ message: 'Tipo inválido' }) }).optional(),
+  tipo: z.enum(['operacional', 'suporte', 'sistema']),
   permissions: z.array(z.string()).min(1, 'Selecione pelo menos 1 permissão')
 });
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    // Validação do schema
+    const body = await req.json();
+    const validation = OperadorSchema.safeParse(body);
+    
+    if (!validation.success) {
+      console.error('❌ Validação falhou:', validation.error.flatten());
+      return new Response(
+        JSON.stringify({ 
+          error: 'Dados inválidos', 
+          details: validation.error.flatten().fieldErrors 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { nome, email, cpf, telefone, senha, tipo, permissions } = validation.data;
+
+    console.log('📥 Recebida requisição criar-operador:', { email, nome, tipo, permissionsCount: permissions.length });
+
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -34,25 +52,6 @@ Deno.serve(async (req) => {
         },
       }
     );
-
-    // Validar entrada com Zod
-    const body = await req.json();
-    const validation = OperadorSchema.safeParse(body);
-    
-    if (!validation.success) {
-      console.error('❌ Validação Zod falhou:', validation.error.errors);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Dados inválidos', 
-          details: validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`)
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    const { nome, email, cpf, telefone, senha, tipo, permissions } = validation.data;
-
-    console.log('✅ Validação OK:', { email, nome, tipo, permissionsCount: permissions.length });
 
     // 1. Verificar se usuário já existe por email
     const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
@@ -171,7 +170,7 @@ Deno.serve(async (req) => {
 
       console.log('✅ Tipo de perfil atualizado:', tipo);
 
-      // Inserir permissões (SEM role - sistema granular)
+      // Inserir permissões
       console.log(`🔄 Inserindo ${permissions.length} permissões para novo usuário...`);
       
       const userPermissions = permissions.map((permissionId: string) => ({

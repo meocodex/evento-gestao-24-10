@@ -12,12 +12,12 @@ serve(async (req) => {
   }
 
   try {
-    // ✅ VALIDAR AUTENTICAÇÃO
+    // 🔐 FASE 2.2: AUTORIZAÇÃO - Verificar JWT e permissão
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      console.error('❌ Authorization header ausente');
+      console.error('❌ Token ausente');
       return new Response(
-        JSON.stringify({ error: 'Não autorizado - Token de autenticação ausente' }),
+        JSON.stringify({ error: 'Não autorizado: Token ausente' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -35,20 +35,18 @@ serve(async (req) => {
       }
     );
 
-    // ✅ VALIDAR JWT E OBTER USUÁRIO
+    // Verificar usuário autenticado
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       console.error('❌ Token inválido:', authError);
       return new Response(
-        JSON.stringify({ error: 'Token de autenticação inválido' }),
+        JSON.stringify({ error: 'Token inválido' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('✅ Usuário autenticado:', user.id);
-
-    // ✅ VALIDAR PERMISSÃO DE ADMIN
+    // Verificar se tem permissão admin
     const { data: hasAdmin, error: permError } = await supabaseAdmin
       .rpc('has_permission', { 
         _user_id: user.id, 
@@ -56,23 +54,27 @@ serve(async (req) => {
       });
 
     if (permError || !hasAdmin) {
-      console.error('❌ Permissão negada para:', user.id);
+      console.error('❌ Usuário sem permissão admin:', user.email);
       return new Response(
-        JSON.stringify({ error: 'Permissão negada - Apenas administradores podem excluir usuários' }),
+        JSON.stringify({ error: 'Permissão negada: Apenas administradores podem excluir usuários' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('✅ Permissão de admin validada');
+    console.log('✅ Autorização concedida para:', user.email);
 
-    // ✅ OBTER user_id DO BODY
     const { user_id } = await req.json();
 
     if (!user_id) {
       throw new Error('user_id é obrigatório');
     }
 
-    console.log('🗑️ Admin', user.email, 'excluindo usuário:', user_id);
+    // Prevenir auto-exclusão
+    if (user_id === user.id) {
+      throw new Error('Você não pode excluir seu próprio usuário');
+    }
+
+    console.log('🗑️ Excluindo usuário:', user_id);
 
     // Excluir usuário do Auth (cascade deleta profiles, roles, permissions via RLS)
     const { error } = await supabaseAdmin.auth.admin.deleteUser(user_id);
