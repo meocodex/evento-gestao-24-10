@@ -5,7 +5,7 @@ import { useDemandas } from '@/hooks/demandas';
 import { Demanda } from '@/types/demandas';
 import { AlertCircle, Eye, Plus, DollarSign } from 'lucide-react';
 import { useState } from 'react';
-import { DetalhesDemandaDialog } from '@/components/demandas/DetalhesDemandaDialog';
+import { DetalhesDemandaSheet } from '@/components/demandas/DetalhesDemandaSheet';
 import { NovaDemandaReembolsoSheet } from '@/components/demandas/NovaDemandaReembolsoSheet';
 
 interface DemandasEventoProps {
@@ -140,7 +140,7 @@ export function DemandasEvento({ eventoId }: DemandasEventoProps) {
         )}
       </div>
 
-      <DetalhesDemandaDialog
+      <DetalhesDemandaSheet
         demanda={demandaSelecionada}
         open={detalhesOpen}
         onOpenChange={setDetalhesOpen}

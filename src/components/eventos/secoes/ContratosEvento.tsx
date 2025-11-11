@@ -7,7 +7,7 @@ import { FileText, Download, Eye, Calendar, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useState } from 'react';
-import { DetalhesContratoDialog } from '@/components/contratos/DetalhesContratoDialog';
+import { DetalhesContratoSheet } from '@/components/contratos/DetalhesContratoSheet';
 
 interface ContratosEventoProps {
   evento: Evento;
@@ -152,7 +152,7 @@ export function ContratosEvento({ evento }: ContratosEventoProps) {
       </div>
 
       {contrato && (
-        <DetalhesContratoDialog
+        <DetalhesContratoSheet
           contrato={contrato}
           open={!!contratoSelecionado}
           onOpenChange={(open) => {
