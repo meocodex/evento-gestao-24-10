@@ -1,9 +1,21 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Schema de validação Zod para entrada
+const OperadorSchema = z.object({
+  nome: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres').max(200, 'Nome muito longo'),
+  email: z.string().trim().email('Email inválido').max(255, 'Email muito longo'),
+  cpf: z.string().regex(/^\d{11}$/, 'CPF deve ter 11 dígitos').optional(),
+  telefone: z.string().regex(/^\d{10,11}$/, 'Telefone inválido (10-11 dígitos)').optional(),
+  senha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres').max(100, 'Senha muito longa'),
+  tipo: z.enum(['operacional', 'suporte', 'sistema'], { errorMap: () => ({ message: 'Tipo inválido' }) }).optional(),
+  permissions: z.array(z.string()).min(1, 'Selecione pelo menos 1 permissão')
+});
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -23,29 +35,24 @@ Deno.serve(async (req) => {
       }
     );
 
-    const { nome, email, cpf, telefone, senha, tipo, permissions } = await req.json();
-
-    console.log('📥 Recebida requisição criar-operador:', { email, nome, tipo, permissionsCount: permissions?.length });
-
-    // Validar dados obrigatórios
-    if (!nome || !email || !senha) {
-      console.error('❌ Dados obrigatórios faltando');
+    // Validar entrada com Zod
+    const body = await req.json();
+    const validation = OperadorSchema.safeParse(body);
+    
+    if (!validation.success) {
+      console.error('❌ Validação Zod falhou:', validation.error.errors);
       return new Response(
-        JSON.stringify({ error: 'Dados obrigatórios faltando: nome, email e senha são obrigatórios' }),
+        JSON.stringify({ 
+          error: 'Dados inválidos', 
+          details: validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`)
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Validar permissões (MÍNIMO 1)
-    if (!permissions || !Array.isArray(permissions) || permissions.length === 0) {
-      console.error('❌ Permissões vazias ou inválidas');
-      return new Response(
-        JSON.stringify({ error: 'É obrigatório selecionar pelo menos 1 permissão para criar usuário do sistema' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const { nome, email, cpf, telefone, senha, tipo, permissions } = validation.data;
 
-    console.log(`✅ Validação OK: ${permissions.length} permissões recebidas`);
+    console.log('✅ Validação OK:', { email, nome, tipo, permissionsCount: permissions.length });
 
     // 1. Verificar se usuário já existe por email
     const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();

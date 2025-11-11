@@ -16,17 +16,6 @@ serve(async (req) => {
   try {
     console.log('🔧 Setup First Admin - Iniciando...');
 
-    const { nome, email, password, telefone, cpf } = await req.json();
-
-    // Validações básicas
-    if (!nome || !email || !password) {
-      throw new Error('Nome, email e senha são obrigatórios');
-    }
-
-    if (password.length < 8) {
-      throw new Error('Senha deve ter no mínimo 8 caracteres');
-    }
-
     // Criar cliente Supabase com service role (admin)
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -39,23 +28,56 @@ serve(async (req) => {
       }
     );
 
-    // Verificar se já existe algum usuário usando a API de administração
-    const { data: existingAuthUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers({
-      page: 1,
-      perPage: 1
+    // ✅ PROTEÇÃO 1: Verificar se sistema já tem usuários (usando RPC function)
+    const { data: hasUsers } = await supabaseAdmin.rpc('system_has_users');
+
+    if (hasUsers) {
+      console.warn('⚠️ Sistema já possui usuários');
+      return new Response(
+        JSON.stringify({ 
+          error: 'Sistema já inicializado',
+          message: 'O sistema já possui usuários. Use o painel administrativo para criar novos usuários.'
+        }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ✅ PROTEÇÃO 2: Rate Limiting por IP
+    const clientIp = req.headers.get('x-forwarded-for') || 
+                     req.headers.get('x-real-ip') || 
+                     'unknown';
+
+    const { data: canProceed } = await supabaseAdmin.rpc('check_auth_rate_limit', {
+      p_identifier: clientIp,
+      p_attempt_type: 'setup_admin',
+      p_max_attempts: 3,
+      p_window_minutes: 60,
+      p_block_minutes: 120
     });
 
-    if (listError) {
-      console.error('❌ Erro ao verificar usuários existentes:', listError);
-      throw new Error('Erro ao verificar usuários existentes');
+    if (!canProceed) {
+      console.warn('⚠️ Rate limit atingido para IP:', clientIp);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Muitas tentativas',
+          message: 'Limite de tentativas excedido. Aguarde 2 horas e tente novamente.'
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    if (existingAuthUsers && existingAuthUsers.users && existingAuthUsers.users.length > 0) {
-      console.warn('⚠️ Sistema já tem usuários cadastrados');
-      throw new Error('O sistema já possui usuários cadastrados. Use o fluxo normal de criação de usuários.');
+    console.log('✅ Verificações de segurança OK, criando primeiro admin...');
+
+    // ✅ VALIDAR ENTRADA
+    const { nome, email, password, telefone, cpf } = await req.json();
+
+    if (!nome || !email || !password) {
+      throw new Error('Nome, email e senha são obrigatórios');
     }
 
-    console.log('✅ Sistema vazio, criando primeiro admin...');
+    if (password.length < 8) {
+      throw new Error('Senha deve ter no mínimo 8 caracteres');
+    }
 
     // Criar usuário
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({

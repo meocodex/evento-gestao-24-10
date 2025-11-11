@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          table_name: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       auth_rate_limit: {
         Row: {
           attempt_type: string
@@ -2185,6 +2224,43 @@ export type Database = {
         Returns: undefined
       }
       gerar_numero_demanda: { Args: never; Returns: number }
+      get_demandas_stats: {
+        Args: never
+        Returns: {
+          demandas_abertas: number
+          demandas_urgentes: number
+          demandas_vencidas: number
+          total_demandas: number
+        }[]
+      }
+      get_estoque_popular: {
+        Args: { limit_count?: number }
+        Returns: {
+          categoria: string
+          material_id: string
+          nome: string
+          total_alocacoes: number
+        }[]
+      }
+      get_eventos_stats: {
+        Args: never
+        Returns: {
+          eventos_ativos: number
+          eventos_mes_atual: number
+          eventos_proximos: number
+          total_eventos: number
+        }[]
+      }
+      get_financeiro_eventos: {
+        Args: { p_evento_id?: string }
+        Returns: {
+          evento_id: string
+          evento_nome: string
+          saldo: number
+          total_despesas: number
+          total_receitas: number
+        }[]
+      }
       has_permission: {
         Args: { _permission_id: string; _user_id: string }
         Returns: boolean
