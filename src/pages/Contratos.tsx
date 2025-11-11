@@ -15,9 +15,9 @@ import { DetalhesContratoSheet } from '@/components/contratos/DetalhesContratoSh
 import { NovoTemplateSheet } from '@/components/contratos/NovoTemplateSheet';
 import { EditarTemplateSheet } from '@/components/contratos/EditarTemplateSheet';
 import { DetalhesTemplateSheet } from '@/components/contratos/DetalhesTemplateSheet';
-import { SimularAssinaturaDialog } from '@/components/contratos/SimularAssinaturaDialog';
-import { NovaPropostaDialog } from '@/components/propostas/NovaPropostaDialog';
-import { ConverterContratoDialog } from '@/components/propostas/ConverterContratoDialog';
+import { SimularAssinaturaSheet } from '@/components/contratos/SimularAssinaturaSheet';
+import { NovaPropostaSheet } from '@/components/propostas/NovaPropostaSheet';
+import { ConverterContratoSheet } from '@/components/propostas/ConverterContratoSheet';
 import { Contrato, ContratoTemplate, StatusContrato } from '@/types/contratos';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContratosVirtualList } from '@/components/contratos/ContratosVirtualList';
@@ -349,7 +349,7 @@ export default function Contratos() {
 
       {/* Dialogs */}
       <NovoContratoSheet open={mostrarNovoContrato} onOpenChange={setMostrarNovoContrato} />
-      <NovaPropostaDialog open={mostrarNovaProposta} onOpenChange={setMostrarNovaProposta} />
+      <NovaPropostaSheet open={mostrarNovaProposta} onOpenChange={setMostrarNovaProposta} />
       <DetalhesContratoSheet
         open={mostrarDetalhesContrato}
         onOpenChange={setMostrarDetalhesContrato}
@@ -383,12 +383,12 @@ export default function Contratos() {
         onOpenChange={setMostrarEditarTemplate}
         template={templateSelecionado}
       />
-      <SimularAssinaturaDialog
+      <SimularAssinaturaSheet
         open={mostrarSimularAssinatura}
         onOpenChange={setMostrarSimularAssinatura}
         contrato={contratoSelecionado}
       />
-      <ConverterContratoDialog
+      <ConverterContratoSheet
         open={mostrarConverterContrato}
         onOpenChange={setMostrarConverterContrato}
         contrato={contratoSelecionado}

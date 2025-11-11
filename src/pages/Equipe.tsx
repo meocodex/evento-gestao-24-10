@@ -10,8 +10,8 @@ import { MembrosUnificadosVirtualList } from '@/components/equipe/MembrosUnifica
 import { NovoOperacionalSheet } from '@/components/equipe/operacional/NovoOperacionalSheet';
 import { DetalhesOperacionalSheet } from '@/components/equipe/operacional/DetalhesOperacionalSheet';
 import { EditarOperacionalSheet } from '@/components/equipe/operacional/EditarOperacionalSheet';
-import { ConcederAcessoSistemaDialog } from '@/components/equipe/ConcederAcessoSistemaDialog';
-import { GerenciarPermissoesMembroDialog } from '@/components/equipe/GerenciarPermissoesMembroDialog';
+import { ConcederAcessoSistemaSheet } from '@/components/equipe/ConcederAcessoSistemaSheet';
+import { GerenciarPermissoesMembroSheet } from '@/components/equipe/GerenciarPermissoesMembroSheet';
 import { EquipeFiltersPopover, EquipeFiltersType } from '@/components/equipe/EquipeFiltersPopover';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { MembroEquipeUnificado } from '@/types/equipe';
@@ -315,13 +315,13 @@ export default function Equipe() {
         />
       )}
 
-      <ConcederAcessoSistemaDialog
+      <ConcederAcessoSistemaSheet
         open={!!concederAcessoMembro}
         onOpenChange={(open) => !open && setConcederAcessoMembro(null)}
         membro={concederAcessoMembro}
       />
 
-      <GerenciarPermissoesMembroDialog
+      <GerenciarPermissoesMembroSheet
         open={!!gerenciarPermissoesMembro}
         onOpenChange={(open) => !open && setGerenciarPermissoesMembro(null)}
         membro={gerenciarPermissoesMembro}
