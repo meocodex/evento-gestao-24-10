@@ -45,7 +45,10 @@ export function EventosKanbanView({ eventos, onViewDetails }: EventosKanbanViewP
     };
 
     eventos.forEach((evento) => {
-      grouped[evento.status].push(evento);
+      // Validação defensiva: só adiciona se o status é válido
+      if (evento.status in grouped) {
+        grouped[evento.status as StatusEvento].push(evento);
+      }
     });
 
     return grouped;

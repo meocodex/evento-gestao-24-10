@@ -11,6 +11,7 @@ describe('useEventoPermissions (DEPRECATED)', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
     mockUseAuth.mockReturnValue({
       user: {
         id: 'user-123',

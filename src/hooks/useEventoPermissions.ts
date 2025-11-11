@@ -104,7 +104,7 @@ export function useEventoPermissions(evento?: Evento): EventoPermissions {
 
   // ⚠️ LÓGICA ANTIGA - Baseada em roles fixas
   // Este código será removido em versão futura
-  const isAdmin = user.role === 'admin';
+  const isAdmin = user.role === 'admin' || user.isAdmin === true;
   const isComercial = user.role === 'comercial';
   const isSuporte = user.role === 'suporte';
   const isOwner = evento?.comercial?.id === user.id;

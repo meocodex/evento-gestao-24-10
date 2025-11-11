@@ -4,13 +4,19 @@ import { demandaSchema, reembolsoSchema } from '../demanda';
 describe('Validações de Demanda', () => {
   describe('demandaSchema', () => {
     it('deve validar demanda com dados corretos', () => {
-      const result = demandaSchema.safeParse({
+      const data = {
         titulo: 'Demanda de Teste',
         descricao: 'Descrição detalhada da demanda',
-        categoria: 'operacional',
-        prioridade: 'alta',
+        categoria: 'operacional' as const,
+        prioridade: 'alta' as const,
         prazo: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-      });
+      };
+      
+      const result = demandaSchema.safeParse(data);
+      
+      if (!result.success) {
+        console.log('Validation errors:', JSON.stringify(result.error.format(), null, 2));
+      }
       
       expect(result.success).toBe(true);
     });
@@ -18,7 +24,7 @@ describe('Validações de Demanda', () => {
     it('deve validar título obrigatório', () => {
       const result = demandaSchema.safeParse({
         descricao: 'Descrição',
-        categoria: 'logistica',
+        categoria: 'operacional',
         prioridade: 'media'
       });
       
@@ -29,7 +35,7 @@ describe('Validações de Demanda', () => {
       const result = demandaSchema.safeParse({
         titulo: 'Ab',
         descricao: 'Descrição',
-        categoria: 'logistica',
+        categoria: 'operacional',
         prioridade: 'media'
       });
       
@@ -40,7 +46,7 @@ describe('Validações de Demanda', () => {
       const result = demandaSchema.safeParse({
         titulo: 'A'.repeat(201),
         descricao: 'Descrição',
-        categoria: 'logistica',
+        categoria: 'operacional',
         prioridade: 'media'
       });
       
@@ -62,7 +68,7 @@ describe('Validações de Demanda', () => {
       const result = demandaSchema.safeParse({
         titulo: 'Demanda Teste',
         descricao: 'Descrição',
-        categoria: 'logistica',
+        categoria: 'operacional',
         prioridade: 'prioridade_invalida'
       });
       
@@ -73,7 +79,7 @@ describe('Validações de Demanda', () => {
       const result = demandaSchema.safeParse({
         titulo: 'Demanda Teste',
         descricao: 'Descrição',
-        categoria: 'logistica',
+        categoria: 'operacional',
         prioridade: 'alta',
         prazo: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
       });

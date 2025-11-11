@@ -8,9 +8,10 @@ vi.mock('@/contexts/AuthContext');
 
 describe('usePermissions', () => {
   const mockUseAuth = vi.mocked(useAuth);
-
+  
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
     mockUseAuth.mockReturnValue({
       user: {
         id: 'user-123',

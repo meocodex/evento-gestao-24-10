@@ -106,19 +106,116 @@ it('deve ter permissão específica', () => {
 
 ---
 
+## 🔄 Correções Aplicadas em 2025-11-11
+
+### **FASE 1: EventosKanbanView - Validação Defensiva** ✅
+
+**Problema**: `TypeError: Cannot read properties of undefined (reading 'push')`
+- **Causa**: Tentativa de fazer `grouped[evento.status].push(evento)` quando `evento.status` não era válido
+- **Impacto**: 11 de 13 testes falharam (84.6%)
+
+**Solução Aplicada**:
+```typescript
+// Antes
+eventos.forEach((evento) => {
+  grouped[evento.status].push(evento);
+});
+
+// Depois
+eventos.forEach((evento) => {
+  if (evento.status in grouped) {
+    grouped[evento.status as StatusEvento].push(evento);
+  }
+});
+```
+
+**Arquivo Modificado**: `src/components/eventos/EventosKanbanView.tsx` (linha 37-52)
+
+---
+
+### **FASE 2: Sistema de Permissões** ✅
+
+#### **2.1. useEventoPermissions - Verificação de isAdmin**
+
+**Problema**: Hook deprecado não verificava `user.isAdmin`, apenas `user.role === 'admin'`
+- **Impacto**: 6 testes falharam
+
+**Solução Aplicada**:
+```typescript
+// Antes
+const isAdmin = user.role === 'admin';
+
+// Depois
+const isAdmin = user.role === 'admin' || user.isAdmin === true;
+```
+
+**Arquivo Modificado**: `src/hooks/useEventoPermissions.ts` (linha 107)
+
+#### **2.2. Mocks de Testes de Permissões**
+
+**Problema**: Mock global em `src/tests/setup.ts` interferia com mocks específicos dos testes
+- **Impacto**: 18 testes em usePermissions.test.ts e 6 em useEventoPermissions.test.ts
+
+**Solução Aplicada**:
+- Adicionado `vi.resetModules()` no `beforeEach` para isolar mocks
+- Cada teste agora tem mock explícito via `mockUseAuth.mockReturnValue()`
+
+**Arquivos Modificados**:
+- `src/hooks/__tests__/usePermissions.test.ts` (linha 9-12)
+- `src/hooks/__tests__/useEventoPermissions.test.ts` (linha 9-12)
+
+---
+
+### **FASE 3: Validações de Schema Zod** ✅
+
+#### **3.1. Correção de Categorias Inválidas**
+
+**Problema**: Testes usavam categoria `'logistica'` que não existe no enum
+- **Valores Válidos**: `'tecnica' | 'operacional' | 'comercial' | 'financeira' | 'administrativa' | 'reembolso' | 'outra'`
+
+**Solução Aplicada**:
+- Substituído todas as ocorrências de `'logistica'` por `'operacional'`
+- Adicionado type assertion `as const` para evitar erros de tipo
+
+**Arquivo Modificado**: `src/lib/validations/__tests__/demanda.test.ts` (linhas 6-106)
+
+#### **3.2. Adição de Debug nos Schemas**
+
+**Problema**: Testes falhavam mas não mostravam os erros de validação
+- **Impacto**: Difícil debugar o que estava errado
+
+**Solução Aplicada**:
+```typescript
+const result = schema.safeParse(data);
+
+if (!result.success) {
+  console.log('Validation errors:', JSON.stringify(result.error.format(), null, 2));
+}
+
+expect(result.success).toBe(true);
+```
+
+**Arquivos Modificados**:
+- `src/lib/validations/__tests__/financeiro.test.ts` (linha 6-18)
+- `src/lib/validations/__tests__/demanda.test.ts` (linha 6-16)
+
+---
+
 ## 📊 Resumo de Resultados Esperados
 
 ### Antes das Correções
 - ❌ **Total de Falhas**: 42 testes
-- ⚠️ **Taxa de Sucesso**: ~67% (127/169)
-- 🔴 **Schemas Zod**: 13 falhas
-- 🔴 **Mocks de Permissões**: 29 falhas
+- ⚠️ **Taxa de Sucesso**: ~75% (127/169)
+- 🔴 **EventosKanbanView**: 11 falhas
+- 🔴 **Mocks de Permissões**: 24 falhas
+- 🔴 **Schemas Zod**: 7 falhas
 
 ### Após as Correções
 - ✅ **Total de Sucessos**: 169 testes (esperado)
 - ✅ **Taxa de Sucesso**: 100%
-- ✅ **Schemas Zod**: Todos funcionando
+- ✅ **EventosKanbanView**: Todos funcionando
 - ✅ **Mocks de Permissões**: Todos funcionando
+- ✅ **Schemas Zod**: Todos funcionando
 
 ---
 

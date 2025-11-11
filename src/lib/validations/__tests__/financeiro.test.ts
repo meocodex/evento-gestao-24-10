@@ -3,19 +3,25 @@ import { contaPagarSchema, contaReceberSchema } from '../financeiro';
 
 describe('Validações de Financeiro', () => {
   describe('contaPagarSchema', () => {
-    it('deve validar conta a pagar com dados corretos', () => {
-      const result = contaPagarSchema.safeParse({
-        descricao: 'Pagamento de fornecedor',
-        categoria: 'fornecedores',
-        valor_unitario: 1500.00,
-        quantidade: 1,
-        recorrencia: 'unico',
-        data_vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'pendente'
-      });
-      
-      expect(result.success).toBe(true);
-    });
+  it('deve validar conta a pagar com dados corretos', () => {
+    const data = {
+      descricao: 'Pagamento de fornecedor',
+      categoria: 'fornecedores',
+      valor_unitario: 1500.00,
+      quantidade: 1,
+      recorrencia: 'unico' as const,
+      data_vencimento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      status: 'pendente' as const
+    };
+    
+    const result = contaPagarSchema.safeParse(data);
+    
+    if (!result.success) {
+      console.log('Validation errors:', JSON.stringify(result.error.format(), null, 2));
+    }
+
+    expect(result.success).toBe(true);
+  });
 
     it('deve validar descrição obrigatória', () => {
       const result = contaPagarSchema.safeParse({
