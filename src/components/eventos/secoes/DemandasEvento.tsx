@@ -6,7 +6,7 @@ import { Demanda } from '@/types/demandas';
 import { AlertCircle, Eye, Plus, DollarSign } from 'lucide-react';
 import { useState } from 'react';
 import { DetalhesDemandaDialog } from '@/components/demandas/DetalhesDemandaDialog';
-import { NovaDemandaReembolsoDialog } from '@/components/demandas/NovaDemandaReembolsoDialog';
+import { NovaDemandaReembolsoSheet } from '@/components/demandas/NovaDemandaReembolsoSheet';
 
 interface DemandasEventoProps {
   eventoId: string;
@@ -59,7 +59,7 @@ export function DemandasEvento({ eventoId }: DemandasEventoProps) {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <NovaDemandaReembolsoDialog eventoId={eventoId} />
+        <NovaDemandaReembolsoSheet eventoId={eventoId} />
       </div>
 
       {/* Estatísticas */}

@@ -7,9 +7,9 @@ import { FileViewer } from '@/components/shared/FileViewer';
 import { useDemandas } from '@/hooks/demandas';
 import { useAuth } from '@/hooks/useAuth';
 import { useEventosDespesas } from '@/hooks/useEventosDespesas';
-import { AprovarReembolsoDialog } from '../AprovarReembolsoDialog';
-import { MarcarPagoDialog } from '../MarcarPagoDialog';
-import { RecusarReembolsoDialog } from '../RecusarReembolsoDialog';
+import { AprovarReembolsoSheet } from '../AprovarReembolsoSheet';
+import { MarcarPagoSheet } from '../MarcarPagoSheet';
+import { RecusarReembolsoSheet } from '../RecusarReembolsoSheet';
 import { format } from 'date-fns';
 import { DollarSign, FileText, Paperclip, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
@@ -223,22 +223,22 @@ export function DemandaReembolso({ demanda }: DemandaReembolsoProps) {
         )}
       </div>
 
-      {/* Dialogs */}
-      <AprovarReembolsoDialog
+      {/* Sheets */}
+      <AprovarReembolsoSheet
         open={showAprovarDialog}
         onOpenChange={setShowAprovarDialog}
         onConfirm={handleAprovarReembolso}
         valorTotal={dadosReembolso.valorTotal}
       />
 
-      <MarcarPagoDialog
+      <MarcarPagoSheet
         open={showPagoDialog}
         onOpenChange={setShowPagoDialog}
         onConfirm={handleMarcarPago}
         valorTotal={dadosReembolso.valorTotal}
       />
 
-      <RecusarReembolsoDialog
+      <RecusarReembolsoSheet
         open={showRecusarDialog}
         onOpenChange={setShowRecusarDialog}
         onConfirm={handleRecusar}

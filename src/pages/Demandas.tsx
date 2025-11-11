@@ -6,7 +6,7 @@ import { DemandaCard } from '@/components/demandas/DemandaCard';
 import { DemandasVirtualList } from '@/components/demandas/DemandasVirtualList';
 import { DemandaFiltersPopover, DemandaFiltersType } from '@/components/demandas/DemandaFiltersPopover';
 import { NovaDemandaSheet } from '@/components/demandas/NovaDemandaSheet';
-import { NovaDemandaReembolsoDialog } from '@/components/demandas/NovaDemandaReembolsoDialog';
+import { NovaDemandaReembolsoSheet } from '@/components/demandas/NovaDemandaReembolsoSheet';
 import { DetalhesDemandaSheet } from '@/components/demandas/DetalhesDemandaSheet';
 import { EditarDemandaSheet } from '@/components/demandas/EditarDemandaSheet';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
@@ -84,7 +84,7 @@ export default function Demandas() {
           <div className="flex gap-2">
             <DemandaFiltersPopover filters={filtros} onFiltersChange={setFiltros} />
             <NovaDemandaSheet />
-            <NovaDemandaReembolsoDialog />
+            <NovaDemandaReembolsoSheet />
           </div>
         </div>
 
