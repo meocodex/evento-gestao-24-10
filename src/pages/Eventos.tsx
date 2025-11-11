@@ -9,7 +9,7 @@ import { EventosList } from '@/components/eventos/EventosList';
 import { EventosListAccordion } from '@/components/eventos/EventosListAccordion';
 import { EventosKanbanView } from '@/components/eventos/EventosKanbanView';
 import { EventosCalendarView } from '@/components/eventos/EventosCalendarView';
-import { QuickCreateEventSheet } from '@/components/eventos/QuickCreateEventDialog';
+import { QuickCreateEventSheet } from '@/components/eventos/QuickCreateEventSheet';
 import { EventoFilters, EventoFiltersType } from '@/components/eventos/EventoFilters';
 import { useNavigate } from 'react-router-dom';
 import { usePermissions } from '@/hooks/usePermissions';

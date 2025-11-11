@@ -9,7 +9,7 @@ import { useDemandas } from '@/hooks/demandas';
 import { useContasPagar, useContasReceber } from '@/hooks/financeiro';
 import { Evento } from '@/types/eventos';
 import type { ContaPagar, ContaReceber } from '@/types/financeiro';
-import { EventoDetailsDialog } from '@/components/eventos/EventoDetailsDialog';
+import { EventoDetailsSheet } from '@/components/eventos/EventoDetailsSheet';
 import { NovaContaPagarSheet } from '@/components/financeiro/NovaContaPagarSheet';
 import { NovaContaReceberSheet } from '@/components/financeiro/NovaContaReceberSheet';
 import { TabelaContasPagar } from '@/components/financeiro/TabelaContasPagar';
@@ -497,7 +497,7 @@ export default function Financeiro() {
         </Tabs>
 
       {selectedEvento && (
-        <EventoDetailsDialog
+        <EventoDetailsSheet
           evento={selectedEvento}
           open={detailsOpen}
           onOpenChange={setDetailsOpen}
