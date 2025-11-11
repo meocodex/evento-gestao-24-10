@@ -1,5 +1,7 @@
-import type { Evento } from '@/types/eventos';
+import type { Evento, StatusEvento } from '@/types/eventos';
 import type { ContaPagar, AnexoFinanceiro } from '@/types/financeiro';
+
+export type { StatusEvento } from '@/types/eventos';
 
 /**
  * Cria um mock de Evento com valores padrão válidos

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { EventosStats } from '../EventosStats';
-import type { Evento } from '@/types/eventos';
+import type { Evento, StatusEvento } from '@/types/eventos';
 import { createMockEvento } from '../../../../tests/helpers/test-data-builders';
 
 // Mock do StatCard
@@ -17,7 +17,7 @@ vi.mock('@/components/dashboard/StatCard', () => ({
 }));
 
 describe('EventosStats', () => {
-  const createEvento = (id: string, status: Evento['status']): Evento =>
+  const createEvento = (id: string, status: StatusEvento): Evento =>
     createMockEvento({ id, nome: `Evento ${id}`, status });
 
   describe('Renderização básica', () => {
