@@ -13,9 +13,18 @@ Este relatório documenta a análise completa das dependências de teste, execu�
 ### Resultados Gerais
 - ✅ **Dependências Instaladas**: 633 pacotes npm
 - ✅ **Navegadores Playwright**: Chromium, Firefox, WebKit
-- ⚠️ **Taxa de Sucesso**: ~67% dos testes passaram
-- ❌ **Total de Falhas**: 42 testes falharam
-- ✅ **Total de Sucessos**: 127 testes passaram
+- ⚠️ **Taxa de Sucesso**: 75.8% dos testes passaram (182/240)
+- ❌ **Total de Falhas**: 58 testes falharam
+- ✅ **Total de Sucessos**: 182 testes passaram
+- ⚠️ **Arquivos de Teste**: 6 passaram / 15 falharam (21 total)
+- ❌ **Erros**: 2 erros identificados
+- ⏱️ **Duração**: 11.77s
+
+### Atualização da Última Execução
+**Data/Hora:** 2025-11-11 20:48
+- Todos os 240 testes unitários foram executados com sucesso
+- Foram descobertos mais testes em relação à primeira execução
+- Taxa de aprovação melhorou ligeiramente para 75.8%
 
 ---
 
@@ -639,13 +648,44 @@ npm run test:e2e:headed
 
 ---
 
+## 🐛 Novos Problemas Identificados na Última Execução
+
+### EventosKanbanView Component - CRÍTICO
+**Arquivo:** `src/components/eventos/EventosKanbanView.tsx:48:30`
+**Erro:** `TypeError: Cannot read properties of undefined (reading 'push')`
+**Impacto:** 11 de 13 testes falharam (84.6% de falha)
+
+**Descrição:**
+O componente EventosKanbanView está tentando fazer push em um array undefined ao agrupar eventos por status. Isso indica que o objeto de agrupamento não está sendo inicializado corretamente para todos os status possíveis.
+
+**Correção Sugerida:**
+```typescript
+// Antes (linha 48):
+eventos.forEach(evento => {
+  grouped[evento.status].push(evento); // ERRO: grouped[evento.status] pode ser undefined
+});
+
+// Depois:
+eventos.forEach(evento => {
+  if (!grouped[evento.status]) {
+    grouped[evento.status] = [];
+  }
+  grouped[evento.status].push(evento);
+});
+```
+
+**Prioridade:** 🔴 ALTA - Componente crítico do sistema está quebrado
+
+---
+
 ## 📊 Conclusão
 
 O sistema possui uma **infraestrutura de testes robusta e bem estruturada**, com:
 - ✅ 36 arquivos de teste unitário
 - ✅ 14 arquivos de teste E2E
 - ✅ Configuração completa de Vitest e Playwright
-- ✅ 67% dos testes unitários passando
+- ✅ 75.8% dos testes unitários passando (182/240 testes)
+- ✅ 240 testes unitários executados com sucesso
 
 **Principais Ações Necessárias**:
 1. Corrigir mocks de permissões (69% das falhas)
