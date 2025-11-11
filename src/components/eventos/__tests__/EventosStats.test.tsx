@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { EventosStats } from '../EventosStats';
 import type { Evento } from '@/types/eventos';
+import { createMockEvento } from '../../../../tests/helpers/test-data-builders';
 
 // Mock do StatCard
 vi.mock('@/components/dashboard/StatCard', () => ({
@@ -15,17 +17,8 @@ vi.mock('@/components/dashboard/StatCard', () => ({
 }));
 
 describe('EventosStats', () => {
-  const createEvento = (id: string, status: any): Partial<Evento> => ({
-    id,
-    nome: `Evento ${id}`,
-    status,
-    data_inicio: '2024-01-15',
-    data_fim: '2024-01-15',
-    cliente_id: 'cliente-1',
-    comercial_id: 'comercial-1',
-    created_at: '2024-01-01',
-    updated_at: '2024-01-01',
-  });
+  const createEvento = (id: string, status: Evento['status']): Evento =>
+    createMockEvento({ id, nome: `Evento ${id}`, status });
 
   describe('Renderização básica', () => {
     it('deve renderizar os 4 cards de estatísticas', () => {
@@ -35,7 +28,7 @@ describe('EventosStats', () => {
         createEvento('3', 'concluido'),
       ];
 
-      render(<EventosStats eventos={eventos as Evento[]} />);
+      render(<EventosStats eventos={eventos} />);
 
       expect(screen.getByText('Total de Eventos')).toBeInTheDocument();
       expect(screen.getByText('Confirmados')).toBeInTheDocument();
@@ -63,7 +56,7 @@ describe('EventosStats', () => {
         createEvento('5', 'cancelado'),
       ];
 
-      render(<EventosStats eventos={eventos as Evento[]} />);
+      render(<EventosStats eventos={eventos} />);
 
       const statCards = screen.getAllByTestId('stat-value');
       const totalCard = statCards[0];
@@ -78,11 +71,11 @@ describe('EventosStats', () => {
         createEvento('4', 'em_execucao'),
       ];
 
-      render(<EventosStats eventos={eventos as Evento[]} />);
+      render(<EventosStats eventos={eventos} />);
 
       const statCards = screen.getAllByTestId('stat-value');
       const confirmadosCard = statCards[1];
-      expect(confirmadosCard).toHaveTextContent('3'); // 2 confirmados + 1 em_preparacao
+      expect(confirmadosCard).toHaveTextContent('3');
     });
 
     it('deve calcular eventos em execução', () => {
@@ -92,7 +85,7 @@ describe('EventosStats', () => {
         createEvento('3', 'confirmado'),
       ];
 
-      render(<EventosStats eventos={eventos as Evento[]} />);
+      render(<EventosStats eventos={eventos} />);
 
       const statCards = screen.getAllByTestId('stat-value');
       const emExecucaoCard = statCards[2];
@@ -107,7 +100,7 @@ describe('EventosStats', () => {
         createEvento('4', 'em_execucao'),
       ];
 
-      render(<EventosStats eventos={eventos as Evento[]} />);
+      render(<EventosStats eventos={eventos} />);
 
       const statCards = screen.getAllByTestId('stat-value');
       const concluidosCard = statCards[3];
@@ -118,10 +111,10 @@ describe('EventosStats', () => {
       render(<EventosStats eventos={[]} />);
 
       const statCards = screen.getAllByTestId('stat-value');
-      expect(statCards[0]).toHaveTextContent('0'); // Total
-      expect(statCards[1]).toHaveTextContent('0'); // Confirmados
-      expect(statCards[2]).toHaveTextContent('0'); // Em Execução
-      expect(statCards[3]).toHaveTextContent('0'); // Concluídos
+      expect(statCards[0]).toHaveTextContent('0');
+      expect(statCards[1]).toHaveTextContent('0');
+      expect(statCards[2]).toHaveTextContent('0');
+      expect(statCards[3]).toHaveTextContent('0');
     });
   });
 
@@ -149,7 +142,6 @@ describe('EventosStats', () => {
       const animatedDivs = container.querySelectorAll('.animate-slide-up');
       expect(animatedDivs).toHaveLength(4);
 
-      // Verificar delays
       expect(animatedDivs[0]).toHaveStyle({ animationDelay: '0ms' });
       expect(animatedDivs[1]).toHaveStyle({ animationDelay: '100ms' });
       expect(animatedDivs[2]).toHaveStyle({ animationDelay: '200ms' });
@@ -163,7 +155,7 @@ describe('EventosStats', () => {
         createEvento(`${i}`, i % 2 === 0 ? 'confirmado' : 'em_execucao')
       );
 
-      render(<EventosStats eventos={eventos as Evento[]} />);
+      render(<EventosStats eventos={eventos} />);
 
       const statCards = screen.getAllByTestId('stat-value');
       expect(statCards[0]).toHaveTextContent('1000');
@@ -179,18 +171,18 @@ describe('EventosStats', () => {
         createEvento('6', 'cancelado'),
       ];
 
-      render(<EventosStats eventos={eventos as Evento[]} />);
+      render(<EventosStats eventos={eventos} />);
 
       const statCards = screen.getAllByTestId('stat-value');
-      expect(statCards[0]).toHaveTextContent('6'); // Total
-      expect(statCards[1]).toHaveTextContent('2'); // Confirmados (confirmado + em_preparacao)
-      expect(statCards[2]).toHaveTextContent('1'); // Em Execução
-      expect(statCards[3]).toHaveTextContent('1'); // Concluídos
+      expect(statCards[0]).toHaveTextContent('6');
+      expect(statCards[1]).toHaveTextContent('2');
+      expect(statCards[2]).toHaveTextContent('1');
+      expect(statCards[3]).toHaveTextContent('1');
     });
 
     it('deve recalcular quando eventos mudam', () => {
       const eventos1 = [createEvento('1', 'confirmado')];
-      const { rerender } = render(<EventosStats eventos={eventos1 as Evento[]} />);
+      const { rerender } = render(<EventosStats eventos={eventos1} />);
 
       let statCards = screen.getAllByTestId('stat-value');
       expect(statCards[0]).toHaveTextContent('1');
@@ -199,7 +191,7 @@ describe('EventosStats', () => {
         createEvento('1', 'confirmado'),
         createEvento('2', 'em_execucao'),
       ];
-      rerender(<EventosStats eventos={eventos2 as Evento[]} />);
+      rerender(<EventosStats eventos={eventos2} />);
 
       statCards = screen.getAllByTestId('stat-value');
       expect(statCards[0]).toHaveTextContent('2');
@@ -209,12 +201,11 @@ describe('EventosStats', () => {
   describe('Performance', () => {
     it('deve usar useMemo para otimização', () => {
       const eventos = [createEvento('1', 'confirmado')];
-      const { rerender } = render(<EventosStats eventos={eventos as Evento[]} />);
+      const { rerender } = render(<EventosStats eventos={eventos} />);
 
       const statCards1 = screen.getAllByTestId('stat-value');
 
-      // Rerenderizar com mesmos eventos (useMemo deve evitar recálculo)
-      rerender(<EventosStats eventos={eventos as Evento[]} />);
+      rerender(<EventosStats eventos={eventos} />);
 
       const statCards2 = screen.getAllByTestId('stat-value');
       expect(statCards2[0]).toHaveTextContent(statCards1[0].textContent || '');
@@ -226,10 +217,9 @@ describe('EventosStats', () => {
       );
 
       const startTime = performance.now();
-      render(<EventosStats eventos={eventos as Evento[]} />);
+      render(<EventosStats eventos={eventos} />);
       const endTime = performance.now();
 
-      // Deve renderizar em menos de 100ms
       expect(endTime - startTime).toBeLessThan(100);
     });
   });
@@ -241,7 +231,7 @@ describe('EventosStats', () => {
         createEvento('2', 'confirmado'),
       ];
 
-      render(<EventosStats eventos={eventos as Evento[]} />);
+      render(<EventosStats eventos={eventos} />);
 
       const statCards = screen.getAllByTestId('stat-value');
       expect(statCards[0]).toHaveTextContent('2');

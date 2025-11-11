@@ -1,71 +1,58 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { TabelaContasPagar } from '../TabelaContasPagar';
 import type { ContaPagar } from '@/types/financeiro';
+import { createMockContaPagar, createMockAnexo } from '../../../../tests/helpers/test-data-builders';
 
 describe('TabelaContasPagar', () => {
   const mockContas: ContaPagar[] = [
-    {
+    createMockContaPagar({
       id: '1',
       descricao: 'Conta de Luz',
       categoria: 'Utilidades',
       fornecedor: 'Companhia Elétrica',
       valor: 150.50,
-      quantidade: 1,
       valor_unitario: 150.50,
       status: 'pendente',
       data_vencimento: '2024-01-20',
       recorrencia: 'unico',
-      anexos: [],
-      created_at: '2024-01-01',
-      updated_at: '2024-01-01',
-    } as ContaPagar,
-    {
+    }),
+    createMockContaPagar({
       id: '2',
       descricao: 'Aluguel',
       categoria: 'Despesas Fixas',
       fornecedor: 'Imobiliária XYZ',
       valor: 2500.00,
-      quantidade: 1,
       valor_unitario: 2500.00,
       status: 'pago',
       data_vencimento: '2024-01-10',
       data_pagamento: '2024-01-09',
       recorrencia: 'mensal',
-      anexos: ['anexo1.pdf'],
-      created_at: '2024-01-01',
-      updated_at: '2024-01-01',
-    } as ContaPagar,
-    {
+      anexos: [createMockAnexo({ nome: 'comprovante.pdf' })],
+    }),
+    createMockContaPagar({
       id: '3',
       descricao: 'Material de Escritório',
       categoria: 'Suprimentos',
       fornecedor: null,
       valor: 75.30,
-      quantidade: 1,
       valor_unitario: 75.30,
       status: 'vencido',
       data_vencimento: '2024-01-05',
       recorrencia: 'unico',
-      anexos: [],
-      created_at: '2024-01-01',
-      updated_at: '2024-01-01',
-    } as ContaPagar,
-    {
+    }),
+    createMockContaPagar({
       id: '4',
       descricao: 'Assinatura Software',
       categoria: 'TI',
       fornecedor: 'Software Inc',
       valor: 299.99,
-      quantidade: 1,
       valor_unitario: 299.99,
       status: 'cancelado',
       data_vencimento: '2024-01-15',
       recorrencia: 'mensal',
-      anexos: [],
-      created_at: '2024-01-01',
-      updated_at: '2024-01-01',
-    } as ContaPagar,
+    }),
   ];
 
   const mockCallbacks = {
@@ -124,13 +111,11 @@ describe('TabelaContasPagar', () => {
       expect(searchInput).toBeInTheDocument();
     });
 
-
     it('deve ter select de status', () => {
       render(<TabelaContasPagar contas={mockContas} {...mockCallbacks} />);
 
       expect(screen.getByRole('combobox')).toBeInTheDocument();
     });
-
   });
 
   describe('Formatação de dados', () => {
@@ -191,7 +176,6 @@ describe('TabelaContasPagar', () => {
       const rows = screen.getAllByRole('row');
       const aluguelRow = rows.find(row => row.textContent?.includes('Aluguel'));
       
-      // Verificar que tem o ícone Repeat
       expect(aluguelRow).toBeInTheDocument();
     });
 
@@ -201,7 +185,6 @@ describe('TabelaContasPagar', () => {
       const rows = screen.getAllByRole('row');
       const aluguelRow = rows.find(row => row.textContent?.includes('Aluguel'));
       
-      // Verificar que tem o ícone FileText
       expect(aluguelRow).toBeInTheDocument();
     });
   });
@@ -213,16 +196,16 @@ describe('TabelaContasPagar', () => {
       const buttons = screen.getAllByRole('button');
       expect(buttons.length).toBeGreaterThan(0);
     });
-
   });
 
   describe('Performance', () => {
     it('deve renderizar rapidamente com muitas contas', () => {
-      const muitasContas = Array.from({ length: 100 }, (_, i) => ({
-        ...mockContas[0],
-        id: `conta-${i}`,
-        descricao: `Conta ${i}`,
-      }));
+      const muitasContas = Array.from({ length: 100 }, (_, i) =>
+        createMockContaPagar({
+          id: `conta-${i}`,
+          descricao: `Conta ${i}`,
+        })
+      );
 
       const startTime = performance.now();
       render(<TabelaContasPagar contas={muitasContas} {...mockCallbacks} />);
@@ -234,10 +217,11 @@ describe('TabelaContasPagar', () => {
 
   describe('Edge cases', () => {
     it('deve lidar com valores monetários grandes', () => {
-      const contaGrande: ContaPagar = {
-        ...mockContas[0],
+      const contaGrande = createMockContaPagar({
+        id: 'grande',
         valor: 1000000.99,
-      };
+        valor_unitario: 1000000.99,
+      });
 
       render(<TabelaContasPagar contas={[contaGrande]} {...mockCallbacks} />);
 
@@ -245,10 +229,10 @@ describe('TabelaContasPagar', () => {
     });
 
     it('deve lidar com descrições longas', () => {
-      const contaDescricaoLonga: ContaPagar = {
-        ...mockContas[0],
+      const contaDescricaoLonga = createMockContaPagar({
+        id: 'longa',
         descricao: 'Descrição muito longa que pode quebrar o layout da tabela se não for tratada corretamente',
-      };
+      });
 
       render(<TabelaContasPagar contas={[contaDescricaoLonga]} {...mockCallbacks} />);
 

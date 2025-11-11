@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import { EventosKanbanView } from '../EventosKanbanView';
 import type { Evento } from '@/types/eventos';
+import { createMockEvento } from '../../../../tests/helpers/test-data-builders';
 
 // Mock dos hooks e dependências
 vi.mock('@/hooks/eventos', () => ({
@@ -35,63 +37,13 @@ vi.mock('../EventoKanbanCard', () => ({
 }));
 
 describe('EventosKanbanView', () => {
-  const mockEventos: Partial<Evento>[] = [
-    {
-      id: '1',
-      nome: 'Evento Orçamento',
-      status: 'orcamento',
-      data_inicio: '2024-01-15',
-      data_fim: '2024-01-15',
-      cliente_id: 'cliente-1',
-      comercial_id: 'comercial-1',
-      created_at: '2024-01-01',
-      updated_at: '2024-01-01',
-    },
-    {
-      id: '2',
-      nome: 'Evento Confirmado',
-      status: 'confirmado',
-      data_inicio: '2024-01-20',
-      data_fim: '2024-01-20',
-      cliente_id: 'cliente-2',
-      comercial_id: 'comercial-1',
-      created_at: '2024-01-01',
-      updated_at: '2024-01-01',
-    },
-    {
-      id: '3',
-      nome: 'Evento Em Preparação',
-      status: 'em_preparacao',
-      data_inicio: '2024-01-25',
-      data_fim: '2024-01-25',
-      cliente_id: 'cliente-3',
-      comercial_id: 'comercial-1',
-      created_at: '2024-01-01',
-      updated_at: '2024-01-01',
-    },
-    {
-      id: '4',
-      nome: 'Evento Em Execução',
-      status: 'em_execucao',
-      data_inicio: '2024-01-10',
-      data_fim: '2024-01-10',
-      cliente_id: 'cliente-4',
-      comercial_id: 'comercial-1',
-      created_at: '2024-01-01',
-      updated_at: '2024-01-01',
-    },
-    {
-      id: '5',
-      nome: 'Evento Concluído',
-      status: 'concluido',
-      data_inicio: '2024-01-05',
-      data_fim: '2024-01-05',
-      cliente_id: 'cliente-5',
-      comercial_id: 'comercial-1',
-      created_at: '2024-01-01',
-      updated_at: '2024-01-01',
-    },
-  ] as Evento[];
+  const mockEventos: Evento[] = [
+    createMockEvento({ id: '1', nome: 'Evento Orçamento', status: 'orcamento' }),
+    createMockEvento({ id: '2', nome: 'Evento Confirmado', status: 'confirmado' }),
+    createMockEvento({ id: '3', nome: 'Evento Em Preparação', status: 'em_preparacao' }),
+    createMockEvento({ id: '4', nome: 'Evento Em Execução', status: 'em_execucao' }),
+    createMockEvento({ id: '5', nome: 'Evento Concluído', status: 'concluido' }),
+  ];
 
   const mockOnViewDetails = vi.fn();
 
@@ -131,7 +83,6 @@ describe('EventosKanbanView', () => {
         <EventosKanbanView eventos={mockEventos} onViewDetails={mockOnViewDetails} />
       );
 
-      // Verificar contadores
       const orcamentoColumn = screen.getByTestId('column-orcamento');
       expect(orcamentoColumn).toHaveTextContent('1 eventos');
 
@@ -172,18 +123,8 @@ describe('EventosKanbanView', () => {
 
       const novosEventos = [
         ...mockEventos,
-        {
-          id: '6',
-          nome: 'Novo Evento',
-          status: 'orcamento',
-          data_inicio: '2024-01-30',
-          data_fim: '2024-01-30',
-          cliente_id: 'cliente-6',
-          comercial_id: 'comercial-1',
-          created_at: '2024-01-01',
-          updated_at: '2024-01-01',
-        },
-      ] as Evento[];
+        createMockEvento({ id: '6', nome: 'Novo Evento', status: 'orcamento' }),
+      ];
 
       rerender(
         <EventosKanbanView eventos={novosEventos} onViewDetails={mockOnViewDetails} />
@@ -213,27 +154,21 @@ describe('EventosKanbanView', () => {
         <EventosKanbanView eventos={mockEventos} onViewDetails={mockOnViewDetails} />
       );
 
-      // Verificar que as colunas foram renderizadas (indicando que as props foram passadas)
       expect(screen.getAllByTestId(/^column-/)).toHaveLength(6);
     });
 
     it('deve lidar com diferentes quantidades de eventos', () => {
-      const eventosVarios = Array.from({ length: 20 }, (_, i) => ({
-        id: `evento-${i}`,
-        nome: `Evento ${i}`,
-        status: i % 2 === 0 ? 'orcamento' : 'confirmado',
-        data_inicio: '2024-01-15',
-        data_fim: '2024-01-15',
-        cliente_id: 'cliente-1',
-        comercial_id: 'comercial-1',
-        created_at: '2024-01-01',
-        updated_at: '2024-01-01',
-      }));
-
-      render(
-        <EventosKanbanView eventos={eventosVarios as Evento[]} onViewDetails={mockOnViewDetails} />
+      const eventosVarios = Array.from({ length: 20 }, (_, i) =>
+        createMockEvento({
+          id: `evento-${i}`,
+          nome: `Evento ${i}`,
+          status: i % 2 === 0 ? 'orcamento' : 'confirmado',
+        })
       );
 
+      render(
+        <EventosKanbanView eventos={eventosVarios} onViewDetails={mockOnViewDetails} />
+      );
 
       expect(screen.getByTestId('column-orcamento')).toHaveTextContent('10 eventos');
       expect(screen.getByTestId('column-confirmado')).toHaveTextContent('10 eventos');
@@ -246,10 +181,8 @@ describe('EventosKanbanView', () => {
         <EventosKanbanView eventos={mockEventos} onViewDetails={mockOnViewDetails} />
       );
 
-      // Primeira renderização
       expect(screen.getByTestId('column-orcamento')).toHaveTextContent('1 eventos');
 
-      // Rerenderizar com mesmos eventos (não deve recalcular)
       rerender(
         <EventosKanbanView eventos={mockEventos} onViewDetails={mockOnViewDetails} />
       );
@@ -272,24 +205,17 @@ describe('EventosKanbanView', () => {
   describe('Edge cases', () => {
     it('deve lidar com eventos sem status válido', () => {
       const eventosInvalidos = [
-        {
-          id: '1',
-          nome: 'Evento Inválido',
-          status: 'status_invalido' as any,
-          data_inicio: '2024-01-15',
-          data_fim: '2024-01-15',
-          cliente_id: 'cliente-1',
-          comercial_id: 'comercial-1',
-          created_at: '2024-01-01',
-          updated_at: '2024-01-01',
-        },
+        createMockEvento({ 
+          id: '1', 
+          nome: 'Evento Inválido', 
+          status: 'status_invalido' as any 
+        }),
       ];
 
       render(
-        <EventosKanbanView eventos={eventosInvalidos as Evento[]} onViewDetails={mockOnViewDetails} />
+        <EventosKanbanView eventos={eventosInvalidos} onViewDetails={mockOnViewDetails} />
       );
 
-      // Deve renderizar sem erros
       expect(screen.getByTestId('column-orcamento')).toBeInTheDocument();
     });
 
