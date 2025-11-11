@@ -91,10 +91,10 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: process.env.CI ? undefined : {
-    command: 'npm run preview',
-    url: 'http://localhost:4173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  // webServer: process.env.CI ? undefined : {
+  //   command: 'npm run preview',
+  //   url: 'http://localhost:4173',
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120000,
+  // },
 });
