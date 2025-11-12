@@ -15,32 +15,32 @@ interface StatCardProps {
 
 export function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 'default' }: StatCardProps) {
   const variantStyles = {
-    default: 'bg-white border-2 border-navy-100 hover:border-navy-300',
-    primary: 'bg-white border-2 border-navy-100 hover:border-navy-400',
-    success: 'bg-white border-2 border-emerald-100 hover:border-emerald-300',
-    warning: 'bg-white border-2 border-amber-100 hover:border-amber-300',
-    danger: 'bg-white border-2 border-red-100 hover:border-red-300',
+    default: 'bg-card border border-border hover:border-border/80',
+    primary: 'bg-card border border-primary/20 hover:border-primary/40',
+    success: 'bg-card border border-success/20 hover:border-success/40',
+    warning: 'bg-card border border-warning/20 hover:border-warning/40',
+    danger: 'bg-card border border-destructive/20 hover:border-destructive/40',
   };
 
   const accentBarColors = {
-    default: 'bg-navy-600',
-    primary: 'bg-navy-600',
+    default: 'bg-primary',
+    primary: 'bg-primary',
     success: 'bg-success',
     warning: 'bg-warning',
     danger: 'bg-destructive',
   };
 
   const iconBgColors = {
-    default: 'bg-navy-50 group-hover:bg-navy-100',
-    primary: 'bg-navy-50 group-hover:bg-navy-100',
-    success: 'bg-emerald-50 group-hover:bg-emerald-100',
-    warning: 'bg-amber-50 group-hover:bg-amber-100',
-    danger: 'bg-red-50 group-hover:bg-red-100',
+    default: 'bg-primary/10 group-hover:bg-primary/20',
+    primary: 'bg-primary/10 group-hover:bg-primary/20',
+    success: 'bg-success/10 group-hover:bg-success/20',
+    warning: 'bg-warning/10 group-hover:bg-warning/20',
+    danger: 'bg-destructive/10 group-hover:bg-destructive/20',
   };
 
   const iconColors = {
-    default: 'text-navy-600',
-    primary: 'text-navy-600',
+    default: 'text-primary',
+    primary: 'text-primary',
     success: 'text-success',
     warning: 'text-warning',
     danger: 'text-destructive',
@@ -54,14 +54,14 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 
       <CardContent className="p-4 relative">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-wider text-navy-400 mb-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
               {title}
             </p>
-            <h3 className="text-2xl font-display font-bold text-navy-800 mb-1 tracking-tight">
+            <h3 className="text-2xl font-display font-bold text-card-foreground mb-1 tracking-tight">
               {value}
             </h3>
             {subtitle && (
-              <p className="text-sm text-navy-500">
+              <p className="text-sm text-muted-foreground">
                 {subtitle}
               </p>
             )}

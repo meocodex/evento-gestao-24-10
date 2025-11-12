@@ -43,19 +43,19 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
 
   return (
     <Card 
-      className="group p-5 border-2 border-navy-100 hover:border-primary hover:shadow-lg transition-all duration-300 rounded-2xl bg-white cursor-pointer"
+      className="group p-5 border hover:border-primary/40 hover:shadow-lg transition-all duration-300 rounded-2xl bg-card cursor-pointer"
       onClick={onClick}
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2.5 mb-2">
-              <h3 className="font-display font-semibold text-xl text-navy-900 truncate">{demanda.titulo}</h3>
+              <h3 className="font-display font-semibold text-xl text-card-foreground truncate">{demanda.titulo}</h3>
               <Badge variant="outline" className="font-mono text-xs shrink-0">
                 #{demanda.numeroId}
               </Badge>
             </div>
-            <p className="text-sm text-navy-600 line-clamp-2 leading-normal">
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-normal">
               {demanda.descricao}
             </p>
           </div>
@@ -106,29 +106,29 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
 
         <div className="flex flex-col gap-2.5 text-sm">
           <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-navy-400" />
+            <User className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm">
-              <span className="font-medium text-navy-700">Solicitante:</span>{' '}
-              <span className="text-navy-600">{demanda.solicitante}</span>
+              <span className="font-medium text-foreground">Solicitante:</span>{' '}
+              <span className="text-muted-foreground">{demanda.solicitante}</span>
             </span>
           </div>
           
           {demanda.responsavel && (
             <div className="flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-navy-400" />
+              <UserCheck className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">
-                <span className="font-medium text-navy-700">Responsável:</span>{' '}
-                <span className="text-navy-600">{demanda.responsavel}</span>
+                <span className="font-medium text-foreground">Responsável:</span>{' '}
+                <span className="text-muted-foreground">{demanda.responsavel}</span>
               </span>
             </div>
           )}
 
           {demanda.prazo && (
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-navy-400" />
+              <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">
-                <span className="font-medium text-navy-700">Prazo:</span>{' '}
-                <span className="text-navy-600">
+                <span className="font-medium text-foreground">Prazo:</span>{' '}
+                <span className="text-muted-foreground">
                   {format(new Date(demanda.prazo), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                 </span>
               </span>
@@ -136,18 +136,18 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
           )}
         </div>
 
-        <div className="flex items-center justify-between text-sm text-muted-foreground pt-3 border-t border-navy-100/50">
+        <div className="flex items-center justify-between text-sm text-muted-foreground pt-3 border-t border-border/50">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
-              <MessageSquare className="h-4 w-4 text-navy-400" />
-              <span className="text-xs font-medium text-navy-600">{demanda.comentarios?.length || 0}</span>
+              <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-medium text-foreground">{demanda.comentarios?.length || 0}</span>
             </div>
             <div className="flex items-center gap-1">
-              <Paperclip className="h-4 w-4 text-navy-400" />
-              <span className="text-xs font-medium text-navy-600">{demanda.anexos?.length || 0}</span>
+              <Paperclip className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs font-medium text-foreground">{demanda.anexos?.length || 0}</span>
             </div>
           </div>
-          <div className="text-xs text-navy-500 font-medium">
+          <div className="text-xs text-muted-foreground font-medium">
             {format(new Date(demanda.dataCriacao), "dd/MM/yyyy • HH:mm", { locale: ptBR })}
           </div>
         </div>
