@@ -6,6 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { performanceMonitor } from "@/lib/performance";
+import { ThemeProvider } from "next-themes";
 
 /**
  * QueryClient com configurações otimizadas de cache e performance monitoring.
@@ -85,11 +86,18 @@ export function AppProviders({ children }: AppProvidersProps) {
       persistOptions={{ persister }}
     >
       <BrowserRouter>
-        <AuthProvider>
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
-        </AuthProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange={false}
+        >
+          <AuthProvider>
+            <TooltipProvider>
+              {children}
+            </TooltipProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </PersistQueryClientProvider>
   );
