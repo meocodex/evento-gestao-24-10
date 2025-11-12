@@ -8,25 +8,25 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Navy Blue Premium Palette - Zero Gradientes */
-    --background: 0 0% 100%;
-    --foreground: 220 98% 10%;
+    /* Navy Blue Suavizado - Modo Claro */
+    --background: 220 40% 98%;
+    --foreground: 220 60% 20%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 98% 10%;
+    --card: 220 40% 99%;
+    --card-foreground: 220 60% 20%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 98% 10%;
+    --popover: 220 40% 99%;
+    --popover-foreground: 220 60% 20%;
 
-    /* Navy Blue Principal */
-    --primary: 220 90% 25%;
+    /* Navy Blue Principal - Mais Claro */
+    --primary: 220 70% 40%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 220 15% 96%;
-    --secondary-foreground: 220 98% 10%;
+    --secondary: 220 20% 97%;
+    --secondary-foreground: 220 60% 20%;
 
-    --muted: 220 15% 96%;
-    --muted-foreground: 220 15% 45%;
+    --muted: 220 20% 97%;
+    --muted-foreground: 220 30% 50%;
 
     /* Dourado Elegante como Accent */
     --accent: 45 93% 58%;
@@ -41,21 +41,24 @@ All colors MUST be HSL.
     --success: 142 71% 45%;
     --success-foreground: 144 61% 20%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 220 90% 25%;
+    --border: 220 20% 92%;
+    --input: 220 20% 92%;
+    --ring: 220 70% 40%;
 
     --radius: 0.75rem;
 
-    /* Sidebar Navy */
-    --sidebar-background: 220 90% 25%;
+    /* Sidebar Navy - Modo Claro */
+    --sidebar-background: 220 70% 40%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 220 90% 25%;
+    --sidebar-primary: 220 70% 40%;
     --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 220 85% 30%;
+    --sidebar-accent: 220 60% 50%;
     --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 220 90% 20%;
+    --sidebar-border: 220 60% 35%;
     --sidebar-ring: 45 93% 58%;
+
+    /* Cor customizada do ícone do logo - Modo Claro */
+    --logo-icon: 44 26% 33%;
 
     /* Spacing System - 8pt Grid */
     --spacing-xs: 0.5rem;
@@ -112,6 +115,9 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 220 95% 15%;
     --sidebar-ring: 45 93% 58%;
+
+    /* Cor customizada do ícone do logo - Modo Escuro */
+    --logo-icon: 210 29% 11%;
   }
 }
 

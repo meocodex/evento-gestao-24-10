@@ -93,8 +93,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar className="border-r-0 bg-sidebar" {...props}>
       <SidebarHeader className="border-b border-sidebar-border/30 p-4 md:p-6">
         <div className="flex items-center gap-3 md:gap-4">
-          <div className="p-2 md:p-3 bg-accent/20 backdrop-blur-sm rounded-xl shadow-lg shadow-accent/30 ring-2 ring-accent/50">
-            <Calendar className="h-5 w-5 md:h-6 md:w-6 text-accent" />
+          <div className="p-2 md:p-3 bg-logo-icon/10 backdrop-blur-sm rounded-xl shadow-lg shadow-logo-icon/20 ring-2 ring-logo-icon/30">
+            <Calendar className="h-5 w-5 md:h-6 md:w-6 text-logo-icon" />
           </div>
           
           {state !== 'collapsed' && (

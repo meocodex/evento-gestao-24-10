@@ -32,6 +32,7 @@ export default {
         'group': 'var(--spacing-group)',
       },
       colors: {
+        'logo-icon': 'hsl(var(--logo-icon))',
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
