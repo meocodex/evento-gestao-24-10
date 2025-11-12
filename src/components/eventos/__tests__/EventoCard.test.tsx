@@ -56,8 +56,21 @@ const mockEvento: Evento = {
   },
   tags: ['Casamento', 'Premium'],
   tipoEvento: 'bar',
-  createdAt: '2025-01-01T00:00:00Z',
-  updatedAt: '2025-01-01T00:00:00Z',
+  checklist: [],
+  materiaisAlocados: {
+    antecipado: [],
+    comTecnicos: [],
+  },
+  financeiro: {
+    receitas: [],
+    despesas: [],
+    cobrancas: [],
+  },
+  timeline: [],
+  equipe: [],
+  observacoesOperacionais: [],
+  criadoEm: '2025-01-01T00:00:00Z',
+  atualizadoEm: '2025-01-01T00:00:00Z',
 };
 
 const defaultProps = {
