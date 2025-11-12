@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { NotificationCenter } from './NotificationCenter';
+import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { usePrefetchPages } from '@/hooks/usePrefetchPages';
 import { NavigationLoadingBar } from '@/components/shared/NavigationLoadingBar';
@@ -31,6 +32,7 @@ export function MainLayout() {
               </div>
               
               <div className="flex items-center gap-2 sm:gap-3">
+                <ThemeToggle />
                 <NotificationCenter />
               </div>
             </div>
