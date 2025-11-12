@@ -38,7 +38,7 @@ export function AdicionarReceitaSheet({ open, onOpenChange, onAdicionar }: Adici
       await onAdicionar({ 
         descricao, 
         quantidade,
-        valorUnitario: parseFloat(valorUnitario),
+        valor_unitario: parseFloat(valorUnitario),
         valor: valorTotal,
         tipo,
         status: 'pendente',
@@ -121,10 +121,8 @@ export function AdicionarReceitaSheet({ open, onOpenChange, onAdicionar }: Adici
               <SelectValue placeholder="Selecione o tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="venda">Venda</SelectItem>
-              <SelectItem value="locacao">Locação</SelectItem>
-              <SelectItem value="servico">Serviço</SelectItem>
-              <SelectItem value="outros">Outros</SelectItem>
+              <SelectItem value="fixo">Valor Fixo</SelectItem>
+              <SelectItem value="quantidade">Por Quantidade</SelectItem>
             </SelectContent>
           </Select>
         </div>
