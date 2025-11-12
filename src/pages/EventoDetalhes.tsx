@@ -75,27 +75,26 @@ export default function EventoDetalhes() {
       {/* Conteúdo */}
       <div className="max-w-[1600px] mx-auto px-6 py-6">
         <Tabs defaultValue="dados" className="space-y-6">
-          <TabsList className="bg-card/60 backdrop-blur-xl border border-border/40 p-1">
-            <TabsTrigger value="dados" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+          <TabsList>
+            <TabsTrigger value="dados">
               Dados
             </TabsTrigger>
-            <TabsTrigger value="materiais" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="materiais">
               Materiais
             </TabsTrigger>
-            <TabsTrigger value="operacao" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="operacao">
               Operação
             </TabsTrigger>
-            <TabsTrigger value="demandas" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="demandas">
               Demandas
             </TabsTrigger>
             <TabsTrigger 
               value="financeiro" 
               disabled={!permissions.isLoading && !permissions.canViewFinancial}
-              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
             >
               Financeiro
             </TabsTrigger>
-            <TabsTrigger value="contratos" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsTrigger value="contratos">
               Contratos
             </TabsTrigger>
           </TabsList>
