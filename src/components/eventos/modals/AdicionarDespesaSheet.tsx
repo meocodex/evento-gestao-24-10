@@ -40,7 +40,7 @@ export function AdicionarDespesaSheet({ open, onOpenChange, onAdicionar }: Adici
       await onAdicionar({ 
         descricao, 
         quantidade,
-        valorUnitario: parseFloat(valorUnitario),
+        valor_unitario: parseFloat(valorUnitario),
         valor: valorTotal,
         categoria,
         status: 'pendente',
