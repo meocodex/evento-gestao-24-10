@@ -42,9 +42,9 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
 
   return (
     <Card className={cn(
-      "group bg-white border-2 border-navy-100 rounded-xl sm:rounded-2xl overflow-hidden min-h-[240px] sm:min-h-[280px] flex flex-col relative cursor-pointer",
+      "group bg-card border rounded-xl sm:rounded-2xl overflow-hidden min-h-[240px] sm:min-h-[280px] flex flex-col relative cursor-pointer",
       "transition-all duration-300",
-      "hover:border-navy-400 hover:shadow-2xl active:scale-[0.98] sm:hover:scale-[1.02] sm:hover:-translate-y-1"
+      "hover:border-primary/40 hover:shadow-2xl active:scale-[0.98] sm:hover:scale-[1.02] sm:hover:-translate-y-1"
     )}
       onClick={() => navigate(`/eventos/${evento.id}`)}
     >
@@ -54,7 +54,7 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
       <CardHeader className="pb-2 sm:pb-3 pt-4 sm:pt-5 px-3 sm:px-4">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm sm:text-base font-bold text-navy-800 leading-tight mb-2 line-clamp-2">
+            <h3 className="text-sm sm:text-base font-bold text-card-foreground leading-tight mb-2 line-clamp-2">
               {evento.nome}
             </h3>
             <div className="flex flex-wrap gap-1.5 sm:gap-2 items-center text-xs">
@@ -113,12 +113,12 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
       
       <CardContent className="flex-1 space-y-2 sm:space-y-3 px-3 sm:px-4">
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-navy-50 flex-shrink-0">
-            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-navy-600" />
+          <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 flex-shrink-0">
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] sm:text-xs text-navy-400 font-medium">Data</p>
-            <p className="text-xs sm:text-sm font-semibold text-navy-800 truncate">
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Data</p>
+            <p className="text-xs sm:text-sm font-semibold text-card-foreground truncate">
               {evento.dataInicio && evento.dataInicio !== '' 
                 ? format(parseISO(evento.dataInicio), "dd/MM/yyyy", { locale: ptBR })
                 : 'Data não definida'}
@@ -127,33 +127,33 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
         </div>
         
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-navy-50 flex-shrink-0">
-            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-navy-600" />
+          <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 flex-shrink-0">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] sm:text-xs text-navy-400 font-medium">Horário</p>
-            <p className="text-xs sm:text-sm font-semibold text-navy-800 truncate">{evento.horaInicio}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Horário</p>
+            <p className="text-xs sm:text-sm font-semibold text-card-foreground truncate">{evento.horaInicio}</p>
           </div>
         </div>
         
         <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-navy-50 flex-shrink-0">
-            <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-navy-600" />
+          <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 flex-shrink-0">
+            <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] sm:text-xs text-navy-400 font-medium">Local</p>
-            <p className="text-xs sm:text-sm font-semibold text-navy-800 truncate">{evento.local}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Local</p>
+            <p className="text-xs sm:text-sm font-semibold text-card-foreground truncate">{evento.local}</p>
           </div>
         </div>
         
         {evento.cliente && (
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2 rounded-lg bg-navy-50 flex-shrink-0">
-              <Building className="h-4 w-4 sm:h-5 sm:w-5 text-navy-600" />
+            <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 flex-shrink-0">
+              <Building className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] sm:text-xs text-navy-400 font-medium">Cliente</p>
-              <p className="text-xs sm:text-sm font-semibold text-navy-800 truncate">{evento.cliente.nome}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Cliente</p>
+              <p className="text-xs sm:text-sm font-semibold text-card-foreground truncate">{evento.cliente.nome}</p>
             </div>
           </div>
         )}
@@ -162,18 +162,18 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
 
         {/* Tags */}
         {evento.tags && evento.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-navy-100">
+          <div className="flex flex-wrap gap-1 sm:gap-1.5 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border">
             {evento.tags.slice(0, 2).map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-navy-50 text-navy-700 rounded-md text-[10px] sm:text-xs font-medium"
+                className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-primary/10 text-primary rounded-md text-[10px] sm:text-xs font-medium"
               >
                 <Tag className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
                 {tag}
               </span>
             ))}
             {evento.tags.length > 2 && (
-              <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-muted rounded-md text-[10px] sm:text-xs text-navy-600">
+              <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-muted rounded-md text-[10px] sm:text-xs text-muted-foreground">
                 +{evento.tags.length - 2}
               </span>
             )}
@@ -181,7 +181,7 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
         )}
       </CardContent>
       
-      <CardFooter className="border-t border-navy-100 pt-4">
+      <CardFooter className="border-t border-border pt-4">
         <Button 
           variant="outline" 
           className="w-full"
