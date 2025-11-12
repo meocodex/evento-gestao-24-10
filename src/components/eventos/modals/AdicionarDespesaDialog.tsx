@@ -39,7 +39,7 @@ export function AdicionarDespesaDialog({ open, onOpenChange, onAdicionar }: Adic
       await onAdicionar({ 
         descricao, 
         quantidade,
-        valorUnitario: parseFloat(valorUnitario),
+        valor_unitario: parseFloat(valorUnitario),
         valor: valorTotal,
         categoria,
         status: 'pendente',
