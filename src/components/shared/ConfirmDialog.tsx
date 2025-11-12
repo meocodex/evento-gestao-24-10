@@ -50,7 +50,7 @@ export function ConfirmDialog({
               variant === 'danger'
                 ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
                 : variant === 'warning'
-                ? 'bg-yellow-500 text-white hover:bg-yellow-600'
+                ? 'bg-warning text-warning-foreground hover:bg-warning/90'
                 : ''
             }
           >

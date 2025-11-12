@@ -25,10 +25,10 @@ export function MainLayout() {
         <AppSidebar collapsible="offcanvas" />
         
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="sticky top-0 z-50 h-14 sm:h-16 bg-white border-b border-navy-100 shadow-sm backdrop-blur-sm bg-white/95">
+          <header className="sticky top-0 z-50 h-14 sm:h-16 bg-background/95 border-b border-border shadow-sm backdrop-blur-sm">
             <div className="h-full flex items-center justify-between px-3 sm:px-6">
               <div className="flex items-center gap-2 sm:gap-4">
-                <SidebarTrigger className="hover:bg-navy-50 rounded-lg transition-colors" />
+                <SidebarTrigger className="hover:bg-accent rounded-lg transition-colors" />
               </div>
               
               <div className="flex items-center gap-2 sm:gap-3">

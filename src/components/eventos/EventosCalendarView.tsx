@@ -50,10 +50,10 @@ export function EventosCalendarView({ eventos, onEventoClick }: EventosCalendarV
   return (
     <div className="space-y-4">
       {/* Header with navigation */}
-      <Card className="p-4 bg-white dark:bg-navy-900 border-navy-200 dark:border-navy-700">
+      <Card className="p-4 bg-card border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-navy-900 dark:text-navy-50">
+            <h2 className="text-2xl font-bold text-card-foreground">
               {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
             </h2>
             <Button
@@ -87,13 +87,13 @@ export function EventosCalendarView({ eventos, onEventoClick }: EventosCalendarV
       </Card>
 
       {/* Calendar Grid */}
-      <Card className="p-4 bg-white dark:bg-navy-900 border-navy-200 dark:border-navy-700">
+      <Card className="p-4 bg-card border">
         {/* Weekday headers */}
         <div className="grid grid-cols-7 gap-2 mb-2">
           {WEEKDAYS.map(day => (
             <div
               key={day}
-              className="text-center text-sm font-semibold text-navy-600 dark:text-navy-400 py-2"
+              className="text-center text-sm font-semibold text-muted-foreground py-2"
             >
               {day}
             </div>
@@ -113,8 +113,8 @@ export function EventosCalendarView({ eventos, onEventoClick }: EventosCalendarV
                 className={cn(
                   "min-h-[100px] p-2 rounded-lg border transition-colors",
                   isCurrentMonth
-                    ? "bg-white dark:bg-navy-800 border-navy-200 dark:border-navy-700"
-                    : "bg-navy-50 dark:bg-navy-900/50 border-navy-100 dark:border-navy-800",
+                    ? "bg-card border"
+                    : "bg-muted/50 border-border/50",
                   isDayToday && "ring-2 ring-primary"
                 )}
               >
@@ -124,8 +124,8 @@ export function EventosCalendarView({ eventos, onEventoClick }: EventosCalendarV
                     className={cn(
                       "text-sm font-medium",
                       isCurrentMonth
-                        ? "text-navy-900 dark:text-navy-100"
-                        : "text-navy-400 dark:text-navy-600",
+                        ? "text-foreground"
+                        : "text-muted-foreground/50",
                       isDayToday && "bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs"
                     )}
                   >
@@ -162,7 +162,7 @@ export function EventosCalendarView({ eventos, onEventoClick }: EventosCalendarV
                     </button>
                   ))}
                   {dayEventos.length > 2 && (
-                    <div className="text-xs text-navy-600 dark:text-navy-400 px-2">
+                    <div className="text-xs text-muted-foreground px-2">
                       +{dayEventos.length - 2} mais
                     </div>
                   )}
@@ -174,15 +174,15 @@ export function EventosCalendarView({ eventos, onEventoClick }: EventosCalendarV
       </Card>
 
       {/* Legend */}
-      <Card className="p-4 bg-white dark:bg-navy-900 border-navy-200 dark:border-navy-700">
-        <h3 className="text-sm font-semibold text-navy-900 dark:text-navy-100 mb-3">
+      <Card className="p-4 bg-card border">
+        <h3 className="text-sm font-semibold text-card-foreground mb-3">
           Legenda de Status
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
           {Object.entries(statusColors).map(([status, color]) => (
             <div key={status} className="flex items-center gap-2">
               <div className={cn("w-3 h-3 rounded", color)} />
-              <span className="text-xs text-navy-600 dark:text-navy-400 capitalize">
+              <span className="text-xs text-muted-foreground capitalize">
                 {status.replace(/_/g, ' ')}
               </span>
             </div>

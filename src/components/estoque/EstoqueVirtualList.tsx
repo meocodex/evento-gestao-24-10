@@ -79,15 +79,15 @@ export function EstoqueVirtualList({
                 </Badge>
                 <div className="flex items-center gap-4 text-sm flex-shrink-0">
                   <div className="text-center w-16">
-                    <span className="font-semibold">{material.quantidadeTotal || 0}</span>
+                    <span className="font-semibold text-foreground">{material.quantidadeTotal || 0}</span>
                   </div>
                   <div className="text-center w-16">
-                    <span className="text-green-600 font-semibold">
+                    <span className="text-success font-semibold">
                       {material.quantidadeDisponivel || 0}
                     </span>
                   </div>
                   <div className="text-center w-16">
-                    <span className="text-orange-600 font-semibold">{emUso}</span>
+                    <span className="text-warning font-semibold">{emUso}</span>
                   </div>
                   <div className="text-center w-16">
                     <span className="text-destructive font-semibold">{manutencao}</span>
