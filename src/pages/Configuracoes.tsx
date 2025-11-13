@@ -153,12 +153,21 @@ export default function Configuracoes() {
     setEmpresaData({ ...empresaData, cnpj: cnpjFormatado });
   };
 
+  const formatarCEP = (valor: string) => {
+    const numeros = valor.replace(/\D/g, '');
+    if (numeros.length <= 8) {
+      return numeros.replace(/(\d{5})(\d)/, '$1-$2');
+    }
+    return valor;
+  };
+
   const handleCepChange = async (cep: string) => {
-    const cepLimpo = cep.replace(/\D/g, '');
+    const cepFormatado = formatarCEP(cep);
+    const cepLimpo = cepFormatado.replace(/\D/g, '');
     const enderecoAtual = typeof empresaData.endereco === 'object' ? empresaData.endereco : {};
     setEmpresaData({ 
       ...empresaData, 
-      endereco: { ...enderecoAtual, cep }
+      endereco: { ...enderecoAtual, cep: cepFormatado }
     });
 
     if (cepLimpo.length === 8) {
@@ -171,7 +180,7 @@ export default function Configuracoes() {
             ...empresaData,
             endereco: {
               ...enderecoAtual,
-              cep,
+              cep: cepFormatado,
               logradouro: data.logradouro || '',
               bairro: data.bairro || '',
               cidade: data.localidade || '',
@@ -378,6 +387,7 @@ export default function Configuracoes() {
                       <Label>CEP *</Label>
                       <Input 
                         placeholder="00000-000"
+                        maxLength={9}
                         value={typeof empresaData.endereco === 'object' ? empresaData.endereco?.cep || '' : ''}
                         onChange={(e) => handleCepChange(e.target.value)}
                       />
