@@ -72,49 +72,53 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 220 25% 18%;
-    --foreground: 210 15% 95%;
+    /* Navy Blue Escuro Aprimorado - Mais Contraste e Profundidade */
+    --background: 220 35% 12%;
+    --foreground: 210 20% 98%;
 
-    --card: 220 28% 22%;
-    --card-foreground: 210 15% 95%;
+    --card: 220 40% 16%;
+    --card-foreground: 210 20% 98%;
 
-    --popover: 220 30% 24%;
-    --popover-foreground: 210 15% 95%;
+    --popover: 220 42% 18%;
+    --popover-foreground: 210 20% 98%;
 
-    --primary: 220 55% 45%;
-    --primary-foreground: 210 15% 98%;
+    /* Navy Primary - Mais Vibrante no Escuro */
+    --primary: 220 70% 55%;
+    --primary-foreground: 210 20% 98%;
 
-    --secondary: 220 25% 26%;
-    --secondary-foreground: 210 15% 95%;
+    --secondary: 220 35% 20%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 220 20% 28%;
-    --muted-foreground: 220 15% 75%;
+    --muted: 220 30% 24%;
+    --muted-foreground: 220 20% 80%;
 
-    --accent: 45 93% 58%;
+    /* Accent Dourado - Mantém o Brilho */
+    --accent: 45 93% 62%;
     --accent-foreground: 26 83% 14%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 15% 98%;
+    --destructive-foreground: 210 20% 98%;
 
-    --warning: 38 92% 50%;
+    --warning: 38 92% 55%;
     --warning-foreground: 26 83% 14%;
 
-    --success: 142 71% 45%;
-    --success-foreground: 144 61% 20%;
+    --success: 142 71% 50%;
+    --success-foreground: 144 100% 98%;
 
-    --border: 220 30% 32%;
-    --input: 220 28% 30%;
-    --ring: 45 93% 58%;
+    /* Bordas e Inputs - Melhor Visibilidade */
+    --border: 220 40% 28%;
+    --input: 220 38% 26%;
+    --ring: 45 93% 62%;
 
-    /* Sidebar Escura - Modo Escuro */
-    --sidebar-background: 220 30% 16%;
-    --sidebar-foreground: 210 15% 95%;
-    --sidebar-primary: 220 55% 45%;
-    --sidebar-primary-foreground: 210 15% 98%;
-    --sidebar-accent: 220 35% 24%;
-    --sidebar-accent-foreground: 210 15% 95%;
-    --sidebar-border: 220 30% 22%;
-    --sidebar-ring: 45 93% 58%;
+    /* Sidebar Escura Premium - Navy Profundo */
+    --sidebar-background: 220 45% 10%;
+    --sidebar-foreground: 210 20% 98%;
+    --sidebar-primary: 220 70% 55%;
+    --sidebar-primary-foreground: 210 20% 98%;
+    --sidebar-accent: 220 45% 18%;
+    --sidebar-accent-foreground: 210 20% 98%;
+    --sidebar-border: 220 40% 16%;
+    --sidebar-ring: 45 93% 62%;
 
     /* Cor customizada do ícone do logo - Modo Escuro */
     --logo-icon: 210 29% 11%;
@@ -124,6 +128,10 @@ All colors MUST be HSL.
 @layer base {
   * {
     @apply border-border;
+    /* Transições suaves para mudanças de tema */
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
   }
   
   html, body, #root {
@@ -158,6 +166,20 @@ All colors MUST be HSL.
     display: none;
   }
   
+  /* Transições suaves específicas para elementos interativos */
+  button, a, input, select, textarea {
+    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+  
+  /* Transições suaves para cards e containers */
+  [class*="card"], [class*="bg-"], [class*="border"] {
+    transition-property: background-color, border-color, box-shadow;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+  
   /* Fix para inputs em iOS */
   input, select, textarea {
     font-size: 16px !important; /* Previne zoom automático */
@@ -190,5 +212,33 @@ All colors MUST be HSL.
   
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  
+  /* Transições suaves para tema */
+  .theme-transition {
+    @apply transition-[background-color,border-color,color] duration-300 ease-in-out;
+  }
+  
+  .theme-transition-fast {
+    @apply transition-[background-color,border-color,color] duration-200 ease-in-out;
+  }
+  
+  /* Glassmorphism com transição suave */
+  .glass-card {
+    @apply bg-card/60 backdrop-blur-xl border border-border/40 transition-all duration-300;
+  }
+  
+  .glass-card:hover {
+    @apply bg-card/80 border-border/60;
+  }
+  
+  /* Navy gradient backgrounds com transição */
+  .navy-gradient {
+    @apply bg-gradient-to-br from-primary/10 via-background to-accent/5 transition-all duration-500;
+  }
+  
+  /* Smooth hover states */
+  .smooth-hover {
+    @apply transition-all duration-200 hover:scale-[1.02] hover:shadow-lg;
   }
 }
