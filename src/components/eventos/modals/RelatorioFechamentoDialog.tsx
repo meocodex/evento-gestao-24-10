@@ -8,6 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { useConfiguracoes } from '@/hooks/configuracoes/useConfiguracoes';
 
 interface RelatorioFechamentoDialogProps {
   open: boolean;
@@ -25,6 +26,7 @@ export function RelatorioFechamentoDialog({
   despesasSelecionadas 
 }: RelatorioFechamentoDialogProps) {
   const { toast } = useToast();
+  const { configuracoes } = useConfiguracoes();
 
   // Buscar configuração de papel timbrado
   const { data: config, isLoading } = useQuery({
@@ -151,19 +153,23 @@ export function RelatorioFechamentoDialog({
       });
       currentY = (doc as any).lastAutoTable.finalY + 10;
       
-      // Dados do Produtor Responsável
+      // Dados da Empresa
       doc.setFont(undefined, 'bold');
-      doc.text('PRODUTOR RESPONSÁVEL', 14, currentY);
+      doc.text('DADOS DA EMPRESA', 14, currentY);
       currentY += 5;
 
-      const dadosProdutor = [
-        ['Nome:', evento.comercial?.nome || '-'],
-        ['Email:', evento.comercial?.email || '-']
+      const empresaConfig = configuracoes?.empresa;
+
+      const dadosEmpresa = [
+        ['Nome:', empresaConfig?.nome || '-'],
+        ['CNPJ:', empresaConfig?.cnpj || '-'],
+        ['Endereço:', empresaConfig?.endereco || '-'],
+        ['Telefone:', empresaConfig?.telefone || '-']
       ];
       
       autoTable(doc, {
         startY: currentY,
-        body: dadosProdutor,
+        body: dadosEmpresa,
         theme: 'plain',
         styles: { fontSize: 9, textColor: [0, 0, 0] },
         columnStyles: {
