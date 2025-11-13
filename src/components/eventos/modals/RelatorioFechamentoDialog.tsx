@@ -72,114 +72,207 @@ export function RelatorioFechamentoDialog({
     const marginTop = config?.papel_timbrado ? 60 : 20;
     let currentY = marginTop;
     
-    // Header
+    // Título
     doc.setFontSize(18);
     doc.setFont(undefined, 'bold');
-    doc.text('RELATÓRIO DE FECHAMENTO DO EVENTO', pageWidth / 2, 20, { align: 'center' });
+    doc.text('RELATÓRIO DE FECHAMENTO DO EVENTO', pageWidth / 2, currentY, { align: 'center' });
+    currentY += 15;
     
     // Dados do Evento
-    doc.setFontSize(14);
-    doc.text('Dados do Evento', 14, 35);
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'normal');
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'bold');
+    doc.text('DADOS DO EVENTO', 14, currentY);
+    currentY += 5;
     
     const dadosEvento = [
       ['Nome do Evento:', evento.nome],
-      ['Status:', evento.status],
-      ['Data de Início:', `${evento.dataInicio} às ${evento.horaInicio}`],
-      ['Data de Fim:', `${evento.dataFim} às ${evento.horaFim}`],
-      ['Local:', `${evento.cidade}, ${evento.estado}`]
+      ['Data:', `${evento.dataInicio} a ${evento.dataFim}`],
+      ['Local:', `${evento.cidade}, ${evento.estado}`],
+      ['Status:', evento.status.toUpperCase()]
     ];
     
     (doc as any).autoTable({
-      startY: 40,
+      startY: currentY,
       body: dadosEvento,
       theme: 'plain',
-      styles: { fontSize: 9 },
+      styles: { fontSize: 9, textColor: [0, 0, 0] },
       columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 40 },
+        0: { fontStyle: 'bold', cellWidth: 45 },
         1: { cellWidth: 'auto' }
       }
     });
+    currentY = (doc as any).lastAutoTable.finalY + 10;
     
     // Dados do Cliente
-    let finalY = (doc as any).lastAutoTable.finalY + 10;
-    doc.setFontSize(14);
     doc.setFont(undefined, 'bold');
-    doc.text('Dados do Cliente', 14, finalY);
-    
+    doc.text('DADOS DO CLIENTE', 14, currentY);
+    currentY += 5;
+
     const dadosCliente = [
       ['Nome:', evento.cliente.nome],
-      ['Tipo:', evento.cliente.tipo],
+      ['Documento:', evento.cliente.documento || '-'],
       ['Telefone:', evento.cliente.telefone],
       ['Email:', evento.cliente.email]
     ];
-    
+
     (doc as any).autoTable({
-      startY: finalY + 5,
+      startY: currentY,
       body: dadosCliente,
       theme: 'plain',
-      styles: { fontSize: 9 },
+      styles: { fontSize: 9, textColor: [0, 0, 0] },
       columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 40 },
+        0: { fontStyle: 'bold', cellWidth: 45 },
         1: { cellWidth: 'auto' }
       }
     });
-    
+    currentY = (doc as any).lastAutoTable.finalY + 10;
+
     // Produtor Responsável
-    finalY = (doc as any).lastAutoTable.finalY + 10;
-    doc.setFontSize(14);
-    doc.text('Produtor Responsável', 14, finalY);
-    
+    doc.setFont(undefined, 'bold');
+    doc.text('PRODUTOR RESPONSÁVEL', 14, currentY);
+    currentY += 5;
+
     const dadosProdutor = [
       ['Nome:', evento.comercial.nome],
       ['Email:', evento.comercial.email]
     ];
-    
+
     (doc as any).autoTable({
-      startY: finalY + 5,
+      startY: currentY,
       body: dadosProdutor,
       theme: 'plain',
-      styles: { fontSize: 9 },
+      styles: { fontSize: 9, textColor: [0, 0, 0] },
       columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 40 },
+        0: { fontStyle: 'bold', cellWidth: 45 },
         1: { cellWidth: 'auto' }
       }
     });
-    
-    // Despesas
-    finalY = (doc as any).lastAutoTable.finalY + 10;
+    currentY = (doc as any).lastAutoTable.finalY + 15;
+
+    // Tabela de Receitas (se houver)
+    if (receitasFiltradas.length > 0) {
+      doc.setFont(undefined, 'bold');
+      doc.text('RECEITAS DO EVENTO', 14, currentY);
+      currentY += 5;
+
+      const receitasData = receitasFiltradas.map(r => [
+        r.tipo.toUpperCase(),
+        r.descricao,
+        r.quantidade.toString(),
+        `R$ ${r.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        `R$ ${r.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      ]);
+
+      (doc as any).autoTable({
+        startY: currentY,
+        head: [['Tipo', 'Descrição', 'Qtd', 'Valor Un.', 'Total']],
+        body: receitasData,
+        theme: 'striped',
+        headStyles: { fillColor: [22, 163, 74], textColor: [255, 255, 255], fontSize: 9 },
+        styles: { fontSize: 8, textColor: [0, 0, 0] },
+        columnStyles: {
+          0: { cellWidth: 30 },
+          1: { cellWidth: 70 },
+          2: { cellWidth: 20, halign: 'right' },
+          3: { cellWidth: 30, halign: 'right' },
+          4: { cellWidth: 30, halign: 'right' }
+        }
+      });
+
+      currentY = (doc as any).lastAutoTable.finalY + 5;
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(22, 163, 74); // verde
+      doc.text(
+        `SUBTOTAL RECEITAS: R$ ${totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        pageWidth - 14,
+        currentY,
+        { align: 'right' }
+      );
+      doc.setTextColor(0, 0, 0); // reset para preto
+      currentY += 15;
+    }
+
+    // Tabela de Despesas (se houver)
+    if (despesasFiltradas.length > 0) {
+      doc.setFont(undefined, 'bold');
+      doc.text('DESPESAS DO EVENTO', 14, currentY);
+      currentY += 5;
+
+      const despesasData = despesasFiltradas.map(d => [
+        d.categoria.toUpperCase(),
+        d.descricao,
+        d.quantidade.toString(),
+        `R$ ${d.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        `R$ ${d.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+      ]);
+
+      (doc as any).autoTable({
+        startY: currentY,
+        head: [['Categoria', 'Descrição', 'Qtd', 'Valor Un.', 'Total']],
+        body: despesasData,
+        theme: 'striped',
+        headStyles: { fillColor: [220, 38, 38], textColor: [255, 255, 255], fontSize: 9 },
+        styles: { fontSize: 8, textColor: [0, 0, 0] },
+        columnStyles: {
+          0: { cellWidth: 30 },
+          1: { cellWidth: 70 },
+          2: { cellWidth: 20, halign: 'right' },
+          3: { cellWidth: 30, halign: 'right' },
+          4: { cellWidth: 30, halign: 'right' }
+        }
+      });
+
+      currentY = (doc as any).lastAutoTable.finalY + 5;
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(220, 38, 38); // vermelho
+      doc.text(
+        `SUBTOTAL DESPESAS: R$ ${totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+        pageWidth - 14,
+        currentY,
+        { align: 'right' }
+      );
+      doc.setTextColor(0, 0, 0); // reset para preto
+      currentY += 15;
+    }
+
+    // Resumo Financeiro
+    doc.setFont(undefined, 'bold');
     doc.setFontSize(14);
-    doc.text('Despesas do Evento', 14, finalY);
-    
-    const despesasData = despesasFiltradas.map(d => [
-      d.descricao,
-      d.categoria,
-      d.quantidade.toString(),
-      `R$ ${d.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-      `R$ ${d.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
-    ]);
-    
-    (doc as any).autoTable({
-      startY: finalY + 5,
-      head: [['Descrição', 'Categoria', 'Qtd', 'Valor Un.', 'Total']],
-      body: despesasData,
-      foot: [['', '', '', 'Total de Despesas:', `R$ ${totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`]],
-      theme: 'striped',
-      headStyles: { fillColor: [66, 66, 66], fontSize: 9 },
-      footStyles: { fillColor: [240, 240, 240], fontStyle: 'bold', fontSize: 9, textColor: [220, 38, 38] },
-      styles: { fontSize: 8 },
-      columnStyles: {
-        0: { cellWidth: 60 },
-        1: { cellWidth: 35 },
-        2: { cellWidth: 20, halign: 'right' },
-        3: { cellWidth: 30, halign: 'right' },
-        4: { cellWidth: 30, halign: 'right' }
-      }
-    });
-    
+    doc.text('RESUMO FINANCEIRO', 14, currentY);
+    currentY += 10;
+
+    doc.setFontSize(11);
+    doc.text(`Total Receitas:`, 14, currentY);
+    doc.setTextColor(22, 163, 74);
+    doc.text(`R$ ${totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, pageWidth - 14, currentY, { align: 'right' });
+    doc.setTextColor(0, 0, 0);
+    currentY += 7;
+
+    doc.text(`Total Despesas:`, 14, currentY);
+    doc.setTextColor(220, 38, 38);
+    doc.text(`(-) R$ ${totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, pageWidth - 14, currentY, { align: 'right' });
+    doc.setTextColor(0, 0, 0);
+    currentY += 7;
+
+    // Linha separadora
+    doc.setLineWidth(0.5);
+    doc.line(14, currentY, pageWidth - 14, currentY);
+    currentY += 7;
+
+    // Saldo final
+    doc.setFont(undefined, 'bold');
+    doc.setFontSize(12);
+    if (saldoFinal >= 0) {
+      doc.setTextColor(22, 163, 74); // verde
+    } else {
+      doc.setTextColor(220, 38, 38); // vermelho
+    }
+    doc.text(`SALDO FINAL:`, 14, currentY);
+    doc.text(`R$ ${saldoFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, pageWidth - 14, currentY, { align: 'right' });
+
     // Salvar PDF
-    doc.save(`Relatorio_Fechamento_${evento.nome.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+    const dataAtual = new Date().toISOString().split('T')[0].replace(/-/g, '');
+    doc.save(`Fechamento_${evento.nome.replace(/\s+/g, '_')}_${dataAtual}.pdf`);
     
     toast({
       title: 'PDF gerado!',
@@ -191,121 +284,82 @@ export function RelatorioFechamentoDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Relatório de Fechamento do Evento</DialogTitle>
+          <DialogTitle>Relatório de Fechamento</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
-          {/* Dados do Evento */}
-          <div className="border rounded-lg p-4 space-y-2">
-            <h3 className="font-semibold text-lg mb-3">Dados do Evento</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Nome do Evento</p>
-                <p className="font-medium">{evento.nome}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Status</p>
-                <p className="font-medium">{evento.status}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Data de Início</p>
-                <p className="font-medium">{evento.dataInicio} às {evento.horaInicio}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Data de Fim</p>
-                <p className="font-medium">{evento.dataFim} às {evento.horaFim}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Local</p>
-                <p className="font-medium">{evento.cidade}, {evento.estado}</p>
-              </div>
-            </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin" />
           </div>
-
-          {/* Dados do Cliente */}
-          <div className="border rounded-lg p-4 space-y-2">
-            <h3 className="font-semibold text-lg mb-3">Dados do Cliente</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Nome</p>
-                <p className="font-medium">{evento.cliente.nome}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Tipo</p>
-                <p className="font-medium">{evento.cliente.tipo}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Telefone</p>
-                <p className="font-medium">{evento.cliente.telefone}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{evento.cliente.email}</p>
-              </div>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-semibold mb-2">Evento: {evento.nome}</h3>
+              <p className="text-sm text-muted-foreground">
+                {evento.dataInicio} a {evento.dataFim} | {evento.cidade}, {evento.estado}
+              </p>
             </div>
-          </div>
 
-          {/* Dados do Produtor/Comercial */}
-          <div className="border rounded-lg p-4 space-y-2">
-            <h3 className="font-semibold text-lg mb-3">Produtor Responsável</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Nome</p>
-                <p className="font-medium">{evento.comercial.nome}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{evento.comercial.email}</p>
-              </div>
-            </div>
-          </div>
+            <Separator />
 
-          {/* Despesas Selecionadas */}
-          <div className="border rounded-lg p-4">
-            <h3 className="font-semibold text-lg mb-3">Despesas do Evento</h3>
-            <div className="space-y-2">
-              <div className="grid grid-cols-12 gap-2 pb-2 border-b font-semibold text-sm">
-                <div className="col-span-5">Descrição</div>
-                <div className="col-span-2">Categoria</div>
-                <div className="col-span-2 text-right">Qtd</div>
-                <div className="col-span-2 text-right">Valor Un.</div>
-                <div className="col-span-1 text-right">Total</div>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span>Receitas selecionadas:</span>
+                <span className="font-semibold">{receitasFiltradas.length}</span>
               </div>
-              {despesasFiltradas.map((despesa) => (
-                <div key={despesa.id} className="grid grid-cols-12 gap-2 py-2 border-b text-sm">
-                  <div className="col-span-5">{despesa.descricao}</div>
-                  <div className="col-span-2">{despesa.categoria}</div>
-                  <div className="col-span-2 text-right">{despesa.quantidade}</div>
-                  <div className="col-span-2 text-right">
-                    R$ {despesa.valorUnitario.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </div>
-                  <div className="col-span-1 text-right font-medium">
-                    R$ {despesa.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                  </div>
-                </div>
-              ))}
-              <div className="grid grid-cols-12 gap-2 pt-3 mt-2 border-t-2 font-bold">
-                <div className="col-span-11 text-right">Total de Despesas:</div>
-                <div className="col-span-1 text-right text-red-600">
+              <div className="flex justify-between">
+                <span>Despesas selecionadas:</span>
+                <span className="font-semibold">{despesasFiltradas.length}</span>
+              </div>
+              
+              <Separator />
+              
+              <div className="flex justify-between text-green-600">
+                <span>Total Receitas:</span>
+                <span className="font-bold">
+                  R$ {totalReceitas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex justify-between text-red-600">
+                <span>Total Despesas:</span>
+                <span className="font-bold">
                   R$ {totalDespesas.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                </div>
+                </span>
+              </div>
+              
+              <Separator />
+              
+              <div className="flex justify-between text-lg">
+                <span className="font-bold">Saldo Final:</span>
+                <span className={`font-bold ${saldoFinal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  R$ {saldoFinal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            <X className="h-4 w-4 mr-2" />
-            Cancelar
-          </Button>
-          <Button onClick={handleGerarPDF}>
-            <FileDown className="h-4 w-4 mr-2" />
-            Baixar PDF
-          </Button>
-        </div>
+            {!config?.papel_timbrado && (
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3">
+                <p className="text-sm text-yellow-700 dark:text-yellow-500">
+                  ⚠️ Nenhum papel timbrado configurado. O PDF será gerado sem papel timbrado.
+                  Configure em <span className="font-semibold">Configurações → Fechamento</span>.
+                </p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => onOpenChange(false)}>
+                <X className="h-4 w-4 mr-2" />
+                Cancelar
+              </Button>
+              <Button onClick={handleGerarPDF}>
+                <FileDown className="h-4 w-4 mr-2" />
+                Baixar PDF
+              </Button>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
