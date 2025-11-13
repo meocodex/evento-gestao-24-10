@@ -160,6 +160,26 @@ export default {
           "0%, 100%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
         },
+        "page-enter": {
+          "0%": { 
+            opacity: "0", 
+            transform: "translateY(16px) scale(0.98)" 
+          },
+          "100%": { 
+            opacity: "1", 
+            transform: "translateY(0) scale(1)" 
+          },
+        },
+        "page-exit": {
+          "0%": { 
+            opacity: "1", 
+            transform: "translateY(0) scale(1)" 
+          },
+          "100%": { 
+            opacity: "0", 
+            transform: "translateY(-8px) scale(0.98)" 
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -174,6 +194,8 @@ export default {
         "pulse-subtle": "pulse-subtle 2s ease-in-out infinite",
         "theme-transition": "theme-transition 0.3s ease-in-out",
         "gradient-shift": "gradient-shift 3s ease infinite",
+        "page-enter": "page-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
+        "page-exit": "page-exit 0.2s ease-out",
       },
     },
   },

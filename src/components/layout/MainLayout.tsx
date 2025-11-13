@@ -1,5 +1,5 @@
 import { useEffect, Suspense } from 'react';
-import { Navigate, Outlet, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
@@ -14,6 +14,7 @@ export function MainLayout() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const location = useLocation();
   
   // Prefetch inteligente de páginas relacionadas
   usePrefetchPages();
@@ -41,8 +42,8 @@ export function MainLayout() {
           <main className="flex-1 overflow-auto bg-background">
             <div className="w-full px-3 sm:px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 py-4 sm:py-6 lg:py-8">
               <Suspense fallback={
-                <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-                  <div className="space-y-4 w-full max-w-4xl">
+                <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center animate-in fade-in-0 duration-200">
+                  <div className="space-y-4 w-full max-w-4xl animate-pulse">
                     <LoadingSkeleton variant="text" className="h-8 w-64" />
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                       <LoadingSkeleton variant="card" className="h-32" />
@@ -52,7 +53,9 @@ export function MainLayout() {
                   </div>
                 </div>
               }>
-                <Outlet />
+                <div className="animate-page-enter" key={location.pathname}>
+                  <Outlet />
+                </div>
               </Suspense>
             </div>
           </main>
