@@ -44,6 +44,102 @@ export default function Configuracoes() {
     }
   });
 
+  const [empresaData, setEmpresaData] = useState<any>(() => {
+    const empresa = configuracoes?.empresa;
+    // Se endereco for string, converter para objeto
+    if (empresa && typeof empresa.endereco === 'string') {
+      return {
+        ...empresa,
+        endereco: {
+          cep: '',
+          logradouro: '',
+          numero: '',
+          complemento: '',
+          bairro: '',
+          cidade: '',
+          estado: ''
+        }
+      };
+    }
+    return empresa || {
+      nome: '',
+      razaoSocial: '',
+      cnpj: '',
+      email: '',
+      telefone: '',
+      endereco: {
+        cep: '',
+        logradouro: '',
+        numero: '',
+        complemento: '',
+        bairro: '',
+        cidade: '',
+        estado: ''
+      }
+    };
+  });
+
+  const handleCepChange = async (cep: string) => {
+    const cepLimpo = cep.replace(/\D/g, '');
+    const enderecoAtual = typeof empresaData.endereco === 'object' ? empresaData.endereco : {};
+    setEmpresaData({ 
+      ...empresaData, 
+      endereco: { ...enderecoAtual, cep }
+    });
+
+    if (cepLimpo.length === 8) {
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+        const data = await response.json();
+        
+        if (!data.erro) {
+          setEmpresaData({
+            ...empresaData,
+            endereco: {
+              ...enderecoAtual,
+              cep,
+              logradouro: data.logradouro || '',
+              bairro: data.bairro || '',
+              cidade: data.localidade || '',
+              estado: data.uf || ''
+            }
+          });
+          toast({
+            title: 'CEP encontrado!',
+            description: 'Endereço preenchido automaticamente.',
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
+      }
+    }
+  };
+
+  const handleSalvarEmpresa = async () => {
+    if (!empresaData.nome || !empresaData.cnpj || !empresaData.telefone) {
+      toast({
+        title: 'Campos obrigatórios',
+        description: 'Preencha nome, CNPJ e telefone.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const endereco = typeof empresaData.endereco === 'object' ? empresaData.endereco : {};
+    if (!endereco.cep || !endereco.logradouro || 
+        !endereco.numero || !endereco.bairro || 
+        !endereco.cidade || !endereco.estado) {
+      toast({
+        title: 'Endereço incompleto',
+        description: 'Preencha todos os campos obrigatórios do endereço.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    await atualizarConfiguracoes({ empresa: empresaData as any });
+  };
+
   const handleSalvarWhatsApp = async () => {
     await atualizarConfiguracoes({
       notificacoes: {
@@ -134,17 +230,170 @@ export default function Configuracoes() {
                   <Building2 className="h-5 w-5" />
                   <CardTitle>Dados da Empresa</CardTitle>
                 </div>
+                <CardDescription>
+                  Informações que aparecerão nos relatórios e documentos
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label>Nome da Empresa</Label>
-                  <Input defaultValue="Minha Empresa" />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Nome da Empresa *</Label>
+                    <Input 
+                      placeholder="Nome Fantasia"
+                      value={empresaData.nome || ''}
+                      onChange={(e) => setEmpresaData({ ...empresaData, nome: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Razão Social</Label>
+                    <Input 
+                      placeholder="Razão Social Ltda"
+                      value={(empresaData as any).razaoSocial || ''}
+                      onChange={(e) => setEmpresaData({ ...empresaData, razaoSocial: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label>CNPJ</Label>
-                  <Input defaultValue="00.000.000/0001-00" />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>CNPJ *</Label>
+                    <Input 
+                      placeholder="00.000.000/0001-00"
+                      value={empresaData.cnpj || ''}
+                      onChange={(e) => setEmpresaData({ ...empresaData, cnpj: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Telefone *</Label>
+                    <Input 
+                      placeholder="(11) 98765-4321"
+                      value={empresaData.telefone || ''}
+                      onChange={(e) => setEmpresaData({ ...empresaData, telefone: e.target.value })}
+                    />
+                  </div>
                 </div>
-                <Button>Salvar</Button>
+
+                <div>
+                  <Label>Email</Label>
+                  <Input 
+                    type="email"
+                    placeholder="contato@empresa.com"
+                    value={empresaData.email || ''}
+                    onChange={(e) => setEmpresaData({ ...empresaData, email: e.target.value })}
+                  />
+                </div>
+
+                <Separator className="my-4" />
+                
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm">Endereço</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>CEP *</Label>
+                      <Input 
+                        placeholder="00000-000"
+                        value={typeof empresaData.endereco === 'object' ? empresaData.endereco?.cep || '' : ''}
+                        onChange={(e) => handleCepChange(e.target.value)}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label>Logradouro *</Label>
+                      <Input 
+                        placeholder="Avenida, Rua, etc."
+                        value={typeof empresaData.endereco === 'object' ? empresaData.endereco?.logradouro || '' : ''}
+                        onChange={(e) => {
+                          const enderecoAtual = typeof empresaData.endereco === 'object' ? empresaData.endereco : {};
+                          setEmpresaData({ 
+                            ...empresaData, 
+                            endereco: { ...enderecoAtual, logradouro: e.target.value }
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>Número *</Label>
+                      <Input 
+                        placeholder="123"
+                        value={typeof empresaData.endereco === 'object' ? empresaData.endereco?.numero || '' : ''}
+                        onChange={(e) => {
+                          const enderecoAtual = typeof empresaData.endereco === 'object' ? empresaData.endereco : {};
+                          setEmpresaData({ 
+                            ...empresaData, 
+                            endereco: { ...enderecoAtual, numero: e.target.value }
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label>Complemento</Label>
+                      <Input 
+                        placeholder="Sala, Andar, etc."
+                        value={typeof empresaData.endereco === 'object' ? empresaData.endereco?.complemento || '' : ''}
+                        onChange={(e) => {
+                          const enderecoAtual = typeof empresaData.endereco === 'object' ? empresaData.endereco : {};
+                          setEmpresaData({ 
+                            ...empresaData, 
+                            endereco: { ...enderecoAtual, complemento: e.target.value }
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>Bairro *</Label>
+                      <Input 
+                        placeholder="Centro"
+                        value={typeof empresaData.endereco === 'object' ? empresaData.endereco?.bairro || '' : ''}
+                        onChange={(e) => {
+                          const enderecoAtual = typeof empresaData.endereco === 'object' ? empresaData.endereco : {};
+                          setEmpresaData({ 
+                            ...empresaData, 
+                            endereco: { ...enderecoAtual, bairro: e.target.value }
+                          });
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Label>Cidade *</Label>
+                      <Input 
+                        placeholder="São Paulo"
+                        value={typeof empresaData.endereco === 'object' ? empresaData.endereco?.cidade || '' : ''}
+                        onChange={(e) => {
+                          const enderecoAtual = typeof empresaData.endereco === 'object' ? empresaData.endereco : {};
+                          setEmpresaData({ 
+                            ...empresaData, 
+                            endereco: { ...enderecoAtual, cidade: e.target.value }
+                          });
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <Label>Estado *</Label>
+                      <Input 
+                        placeholder="SP"
+                        maxLength={2}
+                        value={typeof empresaData.endereco === 'object' ? empresaData.endereco?.estado || '' : ''}
+                        onChange={(e) => {
+                          const enderecoAtual = typeof empresaData.endereco === 'object' ? empresaData.endereco : {};
+                          setEmpresaData({ 
+                            ...empresaData, 
+                            endereco: { ...enderecoAtual, estado: e.target.value.toUpperCase() }
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Button onClick={handleSalvarEmpresa} className="w-full md:w-auto">
+                  Salvar Dados da Empresa
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>

@@ -159,11 +159,25 @@ export function RelatorioFechamentoDialog({
       currentY += 5;
 
       const empresaConfig = configuracoes?.empresa;
+      
+      // Função para formatar endereço
+      const formatarEnderecoEmpresa = (endereco: any) => {
+        if (!endereco) return '-';
+        const { logradouro = '', numero = '', complemento = '', bairro = '', cidade = '', estado = '', cep = '' } = endereco;
+        const partes = [
+          logradouro && numero ? `${logradouro}, ${numero}` : logradouro || numero,
+          complemento,
+          bairro,
+          cidade && estado ? `${cidade}/${estado}` : cidade || estado,
+          cep ? `CEP ${cep}` : ''
+        ].filter(Boolean);
+        return partes.length > 0 ? partes.join(' - ') : '-';
+      };
 
       const dadosEmpresa = [
-        ['Nome:', empresaConfig?.nome || '-'],
+        ['Nome:', empresaConfig?.nome || (empresaConfig as any)?.razaoSocial || '-'],
         ['CNPJ:', empresaConfig?.cnpj || '-'],
-        ['Endereço:', empresaConfig?.endereco || '-'],
+        ['Endereço:', formatarEnderecoEmpresa(empresaConfig?.endereco)],
         ['Telefone:', empresaConfig?.telefone || '-']
       ];
       
