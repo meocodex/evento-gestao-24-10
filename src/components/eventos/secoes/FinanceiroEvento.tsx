@@ -29,6 +29,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; tipo: 'receita' | 'despesa' } | null>(null);
   const [despesasSelecionadas, setDespesasSelecionadas] = useState<Set<string>>(new Set());
+  const [receitasSelecionadas, setReceitasSelecionadas] = useState<Set<string>>(new Set());
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ url: string; nome: string; tipo: string } | null>(null);
 
@@ -75,13 +76,23 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
     setDespesasSelecionadas(newSet);
   };
 
+  const toggleReceitaSelecionada = (receitaId: string) => {
+    const newSet = new Set(receitasSelecionadas);
+    if (newSet.has(receitaId)) {
+      newSet.delete(receitaId);
+    } else {
+      newSet.add(receitaId);
+    }
+    setReceitasSelecionadas(newSet);
+  };
+
   const [showRelatorioDialog, setShowRelatorioDialog] = useState(false);
 
   const handleGerarRelatorio = () => {
-    if (despesasSelecionadas.size === 0) {
+    if (despesasSelecionadas.size === 0 && receitasSelecionadas.size === 0) {
       toast({
-        title: 'Nenhuma despesa selecionada',
-        description: 'Selecione ao menos uma despesa para gerar o relatório.',
+        title: 'Nenhum item selecionado',
+        description: 'Selecione ao menos uma receita ou despesa para gerar o fechamento.',
         variant: 'destructive',
       });
       return;
@@ -166,6 +177,13 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
             <div className="space-y-2">
               {evento.financeiro.receitas.map((receita) => (
                 <div key={receita.id} className="flex justify-between items-center p-3 border rounded">
+                  {evento.status === 'concluido' && (
+                    <Checkbox
+                      checked={receitasSelecionadas.has(receita.id)}
+                      onCheckedChange={() => toggleReceitaSelecionada(receita.id)}
+                      className="mr-3"
+                    />
+                  )}
                   <div className="flex-1">
                     <p className="font-medium">{receita.descricao}</p>
                     <p className="text-sm text-muted-foreground">{receita.tipo}</p>
@@ -232,10 +250,11 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Despesas</CardTitle>
           <div className="flex gap-2">
-            {permissions.canEditFinancial && despesasSelecionadas.size > 0 && (
+            {permissions.canEditFinancial && evento.status === 'concluido' && 
+             (despesasSelecionadas.size > 0 || receitasSelecionadas.size > 0) && (
               <Button size="sm" variant="outline" onClick={handleGerarRelatorio}>
                 <FileText className="h-4 w-4 mr-2" />
-                Gerar Relatório ({despesasSelecionadas.size})
+                Fechamento ({despesasSelecionadas.size + receitasSelecionadas.size} itens)
               </Button>
             )}
             {permissions.canEditFinancial && (
@@ -255,7 +274,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
             <div className="space-y-2">
               {evento.financeiro.despesas.map((despesa) => (
                 <div key={despesa.id} className="flex justify-between items-center p-3 border rounded">
-                  {permissions.canEditFinancial && (
+                  {evento.status === 'concluido' && (
                     <Checkbox 
                       checked={despesasSelecionadas.has(despesa.id)}
                       onCheckedChange={() => toggleDespesaSelecionada(despesa.id)}
@@ -326,6 +345,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
         open={showRelatorioDialog}
         onOpenChange={setShowRelatorioDialog}
         evento={evento}
+        receitasSelecionadas={Array.from(receitasSelecionadas)}
         despesasSelecionadas={Array.from(despesasSelecionadas)}
       />
 

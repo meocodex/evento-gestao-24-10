@@ -12,6 +12,7 @@ import { useConfiguracoes } from '@/hooks/configuracoes';
 import { useToast } from '@/hooks/use-toast';
 import { GerenciarCategorias } from '@/components/configuracoes/GerenciarCategorias';
 import { NotificationSettings } from '@/components/configuracoes/NotificationSettings';
+import { ConfiguracaoFechamento } from '@/components/configuracoes/ConfiguracaoFechamento';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function Configuracoes() {
@@ -98,6 +99,7 @@ export default function Configuracoes() {
             <TabsTrigger value="perfil">Perfil</TabsTrigger>
             <TabsTrigger value="empresa">Empresa</TabsTrigger>
             <TabsTrigger value="categorias">Categorias</TabsTrigger>
+            <TabsTrigger value="fechamento">Fechamento</TabsTrigger>
             <TabsTrigger value="integracoes">Integrações</TabsTrigger>
             <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
             <TabsTrigger value="seguranca">Segurança</TabsTrigger>
@@ -180,6 +182,10 @@ export default function Configuracoes() {
                 descricao="Personalize as funções disponíveis para membros da equipe"
               />
             </div>
+          </TabsContent>
+
+          <TabsContent value="fechamento" className="space-y-4">
+            <ConfiguracaoFechamento />
           </TabsContent>
 
           <TabsContent value="integracoes" className="space-y-4">
