@@ -44,7 +44,7 @@ export interface EstabelecimentoBar {
 
 export type StatusFinanceiro = 'pendente' | 'pago' | 'cancelado' | 'em_negociacao';
 
-export type TipoReceita = 'fixo' | 'quantidade';
+export type TipoReceita = 'venda' | 'locacao' | 'servico' | 'outros';
 
 export type CategoriaFinanceira = 'pessoal' | 'transporte' | 'insumos' | 'alimentacao' | 'Reembolso de Equipe' | 'outros';
 

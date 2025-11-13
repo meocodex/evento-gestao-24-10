@@ -121,8 +121,10 @@ export function AdicionarReceitaSheet({ open, onOpenChange, onAdicionar }: Adici
               <SelectValue placeholder="Selecione o tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="fixo">Valor Fixo</SelectItem>
-              <SelectItem value="quantidade">Por Quantidade</SelectItem>
+              <SelectItem value="venda">Venda</SelectItem>
+              <SelectItem value="locacao">Locação</SelectItem>
+              <SelectItem value="servico">Serviço</SelectItem>
+              <SelectItem value="outros">Outros</SelectItem>
             </SelectContent>
           </Select>
         </div>
