@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 interface RelatorioFechamentoDialogProps {
   open: boolean;
@@ -115,7 +115,7 @@ export function RelatorioFechamentoDialog({
         ['Status:', evento.status.toUpperCase()]
       ];
       
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: currentY,
         body: dadosEvento,
         theme: 'plain',
@@ -139,7 +139,7 @@ export function RelatorioFechamentoDialog({
         ['Email:', evento.cliente?.email || '-']
       ];
       
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: currentY,
         body: dadosCliente,
         theme: 'plain',
@@ -161,7 +161,7 @@ export function RelatorioFechamentoDialog({
         ['Email:', evento.comercial?.email || '-']
       ];
       
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: currentY,
         body: dadosProdutor,
         theme: 'plain',
@@ -188,7 +188,7 @@ export function RelatorioFechamentoDialog({
           `R$ ${receita.valor.toFixed(2)}`
         ]);
         
-        (doc as any).autoTable({
+        autoTable(doc, {
           startY: currentY,
           head: [['Descrição', 'Qtd', 'Valor Unit.', 'Total']],
           body: receitasData,
@@ -227,7 +227,7 @@ export function RelatorioFechamentoDialog({
           `R$ ${despesa.valor.toFixed(2)}`
         ]);
         
-        (doc as any).autoTable({
+        autoTable(doc, {
           startY: currentY,
           head: [['Descrição', 'Categoria', 'Valor']],
           body: despesasData,
@@ -265,7 +265,7 @@ export function RelatorioFechamentoDialog({
         ['Saldo Final:', `R$ ${saldoFinal.toFixed(2)}`]
       ];
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: yPos + 5,
         body: resumoData,
         theme: 'plain',
