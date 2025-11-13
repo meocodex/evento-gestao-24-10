@@ -47,7 +47,7 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 
   };
 
   return (
-    <Card className={`${variantStyles[variant]} hover:shadow-lg transition-all duration-300 rounded-xl overflow-hidden relative group`}>
+    <Card className={`${variantStyles[variant]} smooth-hover shadow-md rounded-xl overflow-hidden relative group`}>
       {/* Accent bar lateral */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${accentBarColors[variant]}`} />
       

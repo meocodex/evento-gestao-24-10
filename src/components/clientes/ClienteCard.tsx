@@ -13,7 +13,7 @@ interface ClienteCardProps {
 
 export function ClienteCard({ cliente, onView, onEdit, onDelete }: ClienteCardProps) {
   return (
-    <Card className="hover:shadow-lg transition-shadow">
+    <Card className="smooth-hover">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
