@@ -79,6 +79,29 @@ export default function Configuracoes() {
     };
   });
 
+  const formatarTelefone = (valor: string) => {
+    const numeros = valor.replace(/\D/g, '');
+    if (numeros.length <= 11) {
+      if (numeros.length <= 10) {
+        // Telefone fixo: (XX) XXXX-XXXX
+        return numeros
+          .replace(/(\d{2})(\d)/, '($1) $2')
+          .replace(/(\d{4})(\d)/, '$1-$2');
+      } else {
+        // Celular: (XX) XXXXX-XXXX
+        return numeros
+          .replace(/(\d{2})(\d)/, '($1) $2')
+          .replace(/(\d{5})(\d)/, '$1-$2');
+      }
+    }
+    return valor;
+  };
+
+  const handleTelefoneChange = (valor: string) => {
+    const telefoneFormatado = formatarTelefone(valor);
+    setEmpresaData({ ...empresaData, telefone: telefoneFormatado });
+  };
+
   const formatarCNPJ = (valor: string) => {
     const numeros = valor.replace(/\D/g, '');
     if (numeros.length <= 14) {
@@ -328,8 +351,9 @@ export default function Configuracoes() {
                     <Label>Telefone *</Label>
                     <Input 
                       placeholder="(11) 98765-4321"
+                      maxLength={15}
                       value={empresaData.telefone || ''}
-                      onChange={(e) => setEmpresaData({ ...empresaData, telefone: e.target.value })}
+                      onChange={(e) => handleTelefoneChange(e.target.value)}
                     />
                   </div>
                 </div>
