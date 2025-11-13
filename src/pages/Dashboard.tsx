@@ -411,7 +411,7 @@ const Dashboard = () => {
             <CardDescription>Requer atenção imediata</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between p-4 bg-background/80 rounded-xl backdrop-blur-sm">
+            <div className="flex items-center justify-between p-4 glass-card rounded-xl">
               <div>
                 <p className="font-bold text-lg">{suporteStats.demandasUrgentes} demanda{suporteStats.demandasUrgentes > 1 ? 's' : ''} urgente{suporteStats.demandasUrgentes > 1 ? 's' : ''}</p>
                 <p className="text-sm text-muted-foreground mt-1">Ação necessária hoje</p>

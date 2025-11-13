@@ -157,7 +157,7 @@ export default function Eventos() {
         {/* Navigation Tabs - Premium style */}
         <div className="relative">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full justify-start overflow-x-auto scrollbar-hide snap-x snap-mandatory bg-card/60 backdrop-blur-xl border border-border/40 p-1 flex-nowrap">
+            <TabsList className="w-full justify-start overflow-x-auto scrollbar-hide snap-x snap-mandatory glass-card p-1 flex-nowrap">
               <TabsTrigger value="todos" className="snap-start whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
               <TabsTrigger value="proximos7" className="snap-start whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">7 Dias</TabsTrigger>
               <TabsTrigger value="esteMes" className="snap-start whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Este Mês</TabsTrigger>
@@ -176,7 +176,7 @@ export default function Eventos() {
           />
           
           {/* Search, Filters, Sort and View Toggle - Premium glassmorphic container */}
-          <div className="flex flex-col gap-3 p-3 sm:p-4 rounded-2xl bg-card/40 backdrop-blur-xl border border-border/40">
+          <div className="flex flex-col gap-3 p-3 sm:p-4 rounded-2xl glass-card">
             {/* Search */}
             <div className="relative w-full group">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
