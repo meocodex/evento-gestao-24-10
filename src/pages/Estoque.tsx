@@ -156,8 +156,8 @@ export default function Estoque() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-bold text-navy-800">Estoque</h1>
-          <p className="text-sm sm:text-base text-navy-600 mt-1">
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-bold text-foreground">Estoque</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             Gerencie materiais e controle de seriais
           </p>
         </div>

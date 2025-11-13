@@ -43,7 +43,7 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
 
   return (
     <Card 
-      className="group p-5 border hover:border-primary/40 hover:shadow-lg transition-all duration-300 rounded-2xl bg-card cursor-pointer"
+      className="group p-5 smooth-hover rounded-2xl bg-card cursor-pointer"
       onClick={onClick}
     >
       <div className="space-y-3">
