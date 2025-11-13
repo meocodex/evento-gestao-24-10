@@ -79,6 +79,57 @@ export default function Configuracoes() {
     };
   });
 
+  const formatarCNPJ = (valor: string) => {
+    const numeros = valor.replace(/\D/g, '');
+    if (numeros.length <= 14) {
+      return numeros
+        .replace(/(\d{2})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1/$2')
+        .replace(/(\d{4})(\d)/, '$1-$2');
+    }
+    return valor;
+  };
+
+  const validarCNPJ = (cnpj: string) => {
+    const numeros = cnpj.replace(/\D/g, '');
+    
+    if (numeros.length !== 14) return false;
+    if (/^(\d)\1+$/.test(numeros)) return false;
+
+    let tamanho = numeros.length - 2;
+    let numeros_validacao = numeros.substring(0, tamanho);
+    const digitos = numeros.substring(tamanho);
+    let soma = 0;
+    let pos = tamanho - 7;
+
+    for (let i = tamanho; i >= 1; i--) {
+      soma += parseInt(numeros_validacao.charAt(tamanho - i)) * pos--;
+      if (pos < 2) pos = 9;
+    }
+
+    let resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+    if (resultado !== parseInt(digitos.charAt(0))) return false;
+
+    tamanho = tamanho + 1;
+    numeros_validacao = numeros.substring(0, tamanho);
+    soma = 0;
+    pos = tamanho - 7;
+
+    for (let i = tamanho; i >= 1; i--) {
+      soma += parseInt(numeros_validacao.charAt(tamanho - i)) * pos--;
+      if (pos < 2) pos = 9;
+    }
+
+    resultado = soma % 11 < 2 ? 0 : 11 - (soma % 11);
+    return resultado === parseInt(digitos.charAt(1));
+  };
+
+  const handleCNPJChange = (valor: string) => {
+    const cnpjFormatado = formatarCNPJ(valor);
+    setEmpresaData({ ...empresaData, cnpj: cnpjFormatado });
+  };
+
   const handleCepChange = async (cep: string) => {
     const cepLimpo = cep.replace(/\D/g, '');
     const enderecoAtual = typeof empresaData.endereco === 'object' ? empresaData.endereco : {};
@@ -120,6 +171,15 @@ export default function Configuracoes() {
       toast({
         title: 'Campos obrigatórios',
         description: 'Preencha nome, CNPJ e telefone.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!validarCNPJ(empresaData.cnpj)) {
+      toast({
+        title: 'CNPJ inválido',
+        description: 'Por favor, verifique o CNPJ informado.',
         variant: 'destructive',
       });
       return;
@@ -259,8 +319,9 @@ export default function Configuracoes() {
                     <Label>CNPJ *</Label>
                     <Input 
                       placeholder="00.000.000/0001-00"
+                      maxLength={18}
                       value={empresaData.cnpj || ''}
-                      onChange={(e) => setEmpresaData({ ...empresaData, cnpj: e.target.value })}
+                      onChange={(e) => handleCNPJChange(e.target.value)}
                     />
                   </div>
                   <div>
