@@ -36,15 +36,20 @@ export function EventosList({ eventos, onViewDetails, onEdit, onDelete, onChange
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
-      {eventos.map((evento) => (
-        <EventoCard
+      {eventos.map((evento, index) => (
+        <div
           key={evento.id}
-          evento={evento}
-          onClick={onViewDetails}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onChangeStatus={onChangeStatus}
-        />
+          className="opacity-0 animate-stagger-fade-in"
+          style={{ animationDelay: `${Math.min(index * 50, 500)}ms` }}
+        >
+          <EventoCard
+            evento={evento}
+            onClick={onViewDetails}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onChangeStatus={onChangeStatus}
+          />
+        </div>
       ))}
     </div>
   );

@@ -44,8 +44,10 @@ export function ClientesVirtualList({
         return (
           <div
             key={cliente.id}
+            className="opacity-0 animate-stagger-fade-in"
             style={{
               height: `${virtualRow.size}px`,
+              animationDelay: `${Math.min(virtualRow.index * 50, 500)}ms`,
             }}
           >
             <ClienteCard
