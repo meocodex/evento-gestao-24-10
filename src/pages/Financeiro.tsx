@@ -140,7 +140,7 @@ export default function Financeiro() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card>
+          <Card className="smooth-hover">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium">Receitas Totais</CardTitle>
@@ -157,7 +157,7 @@ export default function Financeiro() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="smooth-hover">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium">Despesas Totais</CardTitle>
@@ -174,7 +174,7 @@ export default function Financeiro() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="smooth-hover">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium">Lucro Líquido</CardTitle>
@@ -195,7 +195,7 @@ export default function Financeiro() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="smooth-hover">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium">Reembolsos Pendentes</CardTitle>
@@ -215,7 +215,7 @@ export default function Financeiro() {
 
         {/* Tabs */}
         <Tabs defaultValue="eventos" className="space-y-4">
-          <TabsList>
+          <TabsList className="glass-card">
             <TabsTrigger value="eventos">Por Evento</TabsTrigger>
             <TabsTrigger value="pagar">Contas a Pagar</TabsTrigger>
             <TabsTrigger value="receber">Contas a Receber</TabsTrigger>
@@ -224,7 +224,7 @@ export default function Financeiro() {
           </TabsList>
 
           <TabsContent value="eventos" className="space-y-4">
-            <Card>
+            <Card className="smooth-hover">
               <CardHeader>
                 <CardTitle>Resultado por Evento</CardTitle>
                 <CardDescription>Receitas, despesas e lucro de cada evento</CardDescription>
@@ -234,7 +234,7 @@ export default function Financeiro() {
                   {eventosFinanceiros.map((evento) => (
                     <div
                       key={evento.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                      className="flex items-center justify-between p-4 border rounded-lg smooth-hover cursor-pointer"
                       onClick={() => {
                         const eventoCompleto = eventos.find(e => e.id === evento.id);
                         if (eventoCompleto) {

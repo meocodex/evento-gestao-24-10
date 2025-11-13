@@ -94,8 +94,8 @@ export default function Clientes() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-navy-800">Clientes</h1>
-          <p className="text-sm sm:text-base text-navy-600 mt-1">Gerencie seus clientes e contatos</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-foreground">Clientes</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">Gerencie seus clientes e contatos</p>
         </div>
         <NovoClienteSheet />
       </div>
