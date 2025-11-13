@@ -66,7 +66,7 @@ export function EstoqueVirtualList({
                 transform: `translateY(${virtualRow.start}px)`,
                 animationDelay: `${Math.min(virtualRow.index * 40, 400)}ms`,
               }}
-              className="px-4 border-b hover:bg-muted/50 transition-colors opacity-0 animate-stagger-fade-in"
+              className="px-4 border-b hover:bg-muted/50 transition-colors opacity-0 animate-stagger-fade-in-simple"
             >
               <div className="flex items-center gap-4 h-full">
                 <div className="font-mono text-sm text-muted-foreground w-24 flex-shrink-0">
