@@ -1,13 +1,17 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Evento, Despesa } from '@/types/eventos';
-import { FileDown, X } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Evento, Despesa, Receita } from '@/types/eventos';
+import { FileDown, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface RelatorioFechamentoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   evento: Evento;
+  receitasSelecionadas: string[];
   despesasSelecionadas: string[];
 }
 
@@ -15,22 +19,58 @@ export function RelatorioFechamentoDialog({
   open, 
   onOpenChange, 
   evento, 
+  receitasSelecionadas,
   despesasSelecionadas 
 }: RelatorioFechamentoDialogProps) {
   const { toast } = useToast();
+
+  // Buscar configuração de papel timbrado
+  const { data: config, isLoading } = useQuery({
+    queryKey: ['configuracao-fechamento'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('configuracoes_fechamento')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: open,
+  });
+
+  const receitasFiltradas = evento.financeiro.receitas.filter(r => 
+    receitasSelecionadas.includes(r.id)
+  );
 
   const despesasFiltradas = evento.financeiro.despesas.filter(d => 
     despesasSelecionadas.includes(d.id)
   );
 
+  const totalReceitas = receitasFiltradas.reduce((sum, r) => sum + r.valor, 0);
   const totalDespesas = despesasFiltradas.reduce((sum, d) => sum + d.valor, 0);
+  const saldoFinal = totalReceitas - totalDespesas;
 
-  const handleGerarPDF = () => {
+  const handleGerarPDF = async () => {
     const { jsPDF } = require('jspdf');
     require('jspdf-autotable');
     
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+
+    // Adicionar papel timbrado como background (se configurado)
+    if (config?.papel_timbrado) {
+      try {
+        doc.addImage(config.papel_timbrado, 'JPEG', 0, 0, pageWidth, pageHeight);
+      } catch (error) {
+        console.error('Erro ao adicionar papel timbrado:', error);
+      }
+    }
+
+    // Definir margens (considerar header/footer do timbrado)
+    const marginTop = config?.papel_timbrado ? 60 : 20;
+    let currentY = marginTop;
     
     // Header
     doc.setFontSize(18);
