@@ -1,11 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { FormSheet } from '@/components/shared/sheets';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContratos } from '@/hooks/contratos';
 import { Contrato, StatusContrato } from '@/types/contratos';
+
+const contratoSchema = z.object({
+  titulo: z.string().min(3, 'Título deve ter no mínimo 3 caracteres'),
+  status: z.string().min(1, 'Status é obrigatório'),
+  conteudo: z.string().min(10, 'Conteúdo deve ter no mínimo 10 caracteres'),
+  valor: z.string().optional(),
+  dataInicio: z.string().optional(),
+  dataFim: z.string().optional(),
+  observacoes: z.string().optional(),
+});
+
+type ContratoFormData = z.infer<typeof contratoSchema>;
 
 interface EditarContratoSheetProps {
   open: boolean;
@@ -15,43 +30,58 @@ interface EditarContratoSheetProps {
 
 export function EditarContratoSheet({ open, onOpenChange, contrato }: EditarContratoSheetProps) {
   const { editarContrato } = useContratos();
-  const [titulo, setTitulo] = useState('');
-  const [status, setStatus] = useState<StatusContrato>('rascunho');
-  const [conteudo, setConteudo] = useState('');
-  const [valor, setValor] = useState('');
-  const [dataInicio, setDataInicio] = useState('');
-  const [dataFim, setDataFim] = useState('');
-  const [observacoes, setObservacoes] = useState('');
+
+  const form = useForm<ContratoFormData>({
+    resolver: zodResolver(contratoSchema),
+    defaultValues: {
+      titulo: contrato?.titulo || '',
+      status: contrato?.status || 'rascunho',
+      conteudo: contrato?.conteudo || '',
+      valor: contrato?.valor?.toString() || '',
+      dataInicio: contrato?.dataInicio || '',
+      dataFim: contrato?.dataFim || '',
+      observacoes: contrato?.observacoes || '',
+    },
+  });
+
+  const { handleSubmit, reset, control } = form;
 
   useEffect(() => {
     if (contrato) {
-      setTitulo(contrato.titulo);
-      setStatus(contrato.status);
-      setConteudo(contrato.conteudo);
-      setValor(contrato.valor?.toString() || '');
-      setDataInicio(contrato.dataInicio || '');
-      setDataFim(contrato.dataFim || '');
-      setObservacoes(contrato.observacoes || '');
-    }
-  }, [contrato]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (contrato) {
-      await editarContrato.mutateAsync({ 
-        id: contrato.id, 
-        data: {
-          titulo,
-          status,
-          conteudo,
-          valor: valor ? parseFloat(valor) : undefined,
-          dataInicio: dataInicio || undefined,
-          dataFim: dataFim || undefined,
-          observacoes,
-        }
+      reset({
+        titulo: contrato.titulo,
+        status: contrato.status,
+        conteudo: contrato.conteudo,
+        valor: contrato.valor?.toString() || '',
+        dataInicio: contrato.dataInicio || '',
+        dataFim: contrato.dataFim || '',
+        observacoes: contrato.observacoes || '',
       });
-      onOpenChange(false);
     }
+  }, [contrato, reset]);
+
+  const onSubmit = async (data: ContratoFormData) => {
+    if (!contrato) return;
+    
+    await editarContrato.mutateAsync({ 
+      id: contrato.id, 
+      data: {
+        titulo: data.titulo,
+        status: data.status as StatusContrato,
+        conteudo: data.conteudo,
+        valor: data.valor ? parseFloat(data.valor) : undefined,
+        dataInicio: data.dataInicio || undefined,
+        dataFim: data.dataFim || undefined,
+        observacoes: data.observacoes,
+      }
+    });
+    reset();
+    onOpenChange(false);
+  };
+
+  const handleCancel = () => {
+    reset();
+    onOpenChange(false);
   };
 
   if (!contrato) return null;
@@ -61,95 +91,130 @@ export function EditarContratoSheet({ open, onOpenChange, contrato }: EditarCont
       open={open}
       onOpenChange={onOpenChange}
       title="Editar Contrato"
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
+      onCancel={handleCancel}
       isLoading={editarContrato.isPending}
       submitText="Salvar Alterações"
       size="xl"
     >
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="titulo">Título do Contrato</Label>
-          <Input
-            id="titulo"
-            value={titulo}
-            onChange={(e) => setTitulo(e.target.value)}
+      <Form {...form}>
+        <div className="space-y-4">
+          <FormField
+            control={control}
+            name="titulo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Título do Contrato</FormLabel>
+                <FormControl>
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
 
-        <div>
-          <Label htmlFor="status">Status</Label>
-          <Select value={status} onValueChange={(value: any) => setStatus(value)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="proposta">Proposta</SelectItem>
-              <SelectItem value="em_negociacao">Em Negociação</SelectItem>
-              <SelectItem value="aprovada">Aprovada</SelectItem>
-              <SelectItem value="rascunho">Rascunho</SelectItem>
-              <SelectItem value="em_revisao">Em Revisão</SelectItem>
-              <SelectItem value="aguardando_assinatura">Aguardando Assinatura</SelectItem>
-              <SelectItem value="assinado">Assinado</SelectItem>
-              <SelectItem value="cancelado">Cancelado</SelectItem>
-              <SelectItem value="expirado">Expirado</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+          <FormField
+            control={control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="proposta">Proposta</SelectItem>
+                    <SelectItem value="em_negociacao">Em Negociação</SelectItem>
+                    <SelectItem value="aprovada">Aprovada</SelectItem>
+                    <SelectItem value="rascunho">Rascunho</SelectItem>
+                    <SelectItem value="em_revisao">Em Revisão</SelectItem>
+                    <SelectItem value="aguardando_assinatura">Aguardando Assinatura</SelectItem>
+                    <SelectItem value="assinado">Assinado</SelectItem>
+                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                    <SelectItem value="expirado">Expirado</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="dataInicio">Data Início</Label>
-            <Input
-              id="dataInicio"
-              type="date"
-              value={dataInicio}
-              onChange={(e) => setDataInicio(e.target.value)}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={control}
+              name="dataInicio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data Início</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="dataFim"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data Fim</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
           </div>
-          <div>
-            <Label htmlFor="dataFim">Data Fim</Label>
-            <Input
-              id="dataFim"
-              type="date"
-              value={dataFim}
-              onChange={(e) => setDataFim(e.target.value)}
-            />
-          </div>
-        </div>
 
-        <div>
-          <Label htmlFor="valor">Valor Total</Label>
-          <Input
-            id="valor"
-            type="number"
-            value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            placeholder="0.00"
+          <FormField
+            control={control}
+            name="valor"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Valor Total</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="conteudo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Conteúdo do Contrato</FormLabel>
+                <FormControl>
+                  <Textarea rows={6} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={control}
+            name="observacoes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Observações</FormLabel>
+                <FormControl>
+                  <Textarea rows={3} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
-
-        <div>
-          <Label htmlFor="conteudo">Conteúdo do Contrato</Label>
-          <Textarea
-            id="conteudo"
-            value={conteudo}
-            onChange={(e) => setConteudo(e.target.value)}
-            rows={12}
-            className="font-mono text-sm"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="observacoes">Observações</Label>
-          <Textarea
-            id="observacoes"
-            value={observacoes}
-            onChange={(e) => setObservacoes(e.target.value)}
-            rows={3}
-            placeholder="Observações adicionais sobre o contrato"
-          />
-        </div>
-      </div>
+      </Form>
     </FormSheet>
   );
 }

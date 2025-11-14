@@ -5,6 +5,7 @@ import { FormSheet } from '@/components/shared/sheets';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
 import { useClientes } from '@/hooks/clientes';
 import { clienteSchema } from '@/lib/validations/cliente';
@@ -23,16 +24,11 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
   const { editarCliente } = useClientes();
   const loading = editarCliente.isPending;
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-    setValue,
-    reset,
-  } = useForm<ClienteFormData>({
+  const form = useForm<ClienteFormData>({
     resolver: zodResolver(clienteSchema),
   });
+
+  const { handleSubmit, watch, setValue, reset, control } = form;
 
   const tipo = watch('tipo');
   const cep = watch('endereco.cep');
@@ -51,7 +47,6 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
     }
   }, [cliente, reset]);
 
-  // Busca automática de CEP com debounce
   useEffect(() => {
     const cepLimpo = cep?.replace(/\D/g, '') || '';
     
@@ -107,147 +102,256 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
       submitText="Salvar Alterações"
       size="lg"
     >
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <Label className="text-navy-700">Tipo de Cliente</Label>
-          <RadioGroup
-            value={tipo}
-            onValueChange={(value) => setValue('tipo', value as 'CPF' | 'CNPJ')}
-            className="flex gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="CPF" id="cpf-edit" />
-              <Label htmlFor="cpf-edit" className="cursor-pointer text-navy-700">
-                CPF (Pessoa Física)
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="CNPJ" id="cnpj-edit" />
-              <Label htmlFor="cnpj-edit" className="cursor-pointer text-navy-700">
-                CNPJ (Pessoa Jurídica)
-              </Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="nome-edit" className="text-navy-700">{tipo === 'CPF' ? 'Nome Completo' : 'Razão Social'}</Label>
-          <Input id="nome-edit" {...register('nome')} placeholder={tipo === 'CPF' ? 'João da Silva' : 'Empresa Ltda'} className="border-navy-200" />
-          {errors.nome && <p className="text-sm text-destructive">{errors.nome.message}</p>}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="documento-edit" className="text-navy-700">{tipo === 'CPF' ? 'CPF' : 'CNPJ'}</Label>
-          <Input
-            id="documento-edit"
-            {...register('documento')}
-            placeholder={tipo === 'CPF' ? '000.000.000-00' : '00.000.000/0000-00'}
-            onChange={(e) => {
-              const formatted = formatarDocumento(e.target.value, tipo);
-              setValue('documento', formatted);
-            }}
-            className="border-navy-200"
+      <Form {...form}>
+        <div className="space-y-6">
+          <FormField
+            control={control}
+            name="tipo"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo de Cliente</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    className="flex gap-4"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="CPF" id="cpf-edit" />
+                      <Label htmlFor="cpf-edit" className="cursor-pointer">
+                        CPF (Pessoa Física)
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="CNPJ" id="cnpj-edit" />
+                      <Label htmlFor="cnpj-edit" className="cursor-pointer">
+                        CNPJ (Pessoa Jurídica)
+                      </Label>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.documento && <p className="text-sm text-destructive">{errors.documento.message}</p>}
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="email-edit" className="text-navy-700">Email</Label>
-          <Input id="email-edit" type="email" {...register('email')} placeholder="contato@email.com" className="border-navy-200" />
-          {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="telefone-edit" className="text-navy-700">Telefone</Label>
-            <Input
-              id="telefone-edit"
-              {...register('telefone')}
-              placeholder="(00) 0000-0000"
-              onChange={(e) => {
-                const formatted = formatarTelefone(e.target.value);
-                setValue('telefone', formatted);
-              }}
-              className="border-navy-200"
-            />
-            {errors.telefone && <p className="text-sm text-destructive">{errors.telefone.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="whatsapp-edit" className="text-navy-700">WhatsApp (Opcional)</Label>
-            <Input
-              id="whatsapp-edit"
-              {...register('whatsapp')}
-              placeholder="(00) 90000-0000"
-              onChange={(e) => {
-                const formatted = formatarTelefone(e.target.value);
-                setValue('whatsapp', formatted);
-              }}
-              className="border-navy-200"
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="cep-edit" className="text-navy-700">CEP</Label>
-          <div className="relative">
-            <Input
-              id="cep-edit"
-              {...register('endereco.cep')}
-              placeholder="00000-000"
-              onChange={(e) => {
-                const formatted = formatarCEP(e.target.value);
-                setValue('endereco.cep', formatted);
-              }}
-              className={buscandoCEP ? "border-navy-200 pr-10" : "border-navy-200"}
-            />
-            {buscandoCEP && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+          <FormField
+            control={control}
+            name="nome"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {tipo === 'CPF' ? 'Nome Completo' : 'Razão Social'} *
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder={tipo === 'CPF' ? 'Ex: João da Silva' : 'Ex: Empresa LTDA'}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
-          {errors.endereco?.cep && <p className="text-sm text-destructive">{errors.endereco.cep.message}</p>}
-          <p className="text-xs text-muted-foreground">
-            Digite o CEP para buscar automaticamente
-          </p>
-        </div>
+          />
 
-        <div className="grid grid-cols-4 gap-4">
-          <div className="col-span-3 space-y-2">
-            <Label htmlFor="logradouro-edit" className="text-navy-700">Logradouro</Label>
-            <Input id="logradouro-edit" {...register('endereco.logradouro')} placeholder="Rua, Avenida..." className="border-navy-200" />
-            {errors.endereco?.logradouro && (
-              <p className="text-sm text-destructive">{errors.endereco.logradouro.message}</p>
+          <FormField
+            control={control}
+            name="documento"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  {tipo === 'CPF' ? 'CPF' : 'CNPJ'} *
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder={tipo === 'CPF' ? '000.000.000-00' : '00.000.000/0000-00'}
+                    {...field}
+                    onChange={(e) => {
+                      const formatted = formatarDocumento(e.target.value, tipo);
+                      field.onChange(formatted);
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="numero-edit" className="text-navy-700">Número</Label>
-            <Input id="numero-edit" {...register('endereco.numero')} placeholder="123" className="border-navy-200" />
-            {errors.endereco?.numero && <p className="text-sm text-destructive">{errors.endereco.numero.message}</p>}
-          </div>
-        </div>
+          />
 
-        <div className="space-y-2">
-          <Label htmlFor="complemento-edit" className="text-navy-700">Complemento (Opcional)</Label>
-          <Input id="complemento-edit" {...register('endereco.complemento')} placeholder="Apt, Sala, Bloco..." className="border-navy-200" />
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="email@exemplo.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <div className="grid grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="bairro-edit" className="text-navy-700">Bairro</Label>
-            <Input id="bairro-edit" {...register('endereco.bairro')} placeholder="Centro" className="border-navy-200" />
-            {errors.endereco?.bairro && <p className="text-sm text-destructive">{errors.endereco.bairro.message}</p>}
+            <FormField
+              control={control}
+              name="telefone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telefone</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="(00) 00000-0000"
+                      {...field}
+                      onChange={(e) => {
+                        const formatted = formatarTelefone(e.target.value);
+                        field.onChange(formatted);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="whatsapp"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>WhatsApp</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="(00) 00000-0000"
+                      {...field}
+                      onChange={(e) => {
+                        const formatted = formatarTelefone(e.target.value);
+                        field.onChange(formatted);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="cidade-edit" className="text-navy-700">Cidade</Label>
-            <Input id="cidade-edit" {...register('endereco.cidade')} placeholder="Cuiabá" className="border-navy-200" />
-            {errors.endereco?.cidade && <p className="text-sm text-destructive">{errors.endereco.cidade.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="estado-edit" className="text-navy-700">UF</Label>
-            <Input id="estado-edit" {...register('endereco.estado')} placeholder="MT" maxLength={2} className="border-navy-200" />
-            {errors.endereco?.estado && <p className="text-sm text-destructive">{errors.endereco.estado.message}</p>}
+
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="font-semibold">Endereço</h3>
+            
+            <FormField
+              control={control}
+              name="endereco.cep"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center gap-2">
+                    <FormLabel>CEP</FormLabel>
+                    {buscandoCEP && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                  </div>
+                  <FormControl>
+                    <Input
+                      placeholder="00000-000"
+                      {...field}
+                      onChange={(e) => {
+                        const formatted = formatarCEP(e.target.value);
+                        field.onChange(formatted);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="endereco.logradouro"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Logradouro</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Rua, Avenida, etc." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={control}
+                name="endereco.numero"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Número</FormLabel>
+                    <FormControl>
+                      <Input placeholder="123" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={control}
+                name="endereco.complemento"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Complemento</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Apt, Sala, etc." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={control}
+              name="endereco.bairro"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bairro</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nome do bairro" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={control}
+                name="endereco.cidade"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Cidade</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nome da cidade" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={control}
+                name="endereco.estado"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estado</FormLabel>
+                    <FormControl>
+                      <Input placeholder="UF" maxLength={2} {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </Form>
     </FormSheet>
   );
 }

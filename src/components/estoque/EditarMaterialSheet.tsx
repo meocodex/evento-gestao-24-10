@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { FormSheet } from '@/components/shared/sheets';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
   Select,
   SelectContent,
@@ -32,14 +32,7 @@ export function EditarMaterialSheet({ open, onOpenChange, material }: EditarMate
   const { editarMaterial } = useEstoque();
   const { categoriasEstoque, isLoading: isLoadingCategorias } = useCategorias();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-    reset,
-  } = useForm<MaterialFormData>({
+  const form = useForm<MaterialFormData>({
     resolver: zodResolver(materialSchema),
     defaultValues: {
       nome: material.nome,
@@ -47,7 +40,7 @@ export function EditarMaterialSheet({ open, onOpenChange, material }: EditarMate
     },
   });
 
-  const categoria = watch('categoria');
+  const { handleSubmit, reset, control } = form;
 
   useEffect(() => {
     reset({
@@ -84,44 +77,54 @@ export function EditarMaterialSheet({ open, onOpenChange, material }: EditarMate
       submitText="Salvar Alterações"
       size="lg"
     >
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="nome">Nome do Material *</Label>
-          <Input
-            id="nome"
-            placeholder="Ex: Moving Head LED 200W"
-            {...register('nome')}
+      <Form {...form}>
+        <div className="space-y-4">
+          <FormField
+            control={control}
+            name="nome"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome do Material *</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: Moving Head LED 200W" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.nome && (
-            <p className="text-sm text-destructive">{errors.nome.message}</p>
-          )}
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="categoria">Categoria *</Label>
-          <Select value={categoria} onValueChange={(value) => setValue('categoria', value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Selecione a categoria" />
-            </SelectTrigger>
-            <SelectContent>
-              {isLoadingCategorias ? (
-                <SelectItem value="loading" disabled>Carregando...</SelectItem>
-              ) : categoriasEstoque.length === 0 ? (
-                <SelectItem value="empty" disabled>Nenhuma categoria configurada</SelectItem>
-              ) : (
-                categoriasEstoque.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </SelectItem>
-                ))
-              )}
-            </SelectContent>
-          </Select>
-          {errors.categoria && (
-            <p className="text-sm text-destructive">{errors.categoria.message}</p>
-          )}
+          <FormField
+            control={control}
+            name="categoria"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Categoria *</FormLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a categoria" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {isLoadingCategorias ? (
+                      <SelectItem value="loading" disabled>Carregando...</SelectItem>
+                    ) : categoriasEstoque.length === 0 ? (
+                      <SelectItem value="empty" disabled>Nenhuma categoria configurada</SelectItem>
+                    ) : (
+                      categoriasEstoque.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-      </div>
+      </Form>
     </FormSheet>
   );
 }
