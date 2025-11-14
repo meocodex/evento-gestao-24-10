@@ -56,9 +56,43 @@ export function AdicionarReceitaSheet({ open, onOpenChange, onAdicionar, onAdici
     }
   };
 
+  const normalizarTaxa = (valor: string): string => {
+    // Substitui vírgula por ponto
+    let normalizado = valor.replace(',', '.');
+    
+    // Remove caracteres não numéricos exceto ponto
+    normalizado = normalizado.replace(/[^\d.]/g, '');
+    
+    // Garante apenas um ponto decimal
+    const partes = normalizado.split('.');
+    if (partes.length > 2) {
+      normalizado = partes[0] + '.' + partes.slice(1).join('');
+    }
+    
+    // Limita a 2 casas decimais
+    if (partes.length === 2 && partes[1].length > 2) {
+      normalizado = partes[0] + '.' + partes[1].substring(0, 2);
+    }
+    
+    // Valida que está entre 0 e 100
+    const numero = parseFloat(normalizado);
+    if (!isNaN(numero) && numero > 100) {
+      return '100';
+    }
+    
+    return normalizado;
+  };
+
   const handleFormaPagamentoChange = (index: number, field: keyof FormaPagamento, value: string) => {
     const updated = [...formasPagamento];
-    updated[index][field] = value;
+    
+    // Normaliza taxa se for o campo de taxa_percentual
+    if (field === 'taxa_percentual') {
+      updated[index][field] = normalizarTaxa(value);
+    } else {
+      updated[index][field] = value;
+    }
+    
     setFormasPagamento(updated);
   };
 
@@ -329,16 +363,17 @@ export function AdicionarReceitaSheet({ open, onOpenChange, onAdicionar, onAdici
                     />
                   </div>
                   <div className="col-span-3">
-                    <Label className="text-xs">Taxa (%)</Label>
+                    <Label className="text-xs">Taxa (%) - Use ponto</Label>
                     <Input 
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      className="h-9"
+                      type="text"
+                      className="h-9 font-mono"
                       value={fp.taxa_percentual}
                       onChange={(e) => handleFormaPagamentoChange(index, 'taxa_percentual', e.target.value)}
-                      placeholder="0.0"
+                      placeholder="3.23"
                     />
+                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                      Ex: 3.23 ou 3.30
+                    </p>
                   </div>
                   <div className="col-span-2 flex items-end">
                     {formasPagamento.length > 1 && (

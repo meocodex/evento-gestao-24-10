@@ -175,7 +175,20 @@ export function useEventosFinanceiro(eventoId?: string) {
       toast.success('Receita com taxas adicionada com sucesso!');
     },
     onError: (error: any) => {
-      toast.error('Erro ao adicionar receita: ' + error.message);
+      console.error('Erro ao adicionar receita com taxas:', error);
+      
+      // Mensagens de erro mais específicas
+      let mensagem = 'Erro ao adicionar receita';
+      
+      if (error.message?.includes('categoria_financeira')) {
+        mensagem = 'Erro de categoria. Por favor, atualize a página e tente novamente.';
+      } else if (error.message?.includes('eventos_despesas')) {
+        mensagem = 'Erro ao criar despesas de taxa. Verifique os valores e tente novamente.';
+      } else if (error.message) {
+        mensagem = `Erro ao adicionar receita: ${error.message}`;
+      }
+      
+      toast.error(mensagem);
     }
   });
 
