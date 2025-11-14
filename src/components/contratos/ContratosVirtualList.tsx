@@ -40,7 +40,7 @@ export function ContratosVirtualList({
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
           <Skeleton key={i} className="h-[200px]" />
         ))}
@@ -79,7 +79,7 @@ export function ContratosVirtualList({
                 left: 0,
                 width: '100%',
                 transform: `translateY(${virtualItem.start}px)`,
-                paddingBottom: '1rem',
+                paddingBottom: '0.75rem',
               }}
             >
               <Card className="hover:shadow-md transition-shadow">

@@ -24,7 +24,7 @@ export function DemandasVirtualList({
 
   if (demandas.length === 0) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {Array.from({ length: 4 }).map((_, i) => (
           <CardSkeleton key={i} />
         ))}

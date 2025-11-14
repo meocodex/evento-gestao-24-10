@@ -32,7 +32,7 @@ export function EstoqueVirtualList({
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {[1, 2, 3, 4, 5].map((i) => (
           <CardSkeleton key={i} />
         ))}
@@ -66,9 +66,9 @@ export function EstoqueVirtualList({
                 transform: `translateY(${virtualRow.start}px)`,
                 animationDelay: `${Math.min(virtualRow.index * 40, 400)}ms`,
               }}
-              className="px-4 border-b hover:bg-muted/50 transition-colors opacity-0 animate-stagger-fade-in-simple"
+              className="px-3 border-b hover:bg-muted/50 transition-colors opacity-0 animate-stagger-fade-in-simple"
             >
-              <div className="flex items-center gap-4 h-full">
+              <div className="flex items-center gap-3 h-full">
                 <div className="font-mono text-sm text-muted-foreground w-24 flex-shrink-0">
                   {material.id}
                 </div>
@@ -78,7 +78,7 @@ export function EstoqueVirtualList({
                 <Badge variant="outline" className="flex-shrink-0">
                   {material.categoria}
                 </Badge>
-                <div className="flex items-center gap-4 text-sm flex-shrink-0">
+                <div className="flex items-center gap-3 text-sm flex-shrink-0">
                   <div className="text-center w-16">
                     <span className="font-semibold text-foreground">{material.quantidadeTotal || 0}</span>
                   </div>

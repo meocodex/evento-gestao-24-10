@@ -36,7 +36,7 @@ export function TransportadorasVirtualGrid({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} className="h-[280px]" />
         ))}
@@ -76,7 +76,7 @@ export function TransportadorasVirtualGrid({
                 transform: `translateY(${virtualRow.start}px)`,
               }}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pb-3">
                 {rowTransportadoras.map((transportadora) => (
                   <Card key={transportadora.id} className="hover:shadow-md transition-shadow">
                     <CardHeader>

@@ -42,8 +42,8 @@ export function TabelaContasReceber({ contas, onDetalhes, onEditar, onMarcarRece
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-4">
+    <div className="space-y-3">
+      <div className="flex gap-3">
         <Input
           placeholder="Buscar por descrição, cliente ou tipo..."
           value={busca}
@@ -79,11 +79,11 @@ export function TabelaContasReceber({ contas, onDetalhes, onEditar, onMarcarRece
           </TableHeader>
           <TableBody>
             {contasFiltradas.map((conta) => (
-              <TableRow key={conta.id}>
-                <TableCell>
+              <TableRow key={conta.id} className="h-12">
+                <TableCell className="py-2.5">
                   {format(new Date(conta.data_vencimento), 'dd/MM/yyyy', { locale: ptBR })}
                 </TableCell>
-                <TableCell>
+                <TableCell className="py-2.5">
                   <div className="flex items-center gap-2">
                     {conta.descricao}
                     {conta.recorrencia !== 'unico' && (
@@ -94,13 +94,13 @@ export function TabelaContasReceber({ contas, onDetalhes, onEditar, onMarcarRece
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="capitalize">{conta.tipo}</TableCell>
-                <TableCell>{conta.cliente || '-'}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="capitalize py-2.5">{conta.tipo}</TableCell>
+                <TableCell className="py-2.5">{conta.cliente || '-'}</TableCell>
+                <TableCell className="text-right py-2.5">
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(conta.valor))}
                 </TableCell>
-                <TableCell>{getStatusBadge(conta.status)}</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="py-2.5">{getStatusBadge(conta.status)}</TableCell>
+                <TableCell className="text-right py-2.5">
                   <div className="flex justify-end gap-2">
                     <Button
                       variant="ghost"
