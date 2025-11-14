@@ -6,6 +6,7 @@ import { Calendar, User, MessageSquare, Paperclip, DollarSign, CheckCircle, Cloc
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PrazoIndicador } from './PrazoIndicador';
+import { InfoGrid, InfoGridCompact } from '@/components/shared/InfoGrid';
 
 const statusConfig = {
   aberta: { label: 'Aberta', variant: 'default' as const },
@@ -104,49 +105,42 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
 
         <Separator className="my-2" />
 
-        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-muted-foreground shrink-0" />
-            <span className="text-xs truncate">
-              <span className="font-medium text-foreground">Solicitante:</span>{' '}
-              <span className="text-muted-foreground">{demanda.solicitante}</span>
-            </span>
-          </div>
-          
-          {demanda.responsavel && (
-            <div className="flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="text-xs truncate">
-                <span className="font-medium text-foreground">Responsável:</span>{' '}
-                <span className="text-muted-foreground">{demanda.responsavel}</span>
-              </span>
-            </div>
-          )}
+        <InfoGrid
+          items={[
+            {
+              icon: User,
+              label: 'Solicitante',
+              value: demanda.solicitante,
+            },
+            ...(demanda.responsavel ? [{
+              icon: UserCheck,
+              label: 'Responsável',
+              value: demanda.responsavel,
+            }] : []),
+            ...(demanda.prazo ? [{
+              icon: Calendar,
+              label: 'Prazo',
+              value: format(new Date(demanda.prazo), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }),
+              fullWidth: true,
+            }] : []),
+          ]}
+        />
 
-          {demanda.prazo && (
-            <div className="flex items-center gap-2 col-span-2">
-              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
-              <span className="text-xs">
-                <span className="font-medium text-foreground">Prazo:</span>{' '}
-                <span className="text-muted-foreground">
-                  {format(new Date(demanda.prazo), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                </span>
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t border-border/50">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              <MessageSquare className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-medium text-foreground">{demanda.comentarios?.length || 0}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Paperclip className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs font-medium text-foreground">{demanda.anexos?.length || 0}</span>
-            </div>
-          </div>
+        <div className="flex items-center justify-between pt-2 border-t border-border/50">
+          <InfoGridCompact
+            items={[
+              {
+                icon: MessageSquare,
+                value: demanda.comentarios?.length || 0,
+                valueClassName: 'font-medium text-foreground',
+              },
+              {
+                icon: Paperclip,
+                value: demanda.anexos?.length || 0,
+                valueClassName: 'font-medium text-foreground',
+              },
+            ]}
+          />
           <div className="text-xs text-muted-foreground font-medium">
             {format(new Date(demanda.dataCriacao), "dd/MM/yyyy • HH:mm", { locale: ptBR })}
           </div>

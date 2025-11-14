@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EventoCountdown } from './EventoCountdown';
 import { MateriaisPendentesBadge } from './MateriaisPendentesBadge';
+import { InfoGrid } from '@/components/shared/InfoGrid';
 import { usePermissions } from '@/hooks/usePermissions';
 import {
   DropdownMenu,
@@ -113,53 +114,39 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
       
       <CardContent className="pb-2 px-3 sm:px-4 flex-1 flex flex-col justify-between space-y-2">
         {/* Event Details */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-2 flex-1">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 flex-shrink-0">
-            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Data</p>
-            <p className="text-xs sm:text-sm font-semibold text-card-foreground truncate">
-              {evento.dataInicio && evento.dataInicio !== '' 
+        <InfoGrid
+          columns={2}
+          gap="md"
+          className="flex-1"
+          items={[
+            {
+              icon: Calendar,
+              label: 'Data',
+              value: evento.dataInicio && evento.dataInicio !== '' 
                 ? format(parseISO(evento.dataInicio), "dd/MM/yyyy", { locale: ptBR })
-                : 'Data não definida'}
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 flex-shrink-0">
-            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Horário</p>
-            <p className="text-xs sm:text-sm font-semibold text-card-foreground truncate">{evento.horaInicio}</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 flex-shrink-0">
-            <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Local</p>
-            <p className="text-xs sm:text-sm font-semibold text-card-foreground truncate">{evento.local}</p>
-          </div>
-        </div>
-        
-        {evento.cliente && (
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2 rounded-lg bg-primary/10 flex-shrink-0">
-              <Building className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Cliente</p>
-              <p className="text-xs sm:text-sm font-semibold text-card-foreground truncate">{evento.cliente.nome}</p>
-            </div>
-          </div>
-        )}
-        </div>
+                : 'Data não definida',
+              valueClassName: 'font-semibold',
+            },
+            {
+              icon: Clock,
+              label: 'Horário',
+              value: evento.horaInicio,
+              valueClassName: 'font-semibold',
+            },
+            {
+              icon: MapPin,
+              label: 'Local',
+              value: evento.local,
+              valueClassName: 'font-semibold',
+            },
+            ...(evento.cliente ? [{
+              icon: Building,
+              label: 'Cliente',
+              value: evento.cliente.nome,
+              valueClassName: 'font-semibold',
+            }] : []),
+          ]}
+        />
         
         <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} />
 

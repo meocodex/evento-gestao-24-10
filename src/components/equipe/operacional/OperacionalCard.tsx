@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Phone, Star, Eye, Edit } from 'lucide-react';
 import { OperacionalEquipe } from '@/types/equipe';
+import { InfoGridCompact } from '@/components/shared/InfoGrid';
 
 interface OperacionalCardProps {
   operacional: OperacionalEquipe;
@@ -61,17 +62,20 @@ export function OperacionalCard({ operacional, onDetalhes, onEditar }: Operacion
               </Badge>
             </div>
 
-            {/* Status e avaliação */}
-            <div className="flex items-center gap-3 mt-2.5 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Phone className="h-3 w-3" />
-                {operacional.telefone}
-              </div>
-              <div className="flex items-center gap-1">
-                <Star className="h-3 w-3 fill-primary text-primary" />
-                {operacional.avaliacao.toFixed(1)}
-              </div>
-            </div>
+            <InfoGridCompact
+              items={[
+                {
+                  icon: Phone,
+                  value: operacional.telefone,
+                },
+                {
+                  icon: Star,
+                  value: operacional.avaliacao.toFixed(1),
+                  iconClassName: 'fill-primary text-primary',
+                },
+              ]}
+              className="mt-2.5"
+            />
           </div>
         </div>
       </CardContent>
