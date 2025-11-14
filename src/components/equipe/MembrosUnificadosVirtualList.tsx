@@ -39,7 +39,7 @@ export function MembrosUnificadosVirtualList({
 
   if (loading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
           <LoadingSkeleton key={i} className="h-32" />
         ))}

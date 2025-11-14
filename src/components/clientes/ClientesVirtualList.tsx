@@ -28,7 +28,7 @@ export function ClientesVirtualList({
 
   if (clientes.length === 0) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <CardSkeleton key={i} />
         ))}
@@ -37,7 +37,7 @@ export function ClientesVirtualList({
   }
 
   return (
-    <div ref={parentRef} className="h-[calc(100vh-400px)] overflow-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    <div ref={parentRef} className="h-[calc(100vh-400px)] overflow-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
       style={{ contain: 'strict' }}>
       {rowVirtualizer.getVirtualItems().map((virtualRow) => {
         const cliente = clientes[virtualRow.index];
