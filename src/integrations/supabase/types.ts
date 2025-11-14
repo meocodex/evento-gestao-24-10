@@ -1004,6 +1004,7 @@ export type Database = {
           tags: string[] | null
           tipo_evento: Database["public"]["Enums"]["tipo_evento"]
           updated_at: string | null
+          utiliza_pos_empresa: boolean | null
         }
         Insert: {
           arquivado?: boolean | null
@@ -1037,6 +1038,7 @@ export type Database = {
           tags?: string[] | null
           tipo_evento: Database["public"]["Enums"]["tipo_evento"]
           updated_at?: string | null
+          utiliza_pos_empresa?: boolean | null
         }
         Update: {
           arquivado?: boolean | null
@@ -1070,6 +1072,7 @@ export type Database = {
           tags?: string[] | null
           tipo_evento?: Database["public"]["Enums"]["tipo_evento"]
           updated_at?: string | null
+          utiliza_pos_empresa?: boolean | null
         }
         Relationships: [
           {
@@ -2452,6 +2455,9 @@ export type Database = {
         | "em_execucao"
         | "concluido"
         | "cancelado"
+        | "em_negociacao"
+        | "finalizado"
+        | "arquivado"
       status_financeiro: "pendente" | "pago" | "cancelado" | "em_negociacao"
       status_material:
         | "reservado"
@@ -2648,6 +2654,9 @@ export const Constants = {
         "em_execucao",
         "concluido",
         "cancelado",
+        "em_negociacao",
+        "finalizado",
+        "arquivado",
       ],
       status_financeiro: ["pendente", "pago", "cancelado", "em_negociacao"],
       status_material: [
