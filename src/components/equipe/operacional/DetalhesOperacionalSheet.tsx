@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { Phone, Star, Edit, FileText, Calendar, Trash2 } from 'lucide-react';
+import { Phone, Star, Edit, FileText, Calendar, Trash2, Mail, User, IdCard } from 'lucide-react';
 import { OperacionalEquipe } from '@/types/equipe';
+import { InfoGridList } from '@/components/shared/InfoGrid';
 
 interface DetalhesOperacionalSheetProps {
   operacional: OperacionalEquipe;
@@ -96,30 +97,36 @@ export function DetalhesOperacionalSheet({ operacional, open, onOpenChange, onEd
             <Phone className="h-4 w-4" />
             Informações de Contato
           </h4>
-          <div className="space-y-2 text-sm">
-            {operacional.cpf && (
-              <div className="grid grid-cols-3">
-                <span className="text-muted-foreground">CPF:</span>
-                <span className="col-span-2">{operacional.cpf}</span>
-              </div>
-            )}
-            <div className="grid grid-cols-3">
-              <span className="text-muted-foreground">Telefone:</span>
-              <span className="col-span-2">{operacional.telefone}</span>
-            </div>
-            {operacional.whatsapp && (
-              <div className="grid grid-cols-3">
-                <span className="text-muted-foreground">WhatsApp:</span>
-                <span className="col-span-2">{operacional.whatsapp}</span>
-              </div>
-            )}
-            {operacional.email && (
-              <div className="grid grid-cols-3">
-                <span className="text-muted-foreground">Email:</span>
-                <span className="col-span-2">{operacional.email}</span>
-              </div>
-            )}
-          </div>
+          <InfoGridList
+            items={[
+              ...(operacional.cpf ? [{
+                icon: IdCard,
+                label: 'CPF',
+                value: operacional.cpf,
+              }] : []),
+              {
+                icon: Phone,
+                label: 'Telefone',
+                value: operacional.telefone,
+              },
+              ...(operacional.whatsapp ? [{
+                icon: Phone,
+                label: 'WhatsApp',
+                value: operacional.whatsapp,
+              }] : []),
+              ...(operacional.email ? [{
+                icon: Mail,
+                label: 'Email',
+                value: operacional.email,
+                separator: false,
+              }] : [{
+                icon: Phone,
+                label: 'Telefone',
+                value: operacional.telefone,
+                separator: false,
+              }]),
+            ]}
+          />
         </div>
 
         <Separator />

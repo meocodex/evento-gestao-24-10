@@ -21,6 +21,17 @@ interface InfoGridCompactItemProps {
   valueClassName?: string;
 }
 
+interface InfoGridListItemProps {
+  icon?: LucideIcon;
+  label: string;
+  value: ReactNode;
+  className?: string;
+  iconClassName?: string;
+  labelClassName?: string;
+  valueClassName?: string;
+  separator?: boolean;
+}
+
 interface InfoGridProps {
   items: InfoGridItemProps[];
   columns?: 1 | 2 | 3;
@@ -31,6 +42,12 @@ interface InfoGridProps {
 interface InfoGridCompactProps {
   items: InfoGridCompactItemProps[];
   className?: string;
+}
+
+interface InfoGridListProps {
+  items: InfoGridListItemProps[];
+  className?: string;
+  itemClassName?: string;
 }
 
 const gapClasses = {
@@ -109,3 +126,41 @@ export function InfoGridCompact({
     </div>
   );
 }
+
+// Variant lista vertical para uso em sheets e páginas de detalhes
+export function InfoGridList({ 
+  items, 
+  className,
+  itemClassName,
+}: InfoGridListProps) {
+  return (
+    <div className={cn('space-y-3', className)}>
+      {items.map((item, index) => {
+        const Icon = item.icon;
+        const showSeparator = item.separator !== false && index < items.length - 1;
+        
+        return (
+          <div key={index}>
+            <div className={cn('flex items-start gap-3 py-2', itemClassName, item.className)}>
+              {Icon && (
+                <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Icon className={cn('h-5 w-5 text-primary', item.iconClassName)} />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className={cn('text-sm font-medium text-muted-foreground mb-1', item.labelClassName)}>
+                  {item.label}
+                </p>
+                <div className={cn('text-base font-semibold text-foreground break-words', item.valueClassName)}>
+                  {item.value}
+                </div>
+              </div>
+            </div>
+            {showSeparator && <div className="border-t border-border/50" />}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
