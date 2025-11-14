@@ -41,8 +41,8 @@ export function OperacionalCard({ operacional, onDetalhes, onEditar }: Operacion
 
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="pt-6">
-        <div className="flex items-start gap-4">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
           <Avatar className="h-12 w-12">
             <AvatarImage src={operacional.foto || undefined} />
             <AvatarFallback>
@@ -61,7 +61,8 @@ export function OperacionalCard({ operacional, onDetalhes, onEditar }: Operacion
               </Badge>
             </div>
 
-            <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+            {/* Status e avaliação */}
+            <div className="flex items-center gap-3 mt-2.5 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Phone className="h-3 w-3" />
                 {operacional.telefone}
@@ -75,7 +76,7 @@ export function OperacionalCard({ operacional, onDetalhes, onEditar }: Operacion
         </div>
       </CardContent>
 
-      <CardFooter className="flex gap-2 pt-0">
+      <CardFooter className="flex gap-2 pt-2">
         <Button variant="outline" size="sm" className="flex-1" onClick={onDetalhes}>
           <Eye className="h-3 w-3 mr-1" />
           Ver Detalhes

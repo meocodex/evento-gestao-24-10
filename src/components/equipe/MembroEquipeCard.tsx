@@ -115,8 +115,8 @@ export function MembroEquipeCard({
 
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex items-start gap-4">
+      <CardContent className="p-3">
+        <div className="flex items-start gap-3">
           {/* Avatar */}
           <Avatar className="h-12 w-12">
             <AvatarImage src={membro.avatar_url || undefined} alt={membro.nome} />
@@ -131,7 +131,7 @@ export function MembroEquipeCard({
                 <p className="text-sm text-muted-foreground">{membro.funcao_principal}</p>
               </div>
               
-              {/* Badges de Tipo */}
+              {/* Badges de Tipo, Status e Role */}
               <div className="flex flex-col gap-1 items-end">
                 <Badge variant={getTipoBadgeVariant(membro.tipo_membro)}>
                   {getTipoMembroLabel(membro.tipo_membro)}
@@ -171,7 +171,7 @@ export function MembroEquipeCard({
             </div>
 
             {/* Informações Secundárias */}
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-2 text-xs text-muted-foreground">
               {/* Tipo de Vínculo (operacionais) */}
               {membro.tipo_vinculo && (
                 <Badge variant="outline" className="text-xs">
