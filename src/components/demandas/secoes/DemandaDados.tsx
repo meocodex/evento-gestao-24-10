@@ -8,6 +8,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUsuarios } from '@/hooks/useUsuarios';
 import { format } from 'date-fns';
 import { Link2, Calendar, User, Edit, Play, CheckCircle2, Ban, Archive, RotateCcw } from 'lucide-react';
+import { InfoGridList } from '@/components/shared/InfoGrid';
+import { Separator } from '@/components/ui/separator';
 
 interface DemandaDadosProps {
   demanda: Demanda;
@@ -87,8 +89,8 @@ export function DemandaDados({ demanda, onEditar }: DemandaDadosProps) {
 
       {/* Informações principais */}
       <Card>
-        <CardContent className="pt-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+        <CardContent className="pt-6 space-y-6">
+          <div className="flex items-center gap-4">
             <div>
               <p className="text-sm text-muted-foreground mb-1">Categoria</p>
               <Badge variant="outline">{demanda.categoria}</Badge>
@@ -99,26 +101,39 @@ export function DemandaDados({ demanda, onEditar }: DemandaDadosProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">
-                <User className="h-4 w-4 inline mr-1" />
-                Solicitante
-              </p>
-              <p className="font-medium">{demanda.solicitante}</p>
-            </div>
-            
-            {demanda.responsavel ? (
+          <Separator />
+
+          <InfoGridList
+            items={[
+              {
+                icon: User,
+                label: 'Solicitante',
+                value: demanda.solicitante,
+              },
+              ...(demanda.responsavel ? [{
+                icon: User,
+                label: 'Responsável',
+                value: demanda.responsavel,
+              }] : []),
+              {
+                icon: Calendar,
+                label: 'Criado em',
+                value: format(new Date(demanda.dataCriacao), 'dd/MM/yyyy HH:mm'),
+              },
+              ...(demanda.prazo ? [{
+                icon: Calendar,
+                label: 'Prazo',
+                value: format(new Date(demanda.prazo), 'dd/MM/yyyy HH:mm'),
+                separator: false,
+              }] : []),
+            ]}
+          />
+
+          {!demanda.responsavel && isAdmin && (
+            <>
+              <Separator />
               <div>
-                <p className="text-sm text-muted-foreground mb-1">
-                  <User className="h-4 w-4 inline mr-1" />
-                  Responsável
-                </p>
-                <p className="font-medium">{demanda.responsavel}</p>
-              </div>
-            ) : isAdmin ? (
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Atribuir Responsável</p>
+                <p className="text-sm text-muted-foreground mb-2">Atribuir Responsável</p>
                 <Select onValueChange={handleAtribuirResponsavel}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione..." />
@@ -132,32 +147,8 @@ export function DemandaDados({ demanda, onEditar }: DemandaDadosProps) {
                   </SelectContent>
                 </Select>
               </div>
-            ) : null}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">
-                <Calendar className="h-4 w-4 inline mr-1" />
-                Criado em
-              </p>
-              <p className="font-medium">
-                {format(new Date(demanda.dataCriacao), 'dd/MM/yyyy HH:mm')}
-              </p>
-            </div>
-
-            {demanda.prazo && (
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">
-                  <Calendar className="h-4 w-4 inline mr-1" />
-                  Prazo
-                </p>
-                <p className="font-medium">
-                  {format(new Date(demanda.prazo), 'dd/MM/yyyy HH:mm')}
-                </p>
-              </div>
-            )}
-          </div>
+            </>
+          )}
 
           {demanda.dataConclusao && (
             <div>

@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { InfoGridList } from '@/components/shared/InfoGrid';
+import { FileText, Calendar, Hash } from 'lucide-react';
 
 interface DetalhesTemplateSheetProps {
   open: boolean;
@@ -22,8 +24,8 @@ export function DetalhesTemplateSheet({ open, onOpenChange, template, onEdit }: 
 
   // Tab: Dados
   const DadosTab = () => (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <Badge variant={template.status === 'ativo' ? 'default' : 'secondary'}>
           {template.status === 'ativo' ? 'Ativo' : 'Inativo'}
         </Badge>
@@ -34,38 +36,41 @@ export function DetalhesTemplateSheet({ open, onOpenChange, template, onEdit }: 
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span className="text-muted-foreground">Tipo:</span>
-          <p className="font-medium capitalize">{template.tipo}</p>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Versão:</span>
-          <p className="font-medium">v{template.versao}</p>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Criado em:</span>
-          <p className="font-medium">
-            {format(new Date(template.criadoEm), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-          </p>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Atualizado em:</span>
-          <p className="font-medium">
-            {format(new Date(template.atualizadoEm), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-          </p>
-        </div>
-      </div>
+      <InfoGridList
+        items={[
+          {
+            icon: FileText,
+            label: 'Tipo',
+            value: <span className="capitalize">{template.tipo}</span>,
+          },
+          {
+            icon: Hash,
+            label: 'Versão',
+            value: `v${template.versao}`,
+          },
+          {
+            icon: Calendar,
+            label: 'Criado em',
+            value: format(new Date(template.criadoEm), "dd 'de' MMMM 'de' yyyy", { locale: ptBR }),
+          },
+          {
+            icon: Calendar,
+            label: 'Atualizado em',
+            value: format(new Date(template.atualizadoEm), "dd 'de' MMMM 'de' yyyy", { locale: ptBR }),
+            separator: false,
+          },
+        ]}
+      />
 
       <div>
-        <span className="text-sm text-muted-foreground">Descrição:</span>
-        <p className="mt-1">{template.descricao}</p>
+        <h4 className="text-sm font-medium text-muted-foreground mb-2">Descrição</h4>
+        <p className="text-base">{template.descricao}</p>
       </div>
 
       <Separator />
 
       <div>
-        <h4 className="font-semibold mb-2">Variáveis do Template ({template.variaveis.length})</h4>
+        <h4 className="font-semibold mb-3">Variáveis do Template ({template.variaveis.length})</h4>
         <div className="flex flex-wrap gap-2">
           {template.variaveis.map((v) => (
             <Badge key={v} variant="outline">

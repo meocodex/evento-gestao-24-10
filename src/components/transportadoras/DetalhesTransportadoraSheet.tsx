@@ -2,6 +2,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Badge } from '@/components/ui/badge';
 import { Transportadora } from '@/types/transportadoras';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { InfoGridList } from '@/components/shared/InfoGrid';
+import { Building2, FileText, User, Phone, Mail, MapPin, CreditCard } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 interface DetalhesTransportadoraSheetProps {
   transportadora: Transportadora;
@@ -30,69 +33,96 @@ export function DetalhesTransportadoraSheet({ transportadora, open, onOpenChange
         </SheetHeader>
 
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <h4 className="text-sm font-semibold text-navy-600 mb-1">Razão Social</h4>
-              <p className="text-navy-900">{transportadora.razaoSocial}</p>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-navy-600 mb-1">CNPJ</h4>
-              <p className="text-navy-900">{transportadora.cnpj}</p>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-navy-600 mb-1">Responsável</h4>
-              <p className="text-navy-900">{transportadora.responsavel}</p>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold text-navy-600 mb-1">Telefone</h4>
-              <p className="text-navy-900">{transportadora.telefone}</p>
-            </div>
-            <div className="sm:col-span-2">
-              <h4 className="text-sm font-semibold text-navy-600 mb-1">Email</h4>
-              <p className="text-navy-900">{transportadora.email}</p>
-            </div>
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Dados Cadastrais</h3>
+            <InfoGridList
+              items={[
+                {
+                  icon: Building2,
+                  label: 'Razão Social',
+                  value: transportadora.razaoSocial,
+                },
+                {
+                  icon: FileText,
+                  label: 'CNPJ',
+                  value: transportadora.cnpj,
+                },
+                {
+                  icon: User,
+                  label: 'Responsável',
+                  value: transportadora.responsavel,
+                },
+                {
+                  icon: Phone,
+                  label: 'Telefone',
+                  value: transportadora.telefone,
+                },
+                {
+                  icon: Mail,
+                  label: 'Email',
+                  value: transportadora.email,
+                  separator: false,
+                },
+              ]}
+            />
           </div>
 
-          <div className="border-t border-navy-100 pt-6">
-            <h3 className="text-lg font-semibold text-navy-800 mb-4">Endereço</h3>
-            <div className="space-y-1 text-navy-700">
-              <p>{transportadora.endereco.rua}, {transportadora.endereco.numero}</p>
-              {transportadora.endereco.complemento && <p>{transportadora.endereco.complemento}</p>}
-              <p>{transportadora.endereco.bairro}</p>
-              <p>{transportadora.endereco.cidade} - {transportadora.endereco.estado}</p>
-              <p>CEP: {transportadora.endereco.cep}</p>
-            </div>
+          <Separator />
+
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Endereço</h3>
+            <InfoGridList
+              items={[
+                {
+                  icon: MapPin,
+                  label: 'Endereço Completo',
+                  value: (
+                    <>
+                      <p>{transportadora.endereco.rua}, {transportadora.endereco.numero}</p>
+                      {transportadora.endereco.complemento && <p className="text-sm text-muted-foreground">{transportadora.endereco.complemento}</p>}
+                      <p>{transportadora.endereco.bairro}</p>
+                      <p>{transportadora.endereco.cidade} - {transportadora.endereco.estado}</p>
+                      <p>CEP: {transportadora.endereco.cep}</p>
+                    </>
+                  ),
+                  separator: false,
+                },
+              ]}
+            />
           </div>
 
           {transportadora.dadosBancarios && (
-            <div className="border-t border-navy-100 pt-6">
-              <h3 className="text-lg font-semibold text-navy-800 mb-4">Dados Bancários</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-sm font-semibold text-navy-600 mb-1">Banco</h4>
-                  <p className="text-navy-900">{transportadora.dadosBancarios.banco}</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-navy-600 mb-1">Agência</h4>
-                  <p className="text-navy-900">{transportadora.dadosBancarios.agencia}</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-navy-600 mb-1">Conta</h4>
-                  <p className="text-navy-900">{transportadora.dadosBancarios.conta}</p>
-                </div>
-                <div>
-                  <h4 className="text-sm font-semibold text-navy-600 mb-1">Tipo</h4>
-                  <p className="text-navy-900 capitalize">{transportadora.dadosBancarios.tipoConta}</p>
-                </div>
+            <>
+              <Separator />
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Dados Bancários</h3>
+                <InfoGridList
+                  items={[
+                    {
+                      icon: CreditCard,
+                      label: 'Banco',
+                      value: transportadora.dadosBancarios.banco,
+                    },
+                    {
+                      icon: CreditCard,
+                      label: 'Agência',
+                      value: transportadora.dadosBancarios.agencia,
+                    },
+                    {
+                      icon: CreditCard,
+                      label: 'Conta',
+                      value: transportadora.dadosBancarios.conta,
+                    },
+                    {
+                      icon: CreditCard,
+                      label: 'Tipo',
+                      value: <span className="capitalize">{transportadora.dadosBancarios.tipoConta}</span>,
+                      separator: false,
+                    },
+                  ]}
+                />
               </div>
-            </div>
-          )}
-
-          {transportadora.observacoes && (
-            <div className="border-t border-navy-100 pt-6">
-              <h3 className="text-lg font-semibold text-navy-800 mb-2">Observações</h3>
-              <p className="text-sm text-navy-600">{transportadora.observacoes}</p>
-            </div>
+            </>
           )}
         </div>
       </SheetContent>

@@ -16,6 +16,8 @@ import { AlterarStatusDialog } from '../modals/AlterarStatusDialog';
 import { MateriaisPendentesBadge } from '../MateriaisPendentesBadge';
 import { useMaterialPendente } from '@/hooks/eventos/useMaterialPendente';
 import { EventoCountdown } from '../EventoCountdown';
+import { InfoGridList } from '@/components/shared/InfoGrid';
+import { Separator } from '@/components/ui/separator';
 
 interface DadosEventoProps {
   evento: Evento;
@@ -184,66 +186,66 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
         <CardHeader>
           <CardTitle>Cliente</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-2">
-            {evento.cliente.tipo === 'CPF' ? <User className="h-4 w-4" /> : <Building2 className="h-4 w-4" />}
-            <div>
-              <p className="text-sm text-muted-foreground">
-                {evento.cliente.tipo === 'CPF' ? 'Cliente (CPF)' : 'Cliente (CNPJ)'}
-              </p>
-              <p className="font-medium">{evento.cliente.nome}</p>
-              <p className="text-sm text-muted-foreground">{evento.cliente.documento}</p>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Phone className="h-4 w-4 text-muted-foreground" />
-              <span>{evento.cliente.telefone}</span>
-            </div>
-            
-            {evento.cliente.whatsapp && evento.cliente.whatsapp !== evento.cliente.telefone && (
-              <div className="flex items-center gap-2 text-sm">
-                <Phone className="h-4 w-4 text-green-600" />
-                <span className="text-green-600">{evento.cliente.whatsapp} (WhatsApp)</span>
-              </div>
-            )}
-            
-            <div className="flex items-center gap-2 text-sm">
-              <Mail className="h-4 w-4 text-muted-foreground" />
-              <span>{evento.cliente.email}</span>
-            </div>
-          </div>
-
-          <div>
-            <div className="flex items-start gap-2 text-sm">
-              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-              <div className="space-y-0.5">
-                <p className="font-medium">Endereço</p>
-                <p className="text-muted-foreground">
-                  {evento.cliente.endereco.logradouro}, {evento.cliente.endereco.numero}
-                  {evento.cliente.endereco.complemento && ` - ${evento.cliente.endereco.complemento}`}
-                </p>
-                <p className="text-muted-foreground">
-                  {evento.cliente.endereco.bairro} - CEP: {evento.cliente.endereco.cep}
-                </p>
-                <p className="text-muted-foreground">
-                  {evento.cliente.endereco.cidade}/{evento.cliente.endereco.estado}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {evento.cliente.tipo === 'CNPJ' && evento.cliente.responsavelLegal && (
-            <div className="pt-3 border-t">
-              <p className="text-sm font-medium mb-2">Responsável Legal</p>
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <p><strong>Nome:</strong> {evento.cliente.responsavelLegal.nome}</p>
-                <p><strong>CPF:</strong> {evento.cliente.responsavelLegal.cpf}</p>
-                <p><strong>Data de Nascimento:</strong> {evento.cliente.responsavelLegal.dataNascimento}</p>
-              </div>
-            </div>
-          )}
+        <CardContent>
+          <InfoGridList
+            items={[
+              {
+                icon: evento.cliente.tipo === 'CPF' ? User : Building2,
+                label: evento.cliente.tipo === 'CPF' ? 'Cliente (CPF)' : 'Cliente (CNPJ)',
+                value: (
+                  <>
+                    <p className="font-semibold">{evento.cliente.nome}</p>
+                    <p className="text-sm text-muted-foreground">{evento.cliente.documento}</p>
+                  </>
+                ),
+              },
+              {
+                icon: Phone,
+                label: 'Telefone',
+                value: evento.cliente.telefone,
+              },
+              ...(evento.cliente.whatsapp && evento.cliente.whatsapp !== evento.cliente.telefone ? [{
+                icon: Phone,
+                label: 'WhatsApp',
+                value: <span className="text-green-600">{evento.cliente.whatsapp}</span>,
+              }] : []),
+              {
+                icon: Mail,
+                label: 'Email',
+                value: evento.cliente.email,
+              },
+              {
+                icon: MapPin,
+                label: 'Endereço',
+                value: (
+                  <>
+                    <p>{evento.cliente.endereco.logradouro}, {evento.cliente.endereco.numero}
+                      {evento.cliente.endereco.complemento && ` - ${evento.cliente.endereco.complemento}`}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {evento.cliente.endereco.bairro} - CEP: {evento.cliente.endereco.cep}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {evento.cliente.endereco.cidade}/{evento.cliente.endereco.estado}
+                    </p>
+                  </>
+                ),
+                separator: evento.cliente.tipo === 'CNPJ' && !!evento.cliente.responsavelLegal,
+              },
+              ...(evento.cliente.tipo === 'CNPJ' && evento.cliente.responsavelLegal ? [{
+                icon: User,
+                label: 'Responsável Legal',
+                value: (
+                  <div className="space-y-1">
+                    <p><strong>Nome:</strong> {evento.cliente.responsavelLegal.nome}</p>
+                    <p><strong>CPF:</strong> {evento.cliente.responsavelLegal.cpf}</p>
+                    <p><strong>Data de Nascimento:</strong> {evento.cliente.responsavelLegal.dataNascimento}</p>
+                  </div>
+                ),
+                separator: false,
+              }] : []),
+            ]}
+          />
         </CardContent>
       </Card>
 
