@@ -15,11 +15,16 @@ import {
   Clock,
   FileSignature,
   CheckCircle2,
-  XCircle
+  XCircle,
+  User,
+  Calendar,
+  DollarSign,
+  MapPin
 } from 'lucide-react';
 import { useClientes } from '@/hooks/clientes';
 import { useEventos } from '@/hooks/eventos';
 import { gerarPDFContrato } from '@/utils/pdfGenerator';
+import { InfoGridList } from '@/components/shared/InfoGrid';
 
 interface DetalhesContratoSheetProps {
   open: boolean;
@@ -57,74 +62,61 @@ export function DetalhesContratoSheet({ open, onOpenChange, contrato, onEdit, on
   const totalAssinaturas = contrato.assinaturas.length;
 
   // Tab: Dados
-  const DadosTab = () => (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <Badge variant={statusConfig[contrato.status]?.variant || 'secondary'}>
-          <StatusIcon className="mr-1 h-3 w-3" />
-          {statusConfig[contrato.status]?.label || contrato.status}
-        </Badge>
-        <p className="text-sm text-muted-foreground">
-          {isProposta ? 'Proposta' : 'Contrato'} {contrato.numero}
-        </p>
-      </div>
+  const DadosTab = () => {
+    const infoItems = [
+      {
+        icon: FileText,
+        label: 'Tipo',
+        value: <span className="capitalize">{contrato.tipo}</span>,
+      },
+      ...(cliente ? [{
+        icon: User,
+        label: 'Cliente',
+        value: cliente.nome,
+      }] : []),
+      ...(evento ? [{
+        icon: FileText,
+        label: 'Evento',
+        value: evento.nome,
+      }] : []),
+      ...(contrato.valor ? [{
+        icon: DollarSign,
+        label: 'Valor',
+        value: contrato.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      }] : []),
+      ...(isProposta && contrato.validade ? [{
+        icon: Calendar,
+        label: 'Validade',
+        value: format(new Date(contrato.validade), "dd/MM/yyyy"),
+      }] : []),
+      ...(contrato.dataInicio ? [{
+        icon: Calendar,
+        label: 'Data Início',
+        value: format(new Date(contrato.dataInicio), "dd/MM/yyyy"),
+      }] : []),
+      ...(contrato.dataFim ? [{
+        icon: Calendar,
+        label: 'Data Fim',
+        value: format(new Date(contrato.dataFim), "dd/MM/yyyy"),
+        separator: false,
+      }] : []),
+    ];
 
-      <div className="grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span className="text-muted-foreground">Tipo:</span>
-          <p className="font-medium capitalize">{contrato.tipo}</p>
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Badge variant={statusConfig[contrato.status]?.variant || 'secondary'}>
+            <StatusIcon className="mr-1 h-3 w-3" />
+            {statusConfig[contrato.status]?.label || contrato.status}
+          </Badge>
+          <p className="text-sm text-muted-foreground">
+            {isProposta ? 'Proposta' : 'Contrato'} {contrato.numero}
+          </p>
         </div>
-        <div>
-          <span className="text-muted-foreground">Status:</span>
-          <p className="font-medium">{statusConfig[contrato.status]?.label || contrato.status}</p>
-        </div>
-        {cliente && (
-          <div>
-            <span className="text-muted-foreground">Cliente:</span>
-            <p className="font-medium">{cliente.nome}</p>
-          </div>
-        )}
-        {evento && (
-          <div>
-            <span className="text-muted-foreground">Evento:</span>
-            <p className="font-medium">{evento.nome}</p>
-          </div>
-        )}
-        {contrato.valor && (
-          <div>
-            <span className="text-muted-foreground">Valor:</span>
-            <p className="font-medium">
-              {contrato.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-            </p>
-          </div>
-        )}
-        {isProposta && contrato.validade && (
-          <div>
-            <span className="text-muted-foreground">Validade:</span>
-            <p className="font-medium">
-              {format(new Date(contrato.validade), "dd/MM/yyyy")}
-            </p>
-          </div>
-        )}
-        {contrato.dataInicio && (
-          <div>
-            <span className="text-muted-foreground">Data Início:</span>
-            <p className="font-medium">
-              {format(new Date(contrato.dataInicio), "dd/MM/yyyy")}
-            </p>
-          </div>
-        )}
-        {contrato.dataFim && (
-          <div>
-            <span className="text-muted-foreground">Data Fim:</span>
-            <p className="font-medium">
-              {format(new Date(contrato.dataFim), "dd/MM/yyyy")}
-            </p>
-          </div>
-        )}
-      </div>
+
+        <InfoGridList items={infoItems} />
       
-      {isProposta && contrato.dadosEvento && (
+        {isProposta && contrato.dadosEvento && (
         <>
           <Separator />
           <div>
@@ -194,6 +186,7 @@ export function DetalhesContratoSheet({ open, onOpenChange, contrato, onEdit, on
       </div>
     </div>
   );
+};
 
   // Tab: Conteúdo
   const ConteudoTab = () => (
