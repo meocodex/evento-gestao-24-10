@@ -15,7 +15,7 @@ import { Package, MapPin, Plus, Trash2, Edit, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { NovoSerialDialog } from './NovoSerialDialog';
 import { EditarMaterialSheet } from './EditarMaterialSheet';
-import { EditarSerialDialog } from './EditarSerialDialog';
+import { EditarSerialSheet } from './EditarSerialSheet';
 import { HistoricoMaterialTimeline } from './HistoricoMaterialTimeline';
 import { GerenciarQuantidadeDialog } from './GerenciarQuantidadeDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
@@ -279,7 +279,7 @@ export function DetalhesMaterialSheet({
       />
 
       {serialParaEditar && (
-        <EditarSerialDialog
+        <EditarSerialSheet
           open={showEditarSerial}
           onOpenChange={setShowEditarSerial}
           materialId={material.id}
