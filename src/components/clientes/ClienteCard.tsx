@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Cliente } from '@/types/eventos';
 import { User, Building2, Mail, Phone, MapPin, Eye, Pencil, Trash2 } from 'lucide-react';
+import { InfoGridCompact } from '@/components/shared/InfoGrid';
 
 interface ClienteCardProps {
   cliente: Cliente;
@@ -32,22 +33,24 @@ export function ClienteCard({ cliente, onView, onEdit, onDelete }: ClienteCardPr
       </CardHeader>
 
       <CardContent className="space-y-2">
-        {cliente.email && (
-          <div className="flex items-center gap-2 text-sm">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <span className="truncate">{cliente.email}</span>
-          </div>
-        )}
-        <div className="flex items-center gap-2 text-sm">
-          <Phone className="h-4 w-4 text-muted-foreground" />
-          <span>{cliente.telefone}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm">
-          <MapPin className="h-4 w-4 text-muted-foreground" />
-          <span>
-            {cliente.endereco.cidade}/{cliente.endereco.estado}
-          </span>
-        </div>
+        <InfoGridCompact
+          items={[
+            ...(cliente.email ? [{
+              icon: Mail,
+              value: cliente.email,
+              className: 'max-w-[200px]',
+              valueClassName: 'truncate',
+            }] : []),
+            {
+              icon: Phone,
+              value: cliente.telefone,
+            },
+            {
+              icon: MapPin,
+              value: `${cliente.endereco.cidade}/${cliente.endereco.estado}`,
+            },
+          ]}
+        />
       </CardContent>
 
       <CardFooter className="pt-2 flex gap-2">

@@ -8,6 +8,7 @@ import { useTransportadoras } from '@/hooks/transportadoras';
 import { useEventos } from '@/hooks/eventos';
 import { EditarEnvioSheet } from './EditarEnvioSheet';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { InfoGrid } from '@/components/shared/InfoGrid';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useQuery } from '@tanstack/react-query';
@@ -105,23 +106,21 @@ export function EnvioCard({ envio }: EnvioCardProps) {
               <span>{envio.destino}</span>
             </div>
             
-            <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs">
-                  Previsão: {format(new Date(envio.dataEntregaPrevista), "d 'de' MMMM", { locale: ptBR })}
-                </span>
-              </div>
-
-              {envio.valor && (
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs font-semibold">
-                    R$ {envio.valor.toFixed(2)}
-                  </span>
-                </div>
-              )}
-            </div>
+            <InfoGrid
+              items={[
+                {
+                  icon: Calendar,
+                  label: 'Previsão',
+                  value: format(new Date(envio.dataEntregaPrevista), "d 'de' MMMM", { locale: ptBR }),
+                },
+                ...(envio.valor ? [{
+                  icon: DollarSign,
+                  label: 'Valor',
+                  value: `R$ ${envio.valor.toFixed(2)}`,
+                  valueClassName: 'font-semibold',
+                }] : []),
+              ]}
+            />
 
             {envio.dataEntrega && (
               <div className="text-sm text-green-600">
