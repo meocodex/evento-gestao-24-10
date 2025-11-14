@@ -43,19 +43,19 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
 
   return (
     <Card 
-      className="group p-5 smooth-hover rounded-2xl bg-card cursor-pointer"
+      className="group p-4 smooth-hover rounded-2xl bg-card cursor-pointer"
       onClick={onClick}
     >
-      <div className="space-y-3">
+      <div className="space-y-2.5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2.5 mb-2">
-              <h3 className="font-display font-semibold text-xl text-card-foreground truncate">{demanda.titulo}</h3>
+            <div className="flex items-center gap-2 mb-1.5">
+              <h3 className="font-display font-semibold text-lg text-card-foreground truncate">{demanda.titulo}</h3>
               <Badge variant="outline" className="font-mono text-xs shrink-0">
                 #{demanda.numeroId}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground line-clamp-2 leading-normal">
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-snug">
               {demanda.descricao}
             </p>
           </div>
@@ -66,27 +66,27 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant={statusConf.variant}>{statusConf.label}</Badge>
           <Badge className={prioridadeConf.className}>{prioridadeConf.label}</Badge>
           {!isReembolso && <Badge variant="outline">{demanda.categoria}</Badge>}
           {isReembolso && demanda.dadosReembolso && (
             <Badge 
               variant="outline" 
-              className="bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 border-emerald-400 font-semibold text-xs px-2.5 py-1"
+              className="bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 border-emerald-400 font-semibold text-xs px-2 py-1"
             >
               <DollarSign className="h-4 w-4 mr-0.5" />
               Reembolso • R$ {demanda.dadosReembolso.valorTotal.toFixed(2)}
             </Badge>
           )}
           {statusPagamentoConf && (
-            <Badge className={`${statusPagamentoConf.className} text-xs px-2.5 py-1`}>
+            <Badge className={`${statusPagamentoConf.className} text-xs px-2 py-1`}>
               <statusPagamentoConf.icon className="h-4 w-4 mr-0.5" />
               {statusPagamentoConf.label}
             </Badge>
           )}
           {demanda.arquivada && (
-            <Badge variant="secondary" className="bg-gray-500/10 text-gray-600 text-xs px-2.5 py-1">
+            <Badge variant="secondary" className="bg-gray-500/10 text-gray-600 text-xs px-2 py-1">
               <Archive className="h-4 w-4 mr-0.5" />
               Arquivada
             </Badge>
@@ -95,19 +95,19 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
             <PrazoIndicador prazo={demanda.prazo} compact />
           )}
           {demanda.eventoRelacionado && (
-            <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 text-xs px-2.5 py-1">
+            <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 text-xs px-2 py-1">
               <CalendarDays className="h-4 w-4 mr-0.5" />
               {demanda.eventoNome || 'Evento'}
             </Badge>
           )}
         </div>
 
-        <Separator className="my-3" />
+        <Separator className="my-2" />
 
-        <div className="flex flex-col gap-2.5 text-sm">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
           <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm">
+            <User className="h-4 w-4 text-muted-foreground shrink-0" />
+            <span className="text-xs truncate">
               <span className="font-medium text-foreground">Solicitante:</span>{' '}
               <span className="text-muted-foreground">{demanda.solicitante}</span>
             </span>
@@ -115,8 +115,8 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
           
           {demanda.responsavel && (
             <div className="flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">
+              <UserCheck className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-xs truncate">
                 <span className="font-medium text-foreground">Responsável:</span>{' '}
                 <span className="text-muted-foreground">{demanda.responsavel}</span>
               </span>
@@ -124,9 +124,9 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
           )}
 
           {demanda.prazo && (
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm">
+            <div className="flex items-center gap-2 col-span-2">
+              <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-xs">
                 <span className="font-medium text-foreground">Prazo:</span>{' '}
                 <span className="text-muted-foreground">
                   {format(new Date(demanda.prazo), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
@@ -136,7 +136,7 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
           )}
         </div>
 
-        <div className="flex items-center justify-between text-sm text-muted-foreground pt-3 border-t border-border/50">
+        <div className="flex items-center justify-between text-sm text-muted-foreground pt-2 border-t border-border/50">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <MessageSquare className="h-4 w-4 text-muted-foreground" />
