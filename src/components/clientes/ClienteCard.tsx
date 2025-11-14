@@ -14,7 +14,7 @@ interface ClienteCardProps {
 export function ClienteCard({ cliente, onView, onEdit, onDelete }: ClienteCardProps) {
   return (
     <Card className="smooth-hover">
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             {cliente.tipo === 'CPF' ? (
@@ -50,7 +50,7 @@ export function ClienteCard({ cliente, onView, onEdit, onDelete }: ClienteCardPr
         </div>
       </CardContent>
 
-      <CardFooter className="pt-3 flex gap-2">
+      <CardFooter className="pt-2 flex gap-2">
         <Button variant="outline" size="sm" className="flex-1 min-h-[44px]" onClick={() => onView(cliente)}>
           <Eye className="mr-2 h-4 w-4" />
           Ver

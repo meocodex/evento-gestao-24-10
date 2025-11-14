@@ -67,7 +67,7 @@ export function EnvioCard({ envio }: EnvioCardProps) {
   return (
     <>
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-2">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
               <Package className="h-5 w-5 text-primary" />
@@ -96,20 +96,31 @@ export function EnvioCard({ envio }: EnvioCardProps) {
           </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
+        <CardContent className="pb-2">
+          <div className="space-y-2.5">
             <div className="flex items-center gap-2 text-sm">
               <MapPin className="h-4 w-4 text-muted-foreground" />
               <span>{envio.origem}</span>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
               <span>{envio.destino}</span>
             </div>
+            
+            <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-xs">
+                  Previsão: {format(new Date(envio.dataEntregaPrevista), "d 'de' MMMM", { locale: ptBR })}
+                </span>
+              </div>
 
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span>
-                Previsão: {format(new Date(envio.dataEntregaPrevista), "d 'de' MMMM", { locale: ptBR })}
-              </span>
+              {envio.valor && (
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-semibold">
+                    R$ {envio.valor.toFixed(2)}
+                  </span>
+                </div>
+              )}
             </div>
 
             {envio.dataEntrega && (
@@ -119,22 +130,16 @@ export function EnvioCard({ envio }: EnvioCardProps) {
             )}
 
             {envio.valor && (
-              <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-semibold">
-                  R$ {envio.valor.toFixed(2)}
-                </span>
-                <Badge variant="outline" className="text-xs">
-                  {envio.formaPagamento === 'antecipado' ? 'Antecipado' : envio.formaPagamento === 'na_entrega' ? 'Na Entrega' : 'A Combinar'}
-                </Badge>
-              </div>
+              <Badge variant="outline" className="text-xs">
+                {envio.formaPagamento === 'antecipado' ? 'Antecipado' : envio.formaPagamento === 'na_entrega' ? 'Na Entrega' : 'A Combinar'}
+              </Badge>
             )}
 
             {envio.observacoes && (
               <p className="text-sm text-muted-foreground">{envio.observacoes}</p>
             )}
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-2 flex-wrap mt-2">
               {declaracao && (
                 <Button 
                   size="sm" 
