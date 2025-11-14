@@ -52,7 +52,7 @@ describe('useEventosMutations', () => {
         comercial_id: 'com-123',
         data_inicio: '2024-07-01',
         data_fim: '2024-07-03',
-        status: 'orcamento',
+        status: 'em_negociacao',
       };
 
       (supabase.from as any) = vi.fn().mockReturnValue({

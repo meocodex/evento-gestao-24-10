@@ -48,7 +48,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
     const eventoIniciou = dataHoraEvento <= new Date();
     const vinculadoFrete = material.envio_id;
     const jaDevolvido = material.status_devolucao !== 'pendente';
-    const statusPermiteRemocao = ['orcamento', 'confirmado'].includes(evento.status);
+    const statusPermiteRemocao = ['em_negociacao', 'confirmado'].includes(evento.status);
 
     return !eventoIniciou && !vinculadoFrete && !jaDevolvido && statusPermiteRemocao;
   };
@@ -60,7 +60,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
     if (eventoIniciou) return 'Evento já iniciado - material não pode ser removido';
     if (material.envio_id) return 'Material vinculado a frete não pode ser removido';
     if (material.status_devolucao !== 'pendente') return 'Material já devolvido não pode ser removido';
-    if (!['orcamento', 'confirmado'].includes(evento.status)) return 'Status do evento não permite remoção';
+    if (!['em_negociacao', 'confirmado'].includes(evento.status)) return 'Status do evento não permite remoção';
     return 'Remover material';
   };
 

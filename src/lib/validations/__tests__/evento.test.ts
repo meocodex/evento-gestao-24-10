@@ -15,7 +15,7 @@ describe('Validações de Evento', () => {
         cidade: 'São Paulo',
         estado: 'SP',
         numero_convidados: 150,
-        status: 'orcamento'
+        status: 'em_negociacao'
       });
       
       expect(result.success).toBe(true);
@@ -25,7 +25,7 @@ describe('Validações de Evento', () => {
       const result = eventoSchema.safeParse({
         cliente_id: 'uuid-cliente',
         data_evento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'orcamento'
+        status: 'em_negociacao'
       });
       
       expect(result.success).toBe(false);
@@ -36,7 +36,7 @@ describe('Validações de Evento', () => {
         nome: 'Ab',
         cliente_id: 'uuid-cliente',
         data_evento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'orcamento'
+        status: 'em_negociacao'
       });
       
       expect(result.success).toBe(false);
@@ -47,7 +47,7 @@ describe('Validações de Evento', () => {
         nome: 'Evento Teste',
         cliente_id: 'uuid-cliente',
         data_evento: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-        status: 'orcamento'
+        status: 'em_negociacao'
       });
       
       expect(result.success).toBe(false);
@@ -59,7 +59,7 @@ describe('Validações de Evento', () => {
         cliente_id: 'uuid-cliente',
         data_evento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         numero_convidados: -50,
-        status: 'orcamento'
+        status: 'em_negociacao'
       });
       
       expect(result.success).toBe(false);
@@ -82,7 +82,7 @@ describe('Validações de Evento', () => {
         cliente_id: 'uuid-cliente',
         data_evento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         hora_inicio: '25:00', // Hora inválida
-        status: 'orcamento'
+        status: 'em_negociacao'
       });
       
       expect(result.success).toBe(false);
@@ -98,7 +98,7 @@ describe('Validações de Evento', () => {
         cidade: 'São Paulo',
         estado: 'SP',
         cep: '01310-100',
-        status: 'orcamento'
+        status: 'em_negociacao'
       });
       
       expect(result.success).toBe(true);
@@ -110,7 +110,7 @@ describe('Validações de Evento', () => {
         cliente_id: 'uuid-cliente',
         data_evento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         observacoes: 'Decoração temática azul e branco',
-        status: 'orcamento'
+        status: 'em_negociacao'
       });
       
       expect(result.success).toBe(true);
@@ -122,7 +122,7 @@ describe('Validações de Evento', () => {
         cliente_id: 'uuid-cliente',
         data_evento: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         tipo: 'corporativo',
-        status: 'orcamento'
+        status: 'em_negociacao'
       });
       
       expect(result.success).toBe(true);

@@ -14,12 +14,11 @@ interface EventosKanbanViewProps {
 }
 
 const statusColumns: { id: StatusEvento; label: string; color: string }[] = [
-  { id: 'orcamento', label: 'Orçamento', color: 'bg-amber-500/10 border-amber-500/20' },
+  { id: 'em_negociacao', label: 'Em Negociação', color: 'bg-amber-500/10 border-amber-500/20' },
   { id: 'confirmado', label: 'Confirmado', color: 'bg-emerald-500/10 border-emerald-500/20' },
   { id: 'em_preparacao', label: 'Em Preparação', color: 'bg-purple-500/10 border-purple-500/20' },
   { id: 'em_execucao', label: 'Em Execução', color: 'bg-blue-500/10 border-blue-500/20' },
-  { id: 'concluido', label: 'Concluído', color: 'bg-green-500/10 border-green-500/20' },
-  { id: 'cancelado', label: 'Cancelado', color: 'bg-red-500/10 border-red-500/20' },
+  { id: 'finalizado', label: 'Finalizado', color: 'bg-green-500/10 border-green-500/20' },
 ];
 
 export function EventosKanbanView({ eventos, onViewDetails }: EventosKanbanViewProps) {
@@ -36,17 +35,18 @@ export function EventosKanbanView({ eventos, onViewDetails }: EventosKanbanViewP
 
   const eventosPorStatus = useMemo(() => {
     const grouped: Record<StatusEvento, Evento[]> = {
-      orcamento: [],
+      em_negociacao: [],
       confirmado: [],
       em_preparacao: [],
       em_execucao: [],
-      concluido: [],
+      finalizado: [],
+      arquivado: [],
       cancelado: [],
     };
 
     eventos.forEach((evento) => {
-      // Validação defensiva: só adiciona se o status é válido
-      if (evento.status in grouped) {
+      // Filtrar eventos arquivados e cancelados do kanban
+      if (evento.status !== 'arquivado' && evento.status !== 'cancelado') {
         grouped[evento.status as StatusEvento].push(evento);
       }
     });

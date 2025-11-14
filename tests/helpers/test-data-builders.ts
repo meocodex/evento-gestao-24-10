@@ -38,7 +38,7 @@ export const createMockEvento = (overrides?: Partial<Evento>): Evento => ({
     nome: 'Comercial Teste',
     email: 'comercial@teste.com',
   },
-  status: 'orcamento',
+  status: 'em_negociacao',
   tipoEvento: 'bar',
   tags: [],
   checklist: [],

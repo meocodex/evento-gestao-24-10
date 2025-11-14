@@ -11,7 +11,7 @@ export function EventosStats({ eventos }: EventosStatsProps) {
   const stats = useMemo(() => {
     const confirmados = eventos.filter(e => e.status === 'confirmado' || e.status === 'em_preparacao').length;
     const emExecucao = eventos.filter(e => e.status === 'em_execucao').length;
-    const concluidos = eventos.filter(e => e.status === 'concluido').length;
+    const concluidos = eventos.filter(e => e.status === 'finalizado').length;
 
     return {
       total: eventos.length,

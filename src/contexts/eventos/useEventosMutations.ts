@@ -35,7 +35,7 @@ export function useEventosMutations() {
           endereco: data.endereco,
           cidade: data.cidade,
           estado: data.estado,
-          status: 'orcamento',
+          status: 'em_negociacao',
           descricao: data.descricao,
           observacoes: data.observacoes,
           tags: data.tags || [],

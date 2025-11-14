@@ -28,7 +28,7 @@ export function EventosStatsOptimized() {
         if (row.status === 'em_execucao') {
           totals.emExecucao += row.total || 0;
         }
-        if (row.status === 'concluido') {
+        if (row.status === 'finalizado') {
           totals.concluidos += row.total || 0;
         }
       });

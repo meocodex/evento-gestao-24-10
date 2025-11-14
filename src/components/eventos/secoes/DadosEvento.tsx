@@ -154,7 +154,7 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
             <div className="flex items-center gap-2">
               <StatusBadge status={evento.status} />
               <MateriaisPendentesBadge eventoId={evento.id} status={evento.status} />
-              {evento.status === 'concluido' && !evento.arquivado && (
+              {evento.status === 'finalizado' && !evento.arquivado && (
                 <Button
                   variant="outline"
                   size="sm"

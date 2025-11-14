@@ -177,7 +177,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
             <div className="space-y-2">
               {evento.financeiro.receitas.map((receita) => (
                 <div key={receita.id} className="flex justify-between items-center p-3 border rounded">
-                  {evento.status === 'concluido' && (
+                  {evento.status === 'finalizado' && (
                     <Checkbox
                       checked={receitasSelecionadas.has(receita.id)}
                       onCheckedChange={() => toggleReceitaSelecionada(receita.id)}
@@ -250,7 +250,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Despesas</CardTitle>
           <div className="flex gap-2">
-            {permissions.canEditFinancial && evento.status === 'concluido' && 
+            {permissions.canEditFinancial && evento.status === 'finalizado' && 
              (despesasSelecionadas.size > 0 || receitasSelecionadas.size > 0) && (
               <Button size="sm" variant="outline" onClick={handleGerarRelatorio}>
                 <FileText className="h-4 w-4 mr-2" />
@@ -274,7 +274,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
             <div className="space-y-2">
               {evento.financeiro.despesas.map((despesa) => (
                 <div key={despesa.id} className="flex justify-between items-center p-3 border rounded">
-                  {evento.status === 'concluido' && (
+                  {evento.status === 'finalizado' && (
                     <Checkbox 
                       checked={despesasSelecionadas.has(despesa.id)}
                       onCheckedChange={() => toggleDespesaSelecionada(despesa.id)}

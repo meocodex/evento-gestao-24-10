@@ -15,11 +15,11 @@ interface AlterarStatusDialogProps {
 }
 
 const statusOptions: { value: StatusEvento; label: string }[] = [
-  { value: 'orcamento', label: 'Orçamento' },
+  { value: 'em_negociacao', label: 'Em Negociação' },
   { value: 'confirmado', label: 'Confirmado' },
   { value: 'em_preparacao', label: 'Em Preparação' },
   { value: 'em_execucao', label: 'Em Execução' },
-  { value: 'concluido', label: 'Concluído' },
+  { value: 'finalizado', label: 'Finalizado' },
   { value: 'cancelado', label: 'Cancelado' }
 ];
 

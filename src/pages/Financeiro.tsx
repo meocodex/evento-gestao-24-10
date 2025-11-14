@@ -247,7 +247,7 @@ export default function Financeiro() {
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
                           <h4 className="font-semibold">{evento.nome}</h4>
-                          <Badge variant={evento.status === 'concluido' ? 'default' : 'secondary'}>
+                          <Badge variant={evento.status === 'finalizado' ? 'default' : 'secondary'}>
                             {evento.status.replace('_', ' ')}
                           </Badge>
                         </div>

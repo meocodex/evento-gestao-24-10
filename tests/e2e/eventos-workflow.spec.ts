@@ -151,10 +151,10 @@ test.describe('Eventos - Workflow e Status', () => {
         .delete()
         .eq('evento_id', eventoId);
       
-      // Alterar status para concluído
+      // Alterar status para finalizado
       await supabase
         .from('eventos')
-        .update({ status: 'concluido' })
+        .update({ status: 'finalizado' })
         .eq('id', eventoId);
     }, { eventoId });
 

@@ -47,7 +47,7 @@ export function NovaDemandaReembolsoSheet({ eventoId }: NovaDemandaReembolsoShee
   const [itemAnexos, setItemAnexos] = useState<string[]>([]);
 
   const eventosAtivos = eventos.filter(e => 
-    ['orcamento', 'confirmado', 'em_preparacao', 'em_execucao'].includes(e.status)
+    ['em_negociacao', 'confirmado', 'em_preparacao', 'em_execucao'].includes(e.status)
   );
 
   const valorTotal = itens.reduce((sum, item) => sum + item.valor, 0);

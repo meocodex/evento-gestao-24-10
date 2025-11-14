@@ -33,7 +33,7 @@ export function NovaDemandaSheet() {
   const { toast } = useToast();
 
   const eventosAtivos = eventos.filter(e => 
-    ['orcamento', 'aprovado', 'em-preparacao', 'em-execucao'].includes(e.status)
+    ['em_negociacao', 'confirmado', 'em_preparacao', 'em_execucao'].includes(e.status)
   );
 
   const [formData, setFormData] = useState({

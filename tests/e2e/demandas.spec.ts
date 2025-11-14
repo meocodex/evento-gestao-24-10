@@ -46,7 +46,7 @@ test.describe('Demandas - CRUD Completo', () => {
           cliente_id: cliente.id,
           comercial_id: comercial?.id,
           data_evento: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-          status: 'orcamento'
+          status: 'em_negociacao',
         })
         .select()
         .single();

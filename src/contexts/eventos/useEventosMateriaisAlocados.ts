@@ -150,8 +150,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       }
 
       // Validação 4: Status do evento permite remoção?
-      if (!['orcamento', 'confirmado'].includes(evento.status)) {
-        throw new Error('Não é possível remover materiais de eventos em andamento ou concluídos');
+      if (!['em_negociacao', 'confirmado'].includes(evento.status)) {
+        throw new Error('Não é possível remover materiais de eventos em andamento ou finalizados');
       }
 
       // 3️⃣ Chamar Edge Function para validação dupla (segurança backend)

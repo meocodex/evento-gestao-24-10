@@ -371,11 +371,11 @@ describe('EventoCard', () => {
 
   describe('Cores por Status', () => {
     const statusTests = [
-      { status: 'orcamento', color: 'bg-amber-500' },
+      { status: 'em_negociacao', color: 'bg-amber-500' },
       { status: 'confirmado', color: 'bg-emerald-500' },
       { status: 'em_preparacao', color: 'bg-purple-500' },
       { status: 'em_execucao', color: 'bg-blue-600' },
-      { status: 'concluido', color: 'bg-green-600' },
+      { status: 'finalizado', color: 'bg-green-600' },
       { status: 'cancelado', color: 'bg-red-500' },
     ];
 

@@ -25,7 +25,7 @@ describe('EventosStats', () => {
       const eventos = [
         createEvento('1', 'confirmado'),
         createEvento('2', 'em_execucao'),
-        createEvento('3', 'concluido'),
+        createEvento('3', 'finalizado'),
       ];
 
       render(<EventosStats eventos={eventos} />);
@@ -49,10 +49,10 @@ describe('EventosStats', () => {
   describe('Cálculo de estatísticas', () => {
     it('deve calcular total de eventos corretamente', () => {
       const eventos = [
-        createEvento('1', 'orcamento'),
+        createEvento('1', 'em_negociacao'),
         createEvento('2', 'confirmado'),
         createEvento('3', 'em_execucao'),
-        createEvento('4', 'concluido'),
+        createEvento('4', 'finalizado'),
         createEvento('5', 'cancelado'),
       ];
 
@@ -92,11 +92,11 @@ describe('EventosStats', () => {
       expect(emExecucaoCard).toHaveTextContent('2');
     });
 
-    it('deve calcular eventos concluídos', () => {
+    it('deve calcular eventos finalizados', () => {
       const eventos = [
-        createEvento('1', 'concluido'),
-        createEvento('2', 'concluido'),
-        createEvento('3', 'concluido'),
+        createEvento('1', 'finalizado'),
+        createEvento('2', 'finalizado'),
+        createEvento('3', 'finalizado'),
         createEvento('4', 'em_execucao'),
       ];
 
@@ -163,11 +163,11 @@ describe('EventosStats', () => {
 
     it('deve lidar com status variados', () => {
       const eventos = [
-        createEvento('1', 'orcamento'),
+        createEvento('1', 'em_negociacao'),
         createEvento('2', 'confirmado'),
         createEvento('3', 'em_preparacao'),
         createEvento('4', 'em_execucao'),
-        createEvento('5', 'concluido'),
+        createEvento('5', 'finalizado'),
         createEvento('6', 'cancelado'),
       ];
 

@@ -109,7 +109,7 @@ export class EventosTestHelper {
           ...eventoData,
           cliente_id: clienteId,
           comercial_id: comercialId,
-          status: 'orcamento',
+          status: 'em_negociacao',
         })
         .select('id')
         .single();

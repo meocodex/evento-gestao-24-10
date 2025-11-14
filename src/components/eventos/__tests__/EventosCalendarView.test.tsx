@@ -53,7 +53,7 @@ const mockEventos: Evento[] = [
     cidade: 'Cuiabá',
     estado: 'MT',
     endereco: 'Rua 2',
-    status: 'orcamento',
+    status: 'em_negociacao',
     cliente: {
       id: '2',
       nome: 'Cliente 2',
@@ -155,7 +155,7 @@ describe('EventosCalendarView', () => {
       render(<EventosCalendarView eventos={mockEventos} onEventoClick={mockOnEventoClick} />);
 
       expect(screen.getByText('Legenda de Status')).toBeInTheDocument();
-      expect(screen.getByText('orcamento')).toBeInTheDocument();
+      expect(screen.getByText('em_negociacao')).toBeInTheDocument();
       expect(screen.getByText('confirmado')).toBeInTheDocument();
       expect(screen.getByText('cancelado')).toBeInTheDocument();
     });
