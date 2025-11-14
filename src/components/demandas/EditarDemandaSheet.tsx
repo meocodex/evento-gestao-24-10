@@ -1,22 +1,35 @@
-import { useState, useEffect } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { FormSheet } from '@/components/shared/sheets/FormSheet';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useDemandas } from '@/hooks/demandas';
 import { useEventos } from '@/hooks/eventos';
 import { useUsuarios } from '@/hooks/useUsuarios';
 import { useCategorias } from '@/hooks/categorias';
 import { Demanda, PrioridadeDemanda, CategoriaDemanda } from '@/types/demandas';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface EditarDemandaSheetProps {
   demanda: Demanda | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const demandaSchema = z.object({
+  titulo: z.string().min(1, 'Título é obrigatório'),
+  descricao: z.string().min(1, 'Descrição é obrigatória'),
+  categoria: z.string().min(1, 'Categoria é obrigatória'),
+  prioridade: z.enum(['baixa', 'media', 'alta', 'urgente']),
+  responsavelId: z.string().optional(),
+  prazo: z.string().optional(),
+  eventoRelacionado: z.string().optional(),
+});
+
+type DemandaFormData = z.infer<typeof demandaSchema>;
 
 const prioridades: { value: PrioridadeDemanda; label: string }[] = [
   { value: 'baixa', label: 'Baixa' },
@@ -26,26 +39,28 @@ const prioridades: { value: PrioridadeDemanda; label: string }[] = [
 ];
 
 export function EditarDemandaSheet({ demanda, open, onOpenChange }: EditarDemandaSheetProps) {
-  const isMobile = useIsMobile();
   const { editarDemanda } = useDemandas();
   const { eventos } = useEventos();
   const { usuarios } = useUsuarios();
   const { categoriasDemandas } = useCategorias();
 
-  const [formData, setFormData] = useState({
-    titulo: '',
-    descricao: '',
-    categoria: '' as CategoriaDemanda,
-    prioridade: 'media' as PrioridadeDemanda,
-    responsavelId: '',
-    prazo: '',
-    eventoRelacionado: '',
-    eventoNome: '',
+  const form = useForm<DemandaFormData>({
+    resolver: zodResolver(demandaSchema),
+    defaultValues: {
+      titulo: '',
+      descricao: '',
+      categoria: 'tecnica',
+      prioridade: 'media',
+      responsavelId: '',
+      prazo: '',
+      eventoRelacionado: '',
+    },
   });
 
+  // Reset form when demanda changes
   useEffect(() => {
     if (demanda && open) {
-      setFormData({
+      form.reset({
         titulo: demanda.titulo,
         descricao: demanda.descricao,
         categoria: demanda.categoria,
@@ -53,179 +68,209 @@ export function EditarDemandaSheet({ demanda, open, onOpenChange }: EditarDemand
         responsavelId: demanda.responsavelId || '',
         prazo: demanda.prazo || '',
         eventoRelacionado: demanda.eventoRelacionado || '',
-        eventoNome: demanda.eventoNome || '',
       });
     }
-  }, [demanda, open]);
+  }, [demanda, open, form]);
 
-  const handleEventoChange = (eventoId: string) => {
-    const evento = eventos?.find(e => e.id === eventoId);
-    setFormData(prev => ({
-      ...prev,
-      eventoRelacionado: eventoId,
-      eventoNome: evento?.nome || ''
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: DemandaFormData) => {
     if (!demanda) return;
 
     await editarDemanda.mutateAsync({
       id: demanda.id,
       data: {
-        titulo: formData.titulo,
-        descricao: formData.descricao,
-        categoria: formData.categoria,
-        prioridade: formData.prioridade,
-        responsavelId: formData.responsavelId,
-        prazo: formData.prazo,
-        eventoRelacionado: formData.eventoRelacionado,
+        titulo: data.titulo,
+        descricao: data.descricao,
+        categoria: data.categoria as CategoriaDemanda,
+        prioridade: data.prioridade,
+        responsavelId: data.responsavelId,
+        prazo: data.prazo,
+        eventoRelacionado: data.eventoRelacionado,
         tags: []
       }
     });
 
+    form.reset();
+    onOpenChange(false);
+  };
+
+  const handleCancel = () => {
+    form.reset();
     onOpenChange(false);
   };
 
   if (!demanda) return null;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent 
-        side={isMobile ? "bottom" : "right"}
-        className="w-full sm:w-[90%] lg:w-[600px] p-0 flex flex-col gap-0"
-      >
-        <SheetHeader className="px-6 py-4 border-b">
-          <SheetTitle>Editar Demanda</SheetTitle>
-        </SheetHeader>
+    <FormSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Editar Demanda"
+      description="Atualize as informações da demanda"
+      onSubmit={form.handleSubmit(onSubmit)}
+      onCancel={handleCancel}
+      submitText="Salvar Alterações"
+      isLoading={editarDemanda.isPending}
+      size="lg"
+    >
+      <Form {...form}>
+        <div className="space-y-4">
+          {/* Informações Básicas */}
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="titulo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Título *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Digite o título da demanda" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 py-6">
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="titulo">Título *</Label>
-              <Input
-                id="titulo"
-                value={formData.titulo}
-                onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                required
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="descricao"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrição *</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Descreva os detalhes da demanda" 
+                      rows={4}
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="descricao">Descrição *</Label>
-              <Textarea
-                id="descricao"
-                value={formData.descricao}
-                onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
-                rows={4}
-                required
-              />
-            </div>
+          {/* Classificação */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="categoria"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoria *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a categoria" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categoriasDemandas.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="categoria">Categoria *</Label>
-                <Select
-                  value={formData.categoria}
-                  onValueChange={(value) => setFormData({ ...formData, categoria: value as CategoriaDemanda })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+            <FormField
+              control={form.control}
+              name="prioridade"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prioridade *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione a prioridade" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {prioridades.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>
+                          {p.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Atribuição */}
+          <FormField
+            control={form.control}
+            name="responsavelId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Responsável</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um responsável" />
+                    </SelectTrigger>
+                  </FormControl>
                   <SelectContent>
-                  {categoriasDemandas.map((cat) => (
-                    <SelectItem key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="prioridade">Prioridade *</Label>
-                <Select
-                  value={formData.prioridade}
-                  onValueChange={(value) => setFormData({ ...formData, prioridade: value as PrioridadeDemanda })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {prioridades.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>
-                        {p.label}
+                    {(usuarios || []).map((usuario) => (
+                      <SelectItem key={usuario.id} value={usuario.id}>
+                        {usuario.nome}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <div className="space-y-2">
-              <Label htmlFor="responsavel">Responsável</Label>
-              <Select
-                value={formData.responsavelId}
-                onValueChange={(value) => setFormData({ ...formData, responsavelId: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um responsável" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(usuarios || []).map((usuario) => (
-                    <SelectItem key={usuario.id} value={usuario.id}>
-                      {usuario.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Prazo e Evento */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="prazo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Prazo</FormLabel>
+                  <FormControl>
+                    <Input type="datetime-local" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            <div className="space-y-2">
-              <Label htmlFor="prazo">Prazo</Label>
-              <Input
-                id="prazo"
-                type="datetime-local"
-                value={formData.prazo}
-                onChange={(e) => setFormData({ ...formData, prazo: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="evento">Evento Relacionado</Label>
-              <Select
-                value={formData.eventoRelacionado}
-                onValueChange={handleEventoChange}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um evento" />
-                </SelectTrigger>
-                <SelectContent>
-                  {(eventos || []).map((evento) => (
-                    <SelectItem key={evento.id} value={evento.id}>
-                      {evento.nome}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <FormField
+              control={form.control}
+              name="eventoRelacionado"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Evento Relacionado</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um evento" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {(eventos || []).map((evento) => (
+                        <SelectItem key={evento.id} value={evento.id}>
+                          {evento.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
-
-          <div className="flex gap-3 pt-6 border-t mt-6">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
-              Cancelar
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={editarDemanda.isPending}
-              className="flex-1"
-            >
-              {editarDemanda.isPending ? 'Salvando...' : 'Salvar Alterações'}
-            </Button>
-          </div>
-        </form>
-      </SheetContent>
-    </Sheet>
+        </div>
+      </Form>
+    </FormSheet>
   );
 }
