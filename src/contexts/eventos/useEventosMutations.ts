@@ -40,7 +40,8 @@ export function useEventosMutations() {
           observacoes: data.observacoes,
           tags: data.tags || [],
           configuracao_bar: data.configuracaoBar as any,
-          configuracao_ingresso: data.configuracaoIngresso as any
+          configuracao_ingresso: data.configuracaoIngresso as any,
+          utiliza_pos_empresa: data.utilizaPosEmpresa || false
         }])
         .select(`
           *,

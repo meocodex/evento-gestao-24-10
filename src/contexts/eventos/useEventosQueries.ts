@@ -56,6 +56,7 @@ export function useEventosQueries(page = 1, pageSize = 50, searchTerm?: string, 
             tipo_evento,
             tags,
             arquivado,
+            utiliza_pos_empresa,
             cliente_id,
             comercial_id,
             cliente:clientes(id, nome, email, tipo, documento, telefone, whatsapp, endereco),
@@ -98,11 +99,14 @@ export function useEventosQueries(page = 1, pageSize = 50, searchTerm?: string, 
           tipo_evento,
           tags,
           arquivado,
+          utiliza_pos_empresa,
           cliente_id,
           comercial_id,
           cliente:clientes(id, nome, email, tipo, documento, telefone, whatsapp, endereco),
           comercial:profiles!eventos_comercial_id_fkey(id, nome, email)
         `, { count: 'exact' })
+        .eq('arquivado', false)
+        .neq('status', 'cancelado')
         .order('data_inicio', { ascending: false })
         .range(from, to);
       

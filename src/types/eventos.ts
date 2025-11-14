@@ -244,6 +244,7 @@ export interface Evento {
   criadoEm: string;
   atualizadoEm: string;
   arquivado?: boolean;
+  utilizaPosEmpresa?: boolean;
 }
 
 export interface EventoFormData {
@@ -267,6 +268,7 @@ export interface EventoFormData {
   redesSociais?: string;
   configuracaoIngresso?: ConfiguracaoIngresso;
   configuracaoBar?: ConfiguracaoBar;
+  utilizaPosEmpresa?: boolean;
 }
 
 export interface CadastroEventoPublico {
