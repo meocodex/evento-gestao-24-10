@@ -1,12 +1,23 @@
-import { useState, useEffect } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { FormSheet } from '@/components/shared/sheets/FormSheet';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTransportadoras } from '@/hooks/transportadoras';
 import { Transportadora } from '@/types/transportadoras';
-import { useIsMobile } from '@/hooks/use-mobile';
+
+const transportadoraSchema = z.object({
+  nome: z.string().min(1, 'Nome é obrigatório'),
+  status: z.enum(['ativa', 'inativa']),
+  responsavel: z.string().min(1, 'Responsável é obrigatório'),
+  telefone: z.string().min(1, 'Telefone é obrigatório'),
+  email: z.string().email('E-mail inválido').optional().or(z.literal('')),
+});
+
+type TransportadoraFormData = z.infer<typeof transportadoraSchema>;
 
 interface EditarTransportadoraSheetProps {
   transportadora: Transportadora;
@@ -16,106 +27,144 @@ interface EditarTransportadoraSheetProps {
 
 export function EditarTransportadoraSheet({ transportadora, open, onOpenChange }: EditarTransportadoraSheetProps) {
   const { editarTransportadora } = useTransportadoras();
-  const isMobile = useIsMobile();
-  const [formData, setFormData] = useState(transportadora);
 
+  const form = useForm<TransportadoraFormData>({
+    resolver: zodResolver(transportadoraSchema),
+    defaultValues: {
+      nome: '',
+      status: 'ativa',
+      responsavel: '',
+      telefone: '',
+      email: '',
+    },
+  });
+
+  // Reset form when transportadora changes
   useEffect(() => {
-    setFormData(transportadora);
-  }, [transportadora]);
+    if (transportadora && open) {
+      form.reset({
+        nome: transportadora.nome,
+        status: transportadora.status,
+        responsavel: transportadora.responsavel,
+        telefone: transportadora.telefone,
+        email: transportadora.email || '',
+      });
+    }
+  }, [transportadora, open, form]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await editarTransportadora.mutateAsync({ id: transportadora.id, data: formData });
+  const onSubmit = async (data: TransportadoraFormData) => {
+    await editarTransportadora.mutateAsync({ 
+      id: transportadora.id, 
+      data 
+    });
+    form.reset();
+    onOpenChange(false);
+  };
+
+  const handleCancel = () => {
+    form.reset();
     onOpenChange(false);
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent 
-        side={isMobile ? "bottom" : "right"}
-        className={isMobile ? "h-[90vh] rounded-t-3xl" : "w-full sm:w-[600px] lg:w-[800px] overflow-y-auto"}
-      >
-        <SheetHeader className="border-b border-navy-100 pb-4 mb-6">
-          <SheetTitle className="text-2xl font-display text-navy-800">
-            Editar Transportadora
-          </SheetTitle>
-          <SheetDescription className="text-navy-500">
-            Atualize as informações da transportadora
-          </SheetDescription>
-        </SheetHeader>
+    <FormSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Editar Transportadora"
+      description="Atualize as informações da transportadora"
+      onSubmit={form.handleSubmit(onSubmit)}
+      onCancel={handleCancel}
+      submitText="Salvar Alterações"
+      isLoading={editarTransportadora.isPending}
+      size="lg"
+    >
+      <Form {...form}>
+        <div className="space-y-4">
+          {/* Informações Básicas */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="nome"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome Fantasia *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Digite o nome da transportadora" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="nome" className="text-navy-700">Nome Fantasia</Label>
-                <Input
-                  id="nome"
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  className="border-navy-200 focus:border-navy-400"
-                />
-              </div>
-              <div>
-                <Label htmlFor="status" className="text-navy-700">Status</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value: 'ativa' | 'inativa') => setFormData({ ...formData, status: value })}
-                >
-                  <SelectTrigger className="border-navy-200">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ativa">Ativa</SelectItem>
-                    <SelectItem value="inativa">Inativa</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="responsavel" className="text-navy-700">Responsável</Label>
-                <Input
-                  id="responsavel"
-                  value={formData.responsavel}
-                  onChange={(e) => setFormData({ ...formData, responsavel: e.target.value })}
-                  className="border-navy-200 focus:border-navy-400"
-                />
-              </div>
-              <div>
-                <Label htmlFor="telefone" className="text-navy-700">Telefone</Label>
-                <Input
-                  id="telefone"
-                  value={formData.telefone}
-                  onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
-                  className="border-navy-200 focus:border-navy-400"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="email" className="text-navy-700">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="border-navy-200 focus:border-navy-400"
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status *</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="ativa">Ativa</SelectItem>
+                      <SelectItem value="inativa">Inativa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
-          <SheetFooter className="border-t border-navy-100 pt-6 mt-6 gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancelar
-            </Button>
-            <Button type="submit">
-              Salvar Alterações
-            </Button>
-          </SheetFooter>
-        </form>
-      </SheetContent>
-    </Sheet>
+          {/* Contato */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="responsavel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Responsável *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nome do responsável" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="telefone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telefone *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="(00) 00000-0000" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>E-mail</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="email@transportadora.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      </Form>
+    </FormSheet>
   );
 }
