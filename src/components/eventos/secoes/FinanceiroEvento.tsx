@@ -330,6 +330,10 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
           await financeiro.adicionarReceita(data);
           setShowAddReceita(false);
         }}
+        onAdicionarComTaxas={async (data) => {
+          await financeiro.adicionarReceitaComTaxas(data);
+          setShowAddReceita(false);
+        }}
       />
 
       <AdicionarDespesaSheet

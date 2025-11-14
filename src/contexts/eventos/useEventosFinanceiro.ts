@@ -110,11 +110,81 @@ export function useEventosFinanceiro(eventoId?: string) {
     }
   });
 
+  const adicionarReceitaComTaxasMutation = useMutation({
+    mutationFn: async ({ receita, formasPagamento }: { 
+      receita: any; 
+      formasPagamento: Array<{ forma: string; valor: number; taxa_percentual: number }> 
+    }) => {
+      if (!eventoId) throw new Error('Evento ID não fornecido');
+      
+      const valorTotal = formasPagamento.reduce((sum, fp) => sum + fp.valor, 0);
+      const taxaTotal = formasPagamento.reduce((sum, fp) => sum + (fp.valor * fp.taxa_percentual / 100), 0);
+      
+      // Criar receita com taxas
+      const { data: receitaData, error: receitaError } = await supabase
+        .from('eventos_receitas')
+        .insert({
+          ...receita,
+          evento_id: eventoId,
+          valor: valorTotal,
+          tem_taxas: true,
+          formas_pagamento: formasPagamento,
+        })
+        .select()
+        .single();
+      
+      if (receitaError) throw receitaError;
+      
+      // Criar despesas para cada taxa > 0
+      const despesasTaxas = formasPagamento
+        .filter(fp => fp.taxa_percentual > 0)
+        .map(fp => ({
+          evento_id: eventoId,
+          descricao: `Taxa de ${fp.forma} - ${receita.tipo_servico || receita.descricao}`,
+          categoria: 'taxas',
+          valor: fp.valor * fp.taxa_percentual / 100,
+          valor_unitario: fp.valor * fp.taxa_percentual / 100,
+          quantidade: 1,
+          data: receita.data,
+          status: 'pendente',
+        }));
+      
+      if (despesasTaxas.length > 0) {
+        const { data: despesasData, error: despesasError } = await supabase
+          .from('eventos_despesas')
+          .insert(despesasTaxas)
+          .select();
+        
+        if (despesasError) throw despesasError;
+        
+        // Vincular IDs das despesas à receita
+        const despesasIds = despesasData.map(d => d.id);
+        const { error: updateError } = await supabase
+          .from('eventos_receitas')
+          .update({ despesas_taxas_ids: despesasIds })
+          .eq('id', receitaData.id);
+        
+        if (updateError) throw updateError;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['eventos-receitas', eventoId] });
+      queryClient.invalidateQueries({ queryKey: ['eventos-despesas', eventoId] });
+      queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
+      queryClient.invalidateQueries({ queryKey: ['eventos'] });
+      toast.success('Receita com taxas adicionada com sucesso!');
+    },
+    onError: (error: any) => {
+      toast.error('Erro ao adicionar receita: ' + error.message);
+    }
+  });
+
   return {
     receitas: receitasData || [],
     despesas: despesasData || [],
     loading: isLoadingReceitas || isLoadingDespesas,
     adicionarReceita: adicionarReceitaMutation.mutateAsync,
+    adicionarReceitaComTaxas: adicionarReceitaComTaxasMutation.mutateAsync,
     adicionarDespesa: adicionarDespesaMutation.mutateAsync,
     removerReceita: removerReceitaMutation.mutateAsync,
     removerDespesa: removerDespesaMutation.mutateAsync,
