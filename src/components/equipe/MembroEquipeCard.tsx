@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Phone, Mail, Star, Shield, Lock, Trash2 } from 'lucide-react';
 import { MembroEquipeUnificado } from '@/types/equipe';
+import { InfoGridCompact } from '@/components/shared/InfoGrid';
 
 interface MembroEquipeCardProps {
   membro: MembroEquipeUnificado;
@@ -171,45 +172,33 @@ export function MembroEquipeCard({
             </div>
 
             {/* Informações Secundárias */}
-            <div className="flex flex-wrap gap-x-3 gap-y-1.5 mt-2 text-xs text-muted-foreground">
-              {/* Tipo de Vínculo (operacionais) */}
-              {membro.tipo_vinculo && (
-                <Badge variant="outline" className="text-xs">
-                  {getTipoLabel(membro.tipo_vinculo)}
-                </Badge>
-              )}
-
-              {/* Status */}
-              {membro.status && (
-                <Badge variant={getStatusVariant(membro.status)} className="text-xs">
-                  {getStatusLabel(membro.status)}
-                </Badge>
-              )}
-
-              {/* Telefone */}
-              {membro.telefone && (
-                <div className="flex items-center gap-1">
-                  <Phone className="h-3 w-3" />
-                  <span className="text-xs">{membro.telefone}</span>
-                </div>
-              )}
-
-              {/* Email */}
-              {membro.email && (
-                <div className="flex items-center gap-1">
-                  <Mail className="h-3 w-3" />
-                  <span className="text-xs truncate max-w-[200px]">{membro.email}</span>
-                </div>
-              )}
-
-              {/* Avaliação (operacionais) */}
-              {membro.avaliacao && (
-                <div className="flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                  <span className="text-xs font-medium">{membro.avaliacao.toFixed(1)}</span>
-                </div>
-              )}
-            </div>
+            <InfoGridCompact
+              items={[
+                ...(membro.tipo_vinculo ? [{
+                  value: <Badge variant="outline" className="text-xs">{getTipoLabel(membro.tipo_vinculo)}</Badge>,
+                }] : []),
+                ...(membro.status ? [{
+                  value: <Badge variant={getStatusVariant(membro.status)} className="text-xs">{getStatusLabel(membro.status)}</Badge>,
+                }] : []),
+                ...(membro.telefone ? [{
+                  icon: Phone,
+                  value: membro.telefone,
+                }] : []),
+                ...(membro.email ? [{
+                  icon: Mail,
+                  value: membro.email,
+                  className: 'max-w-[200px]',
+                  valueClassName: 'truncate',
+                }] : []),
+                ...(membro.avaliacao ? [{
+                  icon: Star,
+                  value: membro.avaliacao.toFixed(1),
+                  iconClassName: 'fill-yellow-400 text-yellow-400',
+                  valueClassName: 'font-medium',
+                }] : []),
+              ]}
+              className="mt-2"
+            />
 
             {/* Ações */}
             <div className="mt-3 flex gap-2 flex-wrap">
