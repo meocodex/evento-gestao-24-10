@@ -2432,6 +2432,7 @@ export type Database = {
         | "alimentacao"
         | "Reembolso de Equipe"
         | "outros"
+        | "taxas"
       prioridade_demanda: "baixa" | "media" | "alta" | "urgente"
       status_contrato:
         | "proposta"
@@ -2625,6 +2626,7 @@ export const Constants = {
         "alimentacao",
         "Reembolso de Equipe",
         "outros",
+        "taxas",
       ],
       prioridade_demanda: ["baixa", "media", "alta", "urgente"],
       status_contrato: [
