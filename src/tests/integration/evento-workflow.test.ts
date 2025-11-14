@@ -98,7 +98,7 @@ describe('Workflow de Eventos - Integração E2E', () => {
         endereco: 'Rua das Flores, 123',
         cidade: 'São Paulo',
         estado: 'SP',
-        status: 'orcamento',
+        status: 'em_negociacao',
         arquivado: false,
         tags: ['casamento', 'vip'],
         checklist: [],

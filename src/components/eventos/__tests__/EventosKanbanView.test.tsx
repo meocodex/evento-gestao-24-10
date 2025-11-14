@@ -38,11 +38,11 @@ vi.mock('../EventoKanbanCard', () => ({
 
 describe('EventosKanbanView', () => {
   const mockEventos: Evento[] = [
-    createMockEvento({ id: '1', nome: 'Evento Orçamento', status: 'orcamento' }),
+    createMockEvento({ id: '1', nome: 'Evento Em Negociação', status: 'em_negociacao' }),
     createMockEvento({ id: '2', nome: 'Evento Confirmado', status: 'confirmado' }),
     createMockEvento({ id: '3', nome: 'Evento Em Preparação', status: 'em_preparacao' }),
     createMockEvento({ id: '4', nome: 'Evento Em Execução', status: 'em_execucao' }),
-    createMockEvento({ id: '5', nome: 'Evento Concluído', status: 'concluido' }),
+    createMockEvento({ id: '5', nome: 'Evento Finalizado', status: 'finalizado' }),
   ];
 
   const mockOnViewDetails = vi.fn();
@@ -123,7 +123,7 @@ describe('EventosKanbanView', () => {
 
       const novosEventos = [
         ...mockEventos,
-        createMockEvento({ id: '6', nome: 'Novo Evento', status: 'orcamento' }),
+        createMockEvento({ id: '6', nome: 'Novo Evento', status: 'em_negociacao' }),
       ];
 
       rerender(
@@ -162,7 +162,7 @@ describe('EventosKanbanView', () => {
         createMockEvento({
           id: `evento-${i}`,
           nome: `Evento ${i}`,
-          status: i % 2 === 0 ? 'orcamento' : 'confirmado',
+          status: i % 2 === 0 ? 'em_negociacao' : 'confirmado',
         })
       );
 

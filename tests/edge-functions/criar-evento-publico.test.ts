@@ -174,9 +174,9 @@ const criarEventoPublico = async (req: Request) => {
         local: evento.local,
         cidade: evento.cidade,
         estado: evento.estado,
-        cliente_id: clienteId,
-        status: 'orcamento',
-        origem: 'publico',
+          cliente_id: clienteId,
+          status: 'em_negociacao',
+          origem: 'publico',
       })
       .select()
       .single();
@@ -563,13 +563,13 @@ describe('Edge Function: criar-evento-publico', () => {
   });
 
   describe('Criação de Evento', () => {
-    it('deve criar evento com status orcamento', async () => {
+    it('deve criar evento com status em_negociacao', async () => {
       const insertMock = vi.fn(() => ({
         select: vi.fn(() => ({
           single: vi.fn().mockResolvedValue({
             data: {
               id: 'evento-1',
-              status: 'orcamento',
+              status: 'em_negociacao',
               origem: 'publico',
             },
           }),
@@ -612,7 +612,7 @@ describe('Edge Function: criar-evento-publico', () => {
       const response = await criarEventoPublico(req);
       const data = await response.json();
 
-      expect(data.evento.status).toBe('orcamento');
+      expect(data.evento.status).toBe('em_negociacao');
       expect(data.evento.origem).toBe('publico');
     });
 

@@ -60,13 +60,13 @@ Deno.serve(async (req) => {
       
       await supabase
         .from('eventos')
-        .update({ status: 'concluido' })
+        .update({ status: 'finalizado' })
         .eq('id', evento.id);
 
       await supabase.from('eventos_timeline').insert({
         evento_id: evento.id,
         tipo: 'fechamento',
-        descricao: 'Evento concluído automaticamente - Aguardando devolução de materiais',
+        descricao: 'Evento finalizado automaticamente - Aguardando devolução de materiais e fechamento',
         usuario: 'Sistema Automático'
       });
     }

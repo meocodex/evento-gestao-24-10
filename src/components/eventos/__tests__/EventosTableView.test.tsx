@@ -53,7 +53,7 @@ const mockEventos: Evento[] = [
     cidade: 'São Paulo',
     estado: 'SP',
     endereco: 'Rua 2',
-    status: 'orcamento',
+    status: 'em_negociacao',
     cliente: {
       id: '2',
       nome: 'Cliente 2',

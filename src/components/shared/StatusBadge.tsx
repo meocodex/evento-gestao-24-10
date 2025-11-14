@@ -6,8 +6,8 @@ interface StatusBadgeProps {
 }
 
 const statusConfig: Record<StatusEvento, { label: string; className: string }> = {
-  orcamento: { 
-    label: 'Orçamento', 
+  em_negociacao: { 
+    label: 'Em Negociação', 
     className: 'bg-amber-100 text-amber-800 border-2 border-amber-300 hover:bg-amber-200' 
   },
   confirmado: { 
@@ -22,9 +22,13 @@ const statusConfig: Record<StatusEvento, { label: string; className: string }> =
     label: 'Em Execução', 
     className: 'bg-blue-100 text-blue-800 border-2 border-blue-300 hover:bg-blue-200' 
   },
-  concluido: { 
-    label: 'Concluído', 
+  finalizado: { 
+    label: 'Finalizado', 
     className: 'bg-green-100 text-green-800 border-2 border-green-300 hover:bg-green-200' 
+  },
+  arquivado: {
+    label: 'Arquivado',
+    className: 'bg-slate-100 text-slate-800 border-2 border-slate-300 hover:bg-slate-200'
   },
   cancelado: { 
     label: 'Cancelado', 

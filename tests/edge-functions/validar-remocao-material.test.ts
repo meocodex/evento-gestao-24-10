@@ -96,7 +96,7 @@ const validarRemocaoMaterial = async (req: Request) => {
     }
 
     // Validação 4: Status do evento
-    const statusPermitidos = ['orcamento', 'confirmado'];
+    const statusPermitidos = ['em_negociacao', 'confirmado'];
     if (!statusPermitidos.includes(alocacao.eventos.status)) {
       return new Response(
         JSON.stringify({ 

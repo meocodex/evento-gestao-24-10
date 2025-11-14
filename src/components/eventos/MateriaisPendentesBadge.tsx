@@ -10,7 +10,7 @@ interface MateriaisPendentesBadgeProps {
 export function MateriaisPendentesBadge({ eventoId, status }: MateriaisPendentesBadgeProps) {
   const { data: pendentes } = useMaterialPendente(eventoId);
 
-  if (status !== 'concluido' || !pendentes?.temPendentes) {
+  if (status !== 'finalizado' || !pendentes?.temPendentes) {
     return null;
   }
 
