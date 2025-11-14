@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useEventos } from '@/hooks/eventos';
 import { useClientes } from '@/hooks/clientes';
@@ -30,6 +31,7 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
   // Campos essenciais
   const [nome, setNome] = useState('');
   const [tipoEvento, setTipoEvento] = useState<TipoEvento>('bar');
+  const [utilizaPosEmpresa, setUtilizaPosEmpresa] = useState(false);
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
   const [clienteId, setClienteId] = useState('');
@@ -58,6 +60,7 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
         const data = JSON.parse(saved);
         setNome(data.nome || '');
         setTipoEvento(data.tipoEvento || 'bar');
+        setUtilizaPosEmpresa(data.utilizaPosEmpresa || false);
         setDataInicio(data.dataInicio || '');
         setDataFim(data.dataFim || '');
         setClienteId(data.clienteId || '');
@@ -78,12 +81,12 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
 
   useEffect(() => {
     const rascunho = {
-      nome, tipoEvento, dataInicio, dataFim, clienteId, comercialId,
+      nome, tipoEvento, utilizaPosEmpresa, dataInicio, dataFim, clienteId, comercialId,
       local, cep, endereco, numero, complemento, bairro, cidade, estado,
       tags, descricao
     };
     localStorage.setItem('eventoRascunho', JSON.stringify(rascunho));
-  }, [nome, tipoEvento, dataInicio, dataFim, clienteId, comercialId, local, cep, endereco, numero, complemento, bairro, cidade, estado, tags, descricao]);
+  }, [nome, tipoEvento, utilizaPosEmpresa, dataInicio, dataFim, clienteId, comercialId, local, cep, endereco, numero, complemento, bairro, cidade, estado, tags, descricao]);
 
   const handleBuscarCEP = async () => {
     const cepLimpo = cep.replace(/\D/g, '');
@@ -140,6 +143,7 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
       await criarEvento.mutateAsync({
         nome,
         tipoEvento,
+        utilizaPosEmpresa,
         dataInicio: dataInicioDate,
         dataFim: dataFimDate,
         horaInicio,
@@ -168,6 +172,7 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
   const resetForm = () => {
     setNome('');
     setTipoEvento('bar');
+    setUtilizaPosEmpresa(false);
     setDataInicio('');
     setDataFim('');
     setClienteId('');
@@ -245,6 +250,17 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
                     </button>
                   ))}
                 </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="utilizaPosEmpresa"
+                  checked={utilizaPosEmpresa}
+                  onCheckedChange={(checked) => setUtilizaPosEmpresa(checked === true)}
+                />
+                <Label htmlFor="utilizaPosEmpresa" className="text-sm cursor-pointer">
+                  Utiliza POS da Empresa
+                </Label>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
