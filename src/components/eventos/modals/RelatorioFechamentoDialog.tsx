@@ -282,7 +282,7 @@ export function RelatorioFechamentoDialog({
       const resumoData = [
         ['Total de Receitas:', `R$ ${totalReceitas.toFixed(2)}`],
         ['Total de Despesas:', `R$ ${totalDespesas.toFixed(2)}`],
-        ['Saldo Final:', `R$ ${saldoFinal.toFixed(2)}`]
+        [saldoFinal >= 0 ? 'A RECEBER:' : 'A PAGAR:', `R$ ${Math.abs(saldoFinal).toFixed(2)}`]
       ];
 
       autoTable(doc, {
@@ -310,6 +310,16 @@ export function RelatorioFechamentoDialog({
           }
         }
       });
+
+      // Nota explicativa
+      const finalY = (doc as any).lastAutoTable.finalY + 5;
+      const notaExplicativa = saldoFinal >= 0 
+        ? 'Valor que a empresa deve repassar ao cliente'
+        : 'Valor que o cliente deve pagar à empresa';
+      
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text(notaExplicativa, 14, finalY);
 
       // Salvar PDF
       const dataAtual = new Date().toISOString().split('T')[0].replace(/-/g, '');
@@ -382,11 +392,19 @@ export function RelatorioFechamentoDialog({
               </div>
               <Separator className="my-2" />
               <div className="flex justify-between text-base">
-                <span className="font-semibold">Saldo Final:</span>
+                <span className="font-semibold">
+                  {saldoFinal >= 0 ? 'A RECEBER:' : 'A PAGAR:'}
+                </span>
                 <span className={`font-bold ${saldoFinal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  R$ {saldoFinal.toFixed(2)}
+                  R$ {Math.abs(saldoFinal).toFixed(2)}
                 </span>
               </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                {saldoFinal >= 0 
+                  ? '💰 Valor que a empresa deve repassar ao cliente' 
+                  : '⚠️ Valor que o cliente deve pagar à empresa'
+                }
+              </p>
             </div>
           </div>
 
