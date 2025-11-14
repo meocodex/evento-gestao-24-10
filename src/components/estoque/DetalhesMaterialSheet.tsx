@@ -13,7 +13,7 @@ import {
 import { MaterialEstoque, SerialEstoque, useEstoqueSeriais } from '@/hooks/estoque';
 import { Package, MapPin, Plus, Trash2, Edit, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { NovoSerialDialog } from './NovoSerialDialog';
+import { NovoSerialSheet } from './NovoSerialSheet';
 import { EditarMaterialSheet } from './EditarMaterialSheet';
 import { EditarSerialSheet } from './EditarSerialSheet';
 import { HistoricoMaterialTimeline } from './HistoricoMaterialTimeline';
@@ -254,7 +254,7 @@ export function DetalhesMaterialSheet({
       />
 
       {!isQuantidadeTipo && (
-        <NovoSerialDialog
+        <NovoSerialSheet
           open={showNovoSerial}
           onOpenChange={setShowNovoSerial}
           materialId={material.id}
