@@ -260,6 +260,51 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracoes_fechamento: {
+        Row: {
+          created_at: string | null
+          id: string
+          papel_timbrado: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          papel_timbrado: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          papel_timbrado?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      configuracoes_taxas_pagamento: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          forma_pagamento: string
+          id: string
+          taxa_padrao_percentual: number
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          forma_pagamento: string
+          id?: string
+          taxa_padrao_percentual?: number
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          forma_pagamento?: string
+          id?: string
+          taxa_padrao_percentual?: number
+        }
+        Relationships: []
+      }
       configuracoes_usuario: {
         Row: {
           created_at: string | null
@@ -1492,13 +1537,19 @@ export type Database = {
           created_at: string | null
           data: string
           descricao: string
+          despesas_taxas_ids: string[] | null
           evento_id: string
+          formas_pagamento: Json | null
           id: string
           quantidade: number
           status: Database["public"]["Enums"]["status_financeiro"]
+          taxa_total: number | null
+          tem_taxas: boolean | null
           tipo: Database["public"]["Enums"]["tipo_receita"]
+          tipo_servico: string | null
           updated_at: string | null
           valor: number
+          valor_liquido: number | null
           valor_unitario: number
         }
         Insert: {
@@ -1506,13 +1557,19 @@ export type Database = {
           created_at?: string | null
           data: string
           descricao: string
+          despesas_taxas_ids?: string[] | null
           evento_id: string
+          formas_pagamento?: Json | null
           id?: string
           quantidade?: number
           status?: Database["public"]["Enums"]["status_financeiro"]
+          taxa_total?: number | null
+          tem_taxas?: boolean | null
           tipo: Database["public"]["Enums"]["tipo_receita"]
+          tipo_servico?: string | null
           updated_at?: string | null
           valor: number
+          valor_liquido?: number | null
           valor_unitario: number
         }
         Update: {
@@ -1520,13 +1577,19 @@ export type Database = {
           created_at?: string | null
           data?: string
           descricao?: string
+          despesas_taxas_ids?: string[] | null
           evento_id?: string
+          formas_pagamento?: Json | null
           id?: string
           quantidade?: number
           status?: Database["public"]["Enums"]["status_financeiro"]
+          taxa_total?: number | null
+          tem_taxas?: boolean | null
           tipo?: Database["public"]["Enums"]["tipo_receita"]
+          tipo_servico?: string | null
           updated_at?: string | null
           valor?: number
+          valor_liquido?: number | null
           valor_unitario?: number
         }
         Relationships: [
@@ -2404,7 +2467,7 @@ export type Database = {
       tipo_cliente: "CPF" | "CNPJ"
       tipo_envio: "antecipado" | "com_tecnicos"
       tipo_evento: "ingresso" | "bar" | "hibrido"
-      tipo_receita: "fixo" | "quantidade"
+      tipo_receita: "venda" | "locacao" | "servico" | "outros"
       tipo_timeline:
         | "criacao"
         | "edicao"
@@ -2602,7 +2665,7 @@ export const Constants = {
       tipo_cliente: ["CPF", "CNPJ"],
       tipo_envio: ["antecipado", "com_tecnicos"],
       tipo_evento: ["ingresso", "bar", "hibrido"],
-      tipo_receita: ["fixo", "quantidade"],
+      tipo_receita: ["venda", "locacao", "servico", "outros"],
       tipo_timeline: [
         "criacao",
         "edicao",
