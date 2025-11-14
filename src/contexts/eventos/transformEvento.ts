@@ -26,6 +26,7 @@ export function transformEvento(data: any): Evento {
     configuracaoBar: data.configuracao_bar as any,
     configuracaoIngresso: data.configuracao_ingresso as any,
     arquivado: data.arquivado || false,
+    utilizaPosEmpresa: data.utiliza_pos_empresa || false,
     
     cliente: data.cliente ? {
       id: data.cliente.id,

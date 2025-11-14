@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { ClienteSelect } from './ClienteSelect';
 import { ComercialSelect } from './ComercialSelect';
@@ -42,6 +43,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [loadingCep, setLoadingCep] = useState(false);
+  const [utilizaPosEmpresa, setUtilizaPosEmpresa] = useState(false);
 
   const handleAddTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
@@ -112,6 +114,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
     setContatosAdicionais('');
     setRedesSociais('');
     setTags([]);
+    setUtilizaPosEmpresa(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -171,6 +174,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
         observacoes,
         contatosAdicionais,
         redesSociais,
+        utilizaPosEmpresa,
       });
       
       resetForm();
@@ -394,6 +398,17 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
               ))}
             </div>
           )}
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="utilizaPosEmpresa"
+            checked={utilizaPosEmpresa}
+            onCheckedChange={(checked) => setUtilizaPosEmpresa(!!checked)}
+          />
+          <Label htmlFor="utilizaPosEmpresa" className="cursor-pointer font-normal">
+            Utiliza POS da empresa
+          </Label>
         </div>
       </div>
     </FormSheet>
