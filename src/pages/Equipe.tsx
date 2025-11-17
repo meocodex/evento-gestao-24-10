@@ -125,29 +125,51 @@ export default function Equipe() {
     }
 
     try {
-      if (membroParaExcluir.tipo_membro === 'sistema' || membroParaExcluir.tipo_membro === 'ambos') {
-        const { data, error } = await supabase.functions.invoke('excluir-usuario', {
+      if (membroParaExcluir.tipo_membro === 'ambos') {
+        // Revogar acesso ao sistema
+        const { error } = await supabase.functions.invoke('excluir-usuario', {
           body: { user_id: membroParaExcluir.id }
         });
         
-        // Verificar se é erro de usuário não encontrado (já foi excluído)
-        if (error && error.message?.includes('User not found')) {
-          console.warn('⚠️ Usuário já havia sido excluído, limpando cache...');
-          // Continuar para invalidar queries e mostrar sucesso
-        } else if (error) {
+        if (error && !error.message?.includes('User not found')) {
           throw error;
+        }
+
+        // Remover cadastro operacional
+        if (membroParaExcluir.operacional_id) {
+          await excluirOperacional.mutateAsync(membroParaExcluir.operacional_id);
         }
 
         queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
         queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
-      } else {
-        await excluirOperacional.mutateAsync(membroParaExcluir.id);
-      }
 
-      toast({
-        title: 'Membro excluído',
-        description: `${membroParaExcluir.nome} foi removido com sucesso.`
-      });
+        toast({
+          title: 'Sucesso',
+          description: 'Acesso revogado e cadastro operacional removido'
+        });
+      } else if (membroParaExcluir.tipo_membro === 'sistema') {
+        const { error } = await supabase.functions.invoke('excluir-usuario', {
+          body: { user_id: membroParaExcluir.id }
+        });
+        
+        if (error && !error.message?.includes('User not found')) {
+          throw error;
+        }
+
+        queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
+        
+        toast({
+          title: 'Sucesso',
+          description: 'Acesso ao sistema revogado'
+        });
+      } else if (membroParaExcluir.operacional_id) {
+        await excluirOperacional.mutateAsync(membroParaExcluir.operacional_id);
+        
+        toast({
+          title: 'Sucesso',
+          description: 'Cadastro operacional removido'
+        });
+      }
 
       setMembroParaExcluir(null);
     } catch (error: any) {
