@@ -187,9 +187,11 @@ Deno.serve(async (req) => {
 
     console.log('Usuário criado com sucesso:', authData.user?.id);
 
-    // Inserir roles
+    // Inserir roles selecionadas
+    // O trigger handle_new_user() NÃO insere mais roles automaticamente
+    // (exceto para o primeiro usuário do sistema que recebe 'admin')
     if (authData.user) {
-      console.log(`🔄 Inserindo ${roles.length} roles para novo usuário...`);
+      console.log(`🔄 Inserindo ${roles.length} roles selecionadas...`);
       
       const userRoles = roles.map((role: string) => ({
         user_id: authData.user!.id,
