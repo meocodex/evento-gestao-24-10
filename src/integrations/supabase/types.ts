@@ -2267,6 +2267,12 @@ export type Database = {
       }
       cleanup_auth_rate_limits: { Args: never; Returns: undefined }
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
+      cleanup_orphaned_profiles: {
+        Args: never
+        Returns: {
+          deleted_count: number
+        }[]
+      }
       criar_notificacao: {
         Args: {
           p_link?: string
