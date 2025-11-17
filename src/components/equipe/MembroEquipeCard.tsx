@@ -96,23 +96,27 @@ export function MembroEquipeCard({
         return 'default';
       case 'suporte':
         return 'secondary';
+      case 'operacional':
+        return 'outline';
+      case 'financeiro':
+        return 'default';
       default:
         return 'outline';
     }
   };
 
   const getRoleLabel = (role?: string) => {
-    switch (role) {
-      case 'admin':
-        return 'Administrador';
-      case 'comercial':
-        return 'Comercial';
-      case 'suporte':
-        return 'Suporte';
-      default:
-        return null;
-    }
+    const labels: Record<string, { label: string; icon: string }> = {
+      'admin': { label: 'Administrador', icon: '👑' },
+      'comercial': { label: 'Comercial', icon: '🎯' },
+      'suporte': { label: 'Suporte', icon: '🔧' },
+      'operacional': { label: 'Operacional', icon: '👷' },
+      'financeiro': { label: 'Financeiro', icon: '💰' },
+    };
+    return labels[role || ''] || null;
   };
+
+  const isMainAdmin = membro.email === 'admin@admin.com';
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -146,10 +150,36 @@ export function MembroEquipeCard({
                   </Badge>
                 )}
                 
-                {/* Badge de Nível de Acesso - só para membros com acesso ao sistema */}
-                {(membro.tipo_membro === 'sistema' || membro.tipo_membro === 'ambos') && membro.role && (
+                {/* Múltiplas Roles - só para membros com acesso ao sistema */}
+                {(membro.tipo_membro === 'sistema' || membro.tipo_membro === 'ambos') && membro.roles && membro.roles.length > 0 && (
+                  <div className="flex flex-wrap gap-1 justify-end">
+                    {membro.roles.map((role: string) => {
+                      const roleInfo = getRoleLabel(role);
+                      if (!roleInfo) return null;
+                      return (
+                        <Badge key={role} variant={getRoleBadgeVariant(role) as any} className="text-xs">
+                          <span className="mr-1">{roleInfo.icon}</span>
+                          {roleInfo.label}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                {/* Fallback para role única (compatibilidade) */}
+                {(membro.tipo_membro === 'sistema' || membro.tipo_membro === 'ambos') && 
+                 (!membro.roles || membro.roles.length === 0) && 
+                 membro.role && (
                   <Badge variant={getRoleBadgeVariant(membro.role) as any}>
-                    {getRoleLabel(membro.role)}
+                    {(() => {
+                      const roleInfo = getRoleLabel(membro.role);
+                      return roleInfo ? (
+                        <>
+                          <span className="mr-1">{roleInfo.icon}</span>
+                          {roleInfo.label}
+                        </>
+                      ) : null;
+                    })()}
                   </Badge>
                 )}
                 
@@ -205,7 +235,12 @@ export function MembroEquipeCard({
               <Button variant="outline" size="sm" onClick={onDetalhes}>
                 Ver Detalhes
               </Button>
-              <Button variant="ghost" size="sm" onClick={onEditar}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onEditar}
+                disabled={isMainAdmin && membro.id !== membro.profile_id}
+              >
                 Editar
               </Button>
               
@@ -224,7 +259,12 @@ export function MembroEquipeCard({
                 </Button>
               )}
 
-              <Button variant="destructive" size="sm" onClick={onExcluir}>
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={onExcluir}
+                disabled={isMainAdmin}
+              >
                 <Trash2 className="h-3 w-3 mr-1" />
                 Excluir
               </Button>

@@ -51,7 +51,8 @@ export interface MembroEquipeUnificado {
   status?: string;
   avaliacao?: number;
   permissions?: string[];
-  role?: 'admin' | 'comercial' | 'suporte';
+  roles?: string[]; // Múltiplas roles
+  role?: 'admin' | 'comercial' | 'suporte'; // Primeira role (compatibilidade)
   whatsapp?: string;
   created_at: string;
   updated_at: string;

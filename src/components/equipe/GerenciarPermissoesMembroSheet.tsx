@@ -70,6 +70,21 @@ export function GerenciarPermissoesMembroSheet({
     }
   });
 
+  // Buscar roles atuais do membro
+  const { data: membroRoles = [], isLoading: loadingRoles } = useQuery({
+    queryKey: ['user-roles', membro?.id],
+    enabled: open && !!membro?.id,
+    queryFn: async () => {
+      const userId = membro!.profile_id || membro!.id;
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+      if (error) throw error;
+      return data?.map(r => r.role) || [];
+    }
+  });
+
   // Atualizar estado local quando carregar permissões do membro
   useEffect(() => {
     if (open && membroPermsData) {
@@ -201,7 +216,7 @@ export function GerenciarPermissoesMembroSheet({
     }
   });
 
-  const isLoading = loadingPermissions || loadingMemberPerms;
+  const isLoading = loadingPermissions || loadingMemberPerms || loadingRoles;
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,6 +241,38 @@ export function GerenciarPermissoesMembroSheet({
         </div>
       ) : (
         <div className="space-y-4">
+          {/* Card de Funções Atribuídas */}
+          {membroRoles.length > 0 && (
+            <Alert>
+              <AlertTitle className="flex items-center gap-2 text-sm font-semibold">
+                Funções Atribuídas
+              </AlertTitle>
+              <AlertDescription>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {membroRoles.map((role: string) => {
+                    const roleInfo: Record<string, { label: string; icon: string }> = {
+                      'admin': { label: 'Administrador', icon: '👑' },
+                      'comercial': { label: 'Comercial', icon: '🎯' },
+                      'suporte': { label: 'Suporte', icon: '🔧' },
+                      'operacional': { label: 'Operacional', icon: '👷' },
+                      'financeiro': { label: 'Financeiro', icon: '💰' },
+                    };
+                    const info = roleInfo[role];
+                    return info ? (
+                      <Badge key={role} variant="secondary" className="text-sm">
+                        <span className="mr-1">{info.icon}</span>
+                        {info.label}
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  As funções são gerenciadas ao conceder acesso. Para alterar as funções, é necessário conceder acesso novamente.
+                </p>
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Progress value={progressPercentage} className="h-2" />
 
           <div className="flex gap-2">
