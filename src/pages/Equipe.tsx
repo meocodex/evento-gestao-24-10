@@ -111,6 +111,17 @@ export default function Equipe() {
   const handleConfirmarExclusao = async () => {
     if (!membroParaExcluir) return;
 
+    // 🔒 PROTEÇÃO: Bloquear exclusão do admin principal
+    if (membroParaExcluir.email === 'admin@admin.com') {
+      toast({
+        title: 'Ação bloqueada',
+        description: 'O administrador principal não pode ser excluído.',
+        variant: 'destructive'
+      });
+      setMembroParaExcluir(null);
+      return;
+    }
+
     try {
       if (membroParaExcluir.tipo_membro === 'sistema' || membroParaExcluir.tipo_membro === 'ambos') {
         const { error } = await supabase.functions.invoke('excluir-usuario', {

@@ -13,7 +13,10 @@ const OperadorSchema = z.object({
   cpf: z.string().regex(/^\d{11}$/, 'CPF deve ter 11 dígitos').optional(),
   telefone: z.string().regex(/^\d{10,11}$/, 'Telefone inválido').optional(),
   senha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres').max(100, 'Senha muito longa'),
-  tipo: z.enum(['operacional', 'suporte', 'sistema']),
+  tipo: z.enum(['operacional', 'suporte', 'sistema', 'ambos']), // Tag visual
+  roles: z.array(z.enum(['admin', 'comercial', 'suporte', 'operacional', 'financeiro']))
+    .min(1, 'Selecione pelo menos 1 função')
+    .max(5, 'Máximo de 5 funções'), // Roles reais
   permissions: z.array(z.string()).min(1, 'Selecione pelo menos 1 permissão')
 });
 
@@ -38,9 +41,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { nome, email, cpf, telefone, senha, tipo, permissions } = validation.data;
+    const { nome, email, cpf, telefone, senha, tipo, roles, permissions } = validation.data;
 
-    console.log('📥 Recebida requisição criar-operador:', { email, nome, tipo, permissionsCount: permissions.length });
+    console.log('📥 Recebida requisição criar-operador:', { email, nome, tipo, roles, permissionsCount: permissions.length });
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -77,6 +80,49 @@ Deno.serve(async (req) => {
       }
 
       console.log('✅ Tipo de perfil atualizado:', tipo);
+
+      // Deletar roles antigas
+      const { error: deleteRolesError } = await supabaseAdmin
+        .from('user_roles')
+        .delete()
+        .eq('user_id', existingUser.id);
+
+      if (deleteRolesError) {
+        console.error('⚠️ Erro ao deletar roles antigas:', deleteRolesError);
+        throw deleteRolesError;
+      }
+
+      console.log('✅ Roles antigas removidas');
+
+      // Inserir novas roles
+      console.log(`🔄 Inserindo ${roles.length} roles...`);
+      
+      const userRoles = roles.map((role: string) => ({
+        user_id: existingUser.id,
+        role: role,
+      }));
+
+      const { error: rolesError } = await supabaseAdmin
+        .from('user_roles')
+        .insert(userRoles);
+
+      if (rolesError) {
+        console.error('❌ Erro ao inserir roles:', rolesError);
+        throw rolesError;
+      }
+
+      // Validação pós-inserção roles
+      const { count: rolesCount } = await supabaseAdmin
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', existingUser.id);
+
+      if (rolesCount !== roles.length) {
+        console.error(`⚠️ Esperado ${roles.length} roles, inserido ${rolesCount}`);
+        throw new Error(`Falha ao inserir todas as roles (${rolesCount}/${roles.length})`);
+      }
+
+      console.log(`✅ ${rolesCount} roles inseridas e validadas com sucesso`);
 
       // Deletar permissões antigas
       const { error: deleteError } = await supabaseAdmin
@@ -169,6 +215,36 @@ Deno.serve(async (req) => {
       }
 
       console.log('✅ Tipo de perfil atualizado:', tipo);
+
+      // Inserir roles
+      console.log(`🔄 Inserindo ${roles.length} roles para novo usuário...`);
+      
+      const userRoles = roles.map((role: string) => ({
+        user_id: authData.user!.id,
+        role: role,
+      }));
+
+      const { error: rolesError } = await supabaseAdmin
+        .from('user_roles')
+        .insert(userRoles);
+
+      if (rolesError) {
+        console.error('❌ Erro ao inserir roles:', rolesError);
+        throw rolesError;
+      }
+
+      // Validação pós-inserção roles
+      const { count: rolesCount } = await supabaseAdmin
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', authData.user!.id);
+
+      if (rolesCount !== roles.length) {
+        console.error(`⚠️ Esperado ${roles.length} roles, inserido ${rolesCount}`);
+        throw new Error(`Falha ao inserir todas as roles (${rolesCount}/${roles.length})`);
+      }
+
+      console.log(`✅ ${rolesCount} roles inseridas e validadas com sucesso`);
 
       // Inserir permissões
       console.log(`🔄 Inserindo ${permissions.length} permissões para novo usuário...`);

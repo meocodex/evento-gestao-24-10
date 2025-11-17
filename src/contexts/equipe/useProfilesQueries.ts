@@ -14,7 +14,8 @@ export interface ProfileMembro {
   // Campos para compatibilidade com interface unificada
   funcao_principal?: string;
   permissions?: string[];
-  role?: 'admin' | 'comercial' | 'suporte';
+  roles?: string[]; // Múltiplas roles
+  role?: 'admin' | 'comercial' | 'suporte'; // Primeira role (compatibilidade)
 }
 
 export function useProfilesQueries(enabled = true) {
@@ -50,11 +51,12 @@ export function useProfilesQueries(enabled = true) {
         console.warn('⚠️ Erro ao buscar permissões:', permsError);
       }
 
-      // Mapear roles por usuário
+      // Mapear múltiplas roles por usuário
       const rolesByUser = (rolesData || []).reduce((acc, r) => {
-        acc[r.user_id] = r.role as 'admin' | 'comercial' | 'suporte';
+        if (!acc[r.user_id]) acc[r.user_id] = [];
+        acc[r.user_id].push(r.role);
         return acc;
-      }, {} as Record<string, 'admin' | 'comercial' | 'suporte'>);
+      }, {} as Record<string, string[]>);
 
       // Mapear permissões por usuário
       const permsByUser = (permsData || []).reduce((acc, perm) => {
@@ -67,10 +69,11 @@ export function useProfilesQueries(enabled = true) {
       console.log('✅ Roles carregados:', rolesData?.length || 0);
       console.log('✅ Permissões carregadas:', permsData?.length || 0);
 
-      // Transformar para incluir permissões e role
+      // Transformar para incluir permissões e múltiplas roles
       return (profilesData || []).map(profile => ({
         ...profile,
-        role: rolesByUser[profile.id] || 'comercial',
+        roles: rolesByUser[profile.id] || [],
+        role: (rolesByUser[profile.id] || [])[0] || 'comercial', // Primeira role para compatibilidade
         permissions: permsByUser[profile.id] || [],
         funcao_principal: 'Usuário do Sistema',
       })) as ProfileMembro[];

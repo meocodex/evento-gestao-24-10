@@ -5,6 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
@@ -25,6 +27,8 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
   const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [tipoAcesso, setTipoAcesso] = useState<'sistema' | 'operacional' | 'suporte' | 'ambos'>('sistema');
+  const [rolesSelecionadas, setRolesSelecionadas] = useState<string[]>([]);
   const [permissoesSelecionadas, setPermissoesSelecionadas] = useState<string[]>([]);
   const [concedendo, setConcedendo] = useState(false);
 
@@ -32,6 +36,8 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
     onClose: () => {
       setEmail('');
       setSenha('');
+      setTipoAcesso('sistema');
+      setRolesSelecionadas([]);
       setPermissoesSelecionadas([]);
       onOpenChange(false);
     },
@@ -58,6 +64,15 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
       return;
     }
 
+    if (rolesSelecionadas.length === 0) {
+      toast({
+        title: 'Funções obrigatórias',
+        description: 'Selecione pelo menos 1 função para o membro.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     if (permissoesSelecionadas.length === 0) {
       toast({
         title: 'Permissões obrigatórias',
@@ -70,6 +85,14 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
     try {
       setConcedendo(true);
 
+      console.log('📤 Enviando dados:', {
+        nome: membro.nome,
+        email,
+        tipo: tipoAcesso,
+        roles: rolesSelecionadas,
+        permissionsCount: permissoesSelecionadas.length
+      });
+
       const { data, error } = await supabase.functions.invoke('criar-operador', {
         body: {
           nome: membro.nome,
@@ -77,7 +100,8 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
           cpf: membro.cpf,
           telefone: membro.telefone,
           senha: senha,
-          tipo: 'ambos', // operacional + sistema
+          tipo: tipoAcesso,
+          roles: rolesSelecionadas,
           permissions: permissoesSelecionadas
         }
       });
@@ -175,9 +199,70 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
                 placeholder="Digite a senha que o usuário usará para login"
               />
             </div>
+
+            {/* Tag Visual (Informativa) */}
+            <div className="space-y-2">
+              <Label>Tag Visual (Informativa)</Label>
+              <Select value={tipoAcesso} onValueChange={(value: any) => setTipoAcesso(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sistema">🖥️ Sistema</SelectItem>
+                  <SelectItem value="suporte">🔧 Suporte</SelectItem>
+                  <SelectItem value="operacional">👷 Operacional</SelectItem>
+                  <SelectItem value="ambos">🔄 Sistema + Suporte</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Esta tag aparece no card do membro (apenas visual)
+              </p>
+            </div>
+
+            {/* Funções/Roles (Controle Real) */}
+            <div className="space-y-2">
+              <Label>Funções no Sistema *</Label>
+              <div className="border rounded-lg p-4 space-y-2 bg-muted/30">
+                {[
+                  { value: 'admin', label: 'Administrador', icon: '👑', desc: 'Acesso total ao sistema' },
+                  { value: 'comercial', label: 'Comercial', icon: '🎯', desc: 'Vendas e propostas' },
+                  { value: 'suporte', label: 'Suporte', icon: '🔧', desc: 'Operações e estoque' },
+                  { value: 'operacional', label: 'Operacional', icon: '👷', desc: 'Execução de eventos' },
+                  { value: 'financeiro', label: 'Financeiro', icon: '💰', desc: 'Finanças e cobranças' }
+                ].map(role => (
+                  <div key={role.value} className="flex items-start space-x-2">
+                    <Checkbox
+                      id={`role-${role.value}`}
+                      checked={rolesSelecionadas.includes(role.value)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setRolesSelecionadas([...rolesSelecionadas, role.value]);
+                        } else {
+                          setRolesSelecionadas(rolesSelecionadas.filter(r => r !== role.value));
+                        }
+                      }}
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <label
+                        htmlFor={`role-${role.value}`}
+                        className="text-sm font-medium flex items-center gap-2 cursor-pointer"
+                      >
+                        <span>{role.icon}</span>
+                        <span>{role.label}</span>
+                      </label>
+                      <p className="text-xs text-muted-foreground">{role.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                ⚠️ As funções definem categorias, mas as <strong>permissões individuais</strong> controlam o acesso real
+              </p>
+            </div>
+
             <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
               <p className="text-sm text-blue-800 dark:text-blue-300">
-                ℹ️ Ao conceder acesso, este membro será convertido para tipo <strong>"Sistema + Operacional"</strong> e poderá fazer login na plataforma.
+                ℹ️ Ao conceder acesso, este membro poderá fazer login na plataforma com as funções e permissões selecionadas.
               </p>
             </div>
           </div>

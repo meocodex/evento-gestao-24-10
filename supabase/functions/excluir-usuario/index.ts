@@ -69,6 +69,18 @@ serve(async (req) => {
       throw new Error('user_id é obrigatório');
     }
 
+    // Buscar email do usuário antes de excluir
+    const { data: userData } = await supabaseAdmin.auth.admin.getUserById(user_id);
+
+    // 🔒 PROTEÇÃO: Bloquear exclusão do admin principal
+    if (userData?.user?.email === 'admin@admin.com') {
+      console.error('❌ Tentativa de excluir admin principal bloqueada');
+      return new Response(
+        JSON.stringify({ error: 'O administrador principal não pode ser excluído' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Prevenir auto-exclusão
     if (user_id === user.id) {
       throw new Error('Você não pode excluir seu próprio usuário');
