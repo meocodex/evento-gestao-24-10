@@ -15,6 +15,8 @@ import { MembroEquipeUnificado } from '@/types/equipe';
 import { AlertCircle, Lightbulb } from 'lucide-react';
 import { FormSheet } from '@/components/shared/sheets';
 import { useSheetState } from '@/components/shared/sheets/useSheetState';
+import { PasswordStrengthIndicator } from '@/components/shared/PasswordStrengthIndicator';
+import { passwordSchema } from '@/lib/validations/auth';
 
 interface ConcederAcessoSistemaSheetProps {
   open: boolean;
@@ -48,6 +50,12 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
     }
   }, [membro]);
 
+  // Função para remover formatação de CPF/Telefone
+  const limparFormatacao = (valor: string | undefined): string => {
+    if (!valor) return '';
+    return valor.replace(/\D/g, ''); // Remove tudo que não é dígito
+  };
+
   const handleSubmit = async () => {
     if (!membro) {
       return;
@@ -57,6 +65,19 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
       toast({
         title: 'Campos obrigatórios',
         description: 'Preencha o email e a senha.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Validar senha com passwordSchema
+    try {
+      passwordSchema.parse(senha);
+    } catch (error: any) {
+      const messages = error.errors?.map((e: any) => e.message).join('\n') || 'Senha inválida';
+      toast({
+        title: 'Senha não atende aos requisitos',
+        description: messages,
         variant: 'destructive'
       });
       return;
@@ -94,8 +115,8 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
         body: {
           nome: membro.nome,
           email: email,
-          cpf: membro.cpf,
-          telefone: membro.telefone,
+          cpf: limparFormatacao(membro.cpf),
+          telefone: limparFormatacao(membro.telefone),
           senha: senha,
           roles: rolesSelecionadas,
           permissions: permissoesSelecionadas
@@ -127,9 +148,33 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
 
       close();
     } catch (error: any) {
+      console.error('Erro ao conceder acesso:', error);
+      
+      let errorMessage = 'Erro ao conceder acesso. Tente novamente.';
+      
+      // Parse de erros de validação da edge function
+      if (error.message?.includes('Dados inválidos') || error.context) {
+        const details = error.context?.details || {};
+        if (Object.keys(details).length > 0) {
+          const fieldNames: Record<string, string> = {
+            cpf: 'CPF',
+            senha: 'Senha',
+            telefone: 'Telefone',
+            email: 'Email'
+          };
+          errorMessage = Object.entries(details)
+            .map(([field, msgs]: [string, any]) => {
+              const fieldName = fieldNames[field] || field;
+              const messages = Array.isArray(msgs) ? msgs.join(', ') : msgs;
+              return `${fieldName}: ${messages}`;
+            })
+            .join('\n');
+        }
+      }
+      
       toast({
-        title: 'Erro',
-        description: error.message || 'Erro ao conceder acesso',
+        title: 'Erro ao conceder acesso',
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {
@@ -188,15 +233,20 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
                 }
               </p>
             </div>
-            <div>
+            <div className="space-y-2">
               <Label htmlFor="senha">Senha de Acesso *</Label>
               <Input
                 id="senha"
                 type="password"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
-                placeholder="Digite a senha que o usuário usará para login"
+                placeholder="Digite a senha (mínimo 8 caracteres)"
               />
+              
+              {/* Indicador de força aparece ao começar a digitar */}
+              {senha && senha.length > 0 && (
+                <PasswordStrengthIndicator password={senha} />
+              )}
             </div>
 
             {/* Funções/Roles (Controle Real) */}
