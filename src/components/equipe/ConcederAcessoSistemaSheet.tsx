@@ -139,7 +139,6 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !senha || permissoesSelecionadas.length === 0) return;
     handleSubmit();
   };
 
@@ -158,7 +157,11 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="acesso">Credenciais</TabsTrigger>
           <TabsTrigger value="permissoes">
-            Permissões ({permissoesSelecionadas.length}/56) {permissoesSelecionadas.length === 0 && "⚠️"}
+            Permissões{" "}
+            <span className={permissoesSelecionadas.length === 0 ? "text-destructive font-bold" : ""}>
+              ({permissoesSelecionadas.length}/56)
+            </span>
+            {permissoesSelecionadas.length === 0 && <span className="ml-1">⚠️</span>}
           </TabsTrigger>
         </TabsList>
 
