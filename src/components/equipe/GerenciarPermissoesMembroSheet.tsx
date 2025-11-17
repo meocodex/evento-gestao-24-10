@@ -39,6 +39,7 @@ export function GerenciarPermissoesMembroSheet({
   const [permissoesSelecionadas, setPermissoesSelecionadas] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   const { close } = useSheetState({
@@ -116,6 +117,18 @@ export function GerenciarPermissoesMembroSheet({
       totalCount: filtered.filter(p => p.categoria === cat).length
     })).filter(group => group.permissions.length > 0);
   }, [permissions, debouncedSearch, permissoesSelecionadas]);
+
+  // Categorias visíveis baseadas nas permissões filtradas
+  const visibleCategories = useMemo(() => {
+    return Array.from(new Set(permissionsGrouped.map(g => g.categoria)));
+  }, [permissionsGrouped]);
+
+  // Inicializar categorias expandidas quando abrir a sheet
+  useEffect(() => {
+    if (open && expandedCategories.length === 0 && visibleCategories.length > 0) {
+      setExpandedCategories(visibleCategories);
+    }
+  }, [open, visibleCategories, expandedCategories.length]);
 
   // Calcular progresso
   const progressPercentage = useMemo(() => {
@@ -328,7 +341,8 @@ export function GerenciarPermissoesMembroSheet({
           <ScrollArea className="h-[50vh]">
             <Accordion 
               type="multiple" 
-              defaultValue={permissionsGrouped.map(g => g.categoria)}
+              value={expandedCategories}
+              onValueChange={setExpandedCategories}
               className="space-y-2"
             >
               {permissionsGrouped.map((group) => (
