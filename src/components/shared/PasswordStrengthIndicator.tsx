@@ -48,7 +48,8 @@ export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicato
     2: { label: 'Fraca', color: 'bg-orange-500', textColor: 'text-orange-500' },
     3: { label: 'Fraca', color: 'bg-orange-400', textColor: 'text-orange-400' },
     4: { label: 'Média', color: 'bg-yellow-500', textColor: 'text-yellow-500' },
-    5: { label: 'Forte', color: 'bg-green-500', textColor: 'text-green-500' }
+    5: { label: 'Forte', color: 'bg-green-500', textColor: 'text-green-500' },
+    6: { label: 'Muito Forte', color: 'bg-green-600', textColor: 'text-green-600' }
   };
 
   const config = strengthConfig[strength];
