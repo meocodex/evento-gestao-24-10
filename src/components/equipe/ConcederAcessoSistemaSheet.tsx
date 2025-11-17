@@ -27,7 +27,6 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
   const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [tipoAcesso, setTipoAcesso] = useState<'sistema' | 'operacional' | 'suporte' | 'ambos'>('sistema');
   const [rolesSelecionadas, setRolesSelecionadas] = useState<string[]>([]);
   const [permissoesSelecionadas, setPermissoesSelecionadas] = useState<string[]>([]);
   const [concedendo, setConcedendo] = useState(false);
@@ -36,7 +35,6 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
     onClose: () => {
       setEmail('');
       setSenha('');
-      setTipoAcesso('sistema');
       setRolesSelecionadas([]);
       setPermissoesSelecionadas([]);
       onOpenChange(false);
@@ -88,7 +86,6 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
       console.log('📤 Enviando dados:', {
         nome: membro.nome,
         email,
-        tipo: tipoAcesso,
         roles: rolesSelecionadas,
         permissionsCount: permissoesSelecionadas.length
       });
@@ -100,7 +97,6 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
           cpf: membro.cpf,
           telefone: membro.telefone,
           senha: senha,
-          tipo: tipoAcesso,
           roles: rolesSelecionadas,
           permissions: permissoesSelecionadas
         }
@@ -198,25 +194,6 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
                 onChange={(e) => setSenha(e.target.value)}
                 placeholder="Digite a senha que o usuário usará para login"
               />
-            </div>
-
-            {/* Tag Visual (Informativa) */}
-            <div className="space-y-2">
-              <Label>Tag Visual (Informativa)</Label>
-              <Select value={tipoAcesso} onValueChange={(value: any) => setTipoAcesso(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sistema">🖥️ Sistema</SelectItem>
-                  <SelectItem value="suporte">🔧 Suporte</SelectItem>
-                  <SelectItem value="operacional">👷 Operacional</SelectItem>
-                  <SelectItem value="ambos">🔄 Sistema + Suporte</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                Esta tag aparece no card do membro (apenas visual)
-              </p>
             </div>
 
             {/* Funções/Roles (Controle Real) */}
