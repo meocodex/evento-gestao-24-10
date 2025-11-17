@@ -47,13 +47,13 @@ serve(async (req) => {
     }
 
     // Verificar se tem permissão admin
-    const { data: hasAdmin, error: permError } = await supabaseAdmin
+    const { data: hasAdmin, error: adminCheckError } = await supabaseAdmin
       .rpc('has_permission', { 
         _user_id: user.id, 
         _permission_id: 'admin.full_access' 
       });
 
-    if (permError || !hasAdmin) {
+    if (adminCheckError || !hasAdmin) {
       console.error('❌ Usuário sem permissão admin:', user.email);
       return new Response(
         JSON.stringify({ error: 'Permissão negada: Apenas administradores podem excluir usuários' }),
@@ -75,20 +75,59 @@ serve(async (req) => {
     if (!userData || getUserError?.message?.includes('User not found')) {
       console.log('⚠️ Usuário já foi excluído do auth, limpando registros relacionados...');
       
-      // Limpar registros órfãos (profiles, roles, permissions)
-      const { error: cleanupError } = await supabaseAdmin
+      // Limpar todos os registros relacionados (profiles, roles, permissions)
+      let cleanupCount = 0;
+      
+      // 1. Limpar user_permissions
+      const { data: permData, error: permCleanError } = await supabaseAdmin
+        .from('user_permissions')
+        .delete()
+        .eq('user_id', user_id)
+        .select();
+      
+      if (permCleanError) {
+        console.error('⚠️ Erro ao limpar permissions:', permCleanError);
+      } else {
+        const permCount = permData?.length || 0;
+        console.log(`✅ Removidas ${permCount} permissions`);
+        cleanupCount += permCount;
+      }
+      
+      // 2. Limpar user_roles
+      const { data: roleData, error: roleCleanError } = await supabaseAdmin
+        .from('user_roles')
+        .delete()
+        .eq('user_id', user_id)
+        .select();
+      
+      if (roleCleanError) {
+        console.error('⚠️ Erro ao limpar roles:', roleCleanError);
+      } else {
+        const roleCount = roleData?.length || 0;
+        console.log(`✅ Removidas ${roleCount} roles`);
+        cleanupCount += roleCount;
+      }
+      
+      // 3. Limpar profile
+      const { error: profileCleanError } = await supabaseAdmin
         .from('profiles')
         .delete()
         .eq('id', user_id);
       
-      if (cleanupError) {
-        console.error('⚠️ Erro ao limpar profile órfão:', cleanupError);
+      if (profileCleanError) {
+        console.error('⚠️ Erro ao limpar profile:', profileCleanError);
+      } else {
+        console.log('✅ Profile removido');
+        cleanupCount++;
       }
+      
+      console.log(`✅ Limpeza concluída: ${cleanupCount} registros removidos`);
       
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: 'Registros relacionados removidos com sucesso' 
+          message: 'Registros relacionados removidos com sucesso',
+          cleaned_records: cleanupCount
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -110,7 +149,7 @@ serve(async (req) => {
 
     console.log('🗑️ Excluindo usuário:', user_id);
 
-    // Excluir usuário do Auth (cascade deleta profiles, roles, permissions via RLS)
+    // Excluir usuário do Auth
     const { error } = await supabaseAdmin.auth.admin.deleteUser(user_id);
 
     if (error) {
@@ -118,10 +157,54 @@ serve(async (req) => {
       throw error;
     }
 
-    console.log('✅ Usuário excluído com sucesso');
+    console.log('✅ Usuário excluído do auth');
+
+    // Limpeza defensiva: remover registros relacionados mesmo após exclusão
+    let cleanupCount = 0;
+    
+    // Limpar user_permissions
+    const { data: permDefData, error: permDefError } = await supabaseAdmin
+      .from('user_permissions')
+      .delete()
+      .eq('user_id', user_id)
+      .select();
+    
+    if (!permDefError && permDefData) {
+      console.log(`🧹 Limpeza defensiva: ${permDefData.length} permissions removidas`);
+      cleanupCount += permDefData.length;
+    }
+    
+    // Limpar user_roles
+    const { data: roleDefData, error: roleDefError } = await supabaseAdmin
+      .from('user_roles')
+      .delete()
+      .eq('user_id', user_id)
+      .select();
+    
+    if (!roleDefError && roleDefData) {
+      console.log(`🧹 Limpeza defensiva: ${roleDefData.length} roles removidas`);
+      cleanupCount += roleDefData.length;
+    }
+    
+    // Limpar profile
+    const { error: profileDefError } = await supabaseAdmin
+      .from('profiles')
+      .delete()
+      .eq('id', user_id);
+    
+    if (!profileDefError) {
+      console.log('🧹 Limpeza defensiva: profile removido');
+      cleanupCount++;
+    }
+
+    console.log(`✅ Exclusão concluída (${cleanupCount} registros limpos)`);
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Usuário excluído com sucesso' }),
+      JSON.stringify({ 
+        success: true, 
+        message: 'Usuário excluído com sucesso',
+        cleaned_records: cleanupCount
+      }),
       { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
