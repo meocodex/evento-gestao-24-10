@@ -126,11 +126,17 @@ export default function Equipe() {
 
     try {
       if (membroParaExcluir.tipo_membro === 'sistema' || membroParaExcluir.tipo_membro === 'ambos') {
-        const { error } = await supabase.functions.invoke('excluir-usuario', {
+        const { data, error } = await supabase.functions.invoke('excluir-usuario', {
           body: { user_id: membroParaExcluir.id }
         });
         
-        if (error) throw error;
+        // Verificar se é erro de usuário não encontrado (já foi excluído)
+        if (error && error.message?.includes('User not found')) {
+          console.warn('⚠️ Usuário já havia sido excluído, limpando cache...');
+          // Continuar para invalidar queries e mostrar sucesso
+        } else if (error) {
+          throw error;
+        }
 
         queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
         queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });

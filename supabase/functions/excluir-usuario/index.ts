@@ -69,8 +69,30 @@ serve(async (req) => {
       throw new Error('user_id é obrigatório');
     }
 
-    // Buscar email do usuário antes de excluir
-    const { data: userData } = await supabaseAdmin.auth.admin.getUserById(user_id);
+    // Verificar se usuário existe no auth
+    const { data: userData, error: getUserError } = await supabaseAdmin.auth.admin.getUserById(user_id);
+
+    if (!userData || getUserError?.message?.includes('User not found')) {
+      console.log('⚠️ Usuário já foi excluído do auth, limpando registros relacionados...');
+      
+      // Limpar registros órfãos (profiles, roles, permissions)
+      const { error: cleanupError } = await supabaseAdmin
+        .from('profiles')
+        .delete()
+        .eq('id', user_id);
+      
+      if (cleanupError) {
+        console.error('⚠️ Erro ao limpar profile órfão:', cleanupError);
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Registros relacionados removidos com sucesso' 
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // 🔒 PROTEÇÃO: Bloquear exclusão do admin principal
     if (userData?.user?.email === 'admin@admin.com') {
