@@ -52,7 +52,7 @@ export const PasswordStrengthIndicator = ({ password }: PasswordStrengthIndicato
     6: { label: 'Muito Forte', color: 'bg-green-600', textColor: 'text-green-600' }
   };
 
-  const config = strengthConfig[strength];
+  const config = strengthConfig[strength] ?? { label: 'Indefinido', color: 'bg-muted', textColor: 'text-muted-foreground' };
 
   return (
     <div className="space-y-3 p-3 border rounded-lg bg-muted/30">

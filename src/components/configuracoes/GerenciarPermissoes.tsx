@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { Search, CheckSquare, Square } from "lucide-react";
 
 interface Permission {
@@ -156,8 +156,8 @@ export function GerenciarPermissoes({
                 const algumasSelecionadas = permissoesCategoria.some(p => userPermissions.includes(p.id));
 
                 return (
-                  <>
-                    <TableRow key={`header-${categoria}`} className="bg-muted/50 hover:bg-muted/50">
+                  <Fragment key={categoria}>
+                    <TableRow className="bg-muted/50 hover:bg-muted/50">
                       <TableCell>
                         <Checkbox
                           checked={todasSelecionadas}
@@ -198,7 +198,7 @@ export function GerenciarPermissoes({
                         </TableRow>
                       );
                     })}
-                  </>
+                  </Fragment>
                 );
               })}
             </TableBody>
