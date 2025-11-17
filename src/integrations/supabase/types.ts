@@ -2419,7 +2419,7 @@ export type Database = {
       system_has_users: { Args: never; Returns: boolean }
     }
     Enums: {
-      app_role: "admin" | "comercial" | "suporte"
+      app_role: "admin" | "comercial" | "suporte" | "operacional" | "financeiro"
       categoria_demanda:
         | "tecnica"
         | "operacional"
@@ -2615,7 +2615,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "comercial", "suporte"],
+      app_role: ["admin", "comercial", "suporte", "operacional", "financeiro"],
       categoria_demanda: [
         "tecnica",
         "operacional",
