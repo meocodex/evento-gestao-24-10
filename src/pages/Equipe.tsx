@@ -85,12 +85,16 @@ export default function Equipe() {
       }
     });
     
-    // Filtrar perfis fantasma (sistema sem roles e sem permissions)
+    // Filtrar perfis fantasma (sistema sem roles, permissions E email válido)
     const membrosValidos = unificados.filter(membro => {
       if (membro.tipo_membro === 'sistema') {
         const hasRoles = membro.roles && membro.roles.length > 0;
         const hasPermissions = membro.permissions && membro.permissions.length > 0;
-        return hasRoles || hasPermissions;
+        const hasValidEmail = membro.email && membro.email.length > 0;
+        
+        // ⭐ NOVO: Perfil deve ter pelo menos UMA role OU permission E email válido
+        // Profiles órfãos sem nenhum dos dois são removidos da lista
+        return (hasRoles || hasPermissions) && hasValidEmail;
       }
       return true;
     });
@@ -151,8 +155,11 @@ export default function Equipe() {
           await excluirOperacional.mutateAsync(membroParaExcluir.operacional_id);
         }
 
-        queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
-        queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
+        // ⭐ Forçar invalidação e refetch imediato
+        await queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
+        await queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
+        await queryClient.refetchQueries({ queryKey: ['profiles-equipe'] });
+        await queryClient.refetchQueries({ queryKey: ['equipe-operacional'] });
 
         toast({
           title: 'Sucesso',
@@ -167,7 +174,9 @@ export default function Equipe() {
           throw error;
         }
 
-        queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
+        // ⭐ Forçar invalidação e refetch imediato
+        await queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
+        await queryClient.refetchQueries({ queryKey: ['profiles-equipe'] });
         
         toast({
           title: 'Sucesso',
