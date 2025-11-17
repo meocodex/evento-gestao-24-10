@@ -13,10 +13,9 @@ const OperadorSchema = z.object({
   cpf: z.string().regex(/^\d{11}$/, 'CPF deve ter 11 dígitos').optional(),
   telefone: z.string().regex(/^\d{10,11}$/, 'Telefone inválido').optional(),
   senha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres').max(100, 'Senha muito longa'),
-  tipo: z.enum(['operacional', 'suporte', 'sistema', 'ambos']), // Tag visual
   roles: z.array(z.enum(['admin', 'comercial', 'suporte', 'operacional', 'financeiro']))
     .min(1, 'Selecione pelo menos 1 função')
-    .max(5, 'Máximo de 5 funções'), // Roles reais
+    .max(5, 'Máximo de 5 funções'),
   permissions: z.array(z.string()).min(1, 'Selecione pelo menos 1 permissão')
 });
 
@@ -41,9 +40,9 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { nome, email, cpf, telefone, senha, tipo, roles, permissions } = validation.data;
+    const { nome, email, cpf, telefone, senha, roles, permissions } = validation.data;
 
-    console.log('📥 Recebida requisição criar-operador:', { email, nome, tipo, roles, permissionsCount: permissions.length });
+    console.log('📥 Recebida requisição criar-operador:', { email, nome, roles, permissionsCount: permissions.length });
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -66,20 +65,7 @@ Deno.serve(async (req) => {
     const existingUser = existingUsers?.users?.find(u => u.email === email);
 
     if (existingUser) {
-      console.log('⚠️ Usuário já existe, atualizando tipo e permissões:', existingUser.id);
-
-      // Atualizar tipo no profile
-      const { error: updateProfileError } = await supabaseAdmin
-        .from('profiles')
-        .update({ tipo })
-        .eq('id', existingUser.id);
-
-      if (updateProfileError) {
-        console.error('Erro ao atualizar profile:', updateProfileError);
-        throw updateProfileError;
-      }
-
-      console.log('✅ Tipo de perfil atualizado:', tipo);
+      console.log('⚠️ Usuário já existe, atualizando permissões:', existingUser.id);
 
       // Deletar roles antigas
       const { error: deleteRolesError } = await supabaseAdmin
@@ -178,7 +164,7 @@ Deno.serve(async (req) => {
     }
 
     // 2. Se não existe, criar normalmente
-    console.log('Criando novo usuário:', { email, nome, tipo });
+    console.log('Criando novo usuário:', { email, nome });
 
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -188,7 +174,6 @@ Deno.serve(async (req) => {
         nome,
         cpf,
         telefone,
-        tipo: tipo || 'sistema',
       },
     });
 
@@ -202,21 +187,8 @@ Deno.serve(async (req) => {
 
     console.log('Usuário criado com sucesso:', authData.user?.id);
 
-    // Atualizar tipo no profile
-    if (tipo && authData.user) {
-      const { error: profileError } = await supabaseAdmin
-        .from('profiles')
-        .update({ tipo })
-        .eq('id', authData.user.id);
-
-      if (profileError) {
-        console.error('Erro ao atualizar tipo do perfil:', profileError);
-        throw profileError;
-      }
-
-      console.log('✅ Tipo de perfil atualizado:', tipo);
-
-      // Inserir roles
+    // Inserir roles
+    if (authData.user) {
       console.log(`🔄 Inserindo ${roles.length} roles para novo usuário...`);
       
       const userRoles = roles.map((role: string) => ({
