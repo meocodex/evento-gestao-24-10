@@ -73,7 +73,7 @@ export function useProfilesQueries(enabled = true) {
       return (profilesData || []).map(profile => ({
         ...profile,
         roles: rolesByUser[profile.id] || [],
-        role: (rolesByUser[profile.id] || [])[0] || 'comercial', // Primeira role para compatibilidade
+        role: (rolesByUser[profile.id]?.[0]) || undefined, // ⭐ SEM FALLBACK
         permissions: permsByUser[profile.id] || [],
         funcao_principal: 'Usuário do Sistema',
       })) as ProfileMembro[];
