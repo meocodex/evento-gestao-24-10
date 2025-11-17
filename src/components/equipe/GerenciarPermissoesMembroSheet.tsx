@@ -87,8 +87,14 @@ export function GerenciarPermissoesMembroSheet({
 
   // Atualizar estado local quando carregar permissões do membro
   useEffect(() => {
-    if (open && membroPermsData) {
-      setPermissoesSelecionadas(membroPermsData);
+    if (open && membroPermsData && membroPermsData.length >= 0) {
+      // Só atualizar se realmente mudou (comparar conteúdo, não referência)
+      const permsString = JSON.stringify([...membroPermsData].sort());
+      const currentString = JSON.stringify([...permissoesSelecionadas].sort());
+      
+      if (permsString !== currentString) {
+        setPermissoesSelecionadas(membroPermsData);
+      }
     }
   }, [open, membroPermsData]);
 
