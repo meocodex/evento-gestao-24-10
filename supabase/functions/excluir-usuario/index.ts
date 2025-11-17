@@ -73,9 +73,8 @@ serve(async (req) => {
     const { data: userData, error: getUserError } = await supabaseAdmin.auth.admin.getUserById(user_id);
 
     if (!userData || getUserError?.message?.includes('User not found')) {
-      console.log('⚠️ Usuário já foi excluído do auth, limpando registros relacionados...');
+      console.log(`⚠️ Usuário ${user_id} já foi excluído do auth, limpando registros relacionados...`);
       
-      // Limpar todos os registros relacionados (profiles, roles, permissions)
       let cleanupCount = 0;
       
       // 1. Limpar user_permissions
@@ -89,7 +88,7 @@ serve(async (req) => {
         console.error('⚠️ Erro ao limpar permissions:', permCleanError);
       } else {
         const permCount = permData?.length || 0;
-        console.log(`✅ Removidas ${permCount} permissions`);
+        if (permCount > 0) console.log(`✅ Removidas ${permCount} permissions`);
         cleanupCount += permCount;
       }
       
@@ -104,30 +103,63 @@ serve(async (req) => {
         console.error('⚠️ Erro ao limpar roles:', roleCleanError);
       } else {
         const roleCount = roleData?.length || 0;
-        console.log(`✅ Removidas ${roleCount} roles`);
+        if (roleCount > 0) console.log(`✅ Removidas ${roleCount} roles`);
         cleanupCount += roleCount;
       }
       
-      // 3. Limpar profile
-      const { error: profileCleanError } = await supabaseAdmin
+      // 3. Limpar configuracoes_categorias
+      const { data: configCatData, error: configCatError } = await supabaseAdmin
+        .from('configuracoes_categorias')
+        .delete()
+        .eq('user_id', user_id)
+        .select();
+      
+      if (configCatError) {
+        console.error('⚠️ Erro ao limpar configuracoes_categorias:', configCatError);
+      } else {
+        const configCatCount = configCatData?.length || 0;
+        if (configCatCount > 0) console.log(`✅ Removidas ${configCatCount} configurações de categorias`);
+        cleanupCount += configCatCount;
+      }
+      
+      // 4. Limpar configuracoes_usuario
+      const { data: configUserData, error: configUserError } = await supabaseAdmin
+        .from('configuracoes_usuario')
+        .delete()
+        .eq('user_id', user_id)
+        .select();
+      
+      if (configUserError) {
+        console.error('⚠️ Erro ao limpar configuracoes_usuario:', configUserError);
+      } else {
+        const configUserCount = configUserData?.length || 0;
+        if (configUserCount > 0) console.log(`✅ Removidas ${configUserCount} configurações de usuário`);
+        cleanupCount += configUserCount;
+      }
+      
+      // 5. Limpar profile
+      const { data: profileData, error: profileCleanError } = await supabaseAdmin
         .from('profiles')
         .delete()
-        .eq('id', user_id);
+        .eq('id', user_id)
+        .select();
       
       if (profileCleanError) {
         console.error('⚠️ Erro ao limpar profile:', profileCleanError);
       } else {
-        console.log('✅ Profile removido');
-        cleanupCount++;
+        const profileCount = profileData?.length || 0;
+        if (profileCount > 0) console.log(`✅ Removido ${profileCount} profile`);
+        cleanupCount += profileCount;
       }
       
-      console.log(`✅ Limpeza concluída: ${cleanupCount} registros removidos`);
+      console.log(`✅ Limpeza concluída para ${user_id}: ${cleanupCount} registros removidos`);
       
       return new Response(
         JSON.stringify({ 
           success: true, 
           message: 'Registros relacionados removidos com sucesso',
-          cleaned_records: cleanupCount
+          cleaned_records: cleanupCount,
+          user_id
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -157,7 +189,7 @@ serve(async (req) => {
       throw error;
     }
 
-    console.log('✅ Usuário excluído do auth');
+    console.log(`✅ Usuário ${user_id} excluído do auth`);
 
     // Limpeza defensiva: remover registros relacionados mesmo após exclusão
     let cleanupCount = 0;
@@ -170,8 +202,9 @@ serve(async (req) => {
       .select();
     
     if (!permDefError && permDefData) {
-      console.log(`🧹 Limpeza defensiva: ${permDefData.length} permissions removidas`);
-      cleanupCount += permDefData.length;
+      const permCount = permDefData.length;
+      if (permCount > 0) console.log(`🧹 Limpeza defensiva: ${permCount} permissions removidas`);
+      cleanupCount += permCount;
     }
     
     // Limpar user_roles
@@ -182,28 +215,58 @@ serve(async (req) => {
       .select();
     
     if (!roleDefError && roleDefData) {
-      console.log(`🧹 Limpeza defensiva: ${roleDefData.length} roles removidas`);
-      cleanupCount += roleDefData.length;
+      const roleCount = roleDefData.length;
+      if (roleCount > 0) console.log(`🧹 Limpeza defensiva: ${roleCount} roles removidas`);
+      cleanupCount += roleCount;
+    }
+    
+    // Limpar configuracoes_categorias
+    const { data: configCatDefData, error: configCatDefError } = await supabaseAdmin
+      .from('configuracoes_categorias')
+      .delete()
+      .eq('user_id', user_id)
+      .select();
+    
+    if (!configCatDefError && configCatDefData) {
+      const configCatCount = configCatDefData.length;
+      if (configCatCount > 0) console.log(`🧹 Limpeza defensiva: ${configCatCount} configurações de categorias removidas`);
+      cleanupCount += configCatCount;
+    }
+    
+    // Limpar configuracoes_usuario
+    const { data: configUserDefData, error: configUserDefError } = await supabaseAdmin
+      .from('configuracoes_usuario')
+      .delete()
+      .eq('user_id', user_id)
+      .select();
+    
+    if (!configUserDefError && configUserDefData) {
+      const configUserCount = configUserDefData.length;
+      if (configUserCount > 0) console.log(`🧹 Limpeza defensiva: ${configUserCount} configurações de usuário removidas`);
+      cleanupCount += configUserCount;
     }
     
     // Limpar profile
-    const { error: profileDefError } = await supabaseAdmin
+    const { data: profileDefData, error: profileDefError } = await supabaseAdmin
       .from('profiles')
       .delete()
-      .eq('id', user_id);
+      .eq('id', user_id)
+      .select();
     
-    if (!profileDefError) {
-      console.log('🧹 Limpeza defensiva: profile removido');
-      cleanupCount++;
+    if (!profileDefError && profileDefData) {
+      const profileCount = profileDefData.length;
+      if (profileCount > 0) console.log(`🧹 Limpeza defensiva: ${profileCount} profile removido`);
+      cleanupCount += profileCount;
     }
 
-    console.log(`✅ Exclusão concluída (${cleanupCount} registros limpos)`);
+    console.log(`✅ Exclusão concluída para ${user_id}: ${cleanupCount} registros limpos`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         message: 'Usuário excluído com sucesso',
-        cleaned_records: cleanupCount
+        cleaned_records: cleanupCount,
+        user_id
       }),
       { 
         status: 200, 

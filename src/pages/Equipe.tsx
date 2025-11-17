@@ -85,14 +85,25 @@ export default function Equipe() {
       }
     });
     
-    console.log('📊 Membros Unificados:', {
-      total: unificados.length,
-      operacional: unificados.filter(m => m.tipo_membro === 'operacional').length,
-      sistema: unificados.filter(m => m.tipo_membro === 'sistema').length,
-      ambos: unificados.filter(m => m.tipo_membro === 'ambos').length
+    // Filtrar perfis fantasma (sistema sem roles e sem permissions)
+    const membrosValidos = unificados.filter(membro => {
+      if (membro.tipo_membro === 'sistema') {
+        const hasRoles = membro.roles && membro.roles.length > 0;
+        const hasPermissions = membro.permissions && membro.permissions.length > 0;
+        return hasRoles || hasPermissions;
+      }
+      return true;
     });
     
-    return unificados;
+    console.log('📊 Membros Unificados:', {
+      total: membrosValidos.length,
+      operacional: membrosValidos.filter(m => m.tipo_membro === 'operacional').length,
+      sistema: membrosValidos.filter(m => m.tipo_membro === 'sistema').length,
+      ambos: membrosValidos.filter(m => m.tipo_membro === 'ambos').length,
+      filtrados: unificados.length - membrosValidos.length
+    });
+    
+    return membrosValidos;
   }, [operacionais, profiles]);
   
   const [searchTerm, setSearchTerm] = useState('');
