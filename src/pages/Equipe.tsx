@@ -33,18 +33,32 @@ export default function Equipe() {
       const profileCorrespondente = profiles.find(p => p.email && op.email && p.email.toLowerCase() === op.email.toLowerCase());
       
       if (profileCorrespondente) {
-        // Membro tem AMBOS: operacional + sistema
-        unificados.push({
-          ...op,
-          id: profileCorrespondente.id, // ✅ USAR ID DO PROFILE para operações de sistema
-          profile_id: profileCorrespondente.id,
-          operacional_id: op.id, // ⭐ Guardar ID operacional separado
-          tipo_membro: 'ambos' as const,
-          avatar_url: op.foto || profileCorrespondente.avatar_url,
-          roles: profileCorrespondente.roles || [],
-          role: profileCorrespondente.role,
-          permissions: profileCorrespondente.permissions,
-        });
+        // ⭐ Verificar se há acesso real (roles ou permissions)
+        const hasRoles = (profileCorrespondente.roles?.length || 0) > 0;
+        const hasPermissions = (profileCorrespondente.permissions?.length || 0) > 0;
+        const hasRealAccess = hasRoles || hasPermissions;
+        
+        if (hasRealAccess) {
+          // Membro com acesso real ao sistema
+          unificados.push({
+            ...op,
+            id: profileCorrespondente.id,
+            profile_id: profileCorrespondente.id,
+            operacional_id: op.id,
+            tipo_membro: 'ambos' as const,
+            avatar_url: op.foto || profileCorrespondente.avatar_url,
+            roles: profileCorrespondente.roles || [],
+            role: profileCorrespondente.role,
+            permissions: profileCorrespondente.permissions,
+          });
+        } else {
+          // Profile sem acesso real - tratar como operacional
+          unificados.push({
+            ...op,
+            tipo_membro: 'operacional' as const,
+            avatar_url: op.foto || null
+          });
+        }
       } else {
         // Membro é apenas operacional
         unificados.push({
