@@ -41,6 +41,7 @@ export default function Equipe() {
           operacional_id: op.id, // ⭐ Guardar ID operacional separado
           tipo_membro: 'ambos' as const,
           avatar_url: op.foto || profileCorrespondente.avatar_url,
+          roles: profileCorrespondente.roles || [],
           role: profileCorrespondente.role,
           permissions: profileCorrespondente.permissions,
         });
@@ -77,6 +78,7 @@ export default function Equipe() {
           status: 'ativo' as any,
           avaliacao: undefined,
           observacoes: '',
+          roles: p.roles || [],
           role: p.role,
           permissions: p.permissions
         });
