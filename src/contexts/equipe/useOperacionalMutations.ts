@@ -64,24 +64,35 @@ export function useOperacionalMutations() {
 
   const excluirOperacional = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('equipe_operacional')
-        .delete()
-        .eq('id', id);
+      const { data, error } = await supabase.functions.invoke('excluir-operacional', {
+        body: { operacional_id: id }
+      });
 
       if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Erro ao excluir');
+      
+      return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['equipe_operacional'] });
+    onSuccess: async () => {
+      // Invalidar e refazer queries
+      await queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
+      await queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
+      await queryClient.refetchQueries({ queryKey: ['equipe-operacional'] });
+      await queryClient.refetchQueries({ queryKey: ['profiles-equipe'] });
+      
       toast({
         title: 'Membro excluído',
         description: 'O membro foi removido da equipe operacional com sucesso'
       });
     },
     onError: (error: any) => {
+      const errorMessage = error.message || 'Erro ao excluir membro';
+      
       toast({
         title: 'Erro ao excluir membro',
-        description: error.message,
+        description: errorMessage.includes('permissão') 
+          ? 'Você não tem permissão para excluir membros. Solicite "equipe.editar" ou "admin.full_access".'
+          : errorMessage,
         variant: 'destructive'
       });
     }
