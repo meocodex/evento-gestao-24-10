@@ -124,31 +124,29 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
       });
 
       if (error) {
-        // Verificar se é erro de conflito de email em profiles (perfis órfãos)
-        if (error.message?.includes('email_conflict_profiles') || 
-            error.message?.includes('profiles_email_key') ||
-            error.message?.includes('Database error creating new user')) {
+        // Verificar se é erro de usuário já existente (não órfão)
+        if (error.message?.includes('email_already_exists')) {
           toast({
-            title: 'Conflito de e-mail detectado',
-            description: 'Este e‑mail já consta em um perfil. Fizemos uma limpeza automática. Tente novamente agora. Se o erro persistir, fale com o suporte.',
+            title: 'Email já cadastrado',
+            description: `Este email já está cadastrado no sistema. Use "Gerenciar Permissões" para editar as permissões do usuário existente.`,
             variant: 'destructive'
           });
           close();
           return;
         }
         
-        // Verificar se é erro de email duplicado (usuário já existe)
-        if (error.message?.includes('already been registered') || 
-            error.message?.includes('email_exists') || 
-            error.message?.includes('User already registered')) {
+        // Verificar se houve erro na limpeza
+        if (error.message?.includes('cleanup_failed')) {
           toast({
-            title: 'Email já cadastrado',
-            description: `${membro.nome} já possui acesso ao sistema. Use "Gerenciar Permissões" para editar as permissões.`,
+            title: 'Erro ao processar',
+            description: 'Não foi possível processar a solicitação. Contate o suporte técnico.',
             variant: 'destructive'
           });
           close();
           return;
         }
+        
+        // Erros genéricos
         throw error;
       }
 
