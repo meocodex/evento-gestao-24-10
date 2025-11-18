@@ -166,56 +166,63 @@ Deno.serve(async (req) => {
     // 2. Se não existe, criar normalmente
     console.log('Criando novo usuário:', { email, nome });
 
-    // 🧹 Verificar e limpar perfil órfão específico deste email
-    console.log('🔍 Verificando se existe perfil órfão para este email...');
+    // 🧹 Verificar e limpar todos os perfis órfãos com este email
+    console.log('🔍 Verificando perfis existentes com este email...');
     
-    const { data: existingProfile } = await supabaseAdmin
+    // Deletar TODOS os perfis com este email que não têm usuário correspondente
+    const { data: profilesWithEmail } = await supabaseAdmin
       .from('profiles')
       .select('id, email')
-      .eq('email', email)
-      .single();
+      .eq('email', email);
     
-    if (existingProfile) {
-      console.log('⚠️ Perfil encontrado:', existingProfile.id);
+    if (profilesWithEmail && profilesWithEmail.length > 0) {
+      console.log(`⚠️ Encontrados ${profilesWithEmail.length} perfil(is) com este email`);
       
-      // Verificar se o usuário existe em auth.users
-      const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(existingProfile.id);
-      
-      if (!authUser.user) {
-        console.log('🗑️ Perfil órfão detectado, removendo...');
+      for (const profile of profilesWithEmail) {
+        // Verificar se o usuário existe em auth.users
+        const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.id);
         
-        // Deletar perfil órfão diretamente
-        const { error: deleteError } = await supabaseAdmin
-          .from('profiles')
-          .delete()
-          .eq('id', existingProfile.id);
-        
-        if (deleteError) {
-          console.error('❌ Erro ao deletar perfil órfão:', deleteError);
+        if (!authUser.user) {
+          console.log(`🗑️ Removendo perfil órfão: ${profile.id}`);
+          
+          // Deletar perfil órfão por email para garantir remoção completa
+          const { error: deleteError } = await supabaseAdmin
+            .from('profiles')
+            .delete()
+            .eq('email', email);
+          
+          if (deleteError) {
+            console.error('❌ Erro ao deletar perfil órfão:', deleteError);
+            return new Response(
+              JSON.stringify({ 
+                error: 'cleanup_failed',
+                message: 'Não foi possível limpar o perfil existente. Contate o suporte.',
+                details: deleteError.message
+              }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          
+          console.log('✅ Perfil(is) órfão(s) removido(s) com sucesso');
+          
+          // Pequeno delay para garantir que a transação foi completada
+          await new Promise(resolve => setTimeout(resolve, 500));
+          break;
+        } else {
+          console.log('⚠️ Perfil válido encontrado (usuário existe no auth)');
           return new Response(
             JSON.stringify({ 
-              error: 'cleanup_failed',
-              message: 'Não foi possível limpar o perfil existente. Contate o suporte.',
-              details: deleteError.message
+              error: 'email_already_exists',
+              message: 'Este email já está cadastrado no sistema. Use "Gerenciar Permissões" para editar as permissões do usuário existente.'
             }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        
-        console.log('✅ Perfil órfão removido com sucesso');
-      } else {
-        console.log('⚠️ Perfil válido encontrado (usuário existe)');
-        return new Response(
-          JSON.stringify({ 
-            error: 'email_already_exists',
-            message: 'Este email já está cadastrado no sistema. Use "Gerenciar Permissões" para editar as permissões do usuário existente.'
-          }),
-          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
       }
     }
 
     // Criar o usuário
+    console.log('🔄 Criando usuário no Supabase Auth...');
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password: senha,
