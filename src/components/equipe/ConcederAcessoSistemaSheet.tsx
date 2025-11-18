@@ -124,8 +124,23 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
       });
 
       if (error) {
-        // Verificar se é erro de email duplicado
-        if (error.message?.includes('already been registered') || error.message?.includes('email_exists') || error.message?.includes('User already registered')) {
+        // Verificar se é erro de conflito de email em profiles (perfis órfãos)
+        if (error.message?.includes('email_conflict_profiles') || 
+            error.message?.includes('profiles_email_key') ||
+            error.message?.includes('Database error creating new user')) {
+          toast({
+            title: 'Conflito de e-mail detectado',
+            description: 'Este e‑mail já consta em um perfil. Fizemos uma limpeza automática. Tente novamente agora. Se o erro persistir, fale com o suporte.',
+            variant: 'destructive'
+          });
+          close();
+          return;
+        }
+        
+        // Verificar se é erro de email duplicado (usuário já existe)
+        if (error.message?.includes('already been registered') || 
+            error.message?.includes('email_exists') || 
+            error.message?.includes('User already registered')) {
           toast({
             title: 'Email já cadastrado',
             description: `${membro.nome} já possui acesso ao sistema. Use "Gerenciar Permissões" para editar as permissões.`,

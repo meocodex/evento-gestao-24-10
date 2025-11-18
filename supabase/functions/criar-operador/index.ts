@@ -166,22 +166,81 @@ Deno.serve(async (req) => {
     // 2. Se não existe, criar normalmente
     console.log('Criando novo usuário:', { email, nome });
 
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: senha,
-      email_confirm: true,
-      user_metadata: {
-        nome,
-        cpf,
-        telefone,
-      },
-    });
+    // 🧹 Limpar perfis órfãos antes de criar o usuário
+    console.log('🧹 Limpando perfis órfãos...');
+    const { error: cleanupError } = await supabaseAdmin.rpc('cleanup_orphaned_profiles');
+    
+    if (cleanupError) {
+      console.warn('⚠️ Aviso ao limpar perfis órfãos:', cleanupError);
+    } else {
+      console.log('✅ Limpeza de perfis órfãos concluída');
+    }
+
+    let retryCount = 0;
+    const MAX_RETRIES = 1;
+    let authData = null;
+    let authError = null;
+
+    // Tentar criar o usuário (com 1 retry se falhar)
+    while (retryCount <= MAX_RETRIES) {
+      const createResult = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password: senha,
+        email_confirm: true,
+        user_metadata: {
+          nome,
+          cpf,
+          telefone,
+        },
+      });
+
+      authData = createResult.data;
+      authError = createResult.error;
+
+      if (!authError) {
+        break; // Sucesso!
+      }
+
+      // Se erro 500 "Database error" e ainda temos retry disponível
+      if (authError.message?.includes('Database error') && retryCount < MAX_RETRIES) {
+        console.warn(`⚠️ Erro ao criar usuário (tentativa ${retryCount + 1}), limpando e retrying...`);
+        
+        // Executar limpeza novamente
+        await supabaseAdmin.rpc('cleanup_orphaned_profiles');
+        
+        retryCount++;
+        continue;
+      }
+
+      // Se chegou aqui, erro definitivo
+      break;
+    }
 
     if (authError) {
       console.error('Erro ao criar usuário:', authError);
+      
+      // Verificar se é conflito de email em profiles
+      if (authError.message?.includes('Database error') || authError.message?.includes('profiles_email_key')) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'email_conflict_profiles',
+            message: 'Já existe um perfil com este e‑mail. Limpamos perfis órfãos e tentamos novamente. Se o erro persistir, contate o suporte.',
+            details: authError.message
+          }),
+          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       return new Response(
         JSON.stringify({ error: authError.message }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!authData?.user) {
+      return new Response(
+        JSON.stringify({ error: 'Falha ao criar usuário: dados não retornados' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
