@@ -196,8 +196,14 @@ export default function Equipe() {
           title: 'Sucesso',
           description: 'Acesso ao sistema revogado'
         });
-      } else if (membroParaExcluir.operacional_id) {
-        await excluirOperacional.mutateAsync(membroParaExcluir.operacional_id);
+      } else {
+        // Para membros "operacional" (apenas operacional, sem sistema)
+        const targetId = membroParaExcluir.operacional_id ?? membroParaExcluir.id;
+        if (!targetId) {
+          throw new Error('Não foi possível determinar o registro operacional para exclusão.');
+        }
+        
+        await excluirOperacional.mutateAsync(targetId);
         
         toast({
           title: 'Sucesso',
