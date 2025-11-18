@@ -166,73 +166,74 @@ Deno.serve(async (req) => {
     // 2. Se não existe, criar normalmente
     console.log('Criando novo usuário:', { email, nome });
 
-    // 🧹 Limpar perfis órfãos antes de criar o usuário
-    console.log('🧹 Limpando perfis órfãos...');
-    const { error: cleanupError } = await supabaseAdmin.rpc('cleanup_orphaned_profiles');
+    // 🧹 Verificar e limpar perfil órfão específico deste email
+    console.log('🔍 Verificando se existe perfil órfão para este email...');
     
-    if (cleanupError) {
-      console.warn('⚠️ Aviso ao limpar perfis órfãos:', cleanupError);
-    } else {
-      console.log('✅ Limpeza de perfis órfãos concluída');
-    }
-
-    let retryCount = 0;
-    const MAX_RETRIES = 1;
-    let authData = null;
-    let authError = null;
-
-    // Tentar criar o usuário (com 1 retry se falhar)
-    while (retryCount <= MAX_RETRIES) {
-      const createResult = await supabaseAdmin.auth.admin.createUser({
-        email,
-        password: senha,
-        email_confirm: true,
-        user_metadata: {
-          nome,
-          cpf,
-          telefone,
-        },
-      });
-
-      authData = createResult.data;
-      authError = createResult.error;
-
-      if (!authError) {
-        break; // Sucesso!
-      }
-
-      // Se erro 500 "Database error" e ainda temos retry disponível
-      if (authError.message?.includes('Database error') && retryCount < MAX_RETRIES) {
-        console.warn(`⚠️ Erro ao criar usuário (tentativa ${retryCount + 1}), limpando e retrying...`);
-        
-        // Executar limpeza novamente
-        await supabaseAdmin.rpc('cleanup_orphaned_profiles');
-        
-        retryCount++;
-        continue;
-      }
-
-      // Se chegou aqui, erro definitivo
-      break;
-    }
-
-    if (authError) {
-      console.error('Erro ao criar usuário:', authError);
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('id, email')
+      .eq('email', email)
+      .single();
+    
+    if (existingProfile) {
+      console.log('⚠️ Perfil encontrado:', existingProfile.id);
       
-      // Verificar se é conflito de email em profiles
-      if (authError.message?.includes('Database error') || authError.message?.includes('profiles_email_key')) {
+      // Verificar se o usuário existe em auth.users
+      const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(existingProfile.id);
+      
+      if (!authUser.user) {
+        console.log('🗑️ Perfil órfão detectado, removendo...');
+        
+        // Deletar perfil órfão diretamente
+        const { error: deleteError } = await supabaseAdmin
+          .from('profiles')
+          .delete()
+          .eq('id', existingProfile.id);
+        
+        if (deleteError) {
+          console.error('❌ Erro ao deletar perfil órfão:', deleteError);
+          return new Response(
+            JSON.stringify({ 
+              error: 'cleanup_failed',
+              message: 'Não foi possível limpar o perfil existente. Contate o suporte.',
+              details: deleteError.message
+            }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        console.log('✅ Perfil órfão removido com sucesso');
+      } else {
+        console.log('⚠️ Perfil válido encontrado (usuário existe)');
         return new Response(
           JSON.stringify({ 
-            error: 'email_conflict_profiles',
-            message: 'Já existe um perfil com este e‑mail. Limpamos perfis órfãos e tentamos novamente. Se o erro persistir, contate o suporte.',
-            details: authError.message
+            error: 'email_already_exists',
+            message: 'Este email já está cadastrado no sistema. Use "Gerenciar Permissões" para editar as permissões do usuário existente.'
           }),
           { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+    }
 
+    // Criar o usuário
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: senha,
+      email_confirm: true,
+      user_metadata: {
+        nome,
+        cpf,
+        telefone,
+      },
+    });
+
+    if (authError) {
+      console.error('❌ Erro ao criar usuário:', authError);
       return new Response(
-        JSON.stringify({ error: authError.message }),
+        JSON.stringify({ 
+          error: 'user_creation_failed',
+          message: 'Erro ao criar usuário: ' + authError.message
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
