@@ -11,6 +11,7 @@ export interface User {
   email: string;
   tipo?: 'sistema' | 'operacional' | 'ambos';
   role: UserRole;
+  roles?: string[]; // Array completo de roles
   permissions: string[];
   isAdmin: boolean;
 }
@@ -83,24 +84,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const userId = session.user.id;
         const [
           { data: profile }, 
-          { data: perms }
+          { data: perms },
+          { data: userRoles }
         ] = await Promise.all([
           supabase.from('profiles').select('nome, tipo').eq('id', userId).single(),
           supabase.from('user_permissions').select('permission_id').eq('user_id', userId),
+          supabase.from('user_roles').select('role').eq('user_id', userId)
         ]);
         
         if (isCancelled) return;
         
         // Detecção de admin: verifica se possui admin.full_access
         const isAdminFinal = perms?.some(p => p.permission_id === 'admin.full_access') ?? false;
-        const finalRole: UserRole = isAdminFinal ? 'admin' : 'comercial';
+        const rolesArray = userRoles?.map(r => r.role) || [];
+        const finalRole: UserRole = isAdminFinal ? 'admin' : (rolesArray[0] as UserRole || 'comercial');
         
         console.log('✅ Profile hydrated:', { 
           profile, 
           permsLen: perms?.length,
-          hasAdminFullAccess: isAdminFinal
+          hasAdminFullAccess: isAdminFinal,
+          rolesArray,
+          finalRole
         });
-        console.log('👑 isAdmin=', isAdminFinal, 'finalRole=', finalRole);
+        console.log('👑 isAdmin=', isAdminFinal, 'finalRole=', finalRole, 'allRoles=', rolesArray);
         
         setUser(prev => ({
           id: userId,
@@ -108,6 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: session.user.email || prev?.email || '',
           tipo: (profile?.tipo as 'sistema' | 'operacional' | 'ambos') || prev?.tipo || 'sistema',
           role: finalRole,
+          roles: rolesArray,
           permissions: (perms || []).map(p => p.permission_id),
           isAdmin: isAdminFinal,
         }));

@@ -61,30 +61,69 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     // Admin vê tudo
     if (isAdmin) return true;
     
-    // Itens restritos apenas ao admin
-    if (item.title === 'Financeiro') {
-      return hasAnyPermission(['financeiro.visualizar', 'financeiro.visualizar_proprios', 'financeiro.editar']);
+    // Verificações específicas por item
+    switch (item.title) {
+      case 'Dashboard':
+        return true; // Dashboard é público para usuários autenticados
+      
+      case 'Eventos':
+        return hasAnyPermission([
+          'eventos.visualizar',
+          'eventos.visualizar_proprios',
+          'eventos.visualizar_todos',
+          'eventos.criar',
+          'eventos.editar_proprios',
+          'eventos.editar_todos'
+        ]);
+      
+      case 'Clientes':
+        return hasAnyPermission([
+          'clientes.visualizar',
+          'clientes.criar',
+          'clientes.editar'
+        ]);
+      
+      case 'Demandas':
+        return hasAnyPermission([
+          'demandas.visualizar',
+          'demandas.criar',
+          'demandas.editar',
+          'demandas.atribuir'
+        ]);
+      
+      case 'Equipe':
+        return hasAnyPermission(['equipe.visualizar', 'equipe.editar']);
+      
+      case 'Contratos':
+        return hasAnyPermission(['contratos.visualizar', 'contratos.editar']);
+      
+      case 'Estoque':
+        return hasAnyPermission(['estoque.visualizar', 'estoque.editar', 'estoque.alocar']);
+      
+      case 'Transportadoras':
+        return hasAnyPermission(['transportadoras.visualizar', 'transportadoras.editar']);
+      
+      case 'Financeiro':
+        return hasAnyPermission([
+          'financeiro.visualizar',
+          'financeiro.visualizar_proprios',
+          'financeiro.editar'
+        ]);
+      
+      case 'Relatórios':
+        return hasAnyPermission([
+          'relatorios.visualizar',
+          'relatorios.gerar',
+          'relatorios.exportar'
+        ]);
+      
+      case 'Performance':
+      case 'Configurações':
+        return false; // Apenas admin
+      
+      default:
+        return false; // Por segurança, ocultar itens desconhecidos
     }
-    if (item.title === 'Configurações' || item.title === 'Performance') {
-      return false; // Apenas admin
-    }
-    
-    // Itens com permissões específicas
-    if (item.title === 'Equipe') {
-      return hasAnyPermission(['equipe.visualizar', 'equipe.editar']);
-    }
-    if (item.title === 'Contratos') {
-      return hasAnyPermission(['contratos.visualizar', 'contratos.editar']);
-    }
-    if (item.title === 'Estoque') {
-      return hasAnyPermission(['estoque.editar', 'estoque.alocar']);
-    }
-    if (item.title === 'Transportadoras') {
-      return hasAnyPermission(['transportadoras.visualizar', 'transportadoras.editar']);
-    }
-    
-    // Itens básicos (Dashboard, Eventos, Clientes, Demandas, Relatórios) - todos veem
-    return true;
   });
 
   const isActive = (path: string) => location.pathname === path;
