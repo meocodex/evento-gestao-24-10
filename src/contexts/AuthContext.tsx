@@ -135,6 +135,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [session?.user?.id]);
 
+  // Listener para mudanças em tempo real nas permissões
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    const permissionsChannel = supabase
+      .channel('user-permissions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_permissions',
+          filter: `user_id=eq.${session.user.id}`
+        },
+        (payload) => {
+          console.log('🔄 Permissões atualizadas em tempo real:', payload);
+          // Re-hidratar usuário
+          setHydrating(true);
+          setTimeout(() => {
+            // Trigger re-hydration
+            setSession(prev => prev ? { ...prev } : null);
+          }, 100);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(permissionsChannel);
+    };
+  }, [session?.user?.id]);
+
   const logout = async () => {
     await supabase.auth.signOut();
     setSession(null);
