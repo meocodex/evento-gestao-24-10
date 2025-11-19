@@ -177,8 +177,17 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
       }
 
       toast({
-        title: 'Acesso concedido!',
-        description: `${membro.nome} agora tem acesso ao sistema com ${permissoesSelecionadas.length} permissões.`
+        title: 'Acesso concedido com sucesso',
+        description: (
+          <div className="space-y-2">
+            <p>✅ {rolesSelecionadas.length} função(ões) atribuída(s)</p>
+            <p>✅ {permissoesSelecionadas.length} permissão(ões) aplicada(s)</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              O usuário deve fazer logout e login novamente para ver as mudanças.
+            </p>
+          </div>
+        ),
+        duration: 8000,
       });
 
       // Invalidar queries
