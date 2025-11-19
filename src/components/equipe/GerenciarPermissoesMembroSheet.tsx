@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -41,6 +41,9 @@ export function GerenciarPermissoesMembroSheet({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
   const debouncedSearch = useDebounce(searchTerm, 300);
+  
+  // Ref para evitar loops no useEffect
+  const previousPermsRef = useRef<string[]>([]);
 
   const { close } = useSheetState({
     onClose: () => {
@@ -88,16 +91,28 @@ export function GerenciarPermissoesMembroSheet({
 
   // Atualizar estado local quando carregar permissões do membro
   useEffect(() => {
-    if (open && membroPermsData && membroPermsData.length >= 0) {
-      // Só atualizar se realmente mudou (comparar conteúdo, não referência)
+    if (open && membroPermsData) {
+      // Comparar com valor anterior usando ref (não causa re-render)
       const permsString = JSON.stringify([...membroPermsData].sort());
-      const currentString = JSON.stringify([...permissoesSelecionadas].sort());
+      const previousString = JSON.stringify([...previousPermsRef.current].sort());
       
-      if (permsString !== currentString) {
+      if (permsString !== previousString) {
+        console.log('🔄 Atualizando permissões do membro:', membroPermsData.length);
         setPermissoesSelecionadas(membroPermsData);
+        previousPermsRef.current = membroPermsData; // Salvar referência
       }
     }
-  }, [open, membroPermsData]);
+  }, [open, membroPermsData]); // Não incluir permissoesSelecionadas!
+  
+  // Debug render
+  useEffect(() => {
+    console.log('🔍 GerenciarPermissoesMembroSheet render:', {
+      open,
+      membroId: membro?.id,
+      permsCount: permissoesSelecionadas.length,
+      membroPermsDataCount: membroPermsData?.length
+    });
+  }, [open, membro?.id, permissoesSelecionadas.length, membroPermsData?.length]);
 
   // Agrupar permissões por categoria com filtro de busca
   const permissionsGrouped = useMemo(() => {
@@ -137,34 +152,31 @@ export function GerenciarPermissoesMembroSheet({
   }, [permissoesSelecionadas.length, permissions.length]);
 
   // Toggle permissão individual
-  const togglePermission = (permissionId: string) => {
+  // Memoizar função de toggle para evitar re-criação
+  const togglePermission = useCallback((permissionId: string) => {
     setPermissoesSelecionadas(prev =>
       prev.includes(permissionId)
         ? prev.filter(id => id !== permissionId)
         : [...prev, permissionId]
     );
-  };
+  }, []);
 
-  // Toggle categoria completa
-  const toggleCategoria = (categoria: string) => {
+  // Toggle categoria completa - memoizado
+  const toggleCategoria = useCallback((categoria: string) => {
     const permsNaCategoria = permissions
       .filter(p => p.categoria === categoria)
       .map(p => p.id);
     
-    const todasSelecionadas = permsNaCategoria.every(id => 
-      permissoesSelecionadas.includes(id)
-    );
-
-    if (todasSelecionadas) {
-      setPermissoesSelecionadas(prev => 
-        prev.filter(id => !permsNaCategoria.includes(id))
-      );
-    } else {
-      setPermissoesSelecionadas(prev => 
-        Array.from(new Set([...prev, ...permsNaCategoria]))
-      );
-    }
-  };
+    setPermissoesSelecionadas(prev => {
+      const todasSelecionadas = permsNaCategoria.every(id => prev.includes(id));
+      
+      if (todasSelecionadas) {
+        return prev.filter(id => !permsNaCategoria.includes(id));
+      } else {
+        return Array.from(new Set([...prev, ...permsNaCategoria]));
+      }
+    });
+  }, [permissions]);
 
   // Selecionar todas
   const selecionarTodas = () => {
@@ -218,8 +230,16 @@ export function GerenciarPermissoesMembroSheet({
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user-permissions'] });
-      queryClient.invalidateQueries({ queryKey: ['profiles'] });
+      // Invalidar apenas queries específicas deste usuário
+      const userId = membro.profile_id || membro.id;
+      queryClient.invalidateQueries({ queryKey: ['user-permissions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['user-roles', userId] });
+      
+      // Delay na invalidação global para evitar re-fetch imediato
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] });
+      }, 500);
+      
       toast({
         title: 'Permissões atualizadas!',
         description: `${permissoesSelecionadas.length} permissões configuradas com sucesso.`
@@ -349,24 +369,35 @@ export function GerenciarPermissoesMembroSheet({
                 <AccordionItem 
                   key={group.categoria} 
                   value={group.categoria}
-                  className="border rounded-lg"
                 >
-                  <AccordionTrigger className="px-4 hover:no-underline hover:bg-accent/50 rounded-t-lg">
-                    <div className="flex items-center justify-between w-full pr-2">
-                      <div className="flex items-center gap-3">
+                  <div className="border rounded-lg">
+                    <div className="flex items-center gap-0">
+                      {/* Checkbox separado do trigger */}
+                      <div 
+                        className="px-4 py-3 hover:bg-accent/50 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCategoria(group.categoria);
+                        }}
+                      >
                         <Checkbox
                           checked={group.selectedCount === group.totalCount && group.totalCount > 0}
                           onCheckedChange={() => toggleCategoria(group.categoria)}
-                          onClick={(e) => e.stopPropagation()}
                         />
-                        <span className="font-medium">{group.categoria}</span>
                       </div>
-                      <Badge variant={group.selectedCount > 0 ? "default" : "secondary"}>
-                        {group.selectedCount}/{group.totalCount}
-                      </Badge>
+                      
+                      {/* Trigger sem checkbox */}
+                      <AccordionTrigger className="flex-1 px-4 hover:no-underline hover:bg-accent/50">
+                        <div className="flex items-center justify-between w-full pr-2">
+                          <span className="font-medium">{group.categoria}</span>
+                          <Badge variant={group.selectedCount > 0 ? "default" : "secondary"}>
+                            {group.selectedCount}/{group.totalCount}
+                          </Badge>
+                        </div>
+                      </AccordionTrigger>
                     </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 pb-4">
+                    
+                    <AccordionContent className="px-4 pb-4">
                     <div className="space-y-1 mt-2">
                       {group.permissions.map((p) => (
                         <div
@@ -388,6 +419,7 @@ export function GerenciarPermissoesMembroSheet({
                       ))}
                     </div>
                   </AccordionContent>
+                  </div>
                 </AccordionItem>
               ))}
             </Accordion>
