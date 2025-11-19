@@ -17,6 +17,7 @@ import { FormSheet } from '@/components/shared/sheets';
 import { useSheetState } from '@/components/shared/sheets/useSheetState';
 import { PasswordStrengthIndicator } from '@/components/shared/PasswordStrengthIndicator';
 import { passwordSchema } from '@/lib/validations/auth';
+import { permissionsPresets, PresetType } from '@/lib/permissionsPresets';
 
 interface ConcederAcessoSistemaSheetProps {
   open: boolean;
@@ -49,6 +50,30 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
       setEmail(membro.email);
     }
   }, [membro]);
+
+  // Auto-sugerir permissões quando roles mudarem
+  useEffect(() => {
+    if (rolesSelecionadas.length === 0) return;
+    
+    // Combinar permissões de todos os presets selecionados
+    const permissoesSugeridas = new Set<string>();
+    
+    rolesSelecionadas.forEach(role => {
+      const preset = permissionsPresets[role as PresetType];
+      if (preset) {
+        preset.permissions.forEach(p => permissoesSugeridas.add(p));
+      }
+    });
+    
+    // Se ainda não há permissões selecionadas, auto-preencher com sugestões
+    if (permissoesSelecionadas.length === 0 && permissoesSugeridas.size > 0) {
+      setPermissoesSelecionadas(Array.from(permissoesSugeridas));
+      toast({
+        title: 'Permissões sugeridas aplicadas',
+        description: `${permissoesSugeridas.size} permissões foram automaticamente selecionadas com base nas funções escolhidas.`,
+      });
+    }
+  }, [rolesSelecionadas]);
 
   // Função para remover formatação de CPF/Telefone
   const limparFormatacao = (valor: string | undefined): string => {
@@ -95,8 +120,9 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
     if (permissoesSelecionadas.length === 0) {
       toast({
         title: 'Permissões obrigatórias',
-        description: 'Você deve selecionar pelo menos 1 permissão para conceder acesso ao sistema.',
-        variant: 'destructive'
+        description: 'Você deve selecionar pelo menos 1 permissão. Use o botão "Aplicar Sugestões" ou selecione manualmente na aba Permissões.',
+        variant: 'destructive',
+        duration: 6000,
       });
       return;
     }
@@ -312,6 +338,48 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
         </TabsContent>
 
         <TabsContent value="permissoes" className="space-y-4 mt-4">
+          <div className="flex gap-2 mb-4">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const permissoesSugeridas = new Set<string>();
+                rolesSelecionadas.forEach(role => {
+                  const preset = permissionsPresets[role as PresetType];
+                  if (preset) {
+                    preset.permissions.forEach(p => permissoesSugeridas.add(p));
+                  }
+                });
+                setPermissoesSelecionadas(Array.from(permissoesSugeridas));
+                toast({
+                  title: 'Permissões aplicadas',
+                  description: `${permissoesSugeridas.size} permissões sugeridas foram aplicadas.`,
+                });
+              }}
+              disabled={rolesSelecionadas.length === 0}
+            >
+              <Lightbulb className="h-4 w-4 mr-2" />
+              Aplicar Sugestões das Funções Selecionadas
+            </Button>
+            {permissoesSelecionadas.length > 0 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setPermissoesSelecionadas([]);
+                  toast({
+                    title: 'Permissões limpas',
+                    description: 'Todas as permissões foram desmarcadas.',
+                  });
+                }}
+              >
+                Limpar Todas
+              </Button>
+            )}
+          </div>
+
           {permissoesSelecionadas.length === 0 && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
