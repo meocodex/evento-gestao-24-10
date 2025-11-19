@@ -12,6 +12,7 @@ interface MembrosUnificadosVirtualListProps {
   onExcluir: (membro: MembroEquipeUnificado) => void;
   onConcederAcesso?: (membro: MembroEquipeUnificado) => void;
   onGerenciarPermissoes?: (membro: MembroEquipeUnificado) => void;
+  canDeleteSystemUsers?: boolean;
 }
 
 export function MembrosUnificadosVirtualList({
@@ -22,6 +23,7 @@ export function MembrosUnificadosVirtualList({
   onExcluir,
   onConcederAcesso,
   onGerenciarPermissoes,
+  canDeleteSystemUsers = false,
 }: MembrosUnificadosVirtualListProps) {
   const parentRef = useRef<HTMLDivElement>(null);
 
@@ -90,6 +92,7 @@ export function MembrosUnificadosVirtualList({
                   onExcluir={() => onExcluir(membro)}
                   onConcederAcesso={onConcederAcesso ? () => onConcederAcesso(membro) : undefined}
                   onGerenciarPermissoes={onGerenciarPermissoes ? () => onGerenciarPermissoes(membro) : undefined}
+                  canDeleteSystemUsers={canDeleteSystemUsers}
                 />
               </div>
             </div>

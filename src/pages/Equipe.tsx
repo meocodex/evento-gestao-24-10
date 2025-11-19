@@ -17,13 +17,18 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { MembroEquipeUnificado } from '@/types/equipe';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function Equipe() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { hasPermission } = usePermissions();
   const [page, setPage] = useState(1);
   const pageSize = 50;
   const { operacionais = [], data: profiles = [], isLoading: loadingMembros, excluirOperacional } = useEquipe(page, pageSize, {}, true);
+  
+  // ⭐ Verificar se usuário tem permissão admin para excluir usuários de sistema
+  const canDeleteSystemUsers = hasPermission('admin.full_access');
   
   const membrosUnificados = useMemo(() => {
     const unificados: any[] = [];
@@ -156,12 +161,17 @@ export default function Equipe() {
     try {
       if (membroParaExcluir.tipo_membro === 'ambos') {
         // Revogar acesso ao sistema
-        const { error } = await supabase.functions.invoke('excluir-usuario', {
+        const { data, error } = await supabase.functions.invoke('excluir-usuario', {
           body: { user_id: membroParaExcluir.id }
         });
         
+        // ⭐ CORREÇÃO: Verificar tanto error quanto data?.error
         if (error && !error.message?.includes('User not found')) {
           throw error;
+        }
+        
+        if (data?.error) {
+          throw new Error(data.error);
         }
 
         // Remover cadastro operacional
@@ -180,12 +190,17 @@ export default function Equipe() {
           description: 'Acesso revogado e cadastro operacional removido'
         });
       } else if (membroParaExcluir.tipo_membro === 'sistema') {
-        const { error } = await supabase.functions.invoke('excluir-usuario', {
+        const { data, error } = await supabase.functions.invoke('excluir-usuario', {
           body: { user_id: membroParaExcluir.id }
         });
         
+        // ⭐ CORREÇÃO: Verificar tanto error quanto data?.error
         if (error && !error.message?.includes('User not found')) {
           throw error;
+        }
+        
+        if (data?.error) {
+          throw new Error(data.error);
         }
 
         // ⭐ Forçar invalidação e refetch imediato
@@ -362,6 +377,7 @@ export default function Equipe() {
             onExcluir={setMembroParaExcluir}
             onConcederAcesso={setConcederAcessoMembro}
             onGerenciarPermissoes={setGerenciarPermissoesMembro}
+            canDeleteSystemUsers={canDeleteSystemUsers}
           />
         </CardContent>
       </Card>

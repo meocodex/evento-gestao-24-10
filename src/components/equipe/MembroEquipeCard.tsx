@@ -13,6 +13,7 @@ interface MembroEquipeCardProps {
   onExcluir: () => void;
   onConcederAcesso?: () => void;
   onGerenciarPermissoes?: () => void;
+  canDeleteSystemUsers?: boolean;
 }
 
 export function MembroEquipeCard({ 
@@ -21,7 +22,8 @@ export function MembroEquipeCard({
   onEditar, 
   onExcluir,
   onConcederAcesso, 
-  onGerenciarPermissoes 
+  onGerenciarPermissoes,
+  canDeleteSystemUsers = false
 }: MembroEquipeCardProps) {
   console.log('🔍 MembroEquipeCard Debug:', {
     nome: membro.nome,
@@ -264,7 +266,17 @@ export function MembroEquipeCard({
                 variant="destructive" 
                 size="sm" 
                 onClick={onExcluir}
-                disabled={isMainAdmin}
+                disabled={
+                  isMainAdmin || 
+                  ((membro.tipo_membro === 'sistema' || membro.tipo_membro === 'ambos') && !canDeleteSystemUsers)
+                }
+                title={
+                  isMainAdmin 
+                    ? 'O administrador principal não pode ser excluído' 
+                    : ((membro.tipo_membro === 'sistema' || membro.tipo_membro === 'ambos') && !canDeleteSystemUsers)
+                    ? 'Apenas administradores podem excluir usuários do sistema'
+                    : 'Excluir membro'
+                }
               >
                 <Trash2 className="h-3 w-3 mr-1" />
                 Excluir
