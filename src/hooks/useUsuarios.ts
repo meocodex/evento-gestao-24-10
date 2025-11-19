@@ -137,7 +137,18 @@ export function useUsuarios() {
       });
 
       if (error) throw error;
-      if (result?.error) throw new Error(result.error);
+      
+      // Verificar se há erro no response body (backend retornou erro)
+      if (result?.error) {
+        if (result.error === 'invalid_permissions') {
+          const invalidList = result.invalid ? result.invalid.join(', ') : 'desconhecidas';
+          throw new Error(`Permissões inválidas: ${invalidList}. Entre em contato com o administrador.`);
+        }
+        
+        // Extrair detalhes se existirem
+        const errorMessage = result.message || result.details || result.error;
+        throw new Error(errorMessage);
+      }
 
       return result.user;
     },
