@@ -14,6 +14,7 @@ import {
   UserCog,
   Activity,
   ClipboardList,
+  RefreshCw,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -33,6 +34,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/components/ui/sidebar';
+import { supabase } from '@/integrations/supabase/client';
 
 const menuItems = [
   { title: 'Dashboard', url: '/dashboard', icon: Home },
@@ -186,6 +188,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="space-y-3">
           {state !== 'collapsed' && (
             <>
+              {process.env.NODE_ENV === 'development' && (
+                <div className="px-3 md:px-4 py-2 text-xs text-sidebar-foreground/60 space-y-1">
+                  <p>Permissões: {user?.permissions?.length || 0}</p>
+                  <p>Role: {user?.role}</p>
+                  <p>Roles: {user?.roles?.join(', ') || 'nenhuma'}</p>
+                  <p>Admin: {user?.isAdmin ? 'Sim' : 'Não'}</p>
+                </div>
+              )}
+              
               <div className="px-3 md:px-4 py-2 md:py-3 bg-sidebar-accent/50 backdrop-blur-sm rounded-xl border border-sidebar-border/30">
                 <p className="text-xs text-sidebar-foreground/60 font-medium uppercase tracking-wide">
                   Perfil
@@ -199,14 +210,32 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </>
           )}
           
-          <Button
-            variant="ghost"
-            onClick={logout}
-            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-destructive transition-all duration-200 group min-h-[44px]"
-          >
-            <LogOut className="h-4 w-4 md:mr-3 group-hover:rotate-12 transition-transform" />
-            {state !== 'collapsed' && <span>Sair</span>}
-          </Button>
+          <div className="flex gap-2">
+            {!isAdmin && state !== 'collapsed' && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={async () => {
+                  console.log('🔄 Recarregando permissões...');
+                  await supabase.auth.refreshSession();
+                  window.location.reload();
+                }}
+                className="text-sidebar-foreground hover:bg-sidebar-accent transition-all duration-200"
+                title="Recarregar Permissões"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            )}
+            
+            <Button
+              variant="ghost"
+              onClick={logout}
+              className="flex-1 justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-destructive transition-all duration-200 group min-h-[44px]"
+            >
+              <LogOut className="h-4 w-4 md:mr-3 group-hover:rotate-12 transition-transform" />
+              {state !== 'collapsed' && <span>Sair</span>}
+            </Button>
+          </div>
         </div>
       </SidebarFooter>
     </Sidebar>
