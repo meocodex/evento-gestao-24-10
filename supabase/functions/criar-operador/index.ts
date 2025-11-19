@@ -55,6 +55,40 @@ Deno.serve(async (req) => {
       }
     );
 
+    // 🔍 VALIDAR PERMISSÕES ANTES DE PROSSEGUIR
+    console.log('🔍 Validando permissões...');
+    const { data: validPermissions, error: permCatalogError } = await supabaseAdmin
+      .from('permissions')
+      .select('id');
+    
+    if (permCatalogError) {
+      console.error('❌ Erro ao buscar catálogo de permissões:', permCatalogError);
+      return new Response(
+        JSON.stringify({ 
+          error: 'catalog_error',
+          message: 'Erro ao validar permissões: ' + permCatalogError.message
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const validIds = new Set(validPermissions?.map((p: any) => p.id) ?? []);
+    const invalidPermissions = permissions.filter((p: string) => !validIds.has(p));
+    
+    if (invalidPermissions.length > 0) {
+      console.error('❌ Permissões inválidas detectadas:', invalidPermissions);
+      return new Response(
+        JSON.stringify({ 
+          error: 'invalid_permissions',
+          message: 'Existem permissões inválidas na requisição',
+          invalid: invalidPermissions
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('✅ Todas as permissões são válidas');
+
     // 1. Verificar se usuário já existe por email
     const { data: existingUsers, error: listError } = await supabaseAdmin.auth.admin.listUsers();
     
@@ -274,11 +308,22 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro na edge function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+
+    const payload: any = {
+      error: 'Erro interno ao criar operador',
+    };
+
+    // Extrair detalhes do erro Supabase
+    if (error && typeof error === 'object') {
+      if ('message' in error) payload.message = String(error.message);
+      if ('code' in error) payload.code = String(error.code);
+      if ('details' in error) payload.details = String(error.details);
+    }
+
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify(payload),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

@@ -149,6 +149,7 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
         }
       });
 
+      // Verificar erro de rede
       if (error) {
         // Verificar se é erro de usuário já existente (não órfão)
         if (error.message?.includes('email_already_exists')) {
@@ -174,6 +175,23 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
         
         // Erros genéricos
         throw error;
+      }
+
+      // Verificar se há erro no response body (backend retornou erro)
+      if (data?.error) {
+        if (data.error === 'invalid_permissions') {
+          const invalidList = data.invalid ? data.invalid.join(', ') : 'desconhecidas';
+          toast({
+            title: 'Permissões inválidas',
+            description: `As seguintes permissões não existem no sistema: ${invalidList}. Entre em contato com o administrador.`,
+            variant: 'destructive'
+          });
+          close();
+          return;
+        }
+        
+        // Outro erro do backend
+        throw new Error(data.message || data.error);
       }
 
       toast({
