@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useCategorias } from '@/hooks/categorias';
+import { usePermissions } from '@/hooks/usePermissions';
 import { TipoCategoria, Categoria } from '@/types/categorias';
 
 interface GerenciarCategoriasProps {
@@ -18,7 +19,10 @@ interface GerenciarCategoriasProps {
 
 export function GerenciarCategorias({ tipo, titulo, descricao }: GerenciarCategoriasProps) {
   const { getCategorias, adicionarCategoria, toggleCategoria, editarCategoria, excluirCategoria } = useCategorias();
+  const { hasPermission } = usePermissions();
   const categorias = getCategorias(tipo);
+  
+  const podeGerenciar = hasPermission('configuracoes.categorias') || hasPermission('admin.full_access');
   
   const [dialogAberto, setDialogAberto] = useState(false);
   const [dialogEditarAberto, setDialogEditarAberto] = useState(false);
@@ -77,10 +81,12 @@ export function GerenciarCategorias({ tipo, titulo, descricao }: GerenciarCatego
         <CardDescription>{descricao}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Button onClick={() => setDialogAberto(true)} className="w-full">
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Categoria
-        </Button>
+        {podeGerenciar && (
+          <Button onClick={() => setDialogAberto(true)} className="w-full">
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Categoria
+          </Button>
+        )}
 
         <div className="space-y-2">
           {categorias.length === 0 ? (
@@ -108,38 +114,40 @@ export function GerenciarCategorias({ tipo, titulo, descricao }: GerenciarCatego
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setCategoriaEditando(cat);
-                      setLabelEditando(cat.label);
-                      setDialogEditarAberto(true);
-                    }}
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleToggle(cat.value)}
-                    className={cat.ativa ? 'text-green-500' : 'text-muted-foreground'}
-                  >
-                    <Power className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setCategoriaExcluindo(cat);
-                      setConfirmExcluirAberto(true);
-                    }}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
+                {podeGerenciar && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setCategoriaEditando(cat);
+                        setLabelEditando(cat.label);
+                        setDialogEditarAberto(true);
+                      }}
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleToggle(cat.value)}
+                      className={cat.ativa ? 'text-green-500' : 'text-muted-foreground'}
+                    >
+                      <Power className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setCategoriaExcluindo(cat);
+                        setConfirmExcluirAberto(true);
+                      }}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             ))
           )}

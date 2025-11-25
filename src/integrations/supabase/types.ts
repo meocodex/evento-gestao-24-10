@@ -240,7 +240,7 @@ export type Database = {
           id: string
           tipo: string
           updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           categorias?: Json
@@ -248,7 +248,7 @@ export type Database = {
           id?: string
           tipo: string
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           categorias?: Json
@@ -256,7 +256,46 @@ export type Database = {
           id?: string
           tipo?: string
           updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      configuracoes_empresa: {
+        Row: {
+          cnpj: string | null
+          created_at: string | null
+          email: string | null
+          endereco: Json | null
+          id: string
+          logo: string | null
+          nome: string | null
+          razao_social: string | null
+          telefone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cnpj?: string | null
+          created_at?: string | null
+          email?: string | null
+          endereco?: Json | null
+          id?: string
+          logo?: string | null
+          nome?: string | null
+          razao_social?: string | null
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cnpj?: string | null
+          created_at?: string | null
+          email?: string | null
+          endereco?: Json | null
+          id?: string
+          logo?: string | null
+          nome?: string | null
+          razao_social?: string | null
+          telefone?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
