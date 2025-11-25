@@ -13,6 +13,8 @@ export function useCategoriasQueries() {
       if (error) throw error;
       return data || [];
     },
+    staleTime: 1000 * 60 * 5, // 5 minutos - dados são considerados "frescos"
+    gcTime: 1000 * 60 * 10, // 10 minutos - cache é removido após este tempo
   });
 
   const getCategorias = (tipo: TipoCategoria): Categoria[] => {
