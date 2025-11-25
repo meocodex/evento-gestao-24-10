@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useEstoque } from '@/hooks/estoque';
 import { Package, Search } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface AdicionarMaterialDialogProps {
   open: boolean;
@@ -21,10 +22,18 @@ export function AdicionarMaterialDialog({
   itensJaNoChecklist = [],
 }: AdicionarMaterialDialogProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { materiais } = useEstoque();
   const [materialId, setMaterialId] = useState('');
   const [quantidade, setQuantidade] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Invalidar cache de materiais quando o dialog abre
+  useEffect(() => {
+    if (open) {
+      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+    }
+  }, [open, queryClient]);
 
   const materiaisFiltrados = materiais
     .filter(m => !itensJaNoChecklist.includes(m.id))

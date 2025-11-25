@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, CheckCircle2, Clock, Package, Truck, Users, FileText, Download, Printer, AlertCircle } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, Clock, Package, Truck, Users, FileText, Download, Printer, AlertCircle, Pencil } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Evento } from "@/types/eventos";
@@ -16,6 +16,7 @@ import { RegistrarRetiradaDialog } from "../modals/RegistrarRetiradaDialog";
 import { GerarDeclaracaoTransporteDialog } from "../modals/GerarDeclaracaoTransporteDialog";
 import { VincularFreteDialog } from "../modals/VincularFreteDialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { EditarQuantidadeChecklistDialog } from "../modals/EditarQuantidadeChecklistDialog";
 import { useEventosMateriaisAlocados } from "@/contexts/eventos/useEventosMateriaisAlocados";
 import { useEventosChecklist } from "@/hooks/eventos";
 import { downloadFile } from "@/utils/downloadFile";
@@ -42,6 +43,8 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const [showConfirmReimprimir, setShowConfirmReimprimir] = useState(false);
   const [materialReimprimir, setMaterialReimprimir] = useState<any>(null);
   const [showVincularFrete, setShowVincularFrete] = useState(false);
+  const [showEditarQuantidade, setShowEditarQuantidade] = useState(false);
+  const [itemParaEditar, setItemParaEditar] = useState<any>(null);
 
   // Helper para verificar se material pode ser removido
   const podeRemoverMaterial = (material: any) => {
@@ -69,7 +72,8 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
     checklist: checklistData = [], 
     loading: loadingChecklist,
     adicionarMaterialChecklist,
-    removerMaterialChecklist
+    removerMaterialChecklist,
+    editarQuantidadeChecklist,
   } = useEventosChecklist(evento.id);
   const { 
     materiaisAlocados, 
@@ -204,6 +208,18 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                         <Badge variant={item.alocado >= item.quantidade ? 'default' : 'secondary'}>
                           {item.alocado}/{item.quantidade}
                         </Badge>
+                        {permissions.canEditChecklist && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setItemParaEditar(item);
+                              setShowEditarQuantidade(true);
+                            }}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        )}
                         {permissions.canAllocate && item.alocado < item.quantidade && (
                           <Button
                             size="sm"
@@ -713,6 +729,16 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         evento={evento}
         materiais={materiaisParaFrete}
         onVincular={vincularMaterialesAFrete}
+      />
+
+      {/* Dialog Editar Quantidade Checklist */}
+      <EditarQuantidadeChecklistDialog
+        open={showEditarQuantidade}
+        onOpenChange={setShowEditarQuantidade}
+        item={itemParaEditar}
+        onConfirm={(id, novaQuantidade) => {
+          editarQuantidadeChecklist.mutate({ id, quantidade: novaQuantidade });
+        }}
       />
     </div>
   );
