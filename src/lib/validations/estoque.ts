@@ -66,7 +66,7 @@ export const estoqueSchema = z.object({
 export const serialEstoqueSchema = z.object({
   materialId: z
     .string()
-    .uuid('Material inválido'),
+    .min(1, 'Material é obrigatório'),
   serial: serialSchema,
   tags: z
     .array(z.string().trim().min(1).max(50))
@@ -80,7 +80,7 @@ export const serialEstoqueSchema = z.object({
     .optional()
     .or(z.literal('')),
   status: z
-    .enum(['disponivel', 'em_uso', 'manutencao', 'baixado'])
+    .enum(['disponivel', 'em-uso', 'manutencao', 'perdido', 'consumido'])
     .default('disponivel'),
 });
 
