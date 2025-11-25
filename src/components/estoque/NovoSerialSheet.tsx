@@ -30,6 +30,7 @@ export function NovoSerialSheet({
     defaultValues: {
       materialId,
       serial: '',
+      localizacao: 'Estoque',
       tags: [],
       observacoes: '',
       status: 'disponivel',
@@ -43,7 +44,7 @@ export function NovoSerialSheet({
         dados: {
           numero: data.serial,
           status: 'disponivel',
-          localizacao: null,
+          localizacao: data.localizacao,
           tags: data.tags && data.tags.length > 0 ? data.tags : null,
           observacoes: data.observacoes || null,
           dataAquisicao: null,
@@ -114,6 +115,20 @@ export function NovoSerialSheet({
                     <SelectItem value="consumido">Consumido</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="localizacao"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Localização *</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: Estoque, Depósito A, Sala 2" {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
