@@ -6,16 +6,12 @@ export function useCategoriasQueries() {
   const { data: configuracoes, isLoading } = useQuery({
     queryKey: ['configuracoes_categorias'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
-
       const { data, error } = await supabase
         .from('configuracoes_categorias')
-        .select('*')
-        .eq('user_id', user.id);
+        .select('*');
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 

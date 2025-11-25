@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Settings, User, Building2, Bell, Shield, Zap, MessageSquare, Mail, Tags } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useConfiguracoes } from '@/hooks/configuracoes';
+import { useConfiguracoes, useConfiguracoesEmpresaQueries, useConfiguracoesEmpresaMutations } from '@/hooks/configuracoes';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/use-toast';
 import { GerenciarCategorias } from '@/components/configuracoes/GerenciarCategorias';
 import { NotificationSettings } from '@/components/configuracoes/NotificationSettings';
@@ -17,7 +18,12 @@ import { supabase } from '@/integrations/supabase/client';
 
 export default function Configuracoes() {
   const { toast } = useToast();
+  const { hasPermission } = usePermissions();
   const { configuracoes, atualizarConfiguracoes, testarWhatsApp, testarEmail } = useConfiguracoes();
+  const { configuracoes: configuracoesEmpresa } = useConfiguracoesEmpresaQueries();
+  const { atualizarConfiguracoesEmpresa } = useConfiguracoesEmpresaMutations();
+  
+  const podeEditarEmpresa = hasPermission('admin.full_access');
   const [whatsappConfig, setWhatsappConfig] = useState(configuracoes?.notificacoes?.whatsapp || {
     enabled: false,
     apiKey: '',
@@ -44,13 +50,42 @@ export default function Configuracoes() {
     }
   });
 
-  const [empresaData, setEmpresaData] = useState<any>(() => {
-    const empresa = configuracoes?.empresa;
-    // Se endereco for string, converter para objeto
-    if (empresa && typeof empresa.endereco === 'string') {
-      return {
-        ...empresa,
-        endereco: {
+  const [empresaData, setEmpresaData] = useState<any>({
+    nome: '',
+    razao_social: '',
+    cnpj: '',
+    email: '',
+    telefone: '',
+    endereco: {
+      cep: '',
+      logradouro: '',
+      numero: '',
+      complemento: '',
+      bairro: '',
+      cidade: '',
+      estado: ''
+    }
+  });
+
+  // Atualizar empresaData quando configuracoesEmpresa mudar
+  useEffect(() => {
+    if (configuracoesEmpresa) {
+      const endereco = configuracoesEmpresa.endereco || {};
+      setEmpresaData({
+        nome: configuracoesEmpresa.nome || '',
+        razao_social: configuracoesEmpresa.razao_social || '',
+        cnpj: configuracoesEmpresa.cnpj || '',
+        email: configuracoesEmpresa.email || '',
+        telefone: configuracoesEmpresa.telefone || '',
+        endereco: typeof endereco === 'object' ? {
+          cep: endereco.cep || '',
+          logradouro: endereco.logradouro || '',
+          numero: endereco.numero || '',
+          complemento: endereco.complemento || '',
+          bairro: endereco.bairro || '',
+          cidade: endereco.cidade || '',
+          estado: endereco.estado || ''
+        } : {
           cep: '',
           logradouro: '',
           numero: '',
@@ -59,25 +94,9 @@ export default function Configuracoes() {
           cidade: '',
           estado: ''
         }
-      };
+      });
     }
-    return empresa || {
-      nome: '',
-      razaoSocial: '',
-      cnpj: '',
-      email: '',
-      telefone: '',
-      endereco: {
-        cep: '',
-        logradouro: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: '',
-        estado: ''
-      }
-    };
-  });
+  }, [configuracoesEmpresa]);
 
   const formatarTelefone = (valor: string) => {
     const numeros = valor.replace(/\D/g, '');
@@ -199,6 +218,15 @@ export default function Configuracoes() {
   };
 
   const handleSalvarEmpresa = async () => {
+    if (!podeEditarEmpresa) {
+      toast({
+        title: 'Sem permissão',
+        description: 'Apenas administradores podem editar dados da empresa.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!empresaData.nome || !empresaData.cnpj || !empresaData.telefone) {
       toast({
         title: 'Campos obrigatórios',
@@ -229,7 +257,7 @@ export default function Configuracoes() {
       return;
     }
 
-    await atualizarConfiguracoes({ empresa: empresaData as any });
+    await atualizarConfiguracoesEmpresa.mutateAsync(empresaData);
   };
 
   const handleSalvarWhatsApp = async () => {
@@ -334,14 +362,16 @@ export default function Configuracoes() {
                       placeholder="Nome Fantasia"
                       value={empresaData.nome || ''}
                       onChange={(e) => setEmpresaData({ ...empresaData, nome: e.target.value })}
+                      disabled={!podeEditarEmpresa}
                     />
                   </div>
                   <div>
                     <Label>Razão Social</Label>
                     <Input 
                       placeholder="Razão Social Ltda"
-                      value={(empresaData as any).razaoSocial || ''}
-                      onChange={(e) => setEmpresaData({ ...empresaData, razaoSocial: e.target.value })}
+                      value={empresaData.razao_social || ''}
+                      onChange={(e) => setEmpresaData({ ...empresaData, razao_social: e.target.value })}
+                      disabled={!podeEditarEmpresa}
                     />
                   </div>
                 </div>
@@ -354,6 +384,7 @@ export default function Configuracoes() {
                       maxLength={18}
                       value={empresaData.cnpj || ''}
                       onChange={(e) => handleCNPJChange(e.target.value)}
+                      disabled={!podeEditarEmpresa}
                     />
                   </div>
                   <div>
@@ -363,6 +394,7 @@ export default function Configuracoes() {
                       maxLength={15}
                       value={empresaData.telefone || ''}
                       onChange={(e) => handleTelefoneChange(e.target.value)}
+                      disabled={!podeEditarEmpresa}
                     />
                   </div>
                 </div>
@@ -374,6 +406,7 @@ export default function Configuracoes() {
                     placeholder="contato@empresa.com"
                     value={empresaData.email || ''}
                     onChange={(e) => setEmpresaData({ ...empresaData, email: e.target.value })}
+                    disabled={!podeEditarEmpresa}
                   />
                 </div>
 
@@ -390,6 +423,7 @@ export default function Configuracoes() {
                         maxLength={9}
                         value={typeof empresaData.endereco === 'object' ? empresaData.endereco?.cep || '' : ''}
                         onChange={(e) => handleCepChange(e.target.value)}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                     <div className="md:col-span-2">
@@ -404,6 +438,7 @@ export default function Configuracoes() {
                             endereco: { ...enderecoAtual, logradouro: e.target.value }
                           });
                         }}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                   </div>
@@ -421,6 +456,7 @@ export default function Configuracoes() {
                             endereco: { ...enderecoAtual, numero: e.target.value }
                           });
                         }}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                     <div className="md:col-span-2">
@@ -435,6 +471,7 @@ export default function Configuracoes() {
                             endereco: { ...enderecoAtual, complemento: e.target.value }
                           });
                         }}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                   </div>
@@ -452,6 +489,7 @@ export default function Configuracoes() {
                             endereco: { ...enderecoAtual, bairro: e.target.value }
                           });
                         }}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                     <div>
@@ -466,6 +504,7 @@ export default function Configuracoes() {
                             endereco: { ...enderecoAtual, cidade: e.target.value }
                           });
                         }}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                     <div>
@@ -481,14 +520,23 @@ export default function Configuracoes() {
                             endereco: { ...enderecoAtual, estado: e.target.value.toUpperCase() }
                           });
                         }}
+                        disabled={!podeEditarEmpresa}
                       />
                     </div>
                   </div>
                 </div>
 
-                <Button onClick={handleSalvarEmpresa} className="w-full md:w-auto">
-                  Salvar Dados da Empresa
-                </Button>
+                {podeEditarEmpresa && (
+                  <Button onClick={handleSalvarEmpresa} className="w-full md:w-auto">
+                    Salvar Dados da Empresa
+                  </Button>
+                )}
+                
+                {!podeEditarEmpresa && (
+                  <p className="text-sm text-muted-foreground">
+                    Apenas administradores podem editar dados da empresa
+                  </p>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

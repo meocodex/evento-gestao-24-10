@@ -20,6 +20,8 @@ export const permissionsPresets = {
       'propostas.editar',
       'financeiro.visualizar_proprios',
       'demandas.criar',
+      'relatorios.visualizar',
+      'relatorios.gerar',
     ]
   },
   suporte: {
@@ -43,6 +45,7 @@ export const permissionsPresets = {
       'operacao.registrar_retirada',
       'operacao.devolver_material',
       'operacao.gerenciar_documentos',
+      'relatorios.visualizar',
     ]
   },
   operacional: {
@@ -69,6 +72,9 @@ export const permissionsPresets = {
       'financeiro.editar',
       'contratos.visualizar',
       'demandas.visualizar',
+      'relatorios.visualizar',
+      'relatorios.gerar',
+      'relatorios.exportar',
     ]
   }
 } as const;

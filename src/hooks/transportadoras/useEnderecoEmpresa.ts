@@ -1,9 +1,9 @@
-import { useConfiguracoes } from '@/hooks/configuracoes/useConfiguracoes';
+import { useConfiguracoesEmpresaQueries } from '@/contexts/configuracoes/useConfiguracoesEmpresaQueries';
 
 export function useEnderecoEmpresa() {
-  const { configuracoes } = useConfiguracoes();
+  const { configuracoes } = useConfiguracoesEmpresaQueries();
   
-  const endereco = configuracoes?.empresa?.endereco;
+  const endereco = configuracoes?.endereco;
   
   if (!endereco || typeof endereco !== 'object') {
     return {

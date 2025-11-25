@@ -8,17 +8,13 @@ export function useCategoriasMutations() {
 
   const atualizarCategorias = useMutation({
     mutationFn: async ({ tipo, categorias }: { tipo: TipoCategoria; categorias: Categoria[] }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
-
       const { error } = await supabase
         .from('configuracoes_categorias')
         .upsert({
-          user_id: user.id,
           tipo,
           categorias: categorias as any,
         }, {
-          onConflict: 'user_id,tipo'
+          onConflict: 'tipo'
         });
 
       if (error) throw error;
@@ -41,15 +37,11 @@ export function useCategoriasMutations() {
 
   const adicionarCategoria = useMutation({
     mutationFn: async ({ tipo, categoria }: { tipo: TipoCategoria; categoria: Categoria }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
-
       const { data: config } = await supabase
         .from('configuracoes_categorias')
         .select('categorias')
-        .eq('user_id', user.id)
         .eq('tipo', tipo)
-        .single();
+        .maybeSingle();
 
       const categorias = (config?.categorias as unknown as Categoria[]) || [];
       
@@ -67,11 +59,10 @@ export function useCategoriasMutations() {
       const { error } = await supabase
         .from('configuracoes_categorias')
         .upsert({
-          user_id: user.id,
           tipo,
           categorias: categorias as any,
         }, {
-          onConflict: 'user_id,tipo'
+          onConflict: 'tipo'
         });
 
       if (error) throw error;
@@ -111,13 +102,9 @@ export function useCategoriasMutations() {
 
   const toggleCategoria = useMutation({
     mutationFn: async ({ tipo, value }: { tipo: TipoCategoria; value: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
-
       const { data: config } = await supabase
         .from('configuracoes_categorias')
         .select('categorias')
-        .eq('user_id', user.id)
         .eq('tipo', tipo)
         .single();
 
@@ -129,7 +116,6 @@ export function useCategoriasMutations() {
       const { error } = await supabase
         .from('configuracoes_categorias')
         .update({ categorias: updated as any })
-        .eq('user_id', user.id)
         .eq('tipo', tipo);
 
       if (error) throw error;
@@ -152,13 +138,9 @@ export function useCategoriasMutations() {
 
   const editarCategoria = useMutation({
     mutationFn: async ({ tipo, value, novoLabel }: { tipo: TipoCategoria; value: string; novoLabel: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
-
       const { data: config } = await supabase
         .from('configuracoes_categorias')
         .select('categorias')
-        .eq('user_id', user.id)
         .eq('tipo', tipo)
         .single();
 
@@ -170,7 +152,6 @@ export function useCategoriasMutations() {
       const { error } = await supabase
         .from('configuracoes_categorias')
         .update({ categorias: updated as any })
-        .eq('user_id', user.id)
         .eq('tipo', tipo);
 
       if (error) throw error;
@@ -193,13 +174,9 @@ export function useCategoriasMutations() {
 
   const excluirCategoria = useMutation({
     mutationFn: async ({ tipo, value }: { tipo: TipoCategoria; value: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
-
       const { data: config } = await supabase
         .from('configuracoes_categorias')
         .select('categorias')
-        .eq('user_id', user.id)
         .eq('tipo', tipo)
         .single();
 
@@ -215,7 +192,6 @@ export function useCategoriasMutations() {
       const { error } = await supabase
         .from('configuracoes_categorias')
         .update({ categorias: updated as any })
-        .eq('user_id', user.id)
         .eq('tipo', tipo);
 
       if (error) throw error;
