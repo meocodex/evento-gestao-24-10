@@ -31,8 +31,8 @@ export function useConfiguracoesEmpresaQueries() {
       
       return data;
     },
-    staleTime: 1000 * 60 * 60, // 60 minutos (dados da empresa mudam raramente)
-    gcTime: 1000 * 60 * 120, // 2 horas
+    staleTime: 1000 * 60 * 5, // 5 minutos
+    gcTime: 1000 * 60 * 10, // 10 minutos
   });
 
   return {
