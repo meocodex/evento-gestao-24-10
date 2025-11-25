@@ -5,6 +5,33 @@ import { toast } from 'sonner';
 import { gerarTermoRetirada } from '@/utils/termoRetiradaPDF';
 import { gerarDeclaracaoTransporte as gerarDeclaracaoPDF } from '@/utils/declaracaoTransportePDF';
 
+// Função helper para transformar snake_case para camelCase
+const transformarMaterial = (data: any) => ({
+  ...data,
+  itemId: data.item_id,
+  eventoId: data.evento_id,
+  tipoEnvio: data.tipo_envio,
+  quantidadeAlocada: data.quantidade_alocada,
+  statusDevolucao: data.status_devolucao,
+  dataDevolucao: data.data_devolucao,
+  responsavelDevolucao: data.responsavel_devolucao,
+  observacoesDevolucao: data.observacoes_devolucao,
+  fotosDevolucao: data.fotos_devolucao,
+  termoRetiradaUrl: data.termo_retirada_url,
+  declaracaoTransporteUrl: data.declaracao_transporte_url,
+  retiradoPorNome: data.retirado_por_nome,
+  retiradoPorDocumento: data.retirado_por_documento,
+  retiradoPorTelefone: data.retirado_por_telefone,
+  dataRetirada: data.data_retirada,
+  envioId: data.envio_id,
+  valorDeclarado: data.valor_declarado,
+  remetenteTipo: data.remetente_tipo,
+  remetenteMembroId: data.remetente_membro_id,
+  remetenteDados: data.remetente_dados,
+  dadosDestinatario: data.dados_destinatario,
+  observacoesTransporte: data.observacoes_transporte,
+});
+
 export function useEventosMateriaisAlocados(eventoId: string) {
   const queryClient = useQueryClient();
   
@@ -17,7 +44,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         .eq('evento_id', eventoId);
       
       if (error) throw error;
-      return data;
+      return (data || []).map(transformarMaterial);
     },
   });
 
