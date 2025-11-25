@@ -22,7 +22,8 @@ import { ThemeProvider } from "next-themes";
  * - Monitora taxa de sucesso/erro
  * - Identifica queries lentas automaticamente
  */
-const queryClient = new QueryClient({
+// Exportar queryClient para uso em outros lugares (ex: AuthContext)
+export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onSuccess: (data, query) => {
       const duration = query.state.dataUpdatedAt - query.state.dataUpdatedAt;
