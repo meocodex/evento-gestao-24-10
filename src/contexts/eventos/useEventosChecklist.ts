@@ -99,10 +99,37 @@ export function useEventosChecklist(eventoId: string) {
     },
   });
 
+  const editarQuantidadeChecklist = useMutation({
+    mutationFn: async ({ id, quantidade }: { id: string; quantidade: number }) => {
+      const { data, error } = await supabase
+        .from('eventos_checklist')
+        .update({ quantidade })
+        .eq('id', id)
+        .select('*')
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (updatedItem) => {
+      // Update cache immediately
+      queryClient.setQueryData(['eventos-checklist', eventoId], (old: any) =>
+        old ? old.map((item: any) => item.id === updatedItem.id ? updatedItem : item) : []
+      );
+      queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
+      toast.success('Quantidade atualizada!');
+    },
+    onError: (error: any) => {
+      console.error('Erro ao atualizar quantidade:', error);
+      toast.error(`Erro ao atualizar: ${error.message || 'Verifique suas permissões'}`);
+    },
+  });
+
   return {
     checklist: checklistData || [],
     loading: isLoading,
     adicionarMaterialChecklist,
     removerMaterialChecklist,
+    editarQuantidadeChecklist,
   };
 }
