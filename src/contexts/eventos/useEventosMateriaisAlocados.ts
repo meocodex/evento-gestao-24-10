@@ -5,6 +5,22 @@ import { toast } from 'sonner';
 import { gerarTermoRetirada } from '@/utils/termoRetiradaPDF';
 import { gerarDeclaracaoTransporte as gerarDeclaracaoPDF } from '@/utils/declaracaoTransportePDF';
 
+// Função auxiliar para formatar endereço de objeto para string
+const formatarEndereco = (endereco: any): string => {
+  if (!endereco || typeof endereco !== 'object') {
+    return endereco || '';
+  }
+  const partes = [
+    endereco.logradouro,
+    endereco.numero,
+    endereco.complemento,
+    endereco.bairro,
+    `${endereco.cidade}/${endereco.estado}`,
+    endereco.cep ? `CEP ${endereco.cep}` : ''
+  ].filter(Boolean);
+  return partes.join(', ');
+};
+
 // Função helper para transformar snake_case para camelCase
 const transformarMaterial = (data: any) => ({
   ...data,
@@ -271,12 +287,10 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       const evento = materiaisData[0].eventos as any;
 
       // Buscar configurações da empresa
-      const { data: user } = await supabase.auth.getUser();
-      const { data: config } = await supabase
-        .from('configuracoes_usuario')
-        .select('empresa')
-        .eq('user_id', user.user?.id)
-        .single();
+      const { data: configEmpresa } = await supabase
+        .from('configuracoes_empresa')
+        .select('*')
+        .maybeSingle();
 
       // Gerar PDF
       const dadosRetirada = {
@@ -293,11 +307,11 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         eventoLocal: `${evento.local}, ${evento.endereco}, ${evento.cidade}`,
         eventoData: new Date(evento.data_inicio).toLocaleDateString('pt-BR'),
         eventoHora: evento.hora_inicio,
-        dadosEmpresa: config?.empresa || {
-          nome: 'Empresa',
-          cnpj: '',
-          telefone: '',
-          endereco: '',
+        dadosEmpresa: {
+          nome: configEmpresa?.nome || configEmpresa?.razao_social || 'Empresa',
+          cnpj: configEmpresa?.cnpj || '',
+          telefone: configEmpresa?.telefone || '',
+          endereco: formatarEndereco(configEmpresa?.endereco),
         },
       };
 
@@ -525,20 +539,16 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       const evento = materialData.eventos;
 
       // 2. Buscar configurações da empresa
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
+      const { data: configEmpresa } = await supabase
+        .from('configuracoes_empresa')
+        .select('*')
+        .maybeSingle();
 
-      const { data: config } = await supabase
-        .from('configuracoes_usuario')
-        .select('empresa')
-        .eq('user_id', user.id)
-        .single();
-
-      const dadosEmpresa = config?.empresa || {
-        nome: 'Empresa',
-        cnpj: '',
-        telefone: '',
-        endereco: '',
+      const dadosEmpresa = {
+        nome: configEmpresa?.nome || configEmpresa?.razao_social || 'Empresa',
+        cnpj: configEmpresa?.cnpj || '',
+        telefone: configEmpresa?.telefone || '',
+        endereco: formatarEndereco(configEmpresa?.endereco),
       };
 
       let pdfBlob: Blob;
