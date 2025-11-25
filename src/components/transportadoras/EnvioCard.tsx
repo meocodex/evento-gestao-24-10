@@ -13,6 +13,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { downloadFile } from '@/utils/downloadFile';
 
 interface EnvioCardProps {
   envio: Envio;
@@ -143,7 +144,7 @@ export function EnvioCard({ envio }: EnvioCardProps) {
                 <Button 
                   size="sm" 
                   variant="outline" 
-                  onClick={() => window.open(declaracao, '_blank')}
+                  onClick={() => downloadFile(declaracao, 'declaracao-transporte.pdf')}
                   className="flex-1"
                 >
                   <Download className="h-4 w-4 mr-2" />

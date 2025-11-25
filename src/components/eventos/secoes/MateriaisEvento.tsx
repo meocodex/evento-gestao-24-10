@@ -18,6 +18,7 @@ import { VincularFreteDialog } from "../modals/VincularFreteDialog";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useEventosMateriaisAlocados } from "@/contexts/eventos/useEventosMateriaisAlocados";
 import { useEventosChecklist } from "@/hooks/eventos";
+import { downloadFile } from "@/utils/downloadFile";
 
 interface MateriaisEventoProps {
   evento: Evento;
@@ -365,12 +366,12 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                                   
                                   {/* Botões de ação */}
                                   <div className="flex items-center gap-2 flex-wrap">
-                                    {material.termoRetiradaUrl && (
+                                     {material.termoRetiradaUrl && (
                                       <>
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          onClick={() => window.open(material.termoRetiradaUrl, '_blank')}
+                                          onClick={() => downloadFile(material.termoRetiradaUrl, 'termo-retirada.pdf')}
                                         >
                                           <Download className="h-4 w-4 mr-2" />
                                           Baixar Termo
@@ -394,7 +395,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                                         <Button
                                           size="sm"
                                           variant="outline"
-                                          onClick={() => window.open(material.declaracaoTransporteUrl, '_blank')}
+                                          onClick={() => downloadFile(material.declaracaoTransporteUrl, 'declaracao-transporte.pdf')}
                                         >
                                           <Download className="h-4 w-4 mr-2" />
                                           Baixar Declaração
