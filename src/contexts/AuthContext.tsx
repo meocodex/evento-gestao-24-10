@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { queryClient } from '@/providers/AppProviders';
 
 export type UserRole = 'admin' | 'comercial' | 'suporte';
 
@@ -151,6 +152,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         (payload) => {
           console.log('🔄 Permissões atualizadas em tempo real:', payload);
+          
+          // Invalidar cache de categorias quando permissões mudam
+          queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
+          
           // Re-hidratar usuário
           setHydrating(true);
           setTimeout(() => {
@@ -167,6 +172,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [session?.user?.id]);
 
   const logout = async () => {
+    // Limpar todo o cache ao fazer logout para garantir dados limpos no próximo login
+    queryClient.clear();
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
