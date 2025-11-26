@@ -86,9 +86,9 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
     vincularMaterialesAFrete,
   } = useEventosMateriaisAlocados(evento.id);
 
-  // Filtrar materiais pendentes
+  // Filtrar materiais pendentes de devolução
   const materiaisPendentes = materiaisAlocados.filter(
-    (m: any) => !m.devolvido && m.tipo_envio === 'antecipado'
+    (m: any) => m.statusDevolucao === 'pendente'
   );
 
   // Aplicar filtros
@@ -610,16 +610,27 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         onConfirmar={async (dados) => {
           if (!materialParaDevolucao) return;
           
-          await registrarDevolucao.mutateAsync({
-            alocacaoId: materialParaDevolucao.id,
-            statusDevolucao: dados.statusDevolucao,
-            observacoes: dados.observacoes,
-            fotos: dados.fotos,
-            quantidadeDevolvida: dados.quantidadeDevolvida,
-          });
-          
-          setShowDevolverMaterial(false);
-          setMaterialParaDevolucao(null);
+          try {
+            console.log('🔄 Registrando devolução:', { 
+              alocacaoId: materialParaDevolucao.id, 
+              ...dados 
+            });
+            
+            await registrarDevolucao.mutateAsync({
+              alocacaoId: materialParaDevolucao.id,
+              statusDevolucao: dados.statusDevolucao,
+              observacoes: dados.observacoes,
+              fotos: dados.fotos,
+              quantidadeDevolvida: dados.quantidadeDevolvida,
+            });
+            
+            console.log('✅ Devolução registrada com sucesso');
+          } catch (error) {
+            console.error('❌ Erro ao registrar devolução:', error);
+          } finally {
+            setShowDevolverMaterial(false);
+            setMaterialParaDevolucao(null);
+          }
         }}
       />
 
