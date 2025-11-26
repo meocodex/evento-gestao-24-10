@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -31,6 +31,16 @@ export function DevolverMaterialDialog({
   const [observacoes, setObservacoes] = useState('');
   const [fotos, setFotos] = useState<string[]>([]);
   const [quantidadeDevolvida, setQuantidadeDevolvida] = useState<number>(material?.quantidadeAlocada || 1);
+
+  // Reset do estado quando o diálogo abre
+  useEffect(() => {
+    if (open && material) {
+      setStatusDevolucao('devolvido_ok');
+      setObservacoes('');
+      setFotos([]);
+      setQuantidadeDevolvida(material.quantidadeAlocada || 1);
+    }
+  }, [open, material]);
 
   if (!material) return null;
 
