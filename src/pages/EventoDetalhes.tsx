@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEventoDetalhes } from '@/hooks/eventos';
+import { useEventoDetalhes, useEventoStatusSync } from '@/hooks/eventos';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft } from 'lucide-react';
@@ -19,6 +19,9 @@ export default function EventoDetalhes() {
   const navigate = useNavigate();
   const { data: evento, isLoading } = useEventoDetalhes(id);
   const permissions = usePermissions(evento);
+  
+  // Sincronizar status automaticamente
+  useEventoStatusSync(evento);
   
   if (isLoading) {
     return (
@@ -64,7 +67,8 @@ export default function EventoDetalhes() {
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
                   <StatusBadge status={evento.status} />
-                  <EventoCountdown 
+                  <EventoCountdown
+                    eventoId={evento.id}
                     dataInicio={evento.dataInicio} 
                     horaInicio={evento.horaInicio}
                     dataFim={evento.dataFim}

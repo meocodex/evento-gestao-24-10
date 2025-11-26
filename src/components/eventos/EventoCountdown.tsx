@@ -3,6 +3,7 @@ import { Clock } from 'lucide-react';
 import { StatusEvento } from '@/types/eventos';
 
 interface EventoCountdownProps {
+  eventoId: string;
   dataInicio: string;
   horaInicio: string;
   dataFim: string;
@@ -13,7 +14,7 @@ interface EventoCountdownProps {
 
 type EventoState = 'aguardando' | 'em_andamento' | 'finalizado_aguardando' | 'arquivado';
 
-export function EventoCountdown({ dataInicio, horaInicio, dataFim, horaFim, status, arquivado }: EventoCountdownProps) {
+export function EventoCountdown({ eventoId, dataInicio, horaInicio, dataFim, horaFim, status, arquivado }: EventoCountdownProps) {
   const [eventoState, setEventoState] = useState<EventoState>('aguardando');
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
@@ -60,7 +61,7 @@ export function EventoCountdown({ dataInicio, horaInicio, dataFim, horaFim, stat
     return () => clearInterval(timer);
   }, [dataInicio, horaInicio, dataFim, horaFim, arquivado]);
 
-  // Status cancelado tem prioridade sobre tudo
+  // Prioridade 1: Status cancelado
   if (status === 'cancelado') {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -70,8 +71,8 @@ export function EventoCountdown({ dataInicio, horaInicio, dataFim, horaFim, stat
     );
   }
 
-  // Estado arquivado
-  if (eventoState === 'arquivado') {
+  // Prioridade 2: Evento arquivado
+  if (arquivado) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Clock className="h-4 w-4" />
@@ -80,9 +81,28 @@ export function EventoCountdown({ dataInicio, horaInicio, dataFim, horaFim, stat
     );
   }
 
-  // Aguardando início - mostrar countdown
-  if (eventoState === 'aguardando' && timeLeft) {
+  // Prioridade 3: Status finalizado
+  if (status === 'finalizado') {
+    return (
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Clock className="h-4 w-4" />
+        <span>⏳ Evento finalizado, aguardando fechamento</span>
+      </div>
+    );
+  }
 
+  // Prioridade 4: Status em execução
+  if (status === 'em_execucao') {
+    return (
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Clock className="h-4 w-4" />
+        <span>🟢 Evento em andamento</span>
+      </div>
+    );
+  }
+
+  // Prioridade 5: Aguardando início - mostrar countdown
+  if (eventoState === 'aguardando' && timeLeft) {
     return (
       <div className="flex items-center gap-2">
         <Clock className="h-4 w-4 text-primary" />
@@ -102,26 +122,6 @@ export function EventoCountdown({ dataInicio, horaInicio, dataFim, horaFim, stat
             {String(timeLeft.seconds).padStart(2, '0')}s
           </span>
         </div>
-      </div>
-    );
-  }
-
-  // Evento em andamento
-  if (eventoState === 'em_andamento') {
-    return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Clock className="h-4 w-4" />
-        <span>🟢 Evento em andamento</span>
-      </div>
-    );
-  }
-
-  // Evento finalizado, aguardando fechamento
-  if (eventoState === 'finalizado_aguardando') {
-    return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Clock className="h-4 w-4" />
-        <span>⏳ Evento finalizado, aguardando fechamento</span>
       </div>
     );
   }

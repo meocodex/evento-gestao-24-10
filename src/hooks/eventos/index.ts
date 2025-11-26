@@ -14,6 +14,7 @@ export { useEventosArquivos } from '@/contexts/eventos/useEventosArquivos';
 export { useEventosPropostas } from '@/contexts/eventos/useEventosPropostas';
 export { useEventoDetalhes } from '@/contexts/eventos/useEventoDetalhes';
 export { useMaterialPendente } from './useMaterialPendente';
+export { useEventoStatusSync } from './useEventoStatusSync';
 
 // Wrapper para compatibilidade
 export function useEventos(page?: number, pageSize?: number, searchTerm?: string) {

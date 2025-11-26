@@ -12,7 +12,7 @@ import { ptBR } from 'date-fns/locale';
 import { EditarDadosEvento } from './EditarDadosEvento';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
-import { useEventos } from '@/hooks/eventos';
+import { useEventos, useEventoStatusSync } from '@/hooks/eventos';
 import { AlterarStatusDialog } from '../modals/AlterarStatusDialog';
 import { ArquivarEventoDialog } from '../modals/ArquivarEventoDialog';
 import { MateriaisPendentesBadge } from '../MateriaisPendentesBadge';
@@ -29,6 +29,10 @@ interface DadosEventoProps {
 export function DadosEvento({ evento, permissions }: DadosEventoProps) {
   const { editarEvento, excluirEvento, alterarStatus, arquivarEvento } = useEventos();
   const { data: pendentes } = useMaterialPendente(evento.id);
+  
+  // Sincronizar status automaticamente
+  useEventoStatusSync(evento);
+  
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
@@ -154,7 +158,8 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
           
           {/* Contador Regressivo */}
           <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-            <EventoCountdown 
+            <EventoCountdown
+              eventoId={evento.id}
               dataInicio={evento.dataInicio} 
               horaInicio={evento.horaInicio}
               dataFim={evento.dataFim}
