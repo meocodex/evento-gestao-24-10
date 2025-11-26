@@ -2461,6 +2461,14 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      sincronizar_quantidade_disponivel: {
+        Args: { p_material_id?: string }
+        Returns: {
+          material_id: string
+          valor_anterior: number
+          valor_novo: number
+        }[]
+      }
       system_has_users: { Args: never; Returns: boolean }
     }
     Enums: {
