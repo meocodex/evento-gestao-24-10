@@ -2465,8 +2465,8 @@ export type Database = {
         Args: { p_material_id?: string }
         Returns: {
           material_id: string
-          valor_anterior: number
-          valor_novo: number
+          quantidade_anterior: number
+          quantidade_nova: number
         }[]
       }
       system_has_users: { Args: never; Returns: boolean }
