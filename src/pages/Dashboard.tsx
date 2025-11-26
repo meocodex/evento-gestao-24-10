@@ -71,7 +71,7 @@ const Dashboard = () => {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border hover:border-border/80 hover:shadow-lg transition-all duration-300 rounded-2xl">
+        <Card className="border hover:border-border/80 hover:shadow-lg transition-all duration-300 rounded-xl">
           <CardHeader className="pb-4">
             <CardTitle className="font-display text-2xl text-card-foreground">Financeiro</CardTitle>
             <CardDescription className="text-muted-foreground">Resumo mensal</CardDescription>
@@ -92,7 +92,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="border hover:border-border/80 hover:shadow-lg transition-all duration-300 rounded-2xl">
+        <Card className="border hover:border-border/80 hover:shadow-lg transition-all duration-300 rounded-xl">
           <CardHeader className="pb-4">
             <CardTitle className="font-display text-2xl text-card-foreground">Estoque</CardTitle>
             <CardDescription className="text-muted-foreground">Status atual</CardDescription>
@@ -118,7 +118,7 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <Card className="border rounded-2xl">
+      <Card className="border rounded-xl">
         <CardHeader className="pb-4">
           <CardTitle className="font-display text-2xl text-card-foreground">Alertas do Sistema</CardTitle>
           <CardDescription className="text-muted-foreground">Notificações importantes</CardDescription>
@@ -212,7 +212,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <Card className="border border-border/50 rounded-2xl hover:shadow-xl transition-all duration-500">
+      <Card className="border border-border/50 rounded-xl hover:shadow-xl transition-all duration-500">
         <CardHeader className="pb-4">
           <CardTitle className="font-display text-2xl">Próximos Eventos</CardTitle>
           <CardDescription>Nos próximos 7 dias</CardDescription>
@@ -259,7 +259,7 @@ const Dashboard = () => {
       </Card>
 
       <div className="grid gap-6 lg:gap-8 lg:grid-cols-2">
-        <Card className="border border-border/50 rounded-2xl hover:shadow-xl transition-all duration-500">
+        <Card className="border border-border/50 rounded-xl hover:shadow-xl transition-all duration-500">
           <CardHeader className="pb-4">
             <CardTitle className="font-display text-2xl">Ações Necessárias</CardTitle>
             <CardDescription>Itens que precisam da sua atenção</CardDescription>
@@ -286,7 +286,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="border border-border/50 rounded-2xl hover:shadow-xl transition-all duration-500">
+        <Card className="border border-border/50 rounded-xl hover:shadow-xl transition-all duration-500">
           <CardHeader className="pb-4">
             <CardTitle className="font-display text-2xl">Minhas Demandas</CardTitle>
             <CardDescription>Status atual</CardDescription>
@@ -348,7 +348,7 @@ const Dashboard = () => {
       </div>
 
       {suporteStats && suporteStats.demandasUrgentes > 0 && (
-        <Card className="border-destructive/30 bg-destructive/5 rounded-2xl hover:shadow-xl hover:shadow-destructive/10 transition-all duration-500 animate-fade-in">
+        <Card className="border-destructive/30 bg-destructive/5 rounded-xl hover:shadow-xl hover:shadow-destructive/10 transition-all duration-500 animate-fade-in">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-3 text-2xl">
               <div className="p-2 rounded-lg bg-destructive/10">
@@ -371,7 +371,7 @@ const Dashboard = () => {
       )}
 
       <div className="grid gap-6 lg:gap-8 lg:grid-cols-2">
-        <Card className="border border-border/50 rounded-2xl hover:shadow-xl transition-all duration-500">
+        <Card className="border border-border/50 rounded-xl hover:shadow-xl transition-all duration-500">
           <CardHeader className="pb-4">
             <CardTitle className="font-display text-2xl">Operações Hoje</CardTitle>
             <CardDescription>Agenda do dia</CardDescription>
@@ -407,7 +407,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="border border-border/50 rounded-2xl hover:shadow-xl transition-all duration-500">
+        <Card className="border border-border/50 rounded-xl hover:shadow-xl transition-all duration-500">
           <CardHeader className="pb-4">
             <CardTitle className="font-display text-2xl">Rastreamentos</CardTitle>
             <CardDescription>Status das entregas</CardDescription>
@@ -431,7 +431,7 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      <Card className="border border-border/50 rounded-2xl">
+      <Card className="border border-border/50 rounded-xl">
         <CardHeader className="pb-4">
           <CardTitle className="font-display text-2xl">Alertas Operacionais</CardTitle>
           <CardDescription>Itens que requerem atenção</CardDescription>

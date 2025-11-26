@@ -113,8 +113,8 @@ export function MembroEquipeCard({
   const isMainAdmin = membro.email === 'admin@admin.com';
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-3">
+    <Card className="hover:shadow-md transition-shadow rounded-xl">
+      <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {/* Avatar */}
           <Avatar className="h-12 w-12">

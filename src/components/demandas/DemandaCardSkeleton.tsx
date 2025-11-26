@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 
 export function DemandaCardSkeleton() {
   return (
-    <Card className="p-5 border-2 border-navy-100 rounded-2xl bg-white">
+    <Card className="p-4 border-2 border-border rounded-xl bg-card">
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-2">

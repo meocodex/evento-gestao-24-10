@@ -14,7 +14,7 @@ interface ClienteCardProps {
 
 export function ClienteCard({ cliente, onView, onEdit, onDelete }: ClienteCardProps) {
   return (
-    <Card className="smooth-hover">
+    <Card className="smooth-hover rounded-xl">
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
