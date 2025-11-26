@@ -67,9 +67,9 @@ export function DemandaReembolso({ demanda }: DemandaReembolsoProps) {
   const handleMarcarPago = (dataPagamento: string, comprovante?: string, observacoes?: string) => {
     marcarReembolsoPago.mutateAsync({ demandaId: demanda.id, dataPagamento, comprovante, observacoes });
     
-    // Vincular reembolso ao financeiro do evento
+    // Vincular reembolso ao financeiro do evento com dados completos
     if (demanda.eventoRelacionado && vincularReembolso) {
-      vincularReembolso.vincularReembolsoADespesa(demanda.id, dadosReembolso);
+      vincularReembolso.vincularReembolsoADespesa(demanda.id, dadosReembolso, dataPagamento, comprovante);
     }
     
     setShowPagoDialog(false);
