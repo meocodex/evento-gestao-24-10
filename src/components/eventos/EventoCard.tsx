@@ -148,7 +148,7 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
           ]}
         />
         
-        <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} />
+        <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} status={evento.status} />
 
         {/* Tags */}
         {evento.tags && evento.tags.length > 0 && (

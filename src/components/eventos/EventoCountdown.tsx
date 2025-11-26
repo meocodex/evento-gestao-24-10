@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
+import { StatusEvento } from '@/types/eventos';
 
 interface EventoCountdownProps {
   dataInicio: string;
   horaInicio: string;
+  status?: StatusEvento;
 }
 
-export function EventoCountdown({ dataInicio, horaInicio }: EventoCountdownProps) {
+export function EventoCountdown({ dataInicio, horaInicio, status }: EventoCountdownProps) {
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -39,10 +41,21 @@ export function EventoCountdown({ dataInicio, horaInicio }: EventoCountdownProps
   }, [dataInicio, horaInicio]);
 
   if (!timeLeft) {
+    const mensagemPorStatus: Record<string, string> = {
+      em_execucao: '🟢 Evento em andamento',
+      finalizado: '✅ Evento finalizado',
+      arquivado: '📦 Evento arquivado',
+      cancelado: '❌ Evento cancelado',
+    };
+
+    const mensagem = status && mensagemPorStatus[status] 
+      ? mensagemPorStatus[status]
+      : '⏰ Evento iniciado';
+
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <Clock className="h-4 w-4" />
-        <span>Evento em andamento ou finalizado</span>
+        <span>{mensagem}</span>
       </div>
     );
   }
