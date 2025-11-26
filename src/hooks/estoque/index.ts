@@ -24,5 +24,6 @@ export function useEstoque(page?: number, pageSize?: number, filtros?: any) {
     adicionarSerial: mutations.adicionarSerial,
     editarSerial: mutations.editarSerial,
     excluirSerial: mutations.excluirSerial,
+    sincronizarQuantidades: mutations.sincronizarQuantidades,
   };
 }

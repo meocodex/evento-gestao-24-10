@@ -336,6 +336,37 @@ export const useEstoqueMutations = () => {
     },
   });
 
+  const sincronizarQuantidades = useMutation({
+    mutationFn: async (materialId?: string) => {
+      const { data, error } = await supabase.rpc('sincronizar_quantidade_disponivel', {
+        p_material_id: materialId || null,
+      });
+
+      if (error) throw error;
+      return data as Array<{ material_id: string; valor_anterior: number; valor_novo: number }>;
+    },
+    onSuccess: (data) => {
+      if (data && data.length > 0) {
+        const total = data.length;
+        const detalhes = data.map(d => 
+          `${d.material_id}: ${d.valor_anterior} → ${d.valor_novo}`
+        ).join('\n');
+        
+        sonnerToast.success(`✅ ${total} material(is) sincronizado(s)`, {
+          description: detalhes,
+        });
+      } else {
+        sonnerToast.success('✅ Todos os materiais já estão sincronizados');
+      }
+      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+    },
+    onError: (error: any) => {
+      sonnerToast.error('Erro ao sincronizar estoque', {
+        description: error.message,
+      });
+    },
+  });
+
   return {
     adicionarMaterial,
     editarMaterial,
@@ -343,5 +374,6 @@ export const useEstoqueMutations = () => {
     adicionarSerial,
     editarSerial,
     excluirSerial,
+    sincronizarQuantidades,
   };
 };

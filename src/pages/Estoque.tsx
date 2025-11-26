@@ -25,8 +25,10 @@ import {
   Wrench,
   Plus,
   Search,
+  RefreshCw,
   LayoutGrid,
 } from 'lucide-react';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function Estoque() {
   const [page, setPage] = useState(1);
@@ -38,7 +40,8 @@ export default function Estoque() {
   });
   
   const pageSize = 50;
-  const { materiais = [], totalCount = 0, isLoading: loading, excluirMaterial } = useEstoque(page, pageSize, { busca: searchTerm });
+  const { materiais = [], totalCount = 0, isLoading: loading, excluirMaterial, sincronizarQuantidades } = useEstoque(page, pageSize, { busca: searchTerm });
+  const { hasPermission } = usePermissions();
 
   // Filtrar materiais localmente com base nos filtros do popover
   const materiaisFiltrados = useMemo(() => {
@@ -161,10 +164,23 @@ export default function Estoque() {
             Gerencie materiais e controle de seriais
           </p>
         </div>
-        <Button onClick={() => setShowNovoMaterial(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-          <Plus className="h-4 w-4 sm:mr-2" />
-          <span className="hidden xs:inline">Novo Material</span>
-        </Button>
+        <div className="flex gap-2">
+          {hasPermission('admin.full_access') && (
+            <Button
+              variant="outline"
+              onClick={() => sincronizarQuantidades.mutate(undefined)}
+              disabled={sincronizarQuantidades.isPending}
+              className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4"
+            >
+              <RefreshCw className={`h-4 w-4 sm:mr-2 ${sincronizarQuantidades.isPending ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Sincronizar</span>
+            </Button>
+          )}
+          <Button onClick={() => setShowNovoMaterial(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden xs:inline">Novo Material</span>
+          </Button>
+        </div>
       </div>
 
       {/* Estatísticas */}
