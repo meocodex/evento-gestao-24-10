@@ -29,30 +29,8 @@ const Dashboard = () => {
     }).format(value);
   };
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Bom dia';
-    if (hour < 18) return 'Boa tarde';
-    return 'Boa noite';
-  };
-
   const renderAdminDashboard = () => (
     <div className="space-y-8 animate-fade-in">
-      {/* Premium Hero Section - Navy Theme */}
-      <div className="relative overflow-hidden rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 bg-card border">
-        <div className="relative z-10">
-          <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 tracking-wide uppercase">
-            {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
-          </p>
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-bold text-card-foreground mb-2 sm:mb-3 tracking-tight break-words">
-            {user?.name}
-          </h1>
-          <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl">
-            Visão geral do sistema e métricas principais
-          </p>
-        </div>
-      </div>
-
       {/* Stats Grid Navy */}
       <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-2 lg:grid-cols-4">
         <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
@@ -195,21 +173,6 @@ const Dashboard = () => {
 
   const renderComercialDashboard = () => (
     <div className="space-y-12 animate-fade-in">
-      {/* Premium Hero Section - Navy Theme */}
-      <div className="relative overflow-hidden rounded-2xl p-6 lg:p-8 bg-card border">
-        <div className="relative z-10">
-          <p className="text-sm font-medium text-muted-foreground mb-2 tracking-wide uppercase">
-            {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
-          </p>
-          <h1 className="text-4xl lg:text-5xl font-display font-bold text-card-foreground mb-3 tracking-tight">
-            {user?.name}
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl">
-            Seus números e eventos
-          </p>
-        </div>
-      </div>
-
       <div className="grid gap-6 lg:gap-8 md:grid-cols-2 lg:grid-cols-4">
         <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
           <StatCard
@@ -349,21 +312,6 @@ const Dashboard = () => {
 
   const renderSuporteDashboard = () => (
     <div className="space-y-12 animate-fade-in">
-      {/* Premium Hero Section - Navy Theme */}
-      <div className="relative overflow-hidden rounded-2xl p-6 lg:p-8 bg-card border">
-        <div className="relative z-10">
-          <p className="text-sm font-medium text-muted-foreground mb-2 tracking-wide uppercase">
-            {getGreeting()}, {format(new Date(), "EEEE, dd 'de' MMMM", { locale: ptBR })}
-          </p>
-          <h1 className="text-4xl lg:text-5xl font-display font-bold text-card-foreground mb-3 tracking-tight">
-            {user?.name}
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl">
-            Operações e demandas
-          </p>
-        </div>
-      </div>
-
       <div className="grid gap-6 lg:gap-8 md:grid-cols-2 lg:grid-cols-4">
         <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
           <StatCard
