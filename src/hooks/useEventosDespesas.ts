@@ -15,17 +15,27 @@ export function useEventosDespesas(eventoId: string) {
      * Vincula uma demanda de reembolso a uma despesa do evento.
      * Cria uma nova despesa no financeiro do evento com base nos dados do reembolso.
      */
-    vincularReembolsoADespesa: async (demandaId: string, reembolso: any) => {
+    vincularReembolsoADespesa: async (
+      demandaId: string, 
+      reembolso: any, 
+      dataPagamento: string, 
+      comprovante?: string
+    ) => {
       if (!eventoId) return; // no-op quando não há evento associado
       const valor = reembolso.valorTotal || reembolso.valor || 0;
+      
       await financeiro.adicionarDespesa({
-        descricao: reembolso.descricao || 'Reembolso',
-        categoria: 'pessoal' as const,
+        descricao: `Reembolso - ${reembolso.membroEquipeNome}`,
+        categoria: 'Reembolso de Equipe' as const,
         quantidade: 1,
         valor_unitario: valor,
         valor,
-        status: 'pendente' as const,
-        data: new Date().toISOString().split('T')[0]
+        status: 'pago' as const,
+        data: dataPagamento,
+        data_pagamento: dataPagamento,
+        responsavel: reembolso.membroEquipeNome,
+        comprovante: comprovante,
+        observacoes: `Demanda #${demandaId.slice(0,8)} - ${reembolso.itens?.length || 0} item(ns)`
       });
     }
   };
