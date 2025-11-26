@@ -22,7 +22,7 @@ export function useEventosDespesas(eventoId: string) {
         descricao: reembolso.descricao || 'Reembolso',
         categoria: 'pessoal' as const,
         quantidade: 1,
-        valorUnitario: valor,
+        valor_unitario: valor,
         valor,
         status: 'pendente' as const,
         data: new Date().toISOString().split('T')[0]
