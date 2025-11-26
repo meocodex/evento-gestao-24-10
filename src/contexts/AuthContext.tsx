@@ -37,7 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Setup auth listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('🔐 Auth state changed:', event, '| Session:', !!session);
         setSession(session);
         
         if (session?.user) {
@@ -61,7 +60,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // THEN check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('🔍 Initial session check:', !!session);
       setSession(session);
       if (!session) {
         setLoading(false);
@@ -79,8 +77,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setHydrating(true);
     
     const timeoutId = setTimeout(async () => {
-      console.log('💧 Hydrating user profile for:', session.user.id);
-      
       try {
         const userId = session.user.id;
         const [
@@ -99,15 +95,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const isAdminFinal = perms?.some(p => p.permission_id === 'admin.full_access') ?? false;
         const rolesArray = userRoles?.map(r => r.role) || [];
         const finalRole: UserRole = isAdminFinal ? 'admin' : (rolesArray[0] as UserRole || 'comercial');
-        
-        console.log('✅ Profile hydrated:', { 
-          profile, 
-          permsLen: perms?.length,
-          hasAdminFullAccess: isAdminFinal,
-          rolesArray,
-          finalRole
-        });
-        console.log('👑 isAdmin=', isAdminFinal, 'finalRole=', finalRole, 'allRoles=', rolesArray);
         
         setUser(prev => ({
           id: userId,

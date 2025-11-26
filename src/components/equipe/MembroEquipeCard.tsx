@@ -25,14 +25,6 @@ export function MembroEquipeCard({
   onGerenciarPermissoes,
   canDeleteSystemUsers = false
 }: MembroEquipeCardProps) {
-  console.log('🔍 MembroEquipeCard Debug:', {
-    nome: membro.nome,
-    tipo_membro: membro.tipo_membro,
-    role: membro.role,
-    permissions: membro.permissions,
-    permissionsCount: membro.permissions?.length
-  });
-
   const getTipoLabel = (tipo: string) => {
     const labels: Record<string, string> = {
       'clt': 'CLT',

@@ -182,18 +182,6 @@ export function AlocarMaterialDialog({
   const handleSubmitLote = async () => {
     const isQuantidade = materialEstoque?.tipoControle === 'quantidade';
     
-    // 🔍 DEBUG LOG - Remover depois de verificar funcionamento
-    console.log('[AlocarMaterial] Iniciando alocação:', {
-      isQuantidade,
-      tipoControle: materialEstoque?.tipoControle,
-      quantidadeAlocar,
-      quantidadeRestante,
-      quantidadeDisponivel: materialEstoque?.quantidadeDisponivel,
-      maxAllowed,
-      materialId: materialEstoque?.id,
-      itemId,
-    });
-    
     // Validar baseado no tipo de controle
     if (!isQuantidade && serialsSelecionados.length === 0) return;
     if (isQuantidade && quantidadeAlocar <= 0) return;

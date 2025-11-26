@@ -43,15 +43,13 @@ export function GerenciarCategorias({ tipo, titulo, descricao }: GerenciarCatego
         ativa: true,
       };
 
-      console.log(`[${tipo}] Adicionando categoria:`, novaCategoria);
       await adicionarCategoria.mutateAsync({ tipo, categoria: novaCategoria });
-      console.log(`[${tipo}] Categoria adicionada com sucesso`);
       
       setNovoLabel('');
       setNovoValue('');
       setDialogAberto(false);
     } catch (error) {
-      console.error(`[${tipo}] Erro ao adicionar categoria:`, error);
+      // Error handling já é feito pela mutation
     }
   };
 

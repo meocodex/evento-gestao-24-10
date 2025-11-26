@@ -130,13 +130,6 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
     try {
       setConcedendo(true);
 
-      console.log('📤 Enviando dados:', {
-        nome: membro.nome,
-        email,
-        roles: rolesSelecionadas,
-        permissionsCount: permissoesSelecionadas.length
-      });
-
       const { data, error } = await supabase.functions.invoke('criar-operador', {
         body: {
           nome: membro.nome,

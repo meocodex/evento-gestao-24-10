@@ -97,22 +97,11 @@ export function GerenciarPermissoesMembroSheet({
       const previousString = JSON.stringify([...previousPermsRef.current].sort());
       
       if (permsString !== previousString) {
-        console.log('🔄 Atualizando permissões do membro:', membroPermsData.length);
         setPermissoesSelecionadas(membroPermsData);
         previousPermsRef.current = membroPermsData; // Salvar referência
       }
     }
   }, [open, membroPermsData]); // Não incluir permissoesSelecionadas!
-  
-  // Debug render
-  useEffect(() => {
-    console.log('🔍 GerenciarPermissoesMembroSheet render:', {
-      open,
-      membroId: membro?.id,
-      permsCount: permissoesSelecionadas.length,
-      membroPermsDataCount: membroPermsData?.length
-    });
-  }, [open, membro?.id, permissoesSelecionadas.length, membroPermsData?.length]);
 
   // Agrupar permissões por categoria com filtro de busca
   const permissionsGrouped = useMemo(() => {

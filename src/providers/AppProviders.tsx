@@ -26,7 +26,7 @@ import { ThemeProvider } from "next-themes";
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onSuccess: (data, query) => {
-      const duration = query.state.dataUpdatedAt - query.state.dataUpdatedAt;
+      const duration = Date.now() - (query.state.dataUpdatedAt || Date.now());
       performanceMonitor.trackQuery(query.queryKey, duration || 0, true);
     },
     onError: (error, query) => {
