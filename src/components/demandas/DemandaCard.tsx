@@ -16,17 +16,17 @@ const statusConfig = {
 };
 
 const prioridadeConfig = {
-  baixa: { label: 'Baixa', className: 'bg-blue-500/10 text-blue-500 hover:bg-blue-500/20' },
-  media: { label: 'Média', className: 'bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20' },
-  alta: { label: 'Alta', className: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20' },
-  urgente: { label: 'Urgente', className: 'bg-red-500/10 text-red-500 hover:bg-red-500/20' },
+  baixa: { label: 'Baixa', className: 'bg-primary/10 text-primary hover:bg-primary/20' },
+  media: { label: 'Média', className: 'bg-warning/10 text-warning hover:bg-warning/20' },
+  alta: { label: 'Alta', className: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20 dark:text-orange-400' },
+  urgente: { label: 'Urgente', className: 'bg-destructive/10 text-destructive hover:bg-destructive/20' },
 };
 
 const statusPagamentoConfig = {
-  pendente: { label: 'Pendente', icon: Clock, className: 'bg-yellow-500/10 text-yellow-500' },
-  aprovado: { label: 'Aprovado', icon: CheckCircle, className: 'bg-blue-500/10 text-blue-500' },
-  pago: { label: 'Pago', icon: CheckCircle, className: 'bg-green-500/10 text-green-500' },
-  recusado: { label: 'Recusado', icon: XCircle, className: 'bg-red-500/10 text-red-500' },
+  pendente: { label: 'Pendente', icon: Clock, className: 'bg-warning/10 text-warning' },
+  aprovado: { label: 'Aprovado', icon: CheckCircle, className: 'bg-primary/10 text-primary' },
+  pago: { label: 'Pago', icon: CheckCircle, className: 'bg-success/10 text-success' },
+  recusado: { label: 'Recusado', icon: XCircle, className: 'bg-destructive/10 text-destructive' },
 };
 
 interface DemandaCardProps {
@@ -44,7 +44,7 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
 
   return (
     <Card 
-      className="group p-4 smooth-hover rounded-2xl bg-card cursor-pointer"
+      className="group p-4 smooth-hover rounded-xl bg-card cursor-pointer"
       onClick={onClick}
     >
       <div className="space-y-2.5">

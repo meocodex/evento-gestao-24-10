@@ -41,7 +41,7 @@ export function OperacionalCard({ operacional, onDetalhes, onEditar }: Operacion
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:shadow-md transition-shadow rounded-xl">
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <Avatar className="h-12 w-12">

@@ -72,7 +72,7 @@ export function InstallPrompt() {
         </div>
         
         <div className="flex-1">
-          <h3 className="font-semibold mb-1">Instalar GERCAO</h3>
+          <h3 className="font-semibold mb-1">Instalar App</h3>
           <p className="text-sm text-muted-foreground mb-3">
             Adicione à tela inicial para acesso rápido e notificações
           </p>

@@ -39,7 +39,7 @@ export function EventoKanbanCard({ evento, onViewDetails }: EventoKanbanCardProp
     >
       <Card
         className={cn(
-          "cursor-pointer hover:shadow-md transition-all hover:scale-[1.02]",
+          "cursor-pointer hover:shadow-md transition-all hover:scale-[1.02] rounded-xl",
           "border-l-4",
           evento.status === 'em_negociacao' && "border-l-amber-500",
           evento.status === 'confirmado' && "border-l-emerald-500",

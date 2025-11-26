@@ -43,7 +43,7 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
 
   return (
     <Card className={cn(
-      "group bg-card border rounded-xl sm:rounded-2xl overflow-hidden min-h-[240px] sm:min-h-[280px] flex flex-col relative cursor-pointer",
+      "group bg-card border rounded-xl overflow-hidden min-h-[240px] sm:min-h-[280px] flex flex-col relative cursor-pointer",
       "transition-all duration-300 smooth-hover",
       "hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10 active:scale-[0.98] sm:hover:scale-[1.02] sm:hover:-translate-y-1"
     )}
