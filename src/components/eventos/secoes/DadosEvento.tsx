@@ -154,7 +154,14 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
           
           {/* Contador Regressivo */}
           <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
-            <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} status={evento.status} />
+            <EventoCountdown 
+              dataInicio={evento.dataInicio} 
+              horaInicio={evento.horaInicio}
+              dataFim={evento.dataFim}
+              horaFim={evento.horaFim}
+              status={evento.status}
+              arquivado={evento.arquivado}
+            />
           </div>
           
           <div>

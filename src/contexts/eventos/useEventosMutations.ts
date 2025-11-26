@@ -273,8 +273,26 @@ export function useEventosMutations() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
+      // Buscar dados do evento
+      const { data: evento, error: eventoError } = await supabase
+        .from('eventos')
+        .select('data_fim, hora_fim')
+        .eq('id', id)
+        .single();
+
+      if (eventoError) throw eventoError;
+      if (!evento) throw new Error('Evento não encontrado');
+
+      // Verificar se evento já terminou
+      const agora = new Date();
+      const fimEvento = new Date(`${evento.data_fim}T${evento.hora_fim}`);
+      
+      if (agora < fimEvento) {
+        throw new Error('Não é possível arquivar um evento que ainda não terminou');
+      }
+
       // Verificar se tem materiais pendentes
-      const { data: pendentes, count } = await supabase
+      const { count } = await supabase
         .from('eventos_materiais_alocados')
         .select('id', { count: 'exact' })
         .eq('evento_id', id)
