@@ -9,6 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useEventos } from '@/hooks/eventos';
 import { useClientes } from '@/hooks/clientes';
 import { ComercialSelect } from './ComercialSelect';
+import { formatarCEP } from '@/lib/formatters';
 import { toast } from 'sonner';
 import { ChevronDown, Calendar, MapPin, Tag, Sparkles, Search } from 'lucide-react';
 import { TipoEvento } from '@/types/eventos';
@@ -345,7 +346,7 @@ export function QuickCreateEventSheet({ open, onOpenChange }: QuickCreateEventSh
                     <Input
                       id="cep"
                       value={cep}
-                      onChange={(e) => setCep(e.target.value.replace(/\D/g, ''))}
+                      onChange={(e) => setCep(formatarCEP(e.target.value))}
                       placeholder="00000-000"
                       maxLength={9}
                       className="flex-1"

@@ -9,6 +9,7 @@ import { Plus } from 'lucide-react';
 import { useEquipe } from '@/hooks/equipe';
 import { useCategorias } from '@/hooks/categorias';
 import { OperacionalEquipe } from '@/types/equipe';
+import { formatarCPF, formatarCNPJ, formatarTelefone } from '@/lib/formatters';
 
 interface EditarOperacionalSheetProps {
   operacional: OperacionalEquipe;
@@ -119,7 +120,9 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
           <Input
             id="cpf"
             value={formData.cpf}
-            onChange={(e) => setFormData({ ...formData, cpf: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, cpf: formatarCPF(e.target.value) })}
+            placeholder="000.000.000-00"
+            maxLength={14}
           />
         </div>
 
@@ -128,7 +131,9 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
           <Input
             id="telefone"
             value={formData.telefone}
-            onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, telefone: formatarTelefone(e.target.value) })}
+            placeholder="(00) 00000-0000"
+            maxLength={15}
           />
         </div>
 
@@ -137,7 +142,9 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
           <Input
             id="whatsapp"
             value={formData.whatsapp}
-            onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, whatsapp: formatarTelefone(e.target.value) })}
+            placeholder="(00) 00000-0000"
+            maxLength={15}
           />
         </div>
 
@@ -244,8 +251,9 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
             <Input
               id="cnpj_pj"
               value={formData.cnpj_pj}
-              onChange={(e) => setFormData({ ...formData, cnpj_pj: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, cnpj_pj: formatarCNPJ(e.target.value) })}
               placeholder="00.000.000/0001-00"
+              maxLength={18}
             />
           </div>
         )}
