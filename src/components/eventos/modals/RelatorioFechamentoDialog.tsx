@@ -56,15 +56,8 @@ export function RelatorioFechamentoDialog({
   const saldoFinal = totalReceitas - totalDespesas;
 
   const handleGerarPDF = async () => {
-    console.log('🔵 Iniciando geração de PDF');
-    console.log('📊 Receitas selecionadas:', receitasSelecionadas);
-    console.log('📊 Despesas selecionadas:', despesasSelecionadas);
-    console.log('📊 Receitas filtradas:', receitasFiltradas);
-    console.log('📊 Despesas filtradas:', despesasFiltradas);
-    
     // Verificar se há itens selecionados
     if (receitasFiltradas.length === 0 && despesasFiltradas.length === 0) {
-      console.log('❌ Nenhum item selecionado');
       toast({
         title: 'Nenhum item selecionado',
         description: 'Selecione ao menos uma receita ou despesa antes de gerar o relatório.',
@@ -74,7 +67,6 @@ export function RelatorioFechamentoDialog({
     }
 
     try {
-      console.log('📄 Criando documento PDF');
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.width;
       const pageHeight = doc.internal.pageSize.height;
@@ -82,11 +74,8 @@ export function RelatorioFechamentoDialog({
       // Adicionar papel timbrado como background (se configurado)
       if (config?.papel_timbrado) {
         try {
-          console.log('📄 Carregando papel timbrado:', config.papel_timbrado.substring(0, 50) + '...');
           doc.addImage(config.papel_timbrado, 'JPEG', 0, 0, pageWidth, pageHeight);
-          console.log('✅ Papel timbrado adicionado');
         } catch (error) {
-          console.error('⚠️ Erro ao adicionar papel timbrado:', error);
           toast({
             title: 'Aviso',
             description: 'Não foi possível adicionar o papel timbrado, continuando sem ele.',
@@ -234,7 +223,6 @@ export function RelatorioFechamentoDialog({
       }
 
       // Tabela de Despesas
-      console.log('💸 Adicionando tabela de despesas');
       if (despesasFiltradas.length > 0) {
         doc.setFont(undefined, 'bold');
         doc.setFontSize(12);
@@ -272,7 +260,6 @@ export function RelatorioFechamentoDialog({
       }
 
       // Resumo Financeiro
-      console.log('📊 Adicionando resumo financeiro');
       const yPos = (doc as any).lastAutoTable.finalY + 10;
 
       doc.setFontSize(12);
@@ -324,10 +311,8 @@ export function RelatorioFechamentoDialog({
       // Salvar PDF
       const dataAtual = new Date().toISOString().split('T')[0].replace(/-/g, '');
       const nomeArquivo = `Fechamento_${evento.nome.replace(/\s+/g, '_')}_${dataAtual}.pdf`;
-      console.log('💾 Salvando PDF:', nomeArquivo);
       doc.save(nomeArquivo);
       
-      console.log('✅ PDF gerado com sucesso!');
       toast({
         title: 'PDF gerado com sucesso!',
         description: 'O relatório de fechamento foi baixado.',
@@ -335,7 +320,6 @@ export function RelatorioFechamentoDialog({
 
       onOpenChange(false);
     } catch (error) {
-      console.error('❌ Erro ao gerar PDF:', error);
       toast({
         title: 'Erro ao gerar PDF',
         description: error instanceof Error ? error.message : 'Ocorreu um erro ao gerar o relatório.',
