@@ -64,7 +64,7 @@ export default function EventoDetalhes() {
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
                   <StatusBadge status={evento.status} />
-                  <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} />
+                  <EventoCountdown dataInicio={evento.dataInicio} horaInicio={evento.horaInicio} status={evento.status} />
                 </div>
               </div>
             </div>
