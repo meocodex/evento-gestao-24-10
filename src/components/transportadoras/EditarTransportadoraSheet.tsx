@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTransportadoras } from '@/hooks/transportadoras';
 import { Transportadora } from '@/types/transportadoras';
+import { formatarTelefone } from '@/lib/formatters';
 
 const transportadoraSchema = z.object({
   nome: z.string().min(1, 'Nome é obrigatório'),
@@ -135,19 +136,24 @@ export function EditarTransportadoraSheet({ transportadora, open, onOpenChange }
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="telefone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Telefone *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="(00) 00000-0000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="telefone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Telefone *</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="(00) 00000-0000" 
+                    {...field}
+                    onChange={(e) => field.onChange(formatarTelefone(e.target.value))}
+                    maxLength={15}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           </div>
 
           <FormField

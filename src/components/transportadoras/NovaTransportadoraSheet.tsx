@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useTransportadoras } from '@/hooks/transportadoras';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Loader2 } from 'lucide-react';
-import { formatarCEP } from '@/lib/validations/cliente';
+import { formatarCEP, formatarCNPJ, formatarTelefone } from '@/lib/formatters';
 import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
 import { useToast } from '@/hooks/use-toast';
 
@@ -144,7 +144,9 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
                   id="cnpj"
                   required
                   value={formData.cnpj}
-                  onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, cnpj: formatarCNPJ(e.target.value) })}
+                  placeholder="00.000.000/0000-00"
+                  maxLength={18}
                   className="border-navy-200 focus:border-navy-400"
                 />
               </div>
@@ -178,7 +180,9 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
                   id="telefone"
                   required
                   value={formData.telefone}
-                  onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, telefone: formatarTelefone(e.target.value) })}
+                  placeholder="(00) 00000-0000"
+                  maxLength={15}
                   className="border-navy-200 focus:border-navy-400"
                 />
               </div>

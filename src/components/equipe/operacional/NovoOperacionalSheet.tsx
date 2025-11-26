@@ -12,6 +12,7 @@ import { useEquipe } from '@/hooks/equipe';
 import { useCategorias } from '@/hooks/categorias';
 import { useToast } from '@/hooks/use-toast';
 import { operacionalSchema, type OperacionalInput } from '@/lib/validations/operacional';
+import { formatarCPF, formatarCNPJ, formatarTelefone } from '@/lib/formatters';
 
 interface NovoOperacionalSheetProps {
   open: boolean;
@@ -105,33 +106,43 @@ export function NovoOperacionalSheet({ open, onOpenChange }: NovoOperacionalShee
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="cpf"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>CPF</FormLabel>
-                <FormControl>
-                  <Input placeholder="000.000.000-00" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="cpf"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CPF</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="000.000.000-00" 
+                        {...field}
+                        onChange={(e) => field.onChange(formatarCPF(e.target.value))}
+                        maxLength={14}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="telefone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Telefone *</FormLabel>
-                <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={form.control}
+                name="telefone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Telefone *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="(00) 00000-0000" 
+                        {...field}
+                        onChange={(e) => field.onChange(formatarTelefone(e.target.value))}
+                        maxLength={15}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
           <FormField
             control={form.control}
@@ -140,7 +151,12 @@ export function NovoOperacionalSheet({ open, onOpenChange }: NovoOperacionalShee
               <FormItem>
                 <FormLabel>WhatsApp</FormLabel>
                 <FormControl>
-                  <Input placeholder="(00) 00000-0000" {...field} />
+                  <Input 
+                    placeholder="(00) 00000-0000" 
+                    {...field}
+                    onChange={(e) => field.onChange(formatarTelefone(e.target.value))}
+                    maxLength={15}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -282,7 +298,12 @@ export function NovoOperacionalSheet({ open, onOpenChange }: NovoOperacionalShee
                 <FormItem className="col-span-2">
                   <FormLabel>CNPJ *</FormLabel>
                   <FormControl>
-                    <Input placeholder="00.000.000/0000-00" {...field} />
+                    <Input 
+                      placeholder="00.000.000/0000-00" 
+                      {...field}
+                      onChange={(e) => field.onChange(formatarCNPJ(e.target.value))}
+                      maxLength={18}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

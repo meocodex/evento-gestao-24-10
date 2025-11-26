@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Loader2, FileText, User, Phone, FileDigit } from 'lucide-react';
 import type { MaterialAlocado } from '@/types/estoque';
+import { formatarCPF, formatarTelefone } from '@/lib/formatters';
 
 const retiradaSchema = z.object({
   retiradoPorNome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -129,6 +130,12 @@ export function RegistrarRetiradaDialog({
                 id="retiradoPorDocumento"
                 {...register('retiradoPorDocumento')}
                 placeholder="000.000.000-00 ou 00.000.000-0"
+                onChange={(e) => {
+                  const formatted = formatarCPF(e.target.value);
+                  register('retiradoPorDocumento').onChange(e);
+                  e.target.value = formatted;
+                }}
+                maxLength={14}
               />
               {errors.retiradoPorDocumento && (
                 <p className="text-sm text-destructive">{errors.retiradoPorDocumento.message}</p>
@@ -144,6 +151,12 @@ export function RegistrarRetiradaDialog({
                 id="retiradoPorTelefone"
                 {...register('retiradoPorTelefone')}
                 placeholder="(00) 00000-0000"
+                onChange={(e) => {
+                  const formatted = formatarTelefone(e.target.value);
+                  register('retiradoPorTelefone').onChange(e);
+                  e.target.value = formatted;
+                }}
+                maxLength={15}
               />
               {errors.retiradoPorTelefone && (
                 <p className="text-sm text-destructive">{errors.retiradoPorTelefone.message}</p>

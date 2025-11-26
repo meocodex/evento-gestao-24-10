@@ -12,6 +12,7 @@ import { useEquipe } from '@/hooks/equipe';
 import { useConflitosEquipe } from '@/hooks/equipe';
 import { MembroEquipe } from '@/types/eventos';
 import { AlertTriangle, User, UserPlus } from 'lucide-react';
+import { formatarTelefone } from '@/lib/formatters';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -247,8 +248,9 @@ export function AdicionarMembroEquipeDialog({
                   <Input
                     id="telefone"
                     value={telefone}
-                    onChange={(e) => setTelefone(e.target.value)}
+                    onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
                     placeholder="(00) 00000-0000"
+                    maxLength={15}
                   />
                 </div>
                 <div>
@@ -256,8 +258,9 @@ export function AdicionarMembroEquipeDialog({
                   <Input
                     id="whatsapp"
                     value={whatsapp}
-                    onChange={(e) => setWhatsapp(e.target.value)}
+                    onChange={(e) => setWhatsapp(formatarTelefone(e.target.value))}
                     placeholder="(00) 00000-0000"
+                    maxLength={15}
                   />
                 </div>
               </div>
