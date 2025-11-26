@@ -21,7 +21,13 @@ export function ArquivarEventoDialog({
         <DialogHeader>
           <DialogTitle>Arquivar Evento</DialogTitle>
           <DialogDescription>
-            Tem certeza que deseja arquivar este evento? Eventos arquivados não aparecerão na lista principal, mas podem ser acessados através do filtro de arquivados.
+            Para arquivar este evento, é necessário que:
+            <ul className="list-disc list-inside mt-2 space-y-1">
+              <li>O evento já tenha terminado (data/hora fim ultrapassada)</li>
+              <li>Todos os materiais tenham sido devolvidos</li>
+              <li>O fechamento financeiro esteja completo</li>
+            </ul>
+            <p className="mt-2">Eventos arquivados não aparecem na lista principal, mas podem ser acessados através do filtro de arquivados.</p>
           </DialogDescription>
         </DialogHeader>
 
