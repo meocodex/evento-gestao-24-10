@@ -14,6 +14,7 @@ export interface SerialEstoque {
   tags?: string[];
   eventoId?: string;
   eventoNome?: string;
+  tipoEnvio?: 'antecipado' | 'com_tecnicos';
   ultimaManutencao?: string;
   dataAquisicao?: string;
   observacoes?: string;

@@ -11,6 +11,7 @@ export const useEstoqueSeriais = (materialId?: string) => {
     queryFn: async () => {
       if (!materialId) return [];
 
+      // Buscar seriais
       const { data, error } = await supabase
         .from('materiais_seriais')
         .select(`
@@ -25,12 +26,32 @@ export const useEstoqueSeriais = (materialId?: string) => {
       
       if (error) throw error;
 
+      // Para seriais em uso, buscar tipo_envio de eventos_materiais_alocados
+      const seriaisEmUso = (data || []).filter(s => s.status === 'em-uso' && s.evento_id);
+      let tiposEnvioMap: Record<string, string> = {};
+      
+      if (seriaisEmUso.length > 0) {
+        const { data: alocacoes } = await supabase
+          .from('eventos_materiais_alocados')
+          .select('serial, tipo_envio')
+          .eq('item_id', materialId)
+          .in('serial', seriaisEmUso.map(s => s.numero))
+          .eq('status_devolucao', 'pendente');
+        
+        if (alocacoes) {
+          tiposEnvioMap = Object.fromEntries(
+            alocacoes.map(a => [a.serial, a.tipo_envio])
+          );
+        }
+      }
+
       return (data || []).map(s => ({
         numero: s.numero,
         status: dbToUiStatus(s.status as any),
         localizacao: s.localizacao,
         eventoId: s.evento_id || undefined,
         eventoNome: s.eventos?.nome || undefined,
+        tipoEnvio: tiposEnvioMap[s.numero] as 'antecipado' | 'com_tecnicos' | undefined,
         ultimaManutencao: s.ultima_manutencao || undefined,
         dataAquisicao: s.data_aquisicao || undefined,
         observacoes: s.observacoes || undefined,
