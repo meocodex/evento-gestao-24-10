@@ -10,6 +10,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { MaterialEstoque, SerialEstoque, useEstoqueSeriais } from '@/hooks/estoque';
 import { Package, MapPin, Plus, Trash2, Edit, Loader2, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
@@ -191,23 +202,50 @@ export function DetalhesMaterialSheet({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
-                    {serial.localizacao === 'Em evento' && serial.eventoId ? (
-                      <Button
-                        variant="link"
-                        className="h-auto p-0 text-primary hover:underline"
-                        onClick={() => {
-                          navigate(`/eventos/${serial.eventoId}`);
-                          onOpenChange(false);
-                        }}
-                      >
-                        {serial.localizacao}
-                        {serial.eventoNome && (
-                          <span className="ml-1 text-muted-foreground">
-                            ({serial.eventoNome})
-                          </span>
-                        )}
-                        <ExternalLink className="h-3 w-3 ml-1" />
-                      </Button>
+                    {serial.localizacao === 'Em evento' && serial.eventoId && serial.eventoNome ? (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <Popover>
+                            <TooltipTrigger asChild>
+                              <PopoverTrigger asChild>
+                                <span className="cursor-pointer text-primary hover:underline">
+                                  Em evento
+                                </span>
+                              </PopoverTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{serial.eventoNome}</p>
+                            </TooltipContent>
+                            <PopoverContent className="w-80">
+                              <div className="space-y-3">
+                                <div>
+                                  <p className="text-sm font-medium text-muted-foreground">📅 Evento</p>
+                                  <p className="font-medium">{serial.eventoNome}</p>
+                                </div>
+                                {serial.tipoEnvio && (
+                                  <div>
+                                    <p className="text-sm font-medium text-muted-foreground">📦 Tipo de Envio</p>
+                                    <Badge variant="secondary">
+                                      {serial.tipoEnvio === 'antecipado' ? 'Antecipado' : 'Com Técnicos'}
+                                    </Badge>
+                                  </div>
+                                )}
+                                <Button
+                                  className="w-full"
+                                  size="sm"
+                                  onClick={() => {
+                                    navigate(`/eventos/${serial.eventoId}`);
+                                    onOpenChange(false);
+                                  }}
+                                >
+                                  Ver Evento
+                                  <ExternalLink className="h-4 w-4 ml-2" />
+                                </Button>
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </Tooltip>
+                      </TooltipProvider>
                     ) : (
                       serial.localizacao
                     )}
