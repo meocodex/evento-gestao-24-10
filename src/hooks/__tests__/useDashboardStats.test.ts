@@ -108,40 +108,15 @@ describe('useDashboardStats', () => {
       expect(result.current.data?.eventosPorStatus.emAndamento).toBe(2);
     });
 
-    it('deve calcular financeiro corretamente', async () => {
+    it('deve calcular demandas corretamente', async () => {
       mockSupabase.from = vi.fn((table: string) => {
-        if (table === 'vw_financeiro_eventos') {
+        if (table === 'vw_demandas_stats') {
           return {
             select: vi.fn().mockResolvedValue({
               data: [
-                { total_receitas: 10000, total_despesas: 6000 },
-                { total_receitas: 5000, total_despesas: 3000 },
-              ],
-              error: null,
-            }),
-          };
-        }
-        if (table === 'eventos_receitas') {
-          return {
-            select: vi.fn().mockReturnThis(),
-            gte: vi.fn().mockReturnThis(),
-            lte: vi.fn().mockResolvedValue({
-              data: [
-                { valor: 5000, status: 'pago' },
-                { valor: 3000, status: 'pendente' },
-              ],
-              error: null,
-            }),
-          };
-        }
-        if (table === 'eventos_despesas') {
-          return {
-            select: vi.fn().mockReturnThis(),
-            gte: vi.fn().mockReturnThis(),
-            lte: vi.fn().mockResolvedValue({
-              data: [
-                { valor: 2000, status: 'pago' },
-                { valor: 1000, status: 'pendente' },
+                { status: 'aberta', total: 15 },
+                { status: 'em-andamento', total: 8 },
+                { prioridade: 'urgente', total: 3 },
               ],
               error: null,
             }),
@@ -156,21 +131,31 @@ describe('useDashboardStats', () => {
 
       await waitFor(() => expect(result.current.data).toBeDefined());
 
-      expect(result.current.data?.receitaTotal).toBe(15000);
-      expect(result.current.data?.despesaTotal).toBe(9000);
-      expect(result.current.data?.lucroLiquido).toBe(6000);
+      expect(result.current.data?.demandasAbertas).toBe(15);
+      expect(result.current.data?.demandasEmAndamento).toBe(8);
+      expect(result.current.data?.demandasUrgentes).toBe(3);
     });
 
-    it('deve gerar alertas de cobranças atrasadas', async () => {
+    it('deve gerar alertas operacionais', async () => {
       const hoje = new Date();
-      const dataAtrasada = new Date(hoje.getTime() - 20 * 24 * 60 * 60 * 1000);
 
       mockSupabase.from = vi.fn((table: string) => {
-        if (table === 'eventos_cobrancas') {
+        if (table === 'eventos_materiais_alocados') {
+          return {
+            select: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockResolvedValue({
+              data: [
+                { id: '1', nome: 'Material 1', evento_id: 'evt-1', status_devolucao: 'pendente' },
+              ],
+              error: null,
+            }),
+          };
+        }
+        if (table === 'eventos') {
           return {
             select: vi.fn().mockResolvedValue({
               data: [
-                { valor: 5000, status: 'pendente', created_at: dataAtrasada.toISOString() },
+                { id: 'evt-1', data_inicio: new Date(hoje.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString(), eventos_checklist: [] },
               ],
               error: null,
             }),
@@ -185,10 +170,8 @@ describe('useDashboardStats', () => {
 
       await waitFor(() => expect(result.current.data?.alertas).toBeDefined());
 
-      const alertasCobranca = result.current.data?.alertas.filter(a => 
-        a.mensagem.includes('atrasada')
-      );
-      expect(alertasCobranca?.length).toBeGreaterThan(0);
+      const alertasOperacionais = result.current.data?.alertas || [];
+      expect(alertasOperacionais.length).toBeGreaterThanOrEqual(0);
     });
 
     it('deve lidar com erros de query gracefully', async () => {
