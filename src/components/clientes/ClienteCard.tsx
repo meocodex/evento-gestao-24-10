@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,7 @@ interface ClienteCardProps {
   onDelete: (cliente: Cliente) => void;
 }
 
-export function ClienteCard({ cliente, onView, onEdit, onDelete }: ClienteCardProps) {
+export const ClienteCard = React.memo(function ClienteCard({ cliente, onView, onEdit, onDelete }: ClienteCardProps) {
   return (
     <Card className="smooth-hover rounded-xl">
       <CardHeader className="pb-2">
@@ -68,4 +69,4 @@ export function ClienteCard({ cliente, onView, onEdit, onDelete }: ClienteCardPr
       </CardFooter>
     </Card>
   );
-}
+});

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,7 @@ interface OperacionalCardProps {
   onEditar: () => void;
 }
 
-export function OperacionalCard({ operacional, onDetalhes, onEditar }: OperacionalCardProps) {
+export const OperacionalCard = React.memo(function OperacionalCard({ operacional, onDetalhes, onEditar }: OperacionalCardProps) {
   const getTipoLabel = (tipo: string) => {
     const labels: Record<string, string> = {
       clt: 'CLT',
@@ -92,4 +93,4 @@ export function OperacionalCard({ operacional, onDetalhes, onEditar }: Operacion
       </CardFooter>
     </Card>
   );
-}
+});

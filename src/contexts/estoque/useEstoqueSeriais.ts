@@ -29,7 +29,7 @@ export const useEstoqueSeriais = (materialId?: string) => {
       }));
     },
     enabled: !!materialId,
-    staleTime: 0, // Sempre buscar dados frescos
+    staleTime: 1000 * 30, // 30 segundos (com real-time não precisa ser 0)
   });
 
   // Listener realtime para materiais_seriais

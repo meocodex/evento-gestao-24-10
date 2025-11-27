@@ -1,3 +1,4 @@
+import React from 'react';
 import { LucideIcon } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -13,7 +14,7 @@ interface StatCardProps {
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger';
 }
 
-export function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 'default' }: StatCardProps) {
+export const StatCard = React.memo(function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 'default' }: StatCardProps) {
   const variantStyles = {
     default: 'bg-card border border-border hover:border-border/80',
     primary: 'bg-card border border-primary/20 hover:border-primary/40',
@@ -85,4 +86,4 @@ export function StatCard({ title, value, subtitle, icon: Icon, trend, variant = 
       </CardContent>
     </Card>
   );
-}
+});

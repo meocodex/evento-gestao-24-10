@@ -61,7 +61,7 @@ export default function Demandas() {
   const [sheetEditar, setSheetEditar] = useState(false);
   const [dialogExcluir, setDialogExcluir] = useState(false);
 
-  const confirmarExclusao = async () => {
+  const confirmarExclusao = useCallback(async () => {
     if (demandaSelecionada) {
       try {
         await excluirDemanda.mutateAsync(demandaSelecionada.id);
@@ -70,7 +70,7 @@ export default function Demandas() {
         setDemandaSelecionada(null);
       }
     }
-  };
+  }, [demandaSelecionada, excluirDemanda]);
 
   return (
     <div className="min-h-screen overflow-x-hidden">

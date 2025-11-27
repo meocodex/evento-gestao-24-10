@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -33,7 +33,7 @@ const statusLabels = {
   cancelado: 'Cancelado',
 };
 
-export function EnvioCard({ envio }: EnvioCardProps) {
+export const EnvioCard = React.memo(function EnvioCard({ envio }: EnvioCardProps) {
   const { transportadoras, atualizarStatusEnvio, excluirEnvio } = useTransportadoras();
   const { eventos } = useEventos();
   const [editarOpen, setEditarOpen] = useState(false);
@@ -194,4 +194,4 @@ export function EnvioCard({ envio }: EnvioCardProps) {
       />
     </>
   );
-}
+});
