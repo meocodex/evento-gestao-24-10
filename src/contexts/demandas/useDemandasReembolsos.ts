@@ -101,8 +101,9 @@ export function useDemandasReembolsos() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
+      queryClient.invalidateQueries({ queryKey: ['demanda-detalhes', variables.demandaId] });
       toast({ title: 'Reembolso aprovado!', description: 'Aguardando confirmação de pagamento.' });
     },
     onError: (error) => {
@@ -154,8 +155,9 @@ export function useDemandasReembolsos() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
+      queryClient.invalidateQueries({ queryKey: ['demanda-detalhes', variables.demandaId] });
       toast({ title: 'Pagamento confirmado!', description: 'O reembolso foi marcado como pago.' });
     },
     onError: (error) => {
@@ -195,8 +197,9 @@ export function useDemandasReembolsos() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
+      queryClient.invalidateQueries({ queryKey: ['demanda-detalhes', variables.demandaId] });
       toast({ title: 'Reembolso recusado', description: 'O solicitante será notificado.' });
     },
     onError: (error) => {

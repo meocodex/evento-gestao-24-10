@@ -3,13 +3,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useDemandaDetalhes } from '@/hooks/demandas/useDemandaDetalhes';
 import { DemandaDados } from './secoes/DemandaDados';
 import { DemandaComentarios } from './secoes/DemandaComentarios';
 import { DemandaAnexos } from './secoes/DemandaAnexos';
 import { DemandaReembolso } from './secoes/DemandaReembolso';
 import { Badge } from '@/components/ui/badge';
 import { PrazoIndicador } from './PrazoIndicador';
-import { DollarSign, Archive, CheckCircle2 } from 'lucide-react';
+import { DollarSign, Archive, CheckCircle2, Loader2 } from 'lucide-react';
 
 interface DetalhesDemandaSheetProps {
   demanda: Demanda | null;
@@ -27,10 +28,16 @@ const statusConfig = {
 
 export function DetalhesDemandaSheet({ demanda, open, onOpenChange, onEditar }: DetalhesDemandaSheetProps) {
   const isMobile = useIsMobile();
+  
+  // Buscar dados atualizados em tempo real
+  const { data: demandaAtualizada, isLoading } = useDemandaDetalhes(demanda?.id || null);
 
-  if (!demanda) return null;
+  // Usar dados atualizados ou fallback para demanda passada
+  const demandaAtual = demandaAtualizada || demanda;
 
-  const isReembolso = demanda.categoria === 'reembolso' && demanda.dadosReembolso;
+  if (!demandaAtual) return null;
+
+  const isReembolso = demandaAtual.categoria === 'reembolso' && demandaAtual.dadosReembolso;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -43,11 +50,14 @@ export function DetalhesDemandaSheet({ demanda, open, onOpenChange, onEditar }: 
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <SheetTitle className="text-2xl font-semibold truncate">
-                  {demanda.titulo}
+                  {demandaAtual.titulo}
                 </SheetTitle>
                 <Badge variant="outline" className="font-mono text-xs">
-                  #{demanda.numeroId}
+                  #{demandaAtual.numeroId}
                 </Badge>
+                {isLoading && (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                )}
               </div>
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 {isReembolso && (
@@ -56,23 +66,23 @@ export function DetalhesDemandaSheet({ demanda, open, onOpenChange, onEditar }: 
                     Reembolso
                   </Badge>
                 )}
-                <Badge variant={statusConfig[demanda.status].variant}>
-                  {statusConfig[demanda.status].label}
+                <Badge variant={statusConfig[demandaAtual.status].variant}>
+                  {statusConfig[demandaAtual.status].label}
                 </Badge>
-                {demanda.arquivada && (
+                {demandaAtual.arquivada && (
                   <Badge variant="secondary" className="bg-gray-100 text-gray-800">
                     <Archive className="mr-1 h-3 w-3" />
                     Arquivada
                   </Badge>
                 )}
-                {demanda.resolvida && !demanda.arquivada && (
+                {demandaAtual.resolvida && !demandaAtual.arquivada && (
                   <Badge variant="secondary" className="bg-green-100 text-green-800">
                     <CheckCircle2 className="mr-1 h-3 w-3" />
                     Resolvida
                   </Badge>
                 )}
-                {demanda.prazo && !demanda.arquivada && (
-                  <PrazoIndicador prazo={demanda.prazo} />
+                {demandaAtual.prazo && !demandaAtual.arquivada && (
+                  <PrazoIndicador prazo={demandaAtual.prazo} />
                 )}
               </div>
             </div>
@@ -100,20 +110,23 @@ export function DetalhesDemandaSheet({ demanda, open, onOpenChange, onEditar }: 
           <ScrollArea className="flex-1 px-6">
             <div className="py-6">
               <TabsContent value="dados" className="mt-0">
-                <DemandaDados demanda={demanda} onEditar={onEditar} />
+                <DemandaDados demanda={demandaAtual} onEditar={onEditar} />
               </TabsContent>
 
               <TabsContent value="comentarios" className="mt-0">
-                <DemandaComentarios demanda={demanda} />
+                <DemandaComentarios demanda={demandaAtual} />
               </TabsContent>
 
               <TabsContent value="anexos" className="mt-0">
-                <DemandaAnexos demanda={demanda} />
+                <DemandaAnexos demanda={demandaAtual} />
               </TabsContent>
 
               {isReembolso && (
                 <TabsContent value="reembolso" className="mt-0">
-                  <DemandaReembolso demanda={demanda} />
+                  <DemandaReembolso 
+                    demanda={demandaAtual}
+                    onDemandaConcluida={() => onOpenChange(false)}
+                  />
                 </TabsContent>
               )}
             </div>

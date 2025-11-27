@@ -15,6 +15,7 @@ import { DollarSign, FileText, Paperclip, CheckCircle2, XCircle, Clock } from 'l
 
 interface DemandaReembolsoProps {
   demanda: Demanda;
+  onDemandaConcluida?: () => void;
 }
 
 const tipoReembolsoLabels: Record<TipoReembolso, string> = {
@@ -34,7 +35,7 @@ const statusPagamentoConfig = {
   recusado: { label: 'Recusado', icon: XCircle, color: 'bg-red-500/10 text-red-500' }
 };
 
-export function DemandaReembolso({ demanda }: DemandaReembolsoProps) {
+export function DemandaReembolso({ demanda, onDemandaConcluida }: DemandaReembolsoProps) {
   const { aprovarReembolso, recusarReembolso, marcarReembolsoPago } = useDemandas();
   const { user } = useAuth();
   const vincularReembolso = useEventosDespesas(demanda.eventoRelacionado || '');
@@ -59,13 +60,14 @@ export function DemandaReembolso({ demanda }: DemandaReembolsoProps) {
 
   const StatusIcon = statusPagamentoConfig[dadosReembolso.statusPagamento].icon;
 
-  const handleAprovarReembolso = (formaPagamento: string, observacoes?: string) => {
-    aprovarReembolso.mutateAsync({ demandaId: demanda.id, formaPagamento, observacoes });
+  const handleAprovarReembolso = async (formaPagamento: string, observacoes?: string) => {
+    await aprovarReembolso.mutateAsync({ demandaId: demanda.id, formaPagamento, observacoes });
     setShowAprovarDialog(false);
+    // NÃO fechar o sheet - deixar real-time atualizar o botão
   };
 
-  const handleMarcarPago = (dataPagamento: string, comprovante?: string, observacoes?: string) => {
-    marcarReembolsoPago.mutateAsync({ demandaId: demanda.id, dataPagamento, comprovante, observacoes });
+  const handleMarcarPago = async (dataPagamento: string, comprovante?: string, observacoes?: string) => {
+    await marcarReembolsoPago.mutateAsync({ demandaId: demanda.id, dataPagamento, comprovante, observacoes });
     
     // Vincular reembolso ao financeiro do evento com dados completos
     if (demanda.eventoRelacionado && vincularReembolso) {
@@ -73,6 +75,11 @@ export function DemandaReembolso({ demanda }: DemandaReembolsoProps) {
     }
     
     setShowPagoDialog(false);
+    
+    // Fechar sheet principal após conclusão
+    if (onDemandaConcluida) {
+      setTimeout(() => onDemandaConcluida(), 300);
+    }
   };
 
   const handleRecusar = (motivo: string) => {
