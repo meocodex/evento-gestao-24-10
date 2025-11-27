@@ -82,7 +82,7 @@ export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string,
         totalCount: count || 0
       };
     },
-    staleTime: 1000 * 30, // 30 segundos para atualizações mais rápidas
+    staleTime: 1000 * 60 * 2, // 2 minutos (com real-time não precisa ser tão baixo)
     gcTime: 1000 * 60 * 15,
   });
 

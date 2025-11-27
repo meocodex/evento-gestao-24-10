@@ -1,3 +1,4 @@
+import React from 'react';
 import { Evento } from '@/types/eventos';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,7 +29,7 @@ interface EventoCardProps {
   onChangeStatus: (evento: Evento) => void;
 }
 
-export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }: EventoCardProps) {
+export const EventoCard = React.memo(function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }: EventoCardProps) {
   const { canEditEvent, canDeleteEvent } = usePermissions(evento);
   const navigate = useNavigate();
 
@@ -194,4 +195,4 @@ export function EventoCard({ evento, onClick, onEdit, onDelete, onChangeStatus }
       </CardFooter>
     </Card>
   );
-}
+});

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +17,7 @@ interface MembroEquipeCardProps {
   canDeleteSystemUsers?: boolean;
 }
 
-export function MembroEquipeCard({ 
+export const MembroEquipeCard = React.memo(function MembroEquipeCard({ 
   membro, 
   onDetalhes, 
   onEditar, 
@@ -279,4 +280,4 @@ export function MembroEquipeCard({
       </CardContent>
     </Card>
   );
-}
+});

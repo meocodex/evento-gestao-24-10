@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useClientes } from '@/hooks/clientes';
 import { NovoClienteSheet } from '@/components/clientes/NovoClienteSheet';
 import { EditarClienteSheet } from '@/components/clientes/EditarClienteSheet';
@@ -78,7 +78,7 @@ export default function Clientes() {
     ).sort();
   }, [clientes, filtros.estado]);
 
-  const handleExcluir = async () => {
+  const handleExcluir = useCallback(async () => {
     if (clienteSelecionado) {
       try {
         await excluirCliente.mutateAsync(clienteSelecionado.id);
@@ -87,7 +87,7 @@ export default function Clientes() {
         setClienteSelecionado(null);
       }
     }
-  };
+  }, [clienteSelecionado, excluirCliente]);
 
   return (
     <div className="space-y-6">

@@ -21,7 +21,7 @@ export function useDemandaDetalhes(demandaId: string | null) {
       if (error) throw error;
       return data ? transformDemanda(data) : null;
     },
-    staleTime: 0, // Sempre buscar dados frescos
+    staleTime: 1000 * 60, // 1 minuto (com real-time específico não precisa ser 0)
   });
 
   // Real-time listener para essa demanda específica

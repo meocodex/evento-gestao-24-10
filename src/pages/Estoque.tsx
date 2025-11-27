@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -128,22 +128,22 @@ export default function Estoque() {
     return locs.sort();
   }, [materiais]);
 
-  const handleVerDetalhes = (material: MaterialEstoque) => {
+  const handleVerDetalhes = useCallback((material: MaterialEstoque) => {
     setMaterialSelecionado(material);
     setShowDetalhes(true);
-  };
+  }, []);
 
-  const handleEditarMaterial = (material: MaterialEstoque) => {
+  const handleEditarMaterial = useCallback((material: MaterialEstoque) => {
     setMaterialSelecionado(material);
     setShowEditarMaterial(true);
-  };
+  }, []);
 
-  const handleDeleteClick = (material: MaterialEstoque) => {
+  const handleDeleteClick = useCallback((material: MaterialEstoque) => {
     setMaterialParaExcluir(material);
     setShowDeleteConfirm(true);
-  };
+  }, []);
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = useCallback(async () => {
     if (materialParaExcluir) {
       try {
         await excluirMaterial.mutateAsync(materialParaExcluir.id);
@@ -152,7 +152,7 @@ export default function Estoque() {
         setShowDeleteConfirm(false);
       }
     }
-  };
+  }, [materialParaExcluir, excluirMaterial]);
 
   return (
     <div className="space-y-4 sm:space-y-6">

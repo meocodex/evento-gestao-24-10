@@ -1,3 +1,4 @@
+import React from 'react';
 import { Demanda } from '@/types/demandas';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +35,7 @@ interface DemandaCardProps {
   onClick: () => void;
 }
 
-export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
+export const DemandaCard = React.memo(function DemandaCard({ demanda, onClick }: DemandaCardProps) {
   const statusConf = statusConfig[demanda.status];
   const prioridadeConf = prioridadeConfig[demanda.prioridade];
   const isReembolso = demanda.categoria === 'reembolso';
@@ -148,4 +149,4 @@ export function DemandaCard({ demanda, onClick }: DemandaCardProps) {
       </div>
     </Card>
   );
-}
+});
