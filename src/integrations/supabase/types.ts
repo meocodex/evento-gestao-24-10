@@ -1903,6 +1903,7 @@ export type Database = {
           created_at: string | null
           data_aquisicao: string | null
           data_perda: string | null
+          evento_id: string | null
           fotos_perda: string[] | null
           localizacao: string
           material_id: string
@@ -1919,6 +1920,7 @@ export type Database = {
           created_at?: string | null
           data_aquisicao?: string | null
           data_perda?: string | null
+          evento_id?: string | null
           fotos_perda?: string[] | null
           localizacao: string
           material_id: string
@@ -1935,6 +1937,7 @@ export type Database = {
           created_at?: string | null
           data_aquisicao?: string | null
           data_perda?: string | null
+          evento_id?: string | null
           fotos_perda?: string[] | null
           localizacao?: string
           material_id?: string
@@ -1948,6 +1951,20 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "materiais_seriais_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "materiais_seriais_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_financeiro_eventos"
+            referencedColumns: ["evento_id"]
+          },
           {
             foreignKeyName: "materiais_seriais_material_id_fkey"
             columns: ["material_id"]

@@ -11,8 +11,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { MaterialEstoque, SerialEstoque, useEstoqueSeriais } from '@/hooks/estoque';
-import { Package, MapPin, Plus, Trash2, Edit, Loader2 } from 'lucide-react';
+import { Package, MapPin, Plus, Trash2, Edit, Loader2, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { NovoSerialSheet } from './NovoSerialSheet';
 import { EditarMaterialSheet } from './EditarMaterialSheet';
 import { EditarSerialSheet } from './EditarSerialSheet';
@@ -33,6 +34,7 @@ export function DetalhesMaterialSheet({
   onOpenChange, 
   material 
 }: DetalhesMaterialSheetProps) {
+  const navigate = useNavigate();
   const { excluirSerial } = useEstoque();
   const { data: seriaisAtualizados = [], isLoading: loadingSeriais } = useEstoqueSeriais(material.id);
   const [showNovoSerial, setShowNovoSerial] = useState(false);
@@ -189,7 +191,26 @@ export function DetalhesMaterialSheet({
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground" />
-                    {serial.localizacao}
+                    {serial.localizacao === 'Em evento' && serial.eventoId ? (
+                      <Button
+                        variant="link"
+                        className="h-auto p-0 text-primary hover:underline"
+                        onClick={() => {
+                          navigate(`/eventos/${serial.eventoId}`);
+                          onOpenChange(false);
+                        }}
+                      >
+                        {serial.localizacao}
+                        {serial.eventoNome && (
+                          <span className="ml-1 text-muted-foreground">
+                            ({serial.eventoNome})
+                          </span>
+                        )}
+                        <ExternalLink className="h-3 w-3 ml-1" />
+                      </Button>
+                    ) : (
+                      serial.localizacao
+                    )}
                   </div>
                 </TableCell>
                 <TableCell>

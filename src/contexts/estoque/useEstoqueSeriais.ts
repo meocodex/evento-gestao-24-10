@@ -13,7 +13,13 @@ export const useEstoqueSeriais = (materialId?: string) => {
 
       const { data, error } = await supabase
         .from('materiais_seriais')
-        .select('*')
+        .select(`
+          *,
+          eventos:evento_id (
+            id,
+            nome
+          )
+        `)
         .eq('material_id', materialId)
         .order('numero');
       
@@ -23,6 +29,8 @@ export const useEstoqueSeriais = (materialId?: string) => {
         numero: s.numero,
         status: dbToUiStatus(s.status as any),
         localizacao: s.localizacao,
+        eventoId: s.evento_id || undefined,
+        eventoNome: s.eventos?.nome || undefined,
         ultimaManutencao: s.ultima_manutencao || undefined,
         dataAquisicao: s.data_aquisicao || undefined,
         observacoes: s.observacoes || undefined,
