@@ -15,34 +15,13 @@ export interface DashboardStats {
   };
   eventosProximos7Dias: number;
   
-  // Financeiro
-  receitaTotal: number;
-  receitasPendentes: number;
-  receitasPagas: number;
-  despesaTotal: number;
-  despesasPendentes: number;
-  despesasPagas: number;
-  lucroLiquido: number;
-  margemLucro: number;
-  
-  // Cobranças
-  cobrancasPendentes: number;
-  valorCobrancasPendentes: number;
-  cobrancasAtrasadas: number;
-  
-  // Estoque
-  estoqueDisponivel: number;
-  estoqueEmUso: number;
-  estoqueManutencao: number;
-  estoquePerdido: number;
-  
   // Demandas
   demandasAbertas: number;
   demandasEmAndamento: number;
   demandasUrgentes: number;
   demandasAtrasadas: number;
   
-  // Alertas
+  // Alertas operacionais
   alertas: {
     tipo: 'error' | 'warning' | 'info';
     mensagem: string;
@@ -87,74 +66,15 @@ export function useDashboardStats() {
         }
       });
 
-      // Buscar eventos para cálculo de próximos 7 dias (não está na view)
+      // Buscar eventos para cálculo de próximos 7 dias
       const { data: eventos } = await supabase
         .from('eventos')
-        .select('data_inicio');
+        .select('id, data_inicio, status, nome, cliente_id, eventos_checklist(alocado, quantidade)');
 
       const eventosProximos = eventos?.filter(e => {
         const dataInicio = new Date(e.data_inicio);
         return isAfter(dataInicio, hoje) && isBefore(dataInicio, proximos7Dias);
       }) || [];
-
-      // ===== FINANCEIRO (usando view materializada) =====
-      const { data: financeiroStats } = await supabase
-        .from('vw_financeiro_eventos')
-        .select('*');
-
-      const receitaTotal = financeiroStats?.reduce((sum, row) => sum + (Number(row.total_receitas) || 0), 0) || 0;
-      const despesaTotal = financeiroStats?.reduce((sum, row) => sum + (Number(row.total_despesas) || 0), 0) || 0;
-
-      // Buscar detalhes de receitas e despesas para status (não está na view)
-      const { data: receitas } = await supabase
-        .from('eventos_receitas')
-        .select('valor, status, data')
-        .gte('data', inicioMes.toISOString().split('T')[0])
-        .lte('data', fimMes.toISOString().split('T')[0]);
-
-      const receitasPendentes = receitas?.filter(r => r.status === 'pendente').reduce((acc, r) => acc + Number(r.valor), 0) || 0;
-      const receitasPagas = receitas?.filter(r => r.status === 'pago').reduce((acc, r) => acc + Number(r.valor), 0) || 0;
-
-      const { data: despesas } = await supabase
-        .from('eventos_despesas')
-        .select('valor, status, data')
-        .gte('data', inicioMes.toISOString().split('T')[0])
-        .lte('data', fimMes.toISOString().split('T')[0]);
-
-      const despesasPendentes = despesas?.filter(d => d.status === 'pendente').reduce((acc, d) => acc + Number(d.valor), 0) || 0;
-      const despesasPagas = despesas?.filter(d => d.status === 'pago').reduce((acc, d) => acc + Number(d.valor), 0) || 0;
-
-      const lucroLiquido = receitaTotal - despesaTotal;
-      const margemLucro = receitaTotal > 0 ? (lucroLiquido / receitaTotal) * 100 : 0;
-
-      // ===== COBRANÇAS =====
-      const { data: cobrancas } = await supabase
-        .from('eventos_cobrancas')
-        .select('valor, status, created_at');
-
-      const cobrancasPendentesData = cobrancas?.filter(c => c.status === 'pendente') || [];
-      const valorCobrancasPendentes = cobrancasPendentesData.reduce((acc, c) => acc + Number(c.valor), 0);
-      
-      const cobrancasAtrasadas = cobrancasPendentesData.filter(c => {
-        const diasDesde = differenceInDays(hoje, new Date(c.created_at));
-        return diasDesde >= 15;
-      }).length;
-
-      // ===== ESTOQUE =====
-      const { data: materiais } = await supabase
-        .from('materiais_estoque')
-        .select('quantidade_disponivel, quantidade_total');
-
-      const estoqueDisponivel = materiais?.reduce((acc, m) => acc + Number(m.quantidade_disponivel), 0) || 0;
-      const estoqueTotal = materiais?.reduce((acc, m) => acc + Number(m.quantidade_total), 0) || 0;
-
-      const { data: seriais } = await supabase
-        .from('materiais_seriais')
-        .select('status');
-
-      const estoqueEmUso = seriais?.filter(s => s.status === 'em-uso').length || 0;
-      const estoqueManutencao = seriais?.filter(s => s.status === 'manutencao').length || 0;
-      const estoquePerdido = 0; // Não há status "perdido" na tabela materiais_seriais
 
       // ===== DEMANDAS (usando view materializada) =====
       const { data: demandasStats } = await supabase
@@ -165,73 +85,68 @@ export function useDashboardStats() {
       const demandasEmAndamento = demandasStats?.find(d => d.status === 'em-andamento')?.total || 0;
       const demandasUrgentes = demandasStats?.find(d => d.prioridade === 'urgente')?.total || 0;
       const demandasAtrasadas = demandasStats?.reduce((sum, d) => sum + (d.atrasadas || 0), 0) || 0;
-      
-      // Buscar prazos para validação de alertas (não está na view)
-      const { data: demandas } = await supabase
-        .from('demandas')
-        .select('status, prioridade, prazo');
 
-      // ===== ALERTAS =====
+      // ===== ALERTAS OPERACIONAIS =====
       const alertas: DashboardStats['alertas'] = [];
 
-      // Cobranças atrasadas
-      if (cobrancasAtrasadas > 0) {
-        alertas.push({
-          tipo: 'error',
-          mensagem: `${cobrancasAtrasadas} cobrança${cobrancasAtrasadas > 1 ? 's' : ''} atrasada${cobrancasAtrasadas > 1 ? 's' : ''} há 15+ dias`,
-          detalhes: 'Requer ação imediata'
-        });
-      }
-
-      // Eventos de alto valor
-      const { data: eventosAltoValor } = await supabase
-        .from('eventos_receitas')
-        .select('evento_id, valor')
-        .gte('valor', 50000);
-      
-      const eventosUnicos = new Set(eventosAltoValor?.map(e => e.evento_id) || []).size;
-      if (eventosUnicos > 0) {
-        alertas.push({
-          tipo: 'warning',
-          mensagem: `${eventosUnicos} evento${eventosUnicos > 1 ? 's' : ''} acima de R$ 50k`,
-          detalhes: 'Validação necessária'
-        });
-      }
-
-      // Estoque baixo (menos de 20% do total)
-      const materiaisBaixos = materiais?.filter(m => {
-        const percentual = (Number(m.quantidade_disponivel) / Number(m.quantidade_total)) * 100;
-        return percentual < 20 && Number(m.quantidade_total) > 0;
-      }).length || 0;
-
-      if (materiaisBaixos > 0) {
-        alertas.push({
-          tipo: 'info',
-          mensagem: `${materiaisBaixos} tipo${materiaisBaixos > 1 ? 's' : ''} de material com estoque baixo`,
-          detalhes: 'Reabastecer em breve'
-        });
-      }
-
-      // Materiais com retorno atrasado (usando status da tabela eventos_materiais_alocados)
+      // Materiais com retorno atrasado
       const { data: materiaisAlocados } = await supabase
         .from('eventos_materiais_alocados')
-        .select('status, created_at')
-        .in('status', ['separado', 'em_transito', 'entregue']);
+        .select('id, nome, evento_id, status_devolucao, data_devolucao')
+        .eq('status_devolucao', 'pendente');
 
       const materiaisAtrasados = materiaisAlocados?.filter(m => {
-        const diasDesde = differenceInDays(hoje, new Date(m.created_at));
-        return diasDesde > 7; // Mais de 7 dias em uso
-      }).length || 0;
+        // Verificar se o evento já terminou há mais de 7 dias
+        return eventos?.some(e => {
+          if (e.id === m.evento_id) {
+            const dataFim = new Date(e.data_inicio);
+            const diasDesde = differenceInDays(hoje, dataFim);
+            return diasDesde > 7;
+          }
+          return false;
+        });
+      }) || [];
 
-      if (materiaisAtrasados > 0) {
+      if (materiaisAtrasados.length > 0) {
         alertas.push({
           tipo: 'warning',
-          mensagem: `${materiaisAtrasados} material${materiaisAtrasados > 1 ? 'ais' : ''} com retorno atrasado`,
-          detalhes: 'Entrar em contato com produtores'
+          mensagem: `${materiaisAtrasados.length} material${materiaisAtrasados.length > 1 ? 'ais' : ''} com retorno atrasado`,
+          detalhes: 'Evento finalizado há mais de 7 dias'
         });
       }
 
-      // Demandas urgentes
+      // Eventos próximos sem materiais alocados
+      const eventosSemMateriais = eventosProximos.filter(e => {
+        const checklist = e.eventos_checklist as any[];
+        if (!checklist || checklist.length === 0) return true;
+        return checklist.some(item => item.alocado < item.quantidade);
+      });
+
+      if (eventosSemMateriais.length > 0) {
+        alertas.push({
+          tipo: 'warning',
+          mensagem: `${eventosSemMateriais.length} evento${eventosSemMateriais.length > 1 ? 's' : ''} próximo${eventosSemMateriais.length > 1 ? 's' : ''} sem materiais completos`,
+          detalhes: 'Alocar materiais para os eventos'
+        });
+      }
+
+      // Eventos próximos sem equipe
+      const { data: eventosEquipe } = await supabase
+        .from('eventos_equipe')
+        .select('evento_id');
+
+      const eventosComEquipe = new Set(eventosEquipe?.map(e => e.evento_id) || []);
+      const eventosSemEquipe = eventosProximos.filter(e => !eventosComEquipe.has(e.id));
+
+      if (eventosSemEquipe.length > 0) {
+        alertas.push({
+          tipo: 'info',
+          mensagem: `${eventosSemEquipe.length} evento${eventosSemEquipe.length > 1 ? 's' : ''} sem equipe definida`,
+          detalhes: 'Definir membros da equipe operacional'
+        });
+      }
+
+      // Demandas urgentes não atendidas
       if (demandasUrgentes > 0) {
         alertas.push({
           tipo: 'error',
@@ -244,21 +159,6 @@ export function useDashboardStats() {
         totalEventos: totalEventosMes,
         eventosPorStatus,
         eventosProximos7Dias: eventosProximos.length,
-        receitaTotal,
-        receitasPendentes,
-        receitasPagas,
-        despesaTotal,
-        despesasPendentes,
-        despesasPagas,
-        lucroLiquido,
-        margemLucro,
-        cobrancasPendentes: cobrancasPendentesData.length,
-        valorCobrancasPendentes,
-        cobrancasAtrasadas,
-        estoqueDisponivel,
-        estoqueEmUso,
-        estoqueManutencao,
-        estoquePerdido,
         demandasAbertas,
         demandasEmAndamento,
         demandasUrgentes,
@@ -270,7 +170,7 @@ export function useDashboardStats() {
     gcTime: 1000 * 60 * 10,
   });
 
-  // Realtime listeners para todas as tabelas que afetam o dashboard
+  // Realtime listeners apenas para eventos e demandas
   useEffect(() => {
     const channel = supabase
       .channel('dashboard-changes')
@@ -281,22 +181,7 @@ export function useDashboardStats() {
       )
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'eventos_receitas' },
-        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'eventos_despesas' },
-        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'eventos_cobrancas' },
-        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'materiais_seriais' },
+        { event: '*', schema: 'public', table: 'eventos_materiais_alocados' },
         () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
       )
       .on(
@@ -349,15 +234,6 @@ export function useComercialStats(userId: string) {
 
       const contratosFechados = contratos?.filter(c => c.status === 'assinado' || c.status === 'aprovada').length || 0;
 
-      // Receita gerada (dos eventos do comercial)
-      const eventosIds = eventosMes.map(e => e.id);
-      const { data: receitas } = await supabase
-        .from('eventos_receitas')
-        .select('valor')
-        .in('evento_id', eventosIds);
-
-      const receitaGerada = receitas?.reduce((acc, r) => acc + Number(r.valor), 0) || 0;
-
       // Demandas criadas pelo comercial
       const { data: demandas } = await supabase
         .from('demandas')
@@ -376,7 +252,6 @@ export function useComercialStats(userId: string) {
         meusEventos: eventosMes.length,
         orcamentosEmAnalise: eventos?.filter(e => e.status === 'orcamento_enviado').length || 0,
         contratosFechados,
-        receitaGerada,
         eventosProximos,
         demandasCriadas,
         demandasConcluidas,
@@ -404,31 +279,39 @@ export function useSuporteStats() {
       // Operações hoje (eventos acontecendo hoje)
       const { data: eventosHoje } = await supabase
         .from('eventos')
-        .select('id')
+        .select('id, nome, local, hora_inicio, hora_fim')
         .eq('data_inicio', hoje.toISOString().split('T')[0]);
 
       // Rastreamentos ativos
       const { data: envios } = await supabase
         .from('envios')
-        .select('status')
+        .select('id, rastreio, status, tipo')
         .in('status', ['pendente', 'em_transito']);
 
       // Retornos atrasados
+      const { data: eventos } = await supabase
+        .from('eventos')
+        .select('id, data_inicio');
+
       const { data: materiaisAlocados } = await supabase
         .from('eventos_materiais_alocados')
-        .select('status, created_at')
-        .in('status', ['separado', 'em_transito', 'entregue']);
+        .select('id, nome, evento_id, status_devolucao')
+        .eq('status_devolucao', 'pendente');
 
       const retornosAtrasados = materiaisAlocados?.filter(m => {
-        const diasDesde = differenceInDays(hoje, new Date(m.created_at));
-        return diasDesde > 7;
+        const evento = eventos?.find(e => e.id === m.evento_id);
+        if (evento) {
+          const diasDesde = differenceInDays(hoje, new Date(evento.data_inicio));
+          return diasDesde > 7;
+        }
+        return false;
       }).length || 0;
 
       return {
         demandasPendentes,
         demandasUrgentes,
-        operacoesHoje: eventosHoje?.length || 0,
-        rastreamentosAtivos: envios?.length || 0,
+        operacoesHoje: eventosHoje || [],
+        rastreamentosAtivos: envios || [],
         retornosAtrasados,
       };
     },
