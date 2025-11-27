@@ -73,7 +73,7 @@ export const serialEstoqueSchema = z.object({
     .trim()
     .min(1, 'Localização é obrigatória')
     .max(200, 'Localização deve ter no máximo 200 caracteres')
-    .default('Estoque'),
+    .default('Empresa'),
   tags: z
     .array(z.string().trim().min(1).max(50))
     .max(10, 'Máximo de 10 tags por serial')

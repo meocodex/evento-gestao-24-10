@@ -30,7 +30,7 @@ export function NovoSerialSheet({
     defaultValues: {
       materialId,
       serial: '',
-      localizacao: 'Estoque',
+      localizacao: 'Empresa',
       tags: [],
       observacoes: '',
       status: 'disponivel',
@@ -127,7 +127,7 @@ export function NovoSerialSheet({
               <FormItem>
                 <FormLabel>Localização *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: Estoque, Depósito A, Sala 2" {...field} />
+                  <Input placeholder="Ex: Empresa, Depósito A, Sala 2" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
