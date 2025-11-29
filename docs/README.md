@@ -54,6 +54,24 @@ Cenários de teste para validação do sistema de permissões.
 
 ---
 
+### 📱 Integrações
+
+#### [WHATSAPP_INTEGRATION.md](./WHATSAPP_INTEGRATION.md)
+Guia completo de integração com WhatsApp Business API.
+
+**Conteúdo:**
+- Configuração de conta Meta Business
+- Obtenção de credenciais (Access Token, Phone ID)
+- Criação de templates de mensagem
+- Configuração de webhook
+- Edge Functions (send-whatsapp, whatsapp-webhook)
+- Hook useWhatsApp
+- Troubleshooting e boas práticas
+
+**Público-alvo:** Desenvolvedores, Administradores
+
+---
+
 ## 🔄 Status dos Documentos
 
 | Documento | Última Atualização | Status | Versão |
@@ -61,6 +79,7 @@ Cenários de teste para validação do sistema de permissões.
 | 📘 [Hooks Guide](HOOKS.md) | Guia completo do padrão de hooks unificados | ✅ Completo | 2025-01-23 |
 | PERMISSIONS_MIGRATION.md | 2025-10-22 | ✅ Completo | 1.0 |
 | TESTES_PERMISSOES.md | 2025-10-22 | ✅ Completo | 1.0 |
+| WHATSAPP_INTEGRATION.md | 2025-11-29 | ✅ Completo | 1.0 |
 
 ---
 
