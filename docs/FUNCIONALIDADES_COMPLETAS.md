@@ -1479,6 +1479,290 @@ export async function buscarEnderecoPorCEP(cep: string) {
 
 ---
 
+## 📱 WhatsApp Business API
+
+**Objetivo**: Integração oficial com WhatsApp Business para envio de mensagens automáticas, confirmações de eventos com botões interativos e envio de documentos PDF.
+
+### Funcionalidades
+
+#### 1. Confirmação de Agendamento com Botões
+- **Tipo**: Mensagem interativa com botões de resposta
+- **Botões**: "✅ Confirmar" / "❌ Cancelar"
+- **Resposta Automática**: Webhook processa clique e atualiza status do evento
+- **Registro**: Timeline do evento atualizada automaticamente
+
+#### 2. Envio de Termo de Entrega (PDF)
+- **Quando**: Após gerar termo de entrega de materiais
+- **Template**: `termo_entrega`
+- **Anexo**: PDF do termo de retirada
+
+#### 3. Envio de Relatório de Fechamento (PDF)
+- **Quando**: Após fechamento financeiro do evento
+- **Template**: `fechamento_evento`
+- **Anexo**: PDF do relatório de fechamento
+
+### Edge Functions
+
+#### send-whatsapp
+**Path**: `/functions/v1/send-whatsapp`
+
+**Endpoints**:
+- Envio de mensagem de texto
+- Envio de documento PDF
+- Envio de mensagem interativa com botões
+
+**Estrutura de Requisição (Botões)**:
+```json
+{
+  "to": "+5511999999999",
+  "type": "interactive",
+  "evento_id": "uuid-do-evento",
+  "template_name": "confirmacao_evento",
+  "variables": {
+    "nome_evento": "FESTA XYZ",
+    "data": "15/01/2025",
+    "local": "São Paulo - SP"
+  }
+}
+```
+
+**Estrutura de Requisição (Documento)**:
+```json
+{
+  "to": "+5511999999999",
+  "type": "document",
+  "template_name": "termo_entrega",
+  "document_url": "https://storage.url/documento.pdf",
+  "variables": {
+    "nome_evento": "FESTA XYZ",
+    "data_entrega": "15/01/2025"
+  }
+}
+```
+
+#### whatsapp-webhook
+**Path**: `/functions/v1/whatsapp-webhook`
+
+**Funcionalidades**:
+- Verificação do webhook (GET para validação Meta)
+- Recebimento de callbacks (POST)
+- Processamento de respostas de botões
+- Atualização automática de status do evento
+- Registro na timeline
+
+**Fluxo de Confirmação**:
+1. Sistema envia mensagem com botões
+2. Cliente recebe no WhatsApp
+3. Cliente clica "Confirmar" ou "Cancelar"
+4. Meta envia callback para webhook
+5. Sistema atualiza status do evento
+6. Sistema registra na timeline
+7. Sistema notifica equipe interna
+
+### Tabela de Controle
+
+**confirmacoes_whatsapp**:
+| Campo | Tipo | Descrição |
+|-------|------|-----------|
+| id | UUID | Identificador único |
+| evento_id | UUID | Referência ao evento |
+| tipo | TEXT | 'agendamento', 'termo_entrega', 'fechamento' |
+| destinatario | TEXT | Número WhatsApp do destinatário |
+| status | TEXT | 'pendente', 'enviado', 'confirmado', 'cancelado', 'erro' |
+| message_id | TEXT | ID da mensagem no WhatsApp |
+| respondido_em | TIMESTAMPTZ | Data/hora da resposta |
+| created_at | TIMESTAMPTZ | Data de criação |
+
+**Relacionamentos**:
+```
+EVENTOS ||--o{ CONFIRMACOES_WHATSAPP : tem
+```
+
+### Templates Meta (Pré-requisito)
+
+**Templates que devem ser criados na plataforma Meta**:
+
+#### 1. confirmacao_evento (Botões Interativos)
+- **Nome**: `confirmacao_evento`
+- **Categoria**: UTILITY
+- **Idioma**: pt_BR
+- **Variáveis**: {{1}} nome_evento, {{2}} data, {{3}} horario, {{4}} local
+- **Botões**: 
+  - Quick Reply: "Confirmar"
+  - Quick Reply: "Cancelar"
+- **Exemplo de Corpo**:
+```
+Olá! Confirmando o agendamento do seu evento:
+
+📅 Evento: {{1}}
+📆 Data: {{2}}
+⏰ Horário: {{3}}
+📍 Local: {{4}}
+
+Por favor, confirme o agendamento clicando em um dos botões abaixo:
+```
+
+#### 2. termo_entrega (Documento)
+- **Nome**: `termo_entrega`
+- **Categoria**: UTILITY
+- **Idioma**: pt_BR
+- **Variáveis**: {{1}} nome_evento, {{2}} data_entrega
+- **Tipo**: DOCUMENT
+- **Exemplo de Corpo**:
+```
+Segue o Termo de Entrega dos materiais para o evento {{1}}.
+
+Data de entrega: {{2}}
+
+Por favor, revise o documento anexo.
+```
+
+#### 3. fechamento_evento (Documento)
+- **Nome**: `fechamento_evento`
+- **Categoria**: UTILITY
+- **Idioma**: pt_BR
+- **Variáveis**: {{1}} nome_evento
+- **Tipo**: DOCUMENT
+- **Exemplo de Corpo**:
+```
+Relatório de Fechamento - Evento {{1}}
+
+Segue anexo o relatório completo de fechamento financeiro e operacional do evento.
+```
+
+### Secrets Necessários
+
+| Secret | Descrição | Onde Obter |
+|--------|-----------|------------|
+| WHATSAPP_ACCESS_TOKEN | Token de acesso permanente | Meta Developers → App → WhatsApp → Getting Started |
+| WHATSAPP_PHONE_ID | ID do número de telefone | Meta Developers → App → WhatsApp → Getting Started |
+| WHATSAPP_VERIFY_TOKEN | Token de verificação do webhook | Definido pelo usuário (qualquer string segura) |
+
+### Diagrama de Fluxo
+
+```mermaid
+sequenceDiagram
+    participant U as Usuário Sistema
+    participant S as Sistema
+    participant E as Edge Function
+    participant W as WhatsApp API
+    participant C as Cliente
+    
+    U->>S: Confirma evento
+    S->>E: POST /send-whatsapp
+    E->>W: Envia template com botões
+    W->>C: Cliente recebe mensagem
+    
+    Note over C: Cliente clica "Confirmar"
+    
+    C->>W: Resposta do botão
+    W->>E: POST /whatsapp-webhook
+    E->>S: Atualiza evento (status: confirmado)
+    E->>S: Registra na timeline
+    S->>U: Notificação: Cliente confirmou!
+```
+
+### Hook useWhatsApp
+
+**Localização**: `src/hooks/useWhatsApp.ts`
+
+**Funções Exportadas**:
+```typescript
+export function useWhatsApp() {
+  // Enviar confirmação de agendamento com botões
+  const enviarConfirmacaoAgendamento = async (
+    eventoId: string, 
+    numero: string, 
+    dados: {
+      nomeEvento: string;
+      data: string;
+      horario: string;
+      local: string;
+    }
+  ) => {...}
+  
+  // Enviar documento PDF (termo de entrega ou fechamento)
+  const enviarDocumento = async (
+    numero: string, 
+    pdfUrl: string, 
+    templateName: string, 
+    variaveis: Record<string, string>
+  ) => {...}
+  
+  // Verificar status de confirmação
+  const verificarStatusConfirmacao = async (eventoId: string) => {...}
+  
+  return { 
+    enviarConfirmacaoAgendamento, 
+    enviarDocumento, 
+    verificarStatusConfirmacao,
+    isLoading,
+    error 
+  };
+}
+```
+
+**Exemplo de Uso**:
+```typescript
+// Em EventoDetailsSheet.tsx
+import { useWhatsApp } from '@/hooks/useWhatsApp';
+
+function EventoDetailsSheet() {
+  const { enviarConfirmacaoAgendamento } = useWhatsApp();
+  
+  const handleEnviarConfirmacao = async () => {
+    await enviarConfirmacaoAgendamento(evento.id, cliente.whatsapp, {
+      nomeEvento: evento.nome,
+      data: format(new Date(evento.data_inicio), 'dd/MM/yyyy'),
+      horario: evento.hora_inicio,
+      local: `${evento.cidade} - ${evento.estado}`
+    });
+    
+    toast.success('Confirmação enviada via WhatsApp!');
+  };
+  
+  return (
+    <Button onClick={handleEnviarConfirmacao}>
+      Enviar Confirmação WhatsApp
+    </Button>
+  );
+}
+```
+
+### Tipos de Notificação
+
+**Novos tipos adicionados em `src/types/notificacoes.ts`**:
+- `confirmacao_agendamento` - Confirmação de evento via WhatsApp
+- `termo_entrega` - Envio de termo de entrega
+- `fechamento_evento` - Envio de relatório de fechamento
+
+### Integração no Fluxo de Eventos
+
+#### 1. Confirmação de Agendamento
+- **Quando**: Após criação/edição de evento
+- **Onde**: Página de detalhes do evento
+- **Ação**: Botão "Enviar Confirmação WhatsApp"
+
+#### 2. Termo de Entrega
+- **Quando**: Após gerar termo de retirada de materiais
+- **Onde**: Seção de Materiais do evento
+- **Ação**: Automático após geração do PDF
+
+#### 3. Fechamento Financeiro
+- **Quando**: Após finalizar fechamento do evento
+- **Onde**: Seção Financeiro do evento
+- **Ação**: Opção ao gerar relatório de fechamento
+
+### Limitações e Considerações
+
+1. **Templates Pré-aprovados**: Todos os templates devem ser aprovados pela Meta antes do uso (1-24h de análise)
+2. **Janela de 24h**: Mensagens fora de templates só podem ser enviadas dentro de 24h após última interação do cliente
+3. **Rate Limits**: WhatsApp Business API tem limites de mensagens por segundo
+4. **Formato de Número**: Deve estar no formato internacional (+5511999999999)
+5. **Webhook Público**: O endpoint do webhook deve ser HTTPS e publicamente acessível
+
+---
+
 ## Segurança e Compliance
 
 ### 🔒 Row Level Security (RLS)
