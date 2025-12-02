@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { GerenciarPermissoes } from '@/components/configuracoes/GerenciarPermissoes';
 import { MembroEquipeUnificado } from '@/types/equipe';
@@ -26,7 +26,7 @@ interface ConcederAcessoSistemaSheetProps {
 }
 
 export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: ConcederAcessoSistemaSheetProps) {
-  const { toast } = useToast();
+  
   const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
@@ -68,8 +68,7 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
     // Se ainda não há permissões selecionadas, auto-preencher com sugestões
     if (permissoesSelecionadas.length === 0 && permissoesSugeridas.size > 0) {
       setPermissoesSelecionadas(Array.from(permissoesSugeridas));
-      toast({
-        title: 'Permissões sugeridas aplicadas',
+      toast.success('Permissões sugeridas aplicadas', {
         description: `${permissoesSugeridas.size} permissões foram automaticamente selecionadas com base nas funções escolhidas.`,
       });
     }
@@ -87,10 +86,8 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
     }
 
     if (!email || !senha) {
-      toast({
-        title: 'Campos obrigatórios',
+      toast.error('Campos obrigatórios', {
         description: 'Preencha o email e a senha.',
-        variant: 'destructive'
       });
       return;
     }
@@ -100,28 +97,22 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
       passwordSchema.parse(senha);
     } catch (error: any) {
       const messages = error.errors?.map((e: any) => e.message).join('\n') || 'Senha inválida';
-      toast({
-        title: 'Senha não atende aos requisitos',
+      toast.error('Senha não atende aos requisitos', {
         description: messages,
-        variant: 'destructive'
       });
       return;
     }
 
     if (rolesSelecionadas.length === 0) {
-      toast({
-        title: 'Funções obrigatórias',
+      toast.error('Funções obrigatórias', {
         description: 'Selecione pelo menos 1 função para o membro.',
-        variant: 'destructive'
       });
       return;
     }
 
     if (permissoesSelecionadas.length === 0) {
-      toast({
-        title: 'Permissões obrigatórias',
+      toast.error('Permissões obrigatórias', {
         description: 'Você deve selecionar pelo menos 1 permissão. Use o botão "Aplicar Sugestões" ou selecione manualmente na aba Permissões.',
-        variant: 'destructive',
         duration: 6000,
       });
       return;
@@ -146,10 +137,8 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
       if (error) {
         // Verificar se é erro de usuário já existente (não órfão)
         if (error.message?.includes('email_already_exists')) {
-          toast({
-            title: 'Email já cadastrado',
+          toast.error('Email já cadastrado', {
             description: `Este email já está cadastrado no sistema. Use "Gerenciar Permissões" para editar as permissões do usuário existente.`,
-            variant: 'destructive'
           });
           close();
           return;
@@ -157,10 +146,8 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
         
         // Verificar se houve erro na limpeza
         if (error.message?.includes('cleanup_failed')) {
-          toast({
-            title: 'Erro ao processar',
+          toast.error('Erro ao processar', {
             description: 'Não foi possível processar a solicitação. Contate o suporte técnico.',
-            variant: 'destructive'
           });
           close();
           return;
@@ -174,10 +161,8 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
       if (data?.error) {
         if (data.error === 'invalid_permissions') {
           const invalidList = data.invalid ? data.invalid.join(', ') : 'desconhecidas';
-          toast({
-            title: 'Permissões inválidas',
+          toast.error('Permissões inválidas', {
             description: `As seguintes permissões não existem no sistema: ${invalidList}. Entre em contato com o administrador.`,
-            variant: 'destructive'
           });
           close();
           return;
@@ -187,17 +172,8 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
         throw new Error(data.message || data.error);
       }
 
-      toast({
-        title: 'Acesso concedido com sucesso',
-        description: (
-          <div className="space-y-2">
-            <p>✅ {rolesSelecionadas.length} função(ões) atribuída(s)</p>
-            <p>✅ {permissoesSelecionadas.length} permissão(ões) aplicada(s)</p>
-            <p className="text-xs text-muted-foreground mt-2">
-              O usuário deve fazer logout e login novamente para ver as mudanças.
-            </p>
-          </div>
-        ),
+      toast.success('Acesso concedido com sucesso', {
+        description: `✅ ${rolesSelecionadas.length} função(ões) atribuída(s) • ✅ ${permissoesSelecionadas.length} permissão(ões) aplicada(s). O usuário deve fazer logout e login novamente.`,
         duration: 8000,
       });
 
@@ -231,10 +207,8 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
         }
       }
       
-      toast({
-        title: 'Erro ao conceder acesso',
+      toast.error('Erro ao conceder acesso', {
         description: errorMessage,
-        variant: 'destructive'
       });
     } finally {
       setConcedendo(false);
@@ -372,8 +346,7 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
                   }
                 });
                 setPermissoesSelecionadas(Array.from(permissoesSugeridas));
-                toast({
-                  title: 'Permissões aplicadas',
+                toast.success('Permissões aplicadas', {
                   description: `${permissoesSugeridas.size} permissões sugeridas foram aplicadas.`,
                 });
               }}
@@ -389,8 +362,7 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
                 size="sm"
                 onClick={() => {
                   setPermissoesSelecionadas([]);
-                  toast({
-                    title: 'Permissões limpas',
+                  toast.success('Permissões limpas', {
                     description: 'Todas as permissões foram desmarcadas.',
                   });
                 }}
