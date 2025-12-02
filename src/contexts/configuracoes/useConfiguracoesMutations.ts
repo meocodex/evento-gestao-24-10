@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export function useConfiguracoesMutations() {
   const queryClient = useQueryClient();
@@ -19,11 +19,10 @@ export function useConfiguracoesMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['configuracoes'] });
-      toast({ title: 'Configurações de notificações atualizadas' });
+      toast.success('Configurações de notificações atualizadas');
     },
-    onError: (error) => {
-      console.error('Erro ao atualizar notificações:', error);
-      toast({ title: 'Erro ao atualizar notificações', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao atualizar notificações');
     },
   });
 
@@ -41,11 +40,10 @@ export function useConfiguracoesMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['configuracoes'] });
-      toast({ title: 'Configurações da empresa atualizadas' });
+      toast.success('Configurações da empresa atualizadas');
     },
-    onError: (error) => {
-      console.error('Erro ao atualizar empresa:', error);
-      toast({ title: 'Erro ao atualizar empresa', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao atualizar empresa');
     },
   });
 
@@ -63,11 +61,10 @@ export function useConfiguracoesMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['configuracoes'] });
-      toast({ title: 'Configurações do sistema atualizadas' });
+      toast.success('Configurações do sistema atualizadas');
     },
-    onError: (error) => {
-      console.error('Erro ao atualizar sistema:', error);
-      toast({ title: 'Erro ao atualizar sistema', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao atualizar sistema');
     },
   });
 

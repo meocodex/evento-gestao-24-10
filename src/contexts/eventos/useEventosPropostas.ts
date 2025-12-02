@@ -1,10 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { EventoFormData } from '@/types/eventos';
 
 export function useEventosPropostas() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const criarDeContrato = useMutation({
@@ -84,16 +83,13 @@ export function useEventosPropostas() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
-      toast({
-        title: 'Evento criado!',
+      toast.success('Evento criado!', {
         description: 'Evento criado a partir da proposta com sucesso.'
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao criar evento',
-        description: error.message,
-        variant: 'destructive'
+      toast.error('Erro ao criar evento', {
+        description: error.message
       });
     }
   });
@@ -129,16 +125,13 @@ export function useEventosPropostas() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
-      toast({
-        title: 'Receitas adicionadas!',
+      toast.success('Receitas adicionadas!', {
         description: `${variables.itens.length} receita(s) importada(s) com sucesso.`
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao adicionar receitas',
-        description: error.message,
-        variant: 'destructive'
+      toast.error('Erro ao adicionar receitas', {
+        description: error.message
       });
     }
   });

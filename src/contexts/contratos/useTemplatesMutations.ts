@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { ContratoTemplate } from '@/types/contratos';
 
 export function useTemplatesMutations() {
@@ -26,11 +26,10 @@ export function useTemplatesMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos-templates'] });
-      toast({ title: 'Template criado', description: 'Template de contrato criado com sucesso.' });
+      toast.success('Template criado', { description: 'Template de contrato criado com sucesso.' });
     },
-    onError: (error) => {
-      console.error('Erro ao criar template:', error);
-      toast({ title: 'Erro ao criar template', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao criar template');
     },
   });
 
@@ -56,11 +55,10 @@ export function useTemplatesMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos-templates'] });
-      toast({ title: 'Template atualizado', description: 'Template atualizado com sucesso.' });
+      toast.success('Template atualizado', { description: 'Template atualizado com sucesso.' });
     },
-    onError: (error) => {
-      console.error('Erro ao editar template:', error);
-      toast({ title: 'Erro ao editar template', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao editar template');
     },
   });
 
@@ -75,11 +73,10 @@ export function useTemplatesMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contratos-templates'] });
-      toast({ title: 'Template excluído', description: 'Template removido do sistema.' });
+      toast.success('Template excluído', { description: 'Template removido do sistema.' });
     },
-    onError: (error) => {
-      console.error('Erro ao excluir template:', error);
-      toast({ title: 'Erro ao excluir template', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao excluir template');
     },
   });
 

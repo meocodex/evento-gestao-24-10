@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { TipoCategoria, Categoria } from '@/types/categorias';
 
 export function useCategoriasMutations() {
@@ -21,16 +21,13 @@ export function useCategoriasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
-      toast({
-        title: 'Categorias atualizadas',
+      toast.success('Categorias atualizadas', {
         description: 'As configurações foram salvas com sucesso.',
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao atualizar categorias',
+      toast.error('Erro ao atualizar categorias', {
         description: error.message,
-        variant: 'destructive',
       });
     },
   });
@@ -51,10 +48,7 @@ export function useCategoriasMutations() {
         throw new Error(`Categoria "${categoria.label}" já existe`);
       }
       
-      console.log(`[${tipo}] Categorias antes:`, categorias.length);
-      console.log(`[${tipo}] Adicionando:`, categoria);
       categorias.push(categoria);
-      console.log(`[${tipo}] Categorias depois:`, categorias.length);
 
       const { error } = await supabase
         .from('configuracoes_categorias')
@@ -86,16 +80,13 @@ export function useCategoriasMutations() {
         });
       });
       
-      toast({
-        title: 'Categoria adicionada',
+      toast.success('Categoria adicionada', {
         description: 'A nova categoria foi criada com sucesso.',
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao adicionar categoria',
+      toast.error('Erro ao adicionar categoria', {
         description: error.message,
-        variant: 'destructive',
       });
     },
   });
@@ -122,16 +113,13 @@ export function useCategoriasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
-      toast({
-        title: 'Categoria atualizada',
+      toast.success('Categoria atualizada', {
         description: 'O status da categoria foi alterado.',
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao atualizar categoria',
+      toast.error('Erro ao atualizar categoria', {
         description: error.message,
-        variant: 'destructive',
       });
     },
   });
@@ -158,16 +146,13 @@ export function useCategoriasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
-      toast({
-        title: 'Categoria editada',
+      toast.success('Categoria editada', {
         description: 'O nome da categoria foi atualizado.',
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao editar categoria',
+      toast.error('Erro ao editar categoria', {
         description: error.message,
-        variant: 'destructive',
       });
     },
   });
@@ -198,16 +183,13 @@ export function useCategoriasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
-      toast({
-        title: 'Categoria excluída',
+      toast.success('Categoria excluída', {
         description: 'A categoria foi removida com sucesso.',
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao excluir categoria',
+      toast.error('Erro ao excluir categoria', {
         description: error.message,
-        variant: 'destructive',
       });
     },
   });
