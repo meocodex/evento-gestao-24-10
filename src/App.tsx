@@ -1,6 +1,5 @@
 import { lazy, Suspense } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { GlobalErrorBoundary } from "@/components/shared/GlobalErrorBoundary";
@@ -154,7 +153,6 @@ const App = () => (
       <NavigationLoadingBar />
       <InstallPrompt />
       <Toaster />
-      <Sonner />
       <GlobalErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <Routes>

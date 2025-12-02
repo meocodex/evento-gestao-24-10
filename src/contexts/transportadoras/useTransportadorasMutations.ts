@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export function useTransportadorasMutations() {
   const queryClient = useQueryClient();
@@ -18,10 +18,10 @@ export function useTransportadorasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
-      toast({ title: 'Transportadora criada!' });
+      toast.success('Transportadora criada!');
     },
     onError: (error: any) => {
-      toast({ title: 'Erro ao criar transportadora', description: error.message, variant: 'destructive' });
+      toast.error('Erro ao criar transportadora', { description: error.message });
     }
   });
 
@@ -36,10 +36,10 @@ export function useTransportadorasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
-      toast({ title: 'Transportadora atualizada!' });
+      toast.success('Transportadora atualizada!');
     },
     onError: (error: any) => {
-      toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' });
+      toast.error('Erro ao atualizar', { description: error.message });
     }
   });
 
@@ -54,10 +54,10 @@ export function useTransportadorasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
-      toast({ title: 'Transportadora excluída!' });
+      toast.success('Transportadora excluída!');
     },
     onError: (error: any) => {
-      toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' });
+      toast.error('Erro ao excluir', { description: error.message });
     }
   });
 
@@ -80,7 +80,7 @@ export function useTransportadorasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
-      toast({ title: 'Rota adicionada!' });
+      toast.success('Rota adicionada!');
     }
   });
 
@@ -104,7 +104,7 @@ export function useTransportadorasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
-      toast({ title: 'Rota atualizada!' });
+      toast.success('Rota atualizada!');
     }
   });
 
@@ -128,7 +128,7 @@ export function useTransportadorasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
-      toast({ title: 'Rota removida!' });
+      toast.success('Rota removida!');
     }
   });
 
@@ -145,10 +145,10 @@ export function useTransportadorasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
-      toast({ title: 'Envio criado!' });
+      toast.success('Envio criado!');
     },
     onError: (error: any) => {
-      toast({ title: 'Erro ao criar envio', description: error.message, variant: 'destructive' });
+      toast.error('Erro ao criar envio', { description: error.message });
     }
   });
 
@@ -163,7 +163,7 @@ export function useTransportadorasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
-      toast({ title: 'Envio atualizado!' });
+      toast.success('Envio atualizado!');
     }
   });
 
@@ -178,7 +178,7 @@ export function useTransportadorasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
-      toast({ title: 'Status atualizado!' });
+      toast.success('Status atualizado!');
     }
   });
 
@@ -193,7 +193,7 @@ export function useTransportadorasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
-      toast({ title: 'Envio excluído!' });
+      toast.success('Envio excluído!');
     }
   });
 

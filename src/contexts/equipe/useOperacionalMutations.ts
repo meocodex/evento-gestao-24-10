@@ -1,10 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { OperacionalEquipe } from '@/types/equipe';
 
 export function useOperacionalMutations() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const criarOperacional = useMutation({
@@ -20,16 +19,13 @@ export function useOperacionalMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
-      toast({
-        title: 'Membro cadastrado!',
+      toast.success('Membro cadastrado!', {
         description: 'Membro da equipe operacional cadastrado com sucesso.'
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao cadastrar membro',
-        description: error.message,
-        variant: 'destructive'
+      toast.error('Erro ao cadastrar membro', {
+        description: error.message
       });
     }
   });
@@ -48,16 +44,13 @@ export function useOperacionalMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
-      toast({
-        title: 'Membro atualizado!',
+      toast.success('Membro atualizado!', {
         description: 'Informações atualizadas com sucesso.'
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao atualizar membro',
-        description: error.message,
-        variant: 'destructive'
+      toast.error('Erro ao atualizar membro', {
+        description: error.message
       });
     }
   });
@@ -80,20 +73,17 @@ export function useOperacionalMutations() {
       await queryClient.refetchQueries({ queryKey: ['equipe-operacional'] });
       await queryClient.refetchQueries({ queryKey: ['profiles-equipe'] });
       
-      toast({
-        title: 'Membro excluído',
+      toast.success('Membro excluído', {
         description: 'O membro foi removido da equipe operacional com sucesso'
       });
     },
     onError: (error: any) => {
       const errorMessage = error.message || 'Erro ao excluir membro';
       
-      toast({
-        title: 'Erro ao excluir membro',
+      toast.error('Erro ao excluir membro', {
         description: errorMessage.includes('permissão') 
           ? 'Você não tem permissão para excluir membros. Solicite "equipe.editar" ou "admin.full_access".'
-          : errorMessage,
-        variant: 'destructive'
+          : errorMessage
       });
     }
   });

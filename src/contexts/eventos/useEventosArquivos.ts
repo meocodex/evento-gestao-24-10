@@ -1,10 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { optimizeImage, isImageFile } from '@/lib/imageOptimization';
 
 export function useEventosArquivos() {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const uploadArquivo = useMutation({
@@ -21,17 +20,11 @@ export function useEventosArquivos() {
       
       // Otimizar imagens automaticamente
       if (isImageFile(arquivo) && tipo === 'fotosEvento') {
-        console.log('🖼️ Otimizando imagem para WebP...');
         try {
           const { optimizedFile } = await optimizeImage(arquivo);
           fileToUpload = optimizedFile;
-          console.log('✅ Imagem otimizada:', {
-            original: `${(arquivo.size / 1024).toFixed(2)} KB`,
-            optimized: `${(optimizedFile.size / 1024).toFixed(2)} KB`,
-            reduction: `${(((arquivo.size - optimizedFile.size) / arquivo.size) * 100).toFixed(1)}%`
-          });
         } catch (error) {
-          console.warn('⚠️ Falha na otimização, usando arquivo original:', error);
+          // Falha na otimização, usar arquivo original
         }
       }
       
@@ -93,16 +86,13 @@ export function useEventosArquivos() {
         fotosEvento: 'Foto'
       }[variables.tipo];
 
-      toast({
-        title: 'Upload concluído!',
+      toast.success('Upload concluído!', {
         description: `${tipoNome} enviado com sucesso.`
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro no upload',
-        description: error.message,
-        variant: 'destructive'
+      toast.error('Erro no upload', {
+        description: error.message
       });
     }
   });
@@ -158,16 +148,13 @@ export function useEventosArquivos() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
-      toast({
-        title: 'Arquivo removido!',
+      toast.success('Arquivo removido!', {
         description: 'Arquivo excluído com sucesso.'
       });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao remover arquivo',
-        description: error.message,
-        variant: 'destructive'
+      toast.error('Erro ao remover arquivo', {
+        description: error.message
       });
     }
   });

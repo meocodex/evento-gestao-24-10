@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast as sonnerToast } from 'sonner';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import type { MaterialEstoque, SerialEstoque } from '@/types/estoque';
 import { uiToDbStatus, dbToUiStatus } from '@/lib/estoqueStatus';
 
@@ -85,7 +84,6 @@ export const useEstoqueMutations = () => {
           .insert(seriais);
 
         if (seriaisError) {
-          console.error('Erro ao criar seriais:', seriaisError);
           // Não falhar toda a operação se houver erro nos seriais
         }
       }
@@ -94,8 +92,7 @@ export const useEstoqueMutations = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
-      toast({
-        title: 'Material cadastrado',
+      toast.success('Material cadastrado', {
         description: `${data.nome} foi adicionado ao estoque.`,
       });
     },
@@ -108,10 +105,8 @@ export const useEstoqueMutations = () => {
         mensagem = 'Já existe um material com estas informações.';
       }
       
-      toast({
-        title: 'Erro ao cadastrar',
+      toast.error('Erro ao cadastrar', {
         description: mensagem,
-        variant: 'destructive',
       });
     },
   });
@@ -133,8 +128,7 @@ export const useEstoqueMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
-      toast({
-        title: 'Material atualizado',
+      toast.success('Material atualizado', {
         description: 'As alterações foram salvas com sucesso.',
       });
     },
@@ -163,16 +157,13 @@ export const useEstoqueMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
-      toast({
-        title: 'Material excluído',
+      toast.success('Material excluído', {
         description: 'Material removido do estoque.',
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Não é possível excluir',
+      toast.error('Não é possível excluir', {
         description: error.message,
-        variant: 'destructive',
       });
     },
   });
@@ -221,14 +212,13 @@ export const useEstoqueMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       queryClient.invalidateQueries({ queryKey: ['materiais_seriais'] });
-      toast({
-        title: 'Serial adicionado',
+      toast.success('Serial adicionado', {
         description: 'Novo item adicionado ao estoque.',
       });
     },
     onError: (error: any) => {
       const errorMsg = error.message || 'Erro ao adicionar serial';
-      sonnerToast.error(errorMsg);
+      toast.error(errorMsg);
     },
   });
 
@@ -278,14 +268,13 @@ export const useEstoqueMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       queryClient.invalidateQueries({ queryKey: ['materiais_seriais'] });
-      toast({
-        title: 'Serial atualizado',
+      toast.success('Serial atualizado', {
         description: 'As alterações foram salvas com sucesso.',
       });
     },
     onError: (error: any) => {
       const errorMsg = error.message || 'Erro ao atualizar serial';
-      sonnerToast.error(errorMsg);
+      toast.error(errorMsg);
     },
   });
 
@@ -322,16 +311,13 @@ export const useEstoqueMutations = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       queryClient.invalidateQueries({ queryKey: ['materiais_seriais'] });
-      toast({
-        title: 'Serial excluído',
+      toast.success('Serial excluído', {
         description: 'Item removido do estoque.',
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: 'Não é possível excluir',
+      toast.error('Não é possível excluir', {
         description: error.message,
-        variant: 'destructive',
       });
     },
   });
@@ -352,16 +338,16 @@ export const useEstoqueMutations = () => {
           `${d.material_id}: ${d.valor_anterior} → ${d.valor_novo}`
         ).join('\n');
         
-        sonnerToast.success(`✅ ${total} material(is) sincronizado(s)`, {
+        toast.success(`✅ ${total} material(is) sincronizado(s)`, {
           description: detalhes,
         });
       } else {
-        sonnerToast.success('✅ Todos os materiais já estão sincronizados');
+        toast.success('✅ Todos os materiais já estão sincronizados');
       }
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
     },
     onError: (error: any) => {
-      sonnerToast.error('Erro ao sincronizar estoque', {
+      toast.error('Erro ao sincronizar estoque', {
         description: error.message,
       });
     },

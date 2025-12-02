@@ -1,11 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { EventoFormData, Evento, StatusEvento } from '@/types/eventos';
 
 export function useEventosMutations() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const criarEvento = useMutation({
     mutationFn: async (data: EventoFormData): Promise<Evento> => {
@@ -60,8 +59,7 @@ export function useEventosMutations() {
         usuario: user.email || 'Sistema'
       }]);
 
-      toast({
-        title: 'Evento criado!',
+      toast.success('Evento criado!', {
         description: `${data.nome} foi criado com sucesso.`
       });
 
@@ -71,10 +69,8 @@ export function useEventosMutations() {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao criar evento',
-        description: error.message,
-        variant: 'destructive'
+      toast.error('Erro ao criar evento', {
+        description: error.message
       });
     }
   });
@@ -156,8 +152,7 @@ export function useEventosMutations() {
       return { previousEventos };
     },
     onSuccess: () => {
-      toast({
-        title: 'Evento atualizado!',
+      toast.success('Evento atualizado!', {
         description: 'As alterações foram salvas com sucesso.'
       });
       // Invalidar apenas evento-detalhes para recarregar dados completos
@@ -168,10 +163,8 @@ export function useEventosMutations() {
       if (context?.previousEventos) {
         queryClient.setQueryData(['eventos'], context.previousEventos);
       }
-      toast({
-        title: 'Erro ao atualizar evento',
-        description: error.message,
-        variant: 'destructive'
+      toast.error('Erro ao atualizar evento', {
+        description: error.message
       });
     }
   });
@@ -185,8 +178,7 @@ export function useEventosMutations() {
 
       if (error) throw error;
 
-      toast({
-        title: 'Evento excluído!',
+      toast.success('Evento excluído!', {
         description: 'O evento foi removido com sucesso.'
       });
     },
@@ -194,10 +186,8 @@ export function useEventosMutations() {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
     },
     onError: (error: any) => {
-      toast({
-        title: 'Erro ao excluir evento',
-        description: error.message,
-        variant: 'destructive'
+      toast.error('Erro ao excluir evento', {
+        description: error.message
       });
     }
   });
@@ -249,8 +239,7 @@ export function useEventosMutations() {
       return { previousEventos };
     },
     onSuccess: (_, { novoStatus }) => {
-      toast({
-        title: 'Status atualizado!',
+      toast.success('Status atualizado!', {
         description: `O status foi alterado para ${novoStatus}.`
       });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
@@ -260,10 +249,8 @@ export function useEventosMutations() {
       if (context?.previousEventos) {
         queryClient.setQueryData(['eventos'], context.previousEventos);
       }
-      toast({
-        title: 'Erro ao alterar status',
-        description: error.message,
-        variant: 'destructive'
+      toast.error('Erro ao alterar status', {
+        description: error.message
       });
     }
   });
@@ -320,16 +307,13 @@ export function useEventosMutations() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
-      toast({ 
-        title: 'Evento arquivado', 
+      toast.success('Evento arquivado', { 
         description: 'O evento foi movido para arquivados.' 
       });
     },
     onError: (error: any) => {
-      toast({ 
-        title: 'Erro ao arquivar evento', 
-        description: error.message,
-        variant: 'destructive' 
+      toast.error('Erro ao arquivar evento', { 
+        description: error.message
       });
     }
   });

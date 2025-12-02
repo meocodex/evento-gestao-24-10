@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { CadastroEventoPublico } from '@/types/eventos';
 
 export function useCadastrosMutations() {
@@ -48,14 +48,12 @@ export function useCadastrosMutations() {
     },
     onSuccess: (protocolo) => {
       queryClient.invalidateQueries({ queryKey: ['cadastros-publicos'] });
-      toast({ 
-        title: 'Cadastro enviado!', 
+      toast.success('Cadastro enviado!', { 
         description: `Seu protocolo: ${protocolo}. Use-o para acompanhar o status.` 
       });
     },
-    onError: (error) => {
-      console.error('Erro ao criar cadastro:', error);
-      toast({ title: 'Erro ao criar cadastro', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao criar cadastro');
     },
   });
 
@@ -73,11 +71,10 @@ export function useCadastrosMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cadastros-publicos'] });
-      toast({ title: 'Cadastro aprovado!', description: 'Evento criado com sucesso.' });
+      toast.success('Cadastro aprovado!', { description: 'Evento criado com sucesso.' });
     },
-    onError: (error) => {
-      console.error('Erro ao aprovar cadastro:', error);
-      toast({ title: 'Erro ao aprovar cadastro', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao aprovar cadastro');
     },
   });
 
@@ -95,11 +92,10 @@ export function useCadastrosMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cadastros-publicos'] });
-      toast({ title: 'Cadastro recusado', description: 'O produtor será notificado sobre a recusa.' });
+      toast.success('Cadastro recusado', { description: 'O produtor será notificado sobre a recusa.' });
     },
-    onError: (error) => {
-      console.error('Erro ao recusar cadastro:', error);
-      toast({ title: 'Erro ao recusar cadastro', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao recusar cadastro');
     },
   });
 

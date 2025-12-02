@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { DemandaFormData, StatusDemanda } from '@/types/demandas';
 import { format } from 'date-fns';
 
@@ -69,7 +69,6 @@ export function useDemandasMutations() {
             })
           });
         } catch (pushError) {
-          console.error('Erro ao enviar push notification:', pushError);
           // Não falha a operação se push notification falhar
         }
       }
@@ -78,11 +77,10 @@ export function useDemandasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
-      toast({ title: 'Demanda criada!', description: 'A demanda foi criada com sucesso.' });
+      toast.success('Demanda criada!', { description: 'A demanda foi criada com sucesso.' });
     },
-    onError: (error) => {
-      console.error('Erro ao criar demanda:', error);
-      toast({ title: 'Erro ao criar demanda', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao criar demanda');
     },
   });
 
@@ -140,11 +138,10 @@ export function useDemandasMutations() {
       if (context?.previousDemandas) {
         queryClient.setQueryData(['demandas'], context.previousDemandas);
       }
-      console.error('Erro ao editar demanda:', error);
-      toast({ title: 'Erro ao editar demanda', variant: 'destructive' });
+      toast.error('Erro ao editar demanda');
     },
     onSuccess: () => {
-      toast({ title: 'Demanda atualizada!', description: 'As alterações foram salvas.' });
+      toast.success('Demanda atualizada!', { description: 'As alterações foram salvas.' });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
@@ -180,11 +177,10 @@ export function useDemandasMutations() {
       if (context?.previousDemandas) {
         queryClient.setQueryData(['demandas'], context.previousDemandas);
       }
-      console.error('Erro ao excluir demanda:', error);
-      toast({ title: 'Erro ao excluir demanda', variant: 'destructive' });
+      toast.error('Erro ao excluir demanda');
     },
     onSuccess: () => {
-      toast({ title: 'Demanda excluída!', description: 'A demanda foi removida.' });
+      toast.success('Demanda excluída!', { description: 'A demanda foi removida.' });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
@@ -207,11 +203,10 @@ export function useDemandasMutations() {
     },
     onSuccess: (_, { novoStatus }) => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
-      toast({ title: 'Status atualizado!', description: `Demanda marcada como ${novoStatus}.` });
+      toast.success('Status atualizado!', { description: `Demanda marcada como ${novoStatus}.` });
     },
-    onError: (error) => {
-      console.error('Erro ao alterar status:', error);
-      toast({ title: 'Erro ao alterar status', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao alterar status');
     },
   });
 
@@ -238,14 +233,12 @@ export function useDemandasMutations() {
     },
     onSuccess: (_, { responsavelNome }) => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
-      toast({ 
-        title: 'Responsável atribuído!', 
+      toast.success('Responsável atribuído!', { 
         description: `${responsavelNome} foi atribuído à demanda.` 
       });
     },
-    onError: (error) => {
-      console.error('Erro ao atribuir responsável:', error);
-      toast({ title: 'Erro ao atribuir responsável', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao atribuir responsável');
     },
   });
 
@@ -269,11 +262,10 @@ export function useDemandasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
-      toast({ title: 'Demanda resolvida', description: 'A demanda foi marcada como resolvida.' });
+      toast.success('Demanda resolvida', { description: 'A demanda foi marcada como resolvida.' });
     },
-    onError: (error) => {
-      console.error('Erro ao marcar como resolvida:', error);
-      toast({ title: 'Erro ao marcar como resolvida', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao marcar como resolvida');
     },
   });
 
@@ -300,11 +292,10 @@ export function useDemandasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
-      toast({ title: 'Demanda reaberta', description: 'A demanda foi reaberta para novas interações.' });
+      toast.success('Demanda reaberta', { description: 'A demanda foi reaberta para novas interações.' });
     },
-    onError: (error) => {
-      console.error('Erro ao reabrir demanda:', error);
-      toast({ title: 'Erro ao reabrir demanda', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao reabrir demanda');
     },
   });
 
@@ -319,11 +310,10 @@ export function useDemandasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
-      toast({ title: 'Demanda arquivada', description: 'A demanda foi movida para arquivados.' });
+      toast.success('Demanda arquivada', { description: 'A demanda foi movida para arquivados.' });
     },
-    onError: (error) => {
-      console.error('Erro ao arquivar demanda:', error);
-      toast({ title: 'Erro ao arquivar demanda', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao arquivar demanda');
     },
   });
 
@@ -338,11 +328,10 @@ export function useDemandasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
-      toast({ title: 'Demanda desarquivada', description: 'A demanda foi reativada.' });
+      toast.success('Demanda desarquivada', { description: 'A demanda foi reativada.' });
     },
-    onError: (error) => {
-      console.error('Erro ao desarquivar demanda:', error);
-      toast({ title: 'Erro ao desarquivar demanda', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao desarquivar demanda');
     },
   });
 
@@ -355,11 +344,10 @@ export function useDemandasMutations() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['demandas'] });
-      toast({ title: 'Reembolso solicitado com sucesso!', description: 'O reembolso foi registrado.' });
+      toast.success('Reembolso solicitado com sucesso!', { description: 'O reembolso foi registrado.' });
     },
-    onError: (error) => {
-      console.error('Erro ao solicitar reembolso:', error);
-      toast({ title: 'Erro ao solicitar reembolso', variant: 'destructive' });
+    onError: () => {
+      toast.error('Erro ao solicitar reembolso');
     },
   });
 

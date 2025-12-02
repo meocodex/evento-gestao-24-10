@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useEffect } from 'react';
 
 export interface Notificacao {
@@ -102,9 +102,7 @@ export function useNotificacoes() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notificacoes'] });
-      toast({
-        title: 'Notificações marcadas como lidas',
-      });
+      toast.success('Notificações marcadas como lidas');
     },
   });
 
