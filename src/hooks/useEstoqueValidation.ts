@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { DatabaseError, getErrorMessage, EventoConflito } from '@/types/utils';
 
 interface MaterialDisponibilidade {
   itemId: string;
@@ -82,10 +83,11 @@ export function useEstoqueValidation() {
       }
 
       return { disponivel, detalhes };
-    } catch (error: any) {
+    } catch (error) {
+      const dbError = error as DatabaseError;
       toast({
         title: 'Erro ao verificar disponibilidade',
-        description: error.message,
+        description: getErrorMessage(dbError),
         variant: 'destructive'
       });
       return { disponivel: false, detalhes: null };
@@ -99,7 +101,7 @@ export function useEstoqueValidation() {
     dataInicio: string,
     dataFim: string,
     eventoId?: string
-  ): Promise<{ temConflito: boolean; eventos: any[] }> => {
+  ): Promise<{ temConflito: boolean; eventos: EventoConflito[] }> => {
     try {
       // Buscar eventos que se sobrepõem no período
       const { data: eventosConflito, error } = await supabase
@@ -118,9 +120,9 @@ export function useEstoqueValidation() {
       if (error) throw error;
 
       // Filtrar o evento atual se estamos editando
-      const conflitos = eventoId
-        ? eventosConflito?.filter(e => e.id !== eventoId) || []
-        : eventosConflito || [];
+      const conflitos: EventoConflito[] = eventoId
+        ? (eventosConflito?.filter(e => e.id !== eventoId) || [])
+        : (eventosConflito || []);
 
       if (conflitos.length > 0) {
         toast({
@@ -134,10 +136,11 @@ export function useEstoqueValidation() {
         temConflito: conflitos.length > 0,
         eventos: conflitos
       };
-    } catch (error: any) {
+    } catch (error) {
+      const dbError = error as DatabaseError;
       toast({
         title: 'Erro ao verificar conflitos',
-        description: error.message,
+        description: getErrorMessage(dbError),
         variant: 'destructive'
       });
       return { temConflito: false, eventos: [] };
@@ -174,10 +177,11 @@ export function useEstoqueValidation() {
       }
 
       return true;
-    } catch (error: any) {
+    } catch (error) {
+      const dbError = error as DatabaseError;
       toast({
         title: 'Erro ao reservar material',
-        description: error.message,
+        description: getErrorMessage(dbError),
         variant: 'destructive'
       });
       return false;
@@ -212,10 +216,11 @@ export function useEstoqueValidation() {
       }
 
       return true;
-    } catch (error: any) {
+    } catch (error) {
+      const dbError = error as DatabaseError;
       toast({
         title: 'Erro ao liberar material',
-        description: error.message,
+        description: getErrorMessage(dbError),
         variant: 'destructive'
       });
       return false;

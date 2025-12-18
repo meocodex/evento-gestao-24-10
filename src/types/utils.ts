@@ -392,7 +392,22 @@ export interface DemandasQueryCache {
   demandas: Array<{
     id: string;
     titulo: string;
+    descricao: string;
     status: string;
+    prioridade: string;
+    categoria: string;
+    solicitante: string;
+    solicitanteId?: string;
+    responsavel?: string;
+    responsavelId?: string;
+    prazo?: string;
+    eventoId?: string;
+    eventoNome?: string;
+    tags?: string[];
+    resolvida?: boolean;
+    arquivada?: boolean;
+    dataCriacao: string;
+    dataConclusao?: string;
     comentarios?: Array<{
       id: string;
       autor: string;
@@ -403,7 +418,7 @@ export interface DemandasQueryCache {
     }>;
     [key: string]: unknown;
   }>;
-  total?: number;
+  totalCount: number;
 }
 
 // ============================================
@@ -701,4 +716,131 @@ export interface AcaoHistoricoContrato {
   acao: string;
   usuario: string;
   observacoes?: string;
+}
+
+// ============================================
+// Tipos para Transformadores (Batch 8)
+// ============================================
+
+/** Interface para dados do banco (snake_case) de cadastro público */
+export interface CadastroPublicoDB {
+  id: string;
+  protocolo: string;
+  nome: string;
+  tipo_evento: string;
+  data_inicio: string;
+  data_fim: string;
+  hora_inicio: string;
+  hora_fim: string;
+  local: string;
+  cidade: string;
+  estado: string;
+  endereco: string;
+  produtor?: Record<string, unknown>;
+  configuracao_ingresso?: Record<string, unknown>;
+  configuracao_bar?: Record<string, unknown>;
+  status: string;
+  created_at: string;
+  evento_id?: string;
+  observacoes_internas?: string;
+}
+
+/** Interface para template do banco */
+export interface TemplateDB {
+  id: string;
+  nome: string;
+  tipo: string;
+  descricao?: string;
+  conteudo: string;
+  variaveis?: string[];
+  status: string;
+  versao: number;
+  papel_timbrado?: string;
+  margens?: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Interface para contrato do banco */
+export interface ContratoDB {
+  id: string;
+  template_id?: string;
+  numero: string;
+  titulo: string;
+  tipo: string;
+  status: string;
+  cliente_id?: string;
+  evento_id?: string;
+  valor?: string | number;
+  conteudo: string;
+  data_inicio?: string;
+  data_fim?: string;
+  validade?: string;
+  itens?: unknown[];
+  condicoes_pagamento?: string;
+  prazo_execucao?: string;
+  garantia?: string;
+  observacoes?: string;
+  observacoes_comerciais?: string;
+  assinaturas?: unknown[];
+  anexos?: string[];
+  dados_evento?: Record<string, unknown>;
+  aprovacoes_historico?: unknown[];
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================
+// Tipos para Validação de Estoque (Batch 9)
+// ============================================
+
+/** Interface para conflitos de eventos em estoque */
+export interface EventoConflito {
+  id: string;
+  nome: string;
+  data_inicio: string;
+  data_fim: string;
+  materiais_alocados?: { item_id: string; status: string }[];
+}
+
+// ============================================
+// Tipos para Demandas Mutations (Batch 11)
+// ============================================
+
+/** Tipo para atualizações parciais de demanda */
+export interface DemandaUpdateData {
+  titulo?: string;
+  descricao?: string;
+  status?: string;
+  prioridade?: string;
+  responsavel_id?: string | null;
+  responsavel?: string | null;
+  prazo?: string | null;
+  categoria?: string;
+  evento_id?: string | null;
+  evento_nome?: string | null;
+  tags?: string[];
+  data_conclusao?: string;
+}
+
+/** Tipo genérico para Demanda */
+export interface Demanda {
+  id: string;
+  titulo: string;
+  descricao: string;
+  status: string;
+  prioridade: string;
+  categoria: string;
+  solicitante: string;
+  solicitanteId?: string;
+  responsavel?: string;
+  responsavelId?: string;
+  prazo?: string;
+  eventoId?: string;
+  eventoNome?: string;
+  tags?: string[];
+  resolvida?: boolean;
+  arquivada?: boolean;
+  dataCriacao: string;
+  dataConclusao?: string;
 }
