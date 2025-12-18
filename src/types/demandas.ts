@@ -22,6 +22,9 @@ export interface Anexo {
   uploadEm: string;
 }
 
+// Alias para compatibilidade
+export type AnexoDemanda = Anexo;
+
 export interface ItemReembolso {
   id: string;
   descricao: string;

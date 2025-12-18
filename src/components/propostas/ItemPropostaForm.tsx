@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ItemProposta } from '@/types/contratos';
+import { ItemProposta, TipoItemProposta } from '@/types/contratos';
 
 interface ItemPropostaFormProps {
   item?: ItemProposta;
@@ -44,7 +44,7 @@ export function ItemPropostaForm({ item, onSave, onCancel }: ItemPropostaFormPro
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Tipo *</Label>
-          <Select value={tipo} onValueChange={(v: any) => setTipo(v)}>
+          <Select value={tipo} onValueChange={(v) => setTipo(v as TipoItemProposta)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>

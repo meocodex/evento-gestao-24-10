@@ -105,7 +105,7 @@ export function ConverterContratoSheet({ contrato, open, onOpenChange }: Convert
         {/* Opções de conversão */}
         <div>
           <Label className="mb-3 block">Como deseja proceder?</Label>
-          <RadioGroup value={opcao} onValueChange={(v: any) => setOpcao(v)}>
+          <RadioGroup value={opcao} onValueChange={(v) => setOpcao(v as 'vincular' | 'criar')}>
             <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-muted/50 cursor-pointer">
               <RadioGroupItem value="criar" id="criar" />
               <Label htmlFor="criar" className="flex-1 cursor-pointer">

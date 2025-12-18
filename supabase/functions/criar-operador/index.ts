@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const validIds = new Set(validPermissions?.map((p: any) => p.id) ?? []);
+    const validIds = new Set(validPermissions?.map((p: { id: string }) => p.id) ?? []);
     const invalidPermissions = permissions.filter((p: string) => !validIds.has(p));
     
     if (invalidPermissions.length > 0) {
@@ -308,18 +308,25 @@ Deno.serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Erro na edge function:', error);
 
-    const payload: any = {
+    interface ErrorPayload {
+      error: string;
+      message?: string;
+      code?: string;
+      details?: string;
+    }
+
+    const payload: ErrorPayload = {
       error: 'Erro interno ao criar operador',
     };
 
     // Extrair detalhes do erro Supabase
     if (error && typeof error === 'object') {
-      if ('message' in error) payload.message = String(error.message);
-      if ('code' in error) payload.code = String(error.code);
-      if ('details' in error) payload.details = String(error.details);
+      if ('message' in error) payload.message = String((error as Record<string, unknown>).message);
+      if ('code' in error) payload.code = String((error as Record<string, unknown>).code);
+      if ('details' in error) payload.details = String((error as Record<string, unknown>).details);
     }
 
     return new Response(

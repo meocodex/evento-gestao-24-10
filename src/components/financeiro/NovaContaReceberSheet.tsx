@@ -11,7 +11,7 @@ import { AnexosUpload } from './AnexosUpload';
 import { useContasReceber } from '@/hooks/financeiro';
 import { contaReceberSchema } from '@/lib/validations/financeiro';
 import { toast } from 'sonner';
-import type { AnexoFinanceiro } from '@/types/financeiro';
+import type { AnexoFinanceiro, RecorrenciaFinanceiro, StatusContaReceber, TipoContaReceber } from '@/types/financeiro';
 
 type ContaReceberFormData = z.infer<typeof contaReceberSchema>;
 
@@ -49,12 +49,13 @@ export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSh
           ...data,
           valor: valorTotal,
           anexos,
-        } as any);
+        } as Parameters<typeof criar.mutateAsync>[0]);
         reset();
         setAnexos([]);
         onOpenChange(false);
-      } catch (error: any) {
-        toast.error('Erro ao criar conta: ' + error.message);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Erro desconhecido';
+        toast.error('Erro ao criar conta: ' + message);
       }
     })();
   };
@@ -79,7 +80,7 @@ export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSh
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="tipo">Tipo *</Label>
-            <Select value={watch('tipo')} onValueChange={(value) => setValue('tipo', value as any)}>
+            <Select value={watch('tipo')} onValueChange={(value) => setValue('tipo', value as TipoContaReceber)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -131,7 +132,7 @@ export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSh
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="recorrencia">Recorrência *</Label>
-            <Select value={recorrencia} onValueChange={(value) => setValue('recorrencia', value as any)}>
+            <Select value={recorrencia} onValueChange={(value) => setValue('recorrencia', value as RecorrenciaFinanceiro)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -155,7 +156,7 @@ export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSh
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="status">Status *</Label>
-            <Select value={status} onValueChange={(value) => setValue('status', value as any)}>
+            <Select value={status} onValueChange={(value) => setValue('status', value as StatusContaReceber)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

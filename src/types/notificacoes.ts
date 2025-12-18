@@ -6,6 +6,16 @@ export type TipoNotificacao =
   | 'reembolso_aprovado'
   | 'material_alocado';
 
+export interface Notificacao {
+  id: string;
+  tipo: string;
+  titulo: string;
+  mensagem: string;
+  link?: string;
+  lida: boolean;
+  created_at: string;
+}
+
 export interface TemplatesMensagens {
   envio_mercadoria: string;
   solicitacao_devolucao: string;

@@ -9,9 +9,11 @@ export type StatusContrato =
   | 'cancelado'
   | 'expirado';
 
+export type TipoItemProposta = 'servico' | 'produto' | 'pacote';
+
 export interface ItemProposta {
   id: string;
-  tipo: 'servico' | 'produto' | 'pacote';
+  tipo: TipoItemProposta;
   descricao: string;
   quantidade: number;
   valorUnitario: number;

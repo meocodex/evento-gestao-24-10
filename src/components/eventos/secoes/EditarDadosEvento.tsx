@@ -78,7 +78,7 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
             description: 'Endereço preenchido automaticamente.',
           });
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Erro ao buscar CEP:', error);
         toast({
           title: 'CEP não encontrado',
@@ -136,10 +136,11 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
       } as any;
 
       await onSave(dadosAtualizados);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Ocorreu um erro ao atualizar o evento. Tente novamente.';
       toast({
         title: 'Erro ao atualizar evento',
-        description: error.message || 'Ocorreu um erro ao atualizar o evento. Tente novamente.',
+        description: message,
         variant: 'destructive',
       });
     } finally {

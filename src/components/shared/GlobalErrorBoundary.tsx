@@ -10,7 +10,7 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
-  errorInfo?: any;
+  errorInfo?: React.ErrorInfo;
 }
 
 /**
@@ -27,7 +27,7 @@ export class GlobalErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('GlobalErrorBoundary capturou erro:', error, errorInfo);
     this.setState({ errorInfo });
   }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Evento } from '@/types/eventos';
+import { Evento, StatusEvento } from '@/types/eventos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -51,7 +51,7 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
     setShowDeleteDialog(false);
   };
 
-  const handleStatusChange = async (novoStatus: any, observacao?: string) => {
+  const handleStatusChange = async (novoStatus: StatusEvento, observacao?: string) => {
     await alterarStatus.mutateAsync({ id: evento.id, novoStatus, observacao });
   };
 
