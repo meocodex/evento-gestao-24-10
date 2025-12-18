@@ -611,11 +611,6 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
           if (!materialParaDevolucao) return;
           
           try {
-            console.log('🔄 Registrando devolução:', { 
-              alocacaoId: materialParaDevolucao.id, 
-              ...dados 
-            });
-            
             await registrarDevolucao.mutateAsync({
               alocacaoId: materialParaDevolucao.id,
               statusDevolucao: dados.statusDevolucao,
@@ -623,10 +618,8 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
               fotos: dados.fotos,
               quantidadeDevolvida: dados.quantidadeDevolvida,
             });
-            
-            console.log('✅ Devolução registrada com sucesso');
-          } catch (error) {
-            console.error('❌ Erro ao registrar devolução:', error);
+          } catch {
+            // Error handled by mutation
           } finally {
             setShowDevolverMaterial(false);
             setMaterialParaDevolucao(null);
@@ -688,10 +681,6 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         transportadora={materiaisRetroativos[0]?.transportadora}
               onConfirmar={async (dados) => {
                 try {
-                  console.log('🚀 Gerando declaração de transporte para materiais:', {
-                    materiaisCount: materiaisRetroativos.length,
-                    dados
-                  });
                   await gerarDeclaracaoTransporte.mutateAsync({
                     alocacaoIds: materiaisRetroativos.map(m => m.id),
                     remetenteTipo: dados.remetenteTipo || 'empresa',
@@ -703,7 +692,6 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                   setShowGerarDeclaracaoRetroativo(false);
                   setMateriaisRetroativos([]);
                 } catch (error: any) {
-                  console.error('❌ Erro ao gerar declarações:', error);
                   toast.error(`Erro ao gerar declarações: ${error.message}`);
                 }
               }}

@@ -2476,8 +2476,6 @@ export type Database = {
           status: Database["public"]["Enums"]["status_evento"]
         }[]
       }
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
       sincronizar_quantidade_disponivel: {
         Args: { p_material_id?: string }
         Returns: {

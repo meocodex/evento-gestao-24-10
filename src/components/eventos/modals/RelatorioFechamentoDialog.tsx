@@ -183,7 +183,6 @@ export function RelatorioFechamentoDialog({
       currentY = (doc as any).lastAutoTable.finalY + 15;
 
       // Tabela de Receitas
-      console.log('💰 Adicionando tabela de receitas');
       if (receitasFiltradas.length > 0) {
         doc.setFont(undefined, 'bold');
         doc.setFontSize(12);

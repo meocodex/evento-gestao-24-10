@@ -76,11 +76,9 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
-      console.log('[useEventosMateriaisAlocados] Cache invalidado após alocação');
       toast.success('Material alocado com sucesso!');
     },
     onError: (error: any) => {
-      console.error('Erro ao alocar material:', error);
       toast.error(`Erro ao alocar material: ${error.message || 'Erro desconhecido'}`);
     },
   });
@@ -104,11 +102,9 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
-      console.log('[useEventosMateriaisAlocados] Cache invalidado após alocação em lote');
       toast.success(`${count} ${count === 1 ? 'material alocado' : 'materiais alocados'} com sucesso!`);
     },
     onError: (error: any) => {
-      console.error('Erro ao alocar materiais em lote:', error);
       toast.error(`Erro ao alocar materiais: ${error.message || 'Erro desconhecido'}`);
     },
   });
@@ -152,7 +148,6 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       toast.success('Devolução registrada com sucesso!');
     },
     onError: (error: any) => {
-      console.error('Erro ao registrar devolução:', error);
       toast.error(`Erro ao registrar devolução: ${error.message || 'Erro desconhecido'}`);
     },
   });
@@ -225,7 +220,6 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       toast.success('Material removido com sucesso!');
     },
     onError: (error: any) => {
-      console.error('Erro ao remover material:', error);
       toast.error(error.message || 'Erro ao remover material');
     },
   });
@@ -261,7 +255,6 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       retiradoPorDocumento: string;
       retiradoPorTelefone: string;
     }) => {
-      console.log('📝 Iniciando geração de termo:', dados);
       const { gerarTermoRetirada, uploadTermoRetirada } = await import('@/utils/termoRetiradaPDF');
       
       // Buscar dados dos materiais e evento
@@ -273,14 +266,11 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         `)
         .in('id', dados.alocacaoIds);
       
-      console.log('📦 Materiais encontrados:', materiaisData?.length);
 
       if (fetchError) {
-        console.error('❌ Erro ao buscar materiais:', fetchError);
         throw fetchError;
       }
       if (!materiaisData || materiaisData.length === 0) {
-        console.error('❌ Nenhum material encontrado para os IDs:', dados.alocacaoIds);
         throw new Error('Materiais não encontrados');
       }
 
@@ -349,14 +339,12 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       return publicUrl;
     },
     onSuccess: () => {
-      console.log('✅ Termo gerado com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
       toast.success('Termo de retirada gerado com sucesso!');
     },
     onError: (error: any) => {
-      console.error('❌ Erro ao gerar termo:', error);
       toast.error(`Erro ao gerar termo: ${error.message || 'Erro desconhecido'}`);
     },
   });
@@ -369,7 +357,6 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       valoresDeclarados: Record<string, number>;
       observacoes?: string;
     }) => {
-      console.log('📝 Iniciando geração de declaração:', dados);
       const { gerarDeclaracaoTransporte: gerarPDF } = await import('@/utils/declaracaoTransportePDF');
       
       // Buscar dados dos materiais e evento
@@ -383,15 +370,11 @@ export function useEventosMateriaisAlocados(eventoId: string) {
           )
         `)
         .in('id', dados.alocacaoIds);
-      
-      console.log('📦 Materiais encontrados:', materiaisData?.length);
 
       if (fetchError) {
-        console.error('❌ Erro ao buscar materiais:', fetchError);
         throw fetchError;
       }
       if (!materiaisData || materiaisData.length === 0) {
-        console.error('❌ Nenhum material encontrado para os IDs:', dados.alocacaoIds);
         throw new Error('Materiais não encontrados');
       }
 
@@ -498,14 +481,12 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       return publicUrl;
     },
     onSuccess: () => {
-      console.log('✅ Declaração gerada com sucesso!');
       queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
       toast.success('Declaração de transporte gerada com sucesso!');
     },
     onError: (error: any) => {
-      console.error('❌ Erro ao gerar declaração:', error);
       toast.error(`Erro ao gerar declaração: ${error.message || 'Erro desconhecido'}`);
     },
   });
@@ -666,8 +647,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
     },
-    onError: (error: any) => {
-      console.error('Erro ao reimprimir documento:', error);
+    onError: () => {
+      // Error handled silently - reimprint is optional
     },
   });
 
@@ -725,7 +706,6 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       toast.success(`Frete criado! ${variables.materialIds.length} materiais vinculados.`);
     },
     onError: (error: any) => {
-      console.error('Erro ao vincular frete:', error);
       toast.error(`Erro ao vincular frete: ${error.message}`);
     },
   });

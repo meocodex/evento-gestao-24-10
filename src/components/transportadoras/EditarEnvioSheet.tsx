@@ -143,7 +143,6 @@ export function EditarEnvioSheet({ envio, open, onOpenChange }: EditarEnvioSheet
                 <DocumentUpload
                   onFileSelect={(file) => {
                     // TODO: Upload file to storage and get URL
-                    console.log('File selected:', file);
                   }}
                   currentFile={formData.comprovantePagamento}
                 />
