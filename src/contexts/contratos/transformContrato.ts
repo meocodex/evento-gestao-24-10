@@ -1,47 +1,50 @@
-import { Contrato, ContratoTemplate } from '@/types/contratos';
+import { Contrato, ContratoTemplate, StatusContrato } from '@/types/contratos';
+import { TemplateDB, ContratoDB } from '@/types/utils';
 
-export function transformTemplate(data: any): ContratoTemplate {
+type TipoContrato = 'evento' | 'fornecedor' | 'cliente' | 'outros';
+
+export function transformTemplate(data: TemplateDB): ContratoTemplate {
   return {
     id: data.id,
     nome: data.nome,
-    tipo: data.tipo,
-    descricao: data.descricao,
+    tipo: data.tipo as TipoContrato,
+    descricao: data.descricao || '',
     conteudo: data.conteudo,
     variaveis: data.variaveis || [],
-    status: data.status,
+    status: data.status as 'ativo' | 'inativo',
     versao: data.versao,
     papelTimbrado: data.papel_timbrado,
-    margens: data.margens,
+    margens: data.margens as ContratoTemplate['margens'],
     criadoEm: data.created_at,
     atualizadoEm: data.updated_at,
   };
 }
 
-export function transformContrato(data: any): Contrato {
+export function transformContrato(data: ContratoDB): Contrato {
   return {
     id: data.id,
-    templateId: data.template_id,
+    templateId: data.template_id || '',
     numero: data.numero,
     titulo: data.titulo,
-    tipo: data.tipo,
-    status: data.status,
+    tipo: data.tipo as TipoContrato,
+    status: data.status as StatusContrato,
     clienteId: data.cliente_id,
     eventoId: data.evento_id,
-    valor: data.valor ? parseFloat(data.valor) : undefined,
+    valor: data.valor ? parseFloat(String(data.valor)) : undefined,
     conteudo: data.conteudo,
     dataInicio: data.data_inicio,
     dataFim: data.data_fim,
     validade: data.validade,
-    itens: data.itens || [],
+    itens: (data.itens || []) as Contrato['itens'],
     condicoesPagamento: data.condicoes_pagamento,
     prazoExecucao: data.prazo_execucao,
     garantia: data.garantia,
     observacoes: data.observacoes,
     observacoesComerciais: data.observacoes_comerciais,
-    assinaturas: data.assinaturas || [],
+    assinaturas: (data.assinaturas || []) as Contrato['assinaturas'],
     anexos: data.anexos || [],
-    dadosEvento: data.dados_evento,
-    aprovacoesHistorico: data.aprovacoes_historico || [],
+    dadosEvento: data.dados_evento as Contrato['dadosEvento'],
+    aprovacoesHistorico: (data.aprovacoes_historico || []) as Contrato['aprovacoesHistorico'],
     criadoEm: data.created_at,
     atualizadoEm: data.updated_at,
   };

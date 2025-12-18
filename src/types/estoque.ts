@@ -120,6 +120,30 @@ export interface DadosDeclaracaoTransporte {
   observacoes?: string;
 }
 
+// Interface para dados do remetente em alocações
+export interface DadosRemetente {
+  nome: string;
+  documento: string;
+  telefone: string;
+  endereco?: string;
+  vinculo?: string;
+}
+
+// Interface para dados do destinatário em alocações
+export interface DadosDestinatario {
+  nome: string;
+  documento: string;
+  telefone: string;
+  endereco: string;
+}
+
+// Interface para dados da transportadora em alocações
+export interface DadosTransportadoraEnvio {
+  nome?: string;
+  cnpj?: string;
+  telefone?: string;
+}
+
 export interface MaterialAlocado {
   id: string;
   eventoId: string;
@@ -147,9 +171,9 @@ export interface MaterialAlocado {
   valorDeclarado?: number;
   remetenteTipo?: 'empresa' | 'membro_equipe';
   remetenteMembroId?: string;
-  remetenteDados?: any;
-  dadosDestinatario?: any;
-  dadosTransportadora?: any;
+  remetenteDados?: DadosRemetente;
+  dadosDestinatario?: DadosDestinatario;
+  dadosTransportadora?: DadosTransportadoraEnvio;
   observacoesTransporte?: string;
   
   envioId?: string;

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { DemandaFormData, StatusDemanda } from '@/types/demandas';
+import { DemandasQueryCache, DemandaUpdateData } from '@/types/utils';
 import { format } from 'date-fns';
 
 export function useDemandasMutations() {
@@ -86,7 +87,7 @@ export function useDemandasMutations() {
 
   const editarDemanda = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<DemandaFormData> }) => {
-      const updateData: any = {};
+      const updateData: DemandaUpdateData = {};
       if (data.titulo) updateData.titulo = data.titulo;
       if (data.descricao) updateData.descricao = data.descricao;
       if (data.categoria) updateData.categoria = data.categoria;
@@ -122,11 +123,11 @@ export function useDemandasMutations() {
       await queryClient.cancelQueries({ queryKey: ['demandas'] });
       const previousDemandas = queryClient.getQueryData(['demandas']);
       
-      queryClient.setQueriesData({ queryKey: ['demandas'] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ['demandas'] }, (old: DemandasQueryCache | undefined) => {
         if (!old) return old;
         return {
           ...old,
-          demandas: old.demandas.map((d: any) => 
+          demandas: old.demandas.map((d) => 
             d.id === id ? { ...d, ...data } : d
           )
         };
@@ -162,11 +163,11 @@ export function useDemandasMutations() {
       await queryClient.cancelQueries({ queryKey: ['demandas'] });
       const previousDemandas = queryClient.getQueryData(['demandas']);
       
-      queryClient.setQueriesData({ queryKey: ['demandas'] }, (old: any) => {
+      queryClient.setQueriesData({ queryKey: ['demandas'] }, (old: DemandasQueryCache | undefined) => {
         if (!old) return old;
         return {
           ...old,
-          demandas: old.demandas.filter((d: any) => d.id !== id),
+          demandas: old.demandas.filter((d) => d.id !== id),
           totalCount: old.totalCount - 1
         };
       });
@@ -189,7 +190,7 @@ export function useDemandasMutations() {
 
   const alterarStatus = useMutation({
     mutationFn: async ({ id, novoStatus }: { id: string; novoStatus: StatusDemanda }) => {
-      const updateData: any = { status: novoStatus };
+      const updateData: DemandaUpdateData = { status: novoStatus };
       if (novoStatus === 'concluida' || novoStatus === 'cancelada') {
         updateData.data_conclusao = new Date().toISOString();
       }
@@ -336,7 +337,7 @@ export function useDemandasMutations() {
   });
 
   const adicionarDemandaReembolso = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: { demanda_id: string; valor: number; descricao: string; comprovantes?: string[]; status?: string }) => {
       const { error } = await supabase
         .from('demandas_reembolsos')
         .insert(data);
