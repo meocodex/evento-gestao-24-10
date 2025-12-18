@@ -419,3 +419,207 @@ export interface ConfiguracaoEmpresaData {
   endereco?: EnderecoObject;
   logo?: string;
 }
+
+// ============================================
+// Tipos para Checklist de Eventos
+// ============================================
+
+export interface ChecklistItemData {
+  itemId: string;
+  nome: string;
+  quantidade: number;
+}
+
+export interface ChecklistItemFromDB {
+  id: string;
+  item_id: string;
+  nome: string;
+  quantidade: number;
+  alocado: number;
+  evento_id: string;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+// ============================================
+// Tipos para Clientes Cache
+// ============================================
+
+export interface ClientesQueryCache {
+  clientes: Array<{
+    id: string;
+    nome: string;
+    email: string;
+    telefone: string;
+    documento: string;
+    tipo: string;
+    [key: string]: unknown;
+  }>;
+  totalCount: number;
+}
+
+// ============================================
+// Tipos para Transportadoras
+// ============================================
+
+/** Dados de criação de transportadora (formato UI - camelCase) */
+export interface TransportadoraCreateData {
+  nome: string;
+  cnpj: string;
+  razaoSocial: string;
+  telefone: string;
+  email: string;
+  responsavel: string;
+  status?: 'ativa' | 'inativa';
+  endereco: {
+    cep: string;
+    rua: string;
+    numero: string;
+    complemento?: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+  };
+  dadosBancarios?: {
+    banco: string;
+    agencia: string;
+    conta: string;
+    tipoConta: 'corrente' | 'poupanca';
+  };
+  rotasAtendidas?: RotaAtendidaUI[];
+  observacoes?: string;
+}
+
+/** Dados de update de transportadora (formato UI - camelCase) */
+export interface TransportadoraUpdateData {
+  nome?: string;
+  cnpj?: string;
+  razaoSocial?: string;
+  telefone?: string;
+  email?: string;
+  responsavel?: string;
+  status?: 'ativa' | 'inativa';
+  endereco?: {
+    cep: string;
+    rua: string;
+    numero: string;
+    complemento?: string;
+    bairro: string;
+    cidade: string;
+    estado: string;
+  };
+  dadosBancarios?: {
+    banco: string;
+    agencia: string;
+    conta: string;
+    tipoConta: 'corrente' | 'poupanca';
+  };
+  rotasAtendidas?: RotaAtendidaUI[];
+  observacoes?: string;
+}
+
+/** Rota formato UI (camelCase) - usado pelos componentes */
+export interface RotaAtendidaUI {
+  id?: string;
+  cidadeDestino: string;
+  estadoDestino: string;
+  prazoEntrega: number;
+  valorBase?: number;
+  ativa: boolean;
+}
+
+/** Rota formato DB (snake_case) - usado internamente */
+export interface RotaAtendidaDB {
+  id: string;
+  cidade_destino: string;
+  estado_destino: string;
+  prazo_entrega: number;
+  valor_base?: number;
+  ativa: boolean;
+}
+
+/** Dados de criação de envio (formato UI - camelCase) */
+export interface EnvioCreateData {
+  transportadoraId: string;
+  eventoId: string;
+  tipo: 'ida' | 'volta';
+  status?: 'pendente' | 'em_transito' | 'entregue' | 'cancelado';
+  dataColeta?: string;
+  dataEntrega?: string;
+  dataEntregaPrevista: string;
+  origem: string;
+  destino: string;
+  rastreio?: string;
+  valor?: number;
+  formaPagamento: 'antecipado' | 'na_entrega' | 'a_combinar';
+  comprovantePagamento?: string;
+  despesaEventoId?: string;
+  observacoes?: string;
+}
+
+/** Dados de update de envio (formato UI - camelCase) */
+export interface EnvioUpdateData {
+  transportadoraId?: string;
+  eventoId?: string;
+  tipo?: 'ida' | 'volta';
+  status?: 'pendente' | 'em_transito' | 'entregue' | 'cancelado';
+  dataColeta?: string;
+  dataEntrega?: string;
+  dataEntregaPrevista?: string;
+  origem?: string;
+  destino?: string;
+  rastreio?: string;
+  valor?: number;
+  formaPagamento?: 'antecipado' | 'na_entrega' | 'a_combinar';
+  comprovantePagamento?: string;
+  despesaEventoId?: string;
+  observacoes?: string;
+}
+
+// ============================================
+// Tipos para Equipe de Eventos
+// ============================================
+
+export interface EquipeMembroData {
+  nome: string;
+  funcao: string;
+  telefone: string;
+  whatsapp?: string | null;
+  dataInicio?: string | null;
+  dataFim?: string | null;
+  observacoes?: string | null;
+  operacionalId?: string | null;
+}
+
+export interface EquipeMembroFromDB {
+  id: string;
+  evento_id: string;
+  nome: string;
+  funcao: string;
+  telefone: string;
+  whatsapp?: string | null;
+  data_inicio?: string | null;
+  data_fim?: string | null;
+  observacoes?: string | null;
+  operacional_id?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+// ============================================
+// Tipos para Upload de Arquivos
+// ============================================
+
+export interface EventoArquivosFromDB {
+  planta_baixa: string | null;
+  documentos: string[] | null;
+  fotos_evento: string[] | null;
+}
+
+export type TipoArquivoEvento = 'plantaBaixa' | 'documentos' | 'fotosEvento';
+
+export interface EventoArquivoUpdateData {
+  planta_baixa?: string | null;
+  documentos?: string[];
+  fotos_evento?: string[];
+}
