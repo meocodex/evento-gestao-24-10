@@ -5,12 +5,13 @@
 import { useEstoqueQueries as useEstoqueQueriesImpl } from '@/contexts/estoque/useEstoqueQueries';
 import { useEstoqueMutations as useEstoqueMutationsImpl } from '@/contexts/estoque/useEstoqueMutations';
 import { useEstoqueSeriais as useEstoqueSeriaisImpl } from '@/contexts/estoque/useEstoqueSeriais';
+import { FiltrosEstoque } from '@/types/estoque';
 
 export { useEstoqueSeriaisImpl as useEstoqueSeriais };
 export type { FiltrosEstoque, MaterialEstoque, SerialEstoque } from '@/types/estoque';
 
 // Wrapper para compatibilidade
-export function useEstoque(page?: number, pageSize?: number, filtros?: any) {
+export function useEstoque(page?: number, pageSize?: number, filtros?: FiltrosEstoque) {
   const queries = useEstoqueQueriesImpl(page, pageSize, filtros);
   const mutations = useEstoqueMutationsImpl();
   

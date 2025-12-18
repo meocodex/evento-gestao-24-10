@@ -72,10 +72,10 @@ export function ClienteFiltersPopover({
           <div className="space-y-3">
             <div className="space-y-2">
               <Label>Tipo</Label>
-              <Select
+            <Select
                 value={filtros.tipo}
-                onValueChange={(value: any) =>
-                  onFiltrosChange({ ...filtros, tipo: value })
+                onValueChange={(value: string) =>
+                  onFiltrosChange({ ...filtros, tipo: value as ClienteFiltersType['tipo'] })
                 }
               >
                 <SelectTrigger>

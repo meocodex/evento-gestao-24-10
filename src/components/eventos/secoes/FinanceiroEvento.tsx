@@ -13,10 +13,11 @@ import { AdicionarDespesaSheet } from '../modals/AdicionarDespesaSheet';
 import { RelatorioFechamentoDialog } from '../modals/RelatorioFechamentoDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
+import { UsePermissionsResult } from '@/hooks/usePermissions';
 
 interface FinanceiroEventoProps {
   evento: Evento;
-  permissions: any;
+  permissions: UsePermissionsResult;
 }
 
 export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps) {

@@ -20,10 +20,11 @@ import { useMaterialPendente } from '@/hooks/eventos/useMaterialPendente';
 import { EventoCountdown } from '../EventoCountdown';
 import { InfoGridList } from '@/components/shared/InfoGrid';
 import { Separator } from '@/components/ui/separator';
+import { UsePermissionsResult } from '@/hooks/usePermissions';
 
 interface DadosEventoProps {
   evento: Evento;
-  permissions: any;
+  permissions: UsePermissionsResult;
 }
 
 export function DadosEvento({ evento, permissions }: DadosEventoProps) {

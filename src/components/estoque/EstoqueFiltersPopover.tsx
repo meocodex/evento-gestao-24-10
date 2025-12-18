@@ -94,10 +94,10 @@ export function EstoqueFiltersPopover({
 
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select
+            <Select
                 value={filtros.status}
-                onValueChange={(value: any) =>
-                  onFiltrosChange({ ...filtros, status: value })
+                onValueChange={(value: string) =>
+                  onFiltrosChange({ ...filtros, status: value as EstoqueFiltersType['status'] })
                 }
               >
                 <SelectTrigger>
