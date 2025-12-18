@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { DatabaseError, getErrorMessage, ReceitaCreateData, DespesaCreateData } from '@/types/utils';
 
 export function useEventosFinanceiro(eventoId?: string) {
   const queryClient = useQueryClient();
@@ -35,7 +36,7 @@ export function useEventosFinanceiro(eventoId?: string) {
   });
 
   const adicionarReceitaMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: ReceitaCreateData) => {
       if (!eventoId) throw new Error('Evento ID não fornecido');
       const { error } = await supabase
         .from('eventos_receitas')
@@ -48,13 +49,13 @@ export function useEventosFinanceiro(eventoId?: string) {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
       toast.success('Receita adicionada com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error('Erro ao adicionar receita: ' + error.message);
+    onError: (error: DatabaseError) => {
+      toast.error('Erro ao adicionar receita: ' + getErrorMessage(error));
     }
   });
 
   const adicionarDespesaMutation = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: DespesaCreateData) => {
       if (!eventoId) throw new Error('Evento ID não fornecido');
       const { error } = await supabase
         .from('eventos_despesas')
@@ -67,8 +68,8 @@ export function useEventosFinanceiro(eventoId?: string) {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
       toast.success('Despesa adicionada com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error('Erro ao adicionar despesa: ' + error.message);
+    onError: (error: DatabaseError) => {
+      toast.error('Erro ao adicionar despesa: ' + getErrorMessage(error));
     }
   });
 
@@ -86,8 +87,8 @@ export function useEventosFinanceiro(eventoId?: string) {
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       toast.success('Receita removida com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error('Erro ao remover receita: ' + error.message);
+    onError: (error: DatabaseError) => {
+      toast.error('Erro ao remover receita: ' + getErrorMessage(error));
     }
   });
 
@@ -105,20 +106,19 @@ export function useEventosFinanceiro(eventoId?: string) {
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       toast.success('Despesa removida com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error('Erro ao remover despesa: ' + error.message);
+    onError: (error: DatabaseError) => {
+      toast.error('Erro ao remover despesa: ' + getErrorMessage(error));
     }
   });
 
   const adicionarReceitaComTaxasMutation = useMutation({
     mutationFn: async ({ receita, formasPagamento }: { 
-      receita: any; 
+      receita: ReceitaCreateData; 
       formasPagamento: Array<{ forma: string; valor: number; taxa_percentual: number }> 
     }) => {
       if (!eventoId) throw new Error('Evento ID não fornecido');
       
       const valorTotal = formasPagamento.reduce((sum, fp) => sum + fp.valor, 0);
-      const taxaTotal = formasPagamento.reduce((sum, fp) => sum + (fp.valor * fp.taxa_percentual / 100), 0);
       
       // Criar receita com taxas
       const { data: receitaData, error: receitaError } = await supabase
@@ -174,18 +174,17 @@ export function useEventosFinanceiro(eventoId?: string) {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
       toast.success('Receita com taxas adicionada com sucesso!');
     },
-    onError: (error: any) => {
-      console.error('Erro ao adicionar receita com taxas:', error);
-      
+    onError: (error: DatabaseError) => {
       // Mensagens de erro mais específicas
+      const mensagemBase = getErrorMessage(error);
       let mensagem = 'Erro ao adicionar receita';
       
-      if (error.message?.includes('categoria_financeira')) {
+      if (mensagemBase.includes('categoria_financeira')) {
         mensagem = 'Erro de categoria. Por favor, atualize a página e tente novamente.';
-      } else if (error.message?.includes('eventos_despesas')) {
+      } else if (mensagemBase.includes('eventos_despesas')) {
         mensagem = 'Erro ao criar despesas de taxa. Verifique os valores e tente novamente.';
-      } else if (error.message) {
-        mensagem = `Erro ao adicionar receita: ${error.message}`;
+      } else {
+        mensagem = `Erro ao adicionar receita: ${mensagemBase}`;
       }
       
       toast.error(mensagem);

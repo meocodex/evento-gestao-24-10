@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { EventoFormData } from '@/types/eventos';
+import { DatabaseError, getErrorMessage, PropostaEventoData, ItemPropostaReceita } from '@/types/utils';
 
 export function useEventosPropostas() {
   const queryClient = useQueryClient();
@@ -12,7 +13,7 @@ export function useEventosPropostas() {
       dadosEvento 
     }: { 
       contratoId: string; 
-      dadosEvento: any 
+      dadosEvento: PropostaEventoData 
     }) => {
       // 1. Buscar dados do contrato
       const { data: contrato, error: fetchError } = await supabase
@@ -87,9 +88,9 @@ export function useEventosPropostas() {
         description: 'Evento criado a partir da proposta com sucesso.'
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro ao criar evento', {
-        description: error.message
+        description: getErrorMessage(error)
       });
     }
   });
@@ -100,7 +101,7 @@ export function useEventosPropostas() {
       itens 
     }: { 
       eventoId: string; 
-      itens: any[] 
+      itens: ItemPropostaReceita[] 
     }) => {
       // Mapear itens para o formato de receitas
       const receitas = itens.map(item => ({
@@ -129,9 +130,9 @@ export function useEventosPropostas() {
         description: `${variables.itens.length} receita(s) importada(s) com sucesso.`
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro ao adicionar receitas', {
-        description: error.message
+        description: getErrorMessage(error)
       });
     }
   });

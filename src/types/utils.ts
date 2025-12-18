@@ -623,3 +623,82 @@ export interface EventoArquivoUpdateData {
   documentos?: string[];
   fotos_evento?: string[];
 }
+
+// ============================================
+// Tipos para Financeiro de Eventos (Batch 6)
+// ============================================
+
+/** Dados para criar receita de evento */
+export interface ReceitaCreateData {
+  tipo: 'fixo' | 'variavel';
+  tipo_servico?: string;
+  descricao: string;
+  valor: number;
+  valor_unitario?: number;
+  quantidade?: number;
+  data: string;
+  status?: string;
+  observacoes?: string;
+}
+
+/** Dados para criar despesa de evento */
+export interface DespesaCreateData {
+  categoria: string;
+  descricao: string;
+  valor: number;
+  valor_unitario?: number;
+  quantidade?: number;
+  data?: string;
+  data_pagamento?: string;
+  status?: string;
+  observacoes?: string;
+  responsavel?: string;
+  comprovante?: string;
+}
+
+// ============================================
+// Tipos para Propostas e Contratos (Batch 7)
+// ============================================
+
+import type { TipoEvento } from './eventos';
+
+/** Dados do evento vindos de uma proposta */
+export interface PropostaEventoData {
+  nome?: string;
+  descricao?: string;
+  comercialId?: string;
+  dataInicio?: string;
+  dataFim?: string;
+  horaInicio?: string;
+  horaFim?: string;
+  local?: string;
+  endereco?: string;
+  cidade?: string;
+  estado?: string;
+  tipoEvento?: TipoEvento;
+}
+
+/** Item de proposta para ser convertido em receita */
+export interface ItemPropostaReceita {
+  descricao?: string;
+  nome?: string;
+  valor?: number;
+  valorTotal?: number;
+  valorUnitario?: number;
+  quantidade?: number;
+}
+
+/** Assinatura de contrato */
+export interface AssinaturaContrato {
+  parte: string;
+  assinado: boolean;
+  dataAssinatura?: string;
+}
+
+/** Ação do histórico de aprovações do contrato */
+export interface AcaoHistoricoContrato {
+  data: string;
+  acao: string;
+  usuario: string;
+  observacoes?: string;
+}

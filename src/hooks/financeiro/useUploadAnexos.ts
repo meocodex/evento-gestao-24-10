@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { AnexoFinanceiro } from '@/types/financeiro';
+import { DatabaseError, getErrorMessage } from '@/types/utils';
 
 export function useUploadAnexos() {
   const [uploading, setUploading] = useState(false);
@@ -61,8 +62,9 @@ export function useUploadAnexos() {
       }
       
       return anexos;
-    } catch (error: any) {
-      toast.error('Erro no upload: ' + error.message);
+    } catch (error) {
+      const err = error as DatabaseError;
+      toast.error('Erro no upload: ' + getErrorMessage(err));
       return [];
     } finally {
       setUploading(false);
@@ -82,8 +84,9 @@ export function useUploadAnexos() {
       if (error) throw error;
       
       toast.success('Anexo removido com sucesso!');
-    } catch (error: any) {
-      toast.error('Erro ao remover anexo: ' + error.message);
+    } catch (error) {
+      const err = error as DatabaseError;
+      toast.error('Erro ao remover anexo: ' + getErrorMessage(err));
     }
   };
   
