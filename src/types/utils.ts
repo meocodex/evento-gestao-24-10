@@ -388,6 +388,23 @@ export interface RawSerialFromDB {
 // Tipos para Demandas Cache
 // ============================================
 
+// Interface para resultados de busca do banco
+export interface SearchResultRow {
+  id: string;
+  rank?: number;
+  [key: string]: unknown;
+}
+
+// Interface para rota de transportadora do banco
+export interface RotaTransportadoraDB {
+  id: string;
+  cidade_destino: string;
+  estado_destino: string;
+  prazo_entrega: number;
+  valor_base: number;
+  ativa: boolean;
+}
+
 export interface DemandasQueryCache {
   demandas: Array<{
     id: string;
@@ -643,9 +660,11 @@ export interface EventoArquivoUpdateData {
 // Tipos para Financeiro de Eventos (Batch 6)
 // ============================================
 
+import type { TipoReceita } from './eventos';
+
 /** Dados para criar receita de evento */
 export interface ReceitaCreateData {
-  tipo: 'fixo' | 'variavel';
+  tipo: TipoReceita;
   tipo_servico?: string;
   descricao: string;
   valor: number;

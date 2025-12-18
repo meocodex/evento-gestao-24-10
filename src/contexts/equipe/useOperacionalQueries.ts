@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { OperacionalEquipe, FiltrosOperacional } from '@/types/equipe';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useEffect } from 'react';
+import { SearchResultRow } from '@/types/utils';
 
 export function useOperacionalQueries(
   page = 1,
@@ -29,7 +30,7 @@ export function useOperacionalQueries(
 
         if (searchError) throw searchError;
 
-        const operacionaisIds = (searchResults || []).map((r: any) => r.id);
+        const operacionaisIds = (searchResults || []).map((r: SearchResultRow) => r.id);
         
         if (operacionaisIds.length === 0) {
           return { operacionais: [], totalCount: 0 };

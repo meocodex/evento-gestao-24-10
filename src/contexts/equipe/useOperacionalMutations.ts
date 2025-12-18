@@ -23,7 +23,7 @@ export function useOperacionalMutations() {
         description: 'Membro da equipe operacional cadastrado com sucesso.'
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error('Erro ao cadastrar membro', {
         description: error.message
       });
@@ -48,7 +48,7 @@ export function useOperacionalMutations() {
         description: 'Informações atualizadas com sucesso.'
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error('Erro ao atualizar membro', {
         description: error.message
       });
@@ -77,7 +77,7 @@ export function useOperacionalMutations() {
         description: 'O membro foi removido da equipe operacional com sucesso'
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       const errorMessage = error.message || 'Erro ao excluir membro';
       
       toast.error('Erro ao excluir membro', {

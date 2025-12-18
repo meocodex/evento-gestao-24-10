@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Cliente } from '@/types/eventos';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useEffect } from 'react';
+import { SearchResultRow } from '@/types/utils';
 
 export function useClientesQueries(page = 1, pageSize = 20, searchTerm?: string, enabled = true) {
   const queryClient = useQueryClient();
@@ -26,7 +27,7 @@ export function useClientesQueries(page = 1, pageSize = 20, searchTerm?: string,
 
         if (searchError) throw searchError;
 
-        const clientesIds = (searchResults || []).map((r: any) => r.id);
+        const clientesIds = (searchResults || []).map((r: SearchResultRow) => r.id);
         
         if (clientesIds.length === 0) {
           return { clientes: [], totalCount: 0 };

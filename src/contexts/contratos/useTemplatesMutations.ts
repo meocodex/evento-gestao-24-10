@@ -3,6 +3,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ContratoTemplate } from '@/types/contratos';
 
+// Interface para dados de atualização de template (snake_case para o banco)
+interface TemplateUpdateData {
+  nome?: string;
+  tipo?: string;
+  descricao?: string;
+  conteudo?: string;
+  variaveis?: string[];
+  status?: string;
+  versao?: number;
+  papel_timbrado?: string;
+  margens?: unknown;
+}
+
 export function useTemplatesMutations() {
   const queryClient = useQueryClient();
 
@@ -35,7 +48,7 @@ export function useTemplatesMutations() {
 
   const editarTemplate = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<ContratoTemplate> }) => {
-      const updateData: any = {};
+      const updateData: TemplateUpdateData = {};
       if (data.nome !== undefined) updateData.nome = data.nome;
       if (data.tipo !== undefined) updateData.tipo = data.tipo;
       if (data.descricao !== undefined) updateData.descricao = data.descricao;

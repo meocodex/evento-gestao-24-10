@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { ReceitaFormData } from '@/types/eventos';
 
 interface AdicionarReceitaDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdicionar: (data: any) => void;
+  onAdicionar: (data: ReceitaFormData) => void;
 }
 
 export function AdicionarReceitaDialog({ open, onOpenChange, onAdicionar }: AdicionarReceitaDialogProps) {
@@ -17,7 +18,7 @@ export function AdicionarReceitaDialog({ open, onOpenChange, onAdicionar }: Adic
   const [descricao, setDescricao] = useState('');
   const [quantidade, setQuantidade] = useState(1);
   const [valorUnitario, setValorUnitario] = useState('');
-  const [tipo, setTipo] = useState<string>('');
+  const [tipo, setTipo] = useState<'venda' | 'locacao' | 'servico' | 'outros' | ''>('');
 
   const valorTotal = quantidade * (parseFloat(valorUnitario) || 0);
 
@@ -39,7 +40,7 @@ export function AdicionarReceitaDialog({ open, onOpenChange, onAdicionar }: Adic
         quantidade,
         valor_unitario: parseFloat(valorUnitario),
         valor: valorTotal,
-        tipo,
+        tipo: tipo as 'venda' | 'locacao' | 'servico' | 'outros',
         status: 'pendente',
         data: new Date().toISOString().split('T')[0]
       });
@@ -109,7 +110,7 @@ export function AdicionarReceitaDialog({ open, onOpenChange, onAdicionar }: Adic
 
           <div>
             <Label>Tipo *</Label>
-            <Select value={tipo} onValueChange={setTipo}>
+            <Select value={tipo} onValueChange={(v) => setTipo(v as 'venda' | 'locacao' | 'servico' | 'outros')}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>

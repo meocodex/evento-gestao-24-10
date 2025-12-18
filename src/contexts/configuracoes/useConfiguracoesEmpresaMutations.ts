@@ -38,7 +38,7 @@ export function useConfiguracoesEmpresaMutations() {
       queryClient.invalidateQueries({ queryKey: ['configuracoes_empresa'] });
       toast.success('Configurações da empresa atualizadas com sucesso');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       console.error('Erro ao atualizar configurações da empresa:', error);
       toast.error('Erro ao atualizar configurações da empresa');
     },
