@@ -2,6 +2,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
+import { 
+  DatabaseError, 
+  getErrorMessage,
+  ChecklistItemData, 
+  ChecklistItemFromDB 
+} from '@/types/utils';
 
 export function useEventosChecklist(eventoId: string) {
   const queryClient = useQueryClient();
@@ -16,7 +22,7 @@ export function useEventosChecklist(eventoId: string) {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data;
+      return data as ChecklistItemFromDB[];
     },
   });
 
@@ -44,7 +50,7 @@ export function useEventosChecklist(eventoId: string) {
   }, [eventoId, queryClient]);
 
   const adicionarMaterialChecklist = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: ChecklistItemData) => {
       const payload = {
         item_id: data.itemId,
         nome: data.nome,
@@ -60,19 +66,19 @@ export function useEventosChecklist(eventoId: string) {
         .single();
       
       if (error) throw error;
-      return insertedData;
+      return insertedData as ChecklistItemFromDB;
     },
     onSuccess: (newItem) => {
       // Update cache immediately
-      queryClient.setQueryData(['eventos-checklist', eventoId], (old: any) => 
-        old ? [newItem, ...old] : [newItem]
+      queryClient.setQueryData<ChecklistItemFromDB[]>(
+        ['eventos-checklist', eventoId], 
+        (old) => old ? [newItem, ...old] : [newItem]
       );
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       toast.success('Material adicionado ao checklist!');
     },
-    onError: (error: any) => {
-      console.error('Erro ao adicionar material:', error);
-      toast.error(`Erro ao adicionar material: ${error.message || 'Verifique suas permissões'}`);
+    onError: (error: DatabaseError) => {
+      toast.error(`Erro ao adicionar material: ${getErrorMessage(error)}`);
     },
   });
 
@@ -87,15 +93,15 @@ export function useEventosChecklist(eventoId: string) {
     },
     onSuccess: (deletedId) => {
       // Update cache immediately
-      queryClient.setQueryData(['eventos-checklist', eventoId], (old: any) => 
-        old ? old.filter((item: any) => item.id !== deletedId) : []
+      queryClient.setQueryData<ChecklistItemFromDB[]>(
+        ['eventos-checklist', eventoId], 
+        (old) => old ? old.filter((item) => item.id !== deletedId) : []
       );
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       toast.success('Material removido do checklist!');
     },
-    onError: (error: any) => {
-      console.error('Erro ao remover material:', error);
-      toast.error(`Erro ao remover material: ${error.message || 'Verifique suas permissões'}`);
+    onError: (error: DatabaseError) => {
+      toast.error(`Erro ao remover material: ${getErrorMessage(error)}`);
     },
   });
 
@@ -109,19 +115,19 @@ export function useEventosChecklist(eventoId: string) {
         .single();
       
       if (error) throw error;
-      return data;
+      return data as ChecklistItemFromDB;
     },
     onSuccess: (updatedItem) => {
       // Update cache immediately
-      queryClient.setQueryData(['eventos-checklist', eventoId], (old: any) =>
-        old ? old.map((item: any) => item.id === updatedItem.id ? updatedItem : item) : []
+      queryClient.setQueryData<ChecklistItemFromDB[]>(
+        ['eventos-checklist', eventoId], 
+        (old) => old ? old.map((item) => item.id === updatedItem.id ? updatedItem : item) : []
       );
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       toast.success('Quantidade atualizada!');
     },
-    onError: (error: any) => {
-      console.error('Erro ao atualizar quantidade:', error);
-      toast.error(`Erro ao atualizar: ${error.message || 'Verifique suas permissões'}`);
+    onError: (error: DatabaseError) => {
+      toast.error(`Erro ao atualizar: ${getErrorMessage(error)}`);
     },
   });
 

@@ -2,6 +2,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { optimizeImage, isImageFile } from '@/lib/imageOptimization';
+import { 
+  DatabaseError, 
+  getErrorMessage,
+  TipoArquivoEvento,
+  EventoArquivosFromDB,
+  EventoArquivoUpdateData
+} from '@/types/utils';
 
 export function useEventosArquivos() {
   const queryClient = useQueryClient();
@@ -13,7 +20,7 @@ export function useEventosArquivos() {
       arquivo 
     }: { 
       eventoId: string; 
-      tipo: 'plantaBaixa' | 'documentos' | 'fotosEvento';
+      tipo: TipoArquivoEvento;
       arquivo: File 
     }) => {
       let fileToUpload = arquivo;
@@ -23,7 +30,7 @@ export function useEventosArquivos() {
         try {
           const { optimizedFile } = await optimizeImage(arquivo);
           fileToUpload = optimizedFile;
-        } catch (error) {
+        } catch {
           // Falha na otimização, usar arquivo original
         }
       }
@@ -33,7 +40,7 @@ export function useEventosArquivos() {
       const fileName = `${timestamp}-${fileToUpload.name}`;
       const filePath = `${eventoId}/${tipo}/${fileName}`;
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('eventos')
         .upload(filePath, fileToUpload, {
           cacheControl: '3600',
@@ -56,15 +63,16 @@ export function useEventosArquivos() {
 
       if (fetchError) throw fetchError;
 
-      let updateData: any = {};
+      const eventoArquivos = evento as EventoArquivosFromDB;
+      const updateData: EventoArquivoUpdateData = {};
 
       if (tipo === 'plantaBaixa') {
         updateData.planta_baixa = publicUrl;
       } else if (tipo === 'documentos') {
-        const documentosAtuais = evento.documentos || [];
+        const documentosAtuais = eventoArquivos.documentos || [];
         updateData.documentos = [...documentosAtuais, publicUrl];
       } else if (tipo === 'fotosEvento') {
-        const fotosAtuais = evento.fotos_evento || [];
+        const fotosAtuais = eventoArquivos.fotos_evento || [];
         updateData.fotos_evento = [...fotosAtuais, publicUrl];
       }
 
@@ -80,19 +88,19 @@ export function useEventosArquivos() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
       
-      const tipoNome = {
+      const tipoNome: Record<TipoArquivoEvento, string> = {
         plantaBaixa: 'Planta baixa',
         documentos: 'Documento',
         fotosEvento: 'Foto'
-      }[variables.tipo];
+      };
 
       toast.success('Upload concluído!', {
-        description: `${tipoNome} enviado com sucesso.`
+        description: `${tipoNome[variables.tipo]} enviado com sucesso.`
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro no upload', {
-        description: error.message
+        description: getErrorMessage(error)
       });
     }
   });
@@ -104,7 +112,7 @@ export function useEventosArquivos() {
       url 
     }: { 
       eventoId: string; 
-      tipo: 'plantaBaixa' | 'documentos' | 'fotosEvento';
+      tipo: TipoArquivoEvento;
       url: string 
     }) => {
       // 1. Extrair path do arquivo da URL
@@ -127,16 +135,17 @@ export function useEventosArquivos() {
 
       if (fetchError) throw fetchError;
 
-      let updateData: any = {};
+      const eventoArquivos = evento as EventoArquivosFromDB;
+      const updateData: EventoArquivoUpdateData = {};
 
       if (tipo === 'plantaBaixa') {
         updateData.planta_baixa = null;
       } else if (tipo === 'documentos') {
-        const documentosAtuais = evento.documentos || [];
-        updateData.documentos = documentosAtuais.filter((doc: string) => doc !== url);
+        const documentosAtuais = eventoArquivos.documentos || [];
+        updateData.documentos = documentosAtuais.filter((doc) => doc !== url);
       } else if (tipo === 'fotosEvento') {
-        const fotosAtuais = evento.fotos_evento || [];
-        updateData.fotos_evento = fotosAtuais.filter((foto: string) => foto !== url);
+        const fotosAtuais = eventoArquivos.fotos_evento || [];
+        updateData.fotos_evento = fotosAtuais.filter((foto) => foto !== url);
       }
 
       const { error: updateError } = await supabase
@@ -152,9 +161,9 @@ export function useEventosArquivos() {
         description: 'Arquivo excluído com sucesso.'
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro ao remover arquivo', {
-        description: error.message
+        description: getErrorMessage(error)
       });
     }
   });

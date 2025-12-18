@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Cliente } from '@/types/eventos';
 import { toast } from 'sonner';
+import { DatabaseError, getErrorMessage, ClientesQueryCache } from '@/types/utils';
 
 export function useClientesMutations() {
   const queryClient = useQueryClient();
@@ -30,9 +31,8 @@ export function useClientesMutations() {
       queryClient.invalidateQueries({ queryKey: ['clientes'] });
       toast.success('Cliente criado com sucesso!');
     },
-    onError: (error) => {
-      console.error('Erro ao criar cliente:', error);
-      toast.error('Erro ao criar cliente');
+    onError: (error: DatabaseError) => {
+      toast.error('Erro ao criar cliente', { description: getErrorMessage(error) });
     },
   });
 
@@ -49,13 +49,13 @@ export function useClientesMutations() {
     onMutate: async ({ id, data }) => {
       await queryClient.cancelQueries({ queryKey: ['clientes'] });
       
-      const previousClientes = queryClient.getQueryData(['clientes']);
+      const previousClientes = queryClient.getQueryData<ClientesQueryCache>(['clientes']);
       
-      queryClient.setQueriesData({ queryKey: ['clientes'] }, (old: any) => {
+      queryClient.setQueriesData<ClientesQueryCache>({ queryKey: ['clientes'] }, (old) => {
         if (!old) return old;
         return {
           ...old,
-          clientes: old.clientes.map((c: Cliente) => 
+          clientes: old.clientes.map((c) => 
             c.id === id ? { ...c, ...data, updated_at: new Date().toISOString() } : c
           )
         };
@@ -63,12 +63,11 @@ export function useClientesMutations() {
       
       return { previousClientes };
     },
-    onError: (err, variables, context) => {
+    onError: (err: DatabaseError, _variables, context) => {
       if (context?.previousClientes) {
         queryClient.setQueryData(['clientes'], context.previousClientes);
       }
-      console.error('Erro ao editar cliente:', err);
-      toast.error('Erro ao editar cliente');
+      toast.error('Erro ao editar cliente', { description: getErrorMessage(err) });
     },
     onSuccess: () => {
       toast.success('Cliente atualizado com sucesso!');
@@ -91,25 +90,24 @@ export function useClientesMutations() {
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: ['clientes'] });
       
-      const previousClientes = queryClient.getQueryData(['clientes']);
+      const previousClientes = queryClient.getQueryData<ClientesQueryCache>(['clientes']);
       
-      queryClient.setQueriesData({ queryKey: ['clientes'] }, (old: any) => {
+      queryClient.setQueriesData<ClientesQueryCache>({ queryKey: ['clientes'] }, (old) => {
         if (!old) return old;
         return {
           ...old,
-          clientes: old.clientes.filter((c: Cliente) => c.id !== id),
+          clientes: old.clientes.filter((c) => c.id !== id),
           totalCount: old.totalCount - 1
         };
       });
       
       return { previousClientes };
     },
-    onError: (err, variables, context) => {
+    onError: (err: DatabaseError, _variables, context) => {
       if (context?.previousClientes) {
         queryClient.setQueryData(['clientes'], context.previousClientes);
       }
-      console.error('Erro ao excluir cliente:', err);
-      toast.error('Erro ao excluir cliente');
+      toast.error('Erro ao excluir cliente', { description: getErrorMessage(err) });
     },
     onSuccess: () => {
       toast.success('Cliente excluído com sucesso!');

@@ -1,6 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { 
+  DatabaseError, 
+  getErrorMessage,
+  EquipeMembroData,
+  EquipeMembroFromDB
+} from '@/types/utils';
 
 export function useEventosEquipe(eventoId: string) {
   const queryClient = useQueryClient();
@@ -16,7 +22,7 @@ export function useEventosEquipe(eventoId: string) {
       if (error) throw error;
       
       // Transform snake_case to camelCase for UI
-      return data?.map(row => ({
+      return (data as EquipeMembroFromDB[])?.map(row => ({
         id: row.id,
         eventoId: row.evento_id,
         nome: row.nome,
@@ -34,7 +40,7 @@ export function useEventosEquipe(eventoId: string) {
   });
 
   const adicionarMembroEquipe = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: EquipeMembroData) => {
       const payload = {
         evento_id: eventoId,
         nome: data.nome,
@@ -58,9 +64,9 @@ export function useEventosEquipe(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       toast.success('Membro adicionado à equipe!');
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Não foi possível adicionar o membro', {
-        description: error.message,
+        description: getErrorMessage(error),
       });
     },
   });
@@ -77,6 +83,11 @@ export function useEventosEquipe(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['eventos-equipe', eventoId] });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       toast.success('Membro removido da equipe!');
+    },
+    onError: (error: DatabaseError) => {
+      toast.error('Não foi possível remover o membro', {
+        description: getErrorMessage(error),
+      });
     },
   });
 
