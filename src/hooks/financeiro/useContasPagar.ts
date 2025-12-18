@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
 import type { ContaPagar } from '@/types/financeiro';
+import { DatabaseError, getErrorMessage } from '@/types/utils';
 
 export function useContasPagar() {
   const queryClient = useQueryClient();
@@ -55,8 +56,8 @@ export function useContasPagar() {
       queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
       toast.success('Conta a pagar criada com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error('Erro ao criar conta: ' + error.message);
+    onError: (error: DatabaseError) => {
+      toast.error('Erro ao criar conta: ' + getErrorMessage(error));
     },
   });
   

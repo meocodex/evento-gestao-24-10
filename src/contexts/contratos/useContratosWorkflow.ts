@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { AssinaturaContrato, AcaoHistoricoContrato } from '@/types/utils';
 
 export function useContratosWorkflow() {
   const queryClient = useQueryClient();
@@ -16,16 +17,16 @@ export function useContratosWorkflow() {
 
       if (fetchError) throw fetchError;
 
-      const assinaturas = (contrato.assinaturas || []) as any[];
+      const assinaturas = (contrato.assinaturas || []) as AssinaturaContrato[];
       
       // Atualizar assinatura
-      const assinaturasAtualizadas = assinaturas.map((a: any) =>
+      const assinaturasAtualizadas = assinaturas.map((a: AssinaturaContrato) =>
         a.parte === parte
           ? { ...a, assinado: true, dataAssinatura: new Date().toISOString() }
           : a
       );
 
-      const todasAssinadas = assinaturasAtualizadas.every((a: any) => a.assinado);
+      const todasAssinadas = assinaturasAtualizadas.every((a: AssinaturaContrato) => a.assinado);
 
       const { error } = await supabase
         .from('contratos')
@@ -58,9 +59,9 @@ export function useContratosWorkflow() {
 
       if (fetchError) throw fetchError;
 
-      const historico = (contrato.aprovacoes_historico || []) as any[];
+      const historico = (contrato.aprovacoes_historico || []) as AcaoHistoricoContrato[];
       
-      const novoHistorico = [
+      const novoHistorico: AcaoHistoricoContrato[] = [
         ...historico,
         {
           data: new Date().toISOString(),
@@ -107,9 +108,9 @@ export function useContratosWorkflow() {
 
       if (fetchError) throw fetchError;
 
-      const historico = (contrato.aprovacoes_historico || []) as any[];
+      const historico = (contrato.aprovacoes_historico || []) as AcaoHistoricoContrato[];
       
-      const novoHistorico = [
+      const novoHistorico: AcaoHistoricoContrato[] = [
         ...historico,
         {
           data: new Date().toISOString(),
