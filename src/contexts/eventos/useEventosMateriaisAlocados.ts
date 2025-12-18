@@ -4,11 +4,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { gerarTermoRetirada } from '@/utils/termoRetiradaPDF';
 import { gerarDeclaracaoTransporte as gerarDeclaracaoPDF } from '@/utils/declaracaoTransportePDF';
+import type { 
+  DatabaseError, 
+  EnderecoObject, 
+  RawMaterialAlocadoFromDB, 
+  AlocarMaterialData,
+  DevolucaoUpdateData 
+} from '@/types/utils';
 
 // Função auxiliar para formatar endereço de objeto para string
-const formatarEndereco = (endereco: any): string => {
+const formatarEndereco = (endereco: EnderecoObject | string | null | undefined): string => {
   if (!endereco || typeof endereco !== 'object') {
-    return endereco || '';
+    return (endereco as string) || '';
   }
   const partes = [
     endereco.logradouro,
@@ -22,7 +29,7 @@ const formatarEndereco = (endereco: any): string => {
 };
 
 // Função helper para transformar snake_case para camelCase
-const transformarMaterial = (data: any) => ({
+const transformarMaterial = (data: RawMaterialAlocadoFromDB) => ({
   ...data,
   itemId: data.item_id,
   eventoId: data.evento_id,
@@ -48,6 +55,11 @@ const transformarMaterial = (data: any) => ({
   observacoesTransporte: data.observacoes_transporte,
 });
 
+// Helper para extrair mensagem de erro
+const getErrorMessage = (error: DatabaseError): string => {
+  return 'message' in error ? error.message : 'Erro desconhecido';
+};
+
 export function useEventosMateriaisAlocados(eventoId: string) {
   const queryClient = useQueryClient();
   
@@ -60,12 +72,12 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         .eq('evento_id', eventoId);
       
       if (error) throw error;
-      return (data || []).map(transformarMaterial);
+      return (data || []).map((item) => transformarMaterial(item as RawMaterialAlocadoFromDB));
     },
   });
 
   const alocarMaterial = useMutation({
-    mutationFn: async (data: any) => {
+    mutationFn: async (data: AlocarMaterialData) => {
       const { error } = await supabase
         .from('eventos_materiais_alocados')
         .insert({ ...data, evento_id: eventoId });
@@ -78,13 +90,13 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       toast.success('Material alocado com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao alocar material: ${error.message || 'Erro desconhecido'}`);
+    onError: (error: DatabaseError) => {
+      toast.error(`Erro ao alocar material: ${getErrorMessage(error)}`);
     },
   });
 
   const alocarMaterialLote = useMutation({
-    mutationFn: async (dados: any[]) => {
+    mutationFn: async (dados: AlocarMaterialData[]) => {
       const inserts = dados.map(data => ({
         ...data,
         evento_id: eventoId
@@ -104,8 +116,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       toast.success(`${count} ${count === 1 ? 'material alocado' : 'materiais alocados'} com sucesso!`);
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao alocar materiais: ${error.message || 'Erro desconhecido'}`);
+    onError: (error: DatabaseError) => {
+      toast.error(`Erro ao alocar materiais: ${getErrorMessage(error)}`);
     },
   });
 
@@ -119,7 +131,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     }) => {
       const { data: user } = await supabase.auth.getUser();
       
-      const updateData: any = {
+      const updateData: DevolucaoUpdateData = {
         status_devolucao: statusDevolucao,
         data_devolucao: new Date().toISOString(),
         responsavel_devolucao: user.user?.id,
@@ -147,8 +159,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['historico-material'] });
       toast.success('Devolução registrada com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao registrar devolução: ${error.message || 'Erro desconhecido'}`);
+    onError: (error: DatabaseError) => {
+      toast.error(`Erro ao registrar devolução: ${getErrorMessage(error)}`);
     },
   });
 
@@ -168,7 +180,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       if (!material) throw new Error('Material não encontrado');
 
       // 2️⃣ Validações Frontend (primeira linha de defesa)
-      const evento = material.eventos as any;
+      const evento = material.eventos as { data_inicio: string; hora_inicio: string; status: string };
       const dataHoraEvento = new Date(`${evento.data_inicio}T${evento.hora_inicio}`);
       const agora = new Date();
 
@@ -219,8 +231,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
       toast.success('Material removido com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error(error.message || 'Erro ao remover material');
+    onError: (error: DatabaseError) => {
+      toast.error(getErrorMessage(error) || 'Erro ao remover material');
     },
   });
 
@@ -274,7 +286,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         throw new Error('Materiais não encontrados');
       }
 
-      const evento = materiaisData[0].eventos as any;
+      const evento = materiaisData[0].eventos as { nome: string; local: string; data_inicio: string; hora_inicio: string; endereco: string; cidade: string };
 
       // Buscar configurações da empresa
       const { data: configEmpresa } = await supabase
@@ -301,7 +313,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
           nome: configEmpresa?.nome || configEmpresa?.razao_social || 'Empresa',
           cnpj: configEmpresa?.cnpj || '',
           telefone: configEmpresa?.telefone || '',
-          endereco: formatarEndereco(configEmpresa?.endereco),
+          endereco: formatarEndereco(configEmpresa?.endereco as EnderecoObject | null),
         },
       };
 
@@ -344,8 +356,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
       toast.success('Termo de retirada gerado com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao gerar termo: ${error.message || 'Erro desconhecido'}`);
+    onError: (error: DatabaseError) => {
+      toast.error(`Erro ao gerar termo: ${getErrorMessage(error)}`);
     },
   });
 
@@ -378,11 +390,34 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         throw new Error('Materiais não encontrados');
       }
 
-      const evento = materiaisData[0].eventos as any;
+      interface EventoWithCliente {
+        nome: string;
+        local: string;
+        data_inicio: string;
+        hora_inicio: string;
+        endereco: string;
+        cidade: string;
+        clientes: {
+          nome: string;
+          documento: string;
+          telefone: string;
+          endereco: string | EnderecoObject;
+        };
+      }
+
+      const evento = materiaisData[0].eventos as EventoWithCliente;
       const cliente = evento.clientes;
 
       // Buscar dados do remetente
-      let remetenteDados;
+      let remetenteDados: {
+        tipo: 'empresa' | 'membro_equipe';
+        nome: string;
+        documento: string;
+        telefone: string;
+        endereco?: string;
+        vinculo?: string;
+      };
+      
       if (dados.remetenteTipo === 'empresa') {
         const { data: user } = await supabase.auth.getUser();
         const { data: config } = await supabase
@@ -391,12 +426,14 @@ export function useEventosMateriaisAlocados(eventoId: string) {
           .eq('user_id', user.user?.id)
           .single();
         
+        const empresaConfig = config?.empresa as { nome?: string; cnpj?: string; telefone?: string; endereco?: EnderecoObject } | null;
+        
         remetenteDados = {
           tipo: 'empresa' as const,
-          nome: config?.empresa?.nome || 'Empresa',
-          documento: config?.empresa?.cnpj || '',
-          telefone: config?.empresa?.telefone || '',
-          endereco: config?.empresa?.endereco?.logradouro || '',
+          nome: empresaConfig?.nome || 'Empresa',
+          documento: empresaConfig?.cnpj || '',
+          telefone: empresaConfig?.telefone || '',
+          endereco: empresaConfig?.endereco?.logradouro || '',
         };
       } else {
         const { data: membro } = await supabase
@@ -486,8 +523,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
       toast.success('Declaração de transporte gerada com sucesso!');
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao gerar declaração: ${error.message || 'Erro desconhecido'}`);
+    onError: (error: DatabaseError) => {
+      toast.error(`Erro ao gerar declaração: ${getErrorMessage(error)}`);
     },
   });
 
@@ -517,7 +554,24 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         throw new Error('Material não encontrado');
       }
 
-      const evento = materialData.eventos;
+      interface EventoComCliente {
+        nome: string;
+        local: string;
+        data_inicio: string;
+        hora_inicio: string;
+        endereco?: string;
+        cidade?: string;
+        clientes?: {
+          nome?: string;
+          documento?: string;
+          cpf?: string;
+          cnpj?: string;
+          telefone?: string;
+          endereco?: EnderecoObject;
+        };
+      }
+
+      const evento = materialData.eventos as EventoComCliente;
 
       // 2. Buscar configurações da empresa
       const { data: configEmpresa } = await supabase
@@ -529,7 +583,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         nome: configEmpresa?.nome || configEmpresa?.razao_social || 'Empresa',
         cnpj: configEmpresa?.cnpj || '',
         telefone: configEmpresa?.telefone || '',
-        endereco: formatarEndereco(configEmpresa?.endereco),
+        endereco: formatarEndereco(configEmpresa?.endereco as EnderecoObject | null),
       };
 
       let pdfBlob: Blob;
@@ -566,22 +620,31 @@ export function useEventosMateriaisAlocados(eventoId: string) {
           .eq('id', materialData.remetente_membro_id || '')
           .single();
 
+        interface MembroOperacional {
+          nome?: string;
+          cpf?: string;
+          telefone?: string;
+          endereco?: EnderecoObject;
+        }
+
+        const membro = membroData as MembroOperacional | null;
+
         const dadosDeclaracao = {
           remetenteTipo: materialData.remetente_tipo || 'empresa',
-          remetenteNome: materialData.remetente_tipo === 'membro' && membroData
-            ? membroData.nome
+          remetenteNome: materialData.remetente_tipo === 'membro' && membro
+            ? membro.nome
             : dadosEmpresa.nome,
-          remetenteDocumento: materialData.remetente_tipo === 'membro' && membroData
-            ? membroData.cpf
+          remetenteDocumento: materialData.remetente_tipo === 'membro' && membro
+            ? membro.cpf
             : dadosEmpresa.cnpj,
-          remetenteCPF: materialData.remetente_tipo === 'membro' && membroData
-            ? membroData.cpf
+          remetenteCPF: materialData.remetente_tipo === 'membro' && membro
+            ? membro.cpf
             : dadosEmpresa.cnpj,
-          remetenteTelefone: materialData.remetente_tipo === 'membro' && membroData
-            ? membroData.telefone
+          remetenteTelefone: materialData.remetente_tipo === 'membro' && membro
+            ? membro.telefone
             : dadosEmpresa.telefone,
-          remetenteEndereco: materialData.remetente_tipo === 'membro' && membroData
-            ? `${membroData.endereco?.logradouro || ''}, ${membroData.endereco?.numero || ''}`
+          remetenteEndereco: materialData.remetente_tipo === 'membro' && membro
+            ? `${membro.endereco?.logradouro || ''}, ${membro.endereco?.numero || ''}`
             : dadosEmpresa.endereco,
           destinatarioNome: evento.clientes?.nome || '',
           destinatarioDocumento: evento.clientes?.cpf || evento.clientes?.cnpj || '',
@@ -705,8 +768,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
       toast.success(`Frete criado! ${variables.materialIds.length} materiais vinculados.`);
     },
-    onError: (error: any) => {
-      toast.error(`Erro ao vincular frete: ${error.message}`);
+    onError: (error: DatabaseError) => {
+      toast.error(`Erro ao vincular frete: ${getErrorMessage(error)}`);
     },
   });
 

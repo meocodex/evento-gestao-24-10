@@ -1,6 +1,29 @@
-import { Evento } from '@/types/eventos';
+import { 
+  Evento, 
+  ConfiguracaoBar, 
+  ConfiguracaoIngresso, 
+  StatusEvento, 
+  TipoEvento,
+  StatusMaterial,
+  TipoReceita,
+  CategoriaFinanceira,
+  StatusFinanceiro,
+  Cliente
+} from '@/types/eventos';
+import type { 
+  RawEventoFromDB, 
+  RawChecklistItemFromDB, 
+  RawMaterialAlocadoFromDB,
+  RawReceitaFromDB,
+  RawDespesaFromDB,
+  RawCobrancaFromDB,
+  RawEquipeMembroFromDB,
+  RawTimelineItemFromDB
+} from '@/types/utils';
 
-export function transformEvento(data: any): Evento {
+type TimelineTipo = 'criacao' | 'edicao' | 'confirmacao' | 'alocacao' | 'envio' | 'entrega' | 'execucao' | 'retorno' | 'fechamento' | 'cancelamento' | 'financeiro';
+
+export function transformEvento(data: RawEventoFromDB): Evento {
   return {
     id: data.id,
     nome: data.nome,
@@ -12,8 +35,8 @@ export function transformEvento(data: any): Evento {
     cidade: data.cidade,
     estado: data.estado,
     endereco: data.endereco,
-    tipoEvento: data.tipo_evento,
-    status: data.status,
+    tipoEvento: data.tipo_evento as TipoEvento,
+    status: data.status as StatusEvento,
     descricao: data.descricao || '',
     tags: data.tags || [],
     observacoes: data.observacoes || '',
@@ -23,8 +46,8 @@ export function transformEvento(data: any): Evento {
     documentos: data.documentos || [],
     fotosEvento: data.fotos_evento || [],
     observacoesOperacionais: data.observacoes_operacionais || [],
-    configuracaoBar: data.configuracao_bar as any,
-    configuracaoIngresso: data.configuracao_ingresso as any,
+    configuracaoBar: data.configuracao_bar as unknown as ConfiguracaoBar | undefined,
+    configuracaoIngresso: data.configuracao_ingresso as unknown as ConfiguracaoIngresso | undefined,
     arquivado: data.arquivado || false,
     utilizaPosEmpresa: data.utiliza_pos_empresa || false,
     
@@ -35,8 +58,8 @@ export function transformEvento(data: any): Evento {
       documento: data.cliente.documento,
       telefone: data.cliente.telefone,
       email: data.cliente.email,
-      whatsapp: data.cliente.whatsapp,
-      endereco: data.cliente.endereco as any
+      whatsapp: data.cliente.whatsapp || '',
+      endereco: (data.cliente.endereco || { cep: '', logradouro: '', numero: '', bairro: '', cidade: '', estado: '' }) as Cliente['endereco']
     } : {
       id: '',
       nome: 'Cliente não encontrado',
@@ -45,7 +68,7 @@ export function transformEvento(data: any): Evento {
       telefone: '',
       email: '',
       whatsapp: '',
-      endereco: {} as any
+      endereco: { cep: '', logradouro: '', numero: '', bairro: '', cidade: '', estado: '' }
     },
     
     comercial: data.comercial ? {
@@ -58,7 +81,7 @@ export function transformEvento(data: any): Evento {
       email: ''
     },
     
-    checklist: (data.checklist || []).map((item: any) => ({
+    checklist: (data.checklist || []).map((item: RawChecklistItemFromDB) => ({
       id: item.id,
       itemId: item.item_id,
       nome: item.nome,
@@ -68,51 +91,51 @@ export function transformEvento(data: any): Evento {
     
     materiaisAlocados: {
       antecipado: (data.materiais_alocados || [])
-        .filter((m: any) => m.tipo_envio === 'antecipado')
-        .map((m: any) => ({
+        .filter((m: RawMaterialAlocadoFromDB) => m.tipo_envio === 'antecipado')
+        .map((m: RawMaterialAlocadoFromDB) => ({
           id: m.id,
           itemId: m.item_id,
           nome: m.nome,
-          serial: m.serial,
-          status: m.status,
+          serial: m.serial || '',
+          status: m.status as StatusMaterial,
           tipoEnvio: m.tipo_envio,
-          transportadora: m.transportadora,
+          transportadora: m.transportadora || '',
           rastreamento: m.rastreamento,
-          dataEnvio: m.data_envio
+          dataEnvio: m.data_envio || ''
         })),
       comTecnicos: (data.materiais_alocados || [])
-        .filter((m: any) => m.tipo_envio === 'com_tecnicos')
-        .map((m: any) => ({
+        .filter((m: RawMaterialAlocadoFromDB) => m.tipo_envio === 'com_tecnicos')
+        .map((m: RawMaterialAlocadoFromDB) => ({
           id: m.id,
           itemId: m.item_id,
           nome: m.nome,
-          serial: m.serial,
-          status: m.status,
+          serial: m.serial || '',
+          status: m.status as StatusMaterial,
           tipoEnvio: m.tipo_envio,
-          responsavel: m.responsavel
+          responsavel: m.responsavel || ''
         }))
     },
     
     financeiro: {
-      receitas: (data.receitas || []).map((r: any) => ({
+      receitas: (data.receitas || []).map((r: RawReceitaFromDB) => ({
         id: r.id,
         descricao: r.descricao,
-        tipo: r.tipo,
+        tipo: r.tipo as TipoReceita,
         quantidade: r.quantidade,
         valorUnitario: r.valor_unitario,
         valor: r.valor,
-        status: r.status,
+        status: r.status as StatusFinanceiro,
         data: r.data,
         comprovante: r.comprovante
       })),
-      despesas: (data.despesas || []).map((d: any) => ({
+      despesas: (data.despesas || []).map((d: RawDespesaFromDB) => ({
         id: d.id,
         descricao: d.descricao,
-        categoria: d.categoria,
+        categoria: d.categoria as CategoriaFinanceira,
         quantidade: d.quantidade,
         valorUnitario: d.valor_unitario,
         valor: d.valor,
-        status: d.status,
+        status: d.status as 'pendente' | 'pago' | undefined,
         data: d.data,
         dataPagamento: d.data_pagamento,
         responsavel: d.responsavel,
@@ -120,18 +143,19 @@ export function transformEvento(data: any): Evento {
         comprovante: d.comprovante,
         selecionadaRelatorio: d.selecionada_relatorio
       })),
-      cobrancas: (data.cobrancas || []).map((c: any) => ({
+      cobrancas: (data.cobrancas || []).map((c: RawCobrancaFromDB) => ({
         id: c.id,
         item: c.item,
         serial: c.serial,
         valor: c.valor,
-        motivo: c.motivo,
-        status: c.status,
-        observacao: c.observacao
+        motivo: c.motivo as 'perdido' | 'danificado' | 'atraso',
+        status: c.status as StatusFinanceiro,
+        observacao: c.observacao,
+        dataCriacao: c.data_criacao || new Date().toISOString()
       }))
     },
     
-    equipe: (data.equipe || []).map((e: any) => ({
+    equipe: (data.equipe || []).map((e: RawEquipeMembroFromDB) => ({
       id: e.id,
       nome: e.nome,
       funcao: e.funcao,
@@ -143,15 +167,15 @@ export function transformEvento(data: any): Evento {
       operacionalId: e.operacional_id
     })),
     
-    timeline: (data.timeline || []).map((t: any) => ({
+    timeline: (data.timeline || []).map((t: RawTimelineItemFromDB) => ({
       id: t.id,
       data: t.data,
-      tipo: t.tipo,
+      tipo: t.tipo as TimelineTipo,
       usuario: t.usuario,
       descricao: t.descricao
     })),
     
-    criadoEm: data.created_at,
-    atualizadoEm: data.updated_at
+    criadoEm: data.created_at || '',
+    atualizadoEm: data.updated_at || ''
   };
 }
