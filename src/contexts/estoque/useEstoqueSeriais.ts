@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { dbToUiStatus } from '@/lib/estoqueStatus';
+import { dbToUiStatus, StatusSerialDB } from '@/lib/estoqueStatus';
 
 export const useEstoqueSeriais = (materialId?: string) => {
   const queryClient = useQueryClient();
@@ -47,7 +47,7 @@ export const useEstoqueSeriais = (materialId?: string) => {
 
       return (data || []).map(s => ({
         numero: s.numero,
-        status: dbToUiStatus(s.status as any),
+        status: dbToUiStatus(s.status as StatusSerialDB),
         localizacao: s.localizacao,
         eventoId: s.evento_id || undefined,
         eventoNome: s.eventos?.nome || undefined,

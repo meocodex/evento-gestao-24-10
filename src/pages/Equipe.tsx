@@ -218,10 +218,11 @@ export default function Equipe() {
       }
 
       setMembroParaExcluir(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Ocorreu um erro ao excluir o membro.';
       toast({
         title: 'Erro ao excluir',
-        description: error.message || 'Ocorreu um erro ao excluir o membro.',
+        description: message,
         variant: 'destructive'
       });
     }
@@ -381,7 +382,7 @@ export default function Equipe() {
 
       {membroSelecionado?.tipo_membro !== 'sistema' && membroSelecionado && (
         <DetalhesOperacionalSheet
-          operacional={membroSelecionado as any}
+          operacional={membroSelecionado as unknown as import('@/types/equipe').OperacionalEquipe}
           open={!!membroSelecionado}
           onOpenChange={(open) => !open && setMembroSelecionado(null)}
           onEditar={() => {
@@ -397,7 +398,7 @@ export default function Equipe() {
 
       {editarMembro?.tipo_membro !== 'sistema' && editarMembro && (
         <EditarOperacionalSheet
-          operacional={editarMembro as any}
+          operacional={editarMembro as unknown as import('@/types/equipe').OperacionalEquipe}
           open={!!editarMembro}
           onOpenChange={(open) => !open && setEditarMembro(null)}
         />

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Phone, Mail, Star, Shield, Lock, Trash2 } from 'lucide-react';
 import { MembroEquipeUnificado } from '@/types/equipe';
 import { InfoGridCompact } from '@/components/shared/InfoGrid';
+import { BadgeVariant } from '@/types/financeiro';
 
 interface MembroEquipeCardProps {
   membro: MembroEquipeUnificado;
@@ -83,7 +84,7 @@ export const MembroEquipeCard = React.memo(function MembroEquipeCard({
     return labels[status || ''] || status || 'Ativo';
   };
 
-  const getRoleBadgeVariant = (role?: string) => {
+  const getRoleBadgeVariant = (role?: string): BadgeVariant => {
     switch (role) {
       case 'admin':
         return 'destructive';
@@ -153,7 +154,7 @@ export const MembroEquipeCard = React.memo(function MembroEquipeCard({
                       const roleInfo = getRoleLabel(role);
                       if (!roleInfo) return null;
                       return (
-                        <Badge key={role} variant={getRoleBadgeVariant(role) as any} className="text-xs">
+                        <Badge key={role} variant={getRoleBadgeVariant(role)} className="text-xs">
                           <span className="mr-1">{roleInfo.icon}</span>
                           {roleInfo.label}
                         </Badge>
@@ -166,7 +167,7 @@ export const MembroEquipeCard = React.memo(function MembroEquipeCard({
                 {(membro.tipo_membro === 'sistema' || membro.tipo_membro === 'ambos') && 
                  (!membro.roles || membro.roles.length === 0) && 
                  membro.role && (
-                  <Badge variant={getRoleBadgeVariant(membro.role) as any}>
+                  <Badge variant={getRoleBadgeVariant(membro.role)}>
                     {(() => {
                       const roleInfo = getRoleLabel(membro.role);
                       return roleInfo ? (

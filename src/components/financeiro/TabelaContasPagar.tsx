@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import type { ContaPagar } from '@/types/financeiro';
+import type { ContaPagar, StatusBadgeConfig } from '@/types/financeiro';
 
 interface TabelaContasPagarProps {
   contas: ContaPagar[];
@@ -31,7 +31,7 @@ export function TabelaContasPagar({ contas, onDetalhes, onEditar, onMarcarPago, 
   });
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; label: string }> = {
+    const variants: Record<string, StatusBadgeConfig> = {
       pendente: { variant: 'outline', label: 'Pendente' },
       pago: { variant: 'default', label: 'Pago' },
       vencido: { variant: 'destructive', label: 'Vencido' },
