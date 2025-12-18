@@ -71,3 +71,13 @@ export interface FiltrosOperacional {
   tipo?: string;
   status?: string;
 }
+
+// Interface para membro usado no gerenciamento de permissões
+export interface MembroParaPermissoes {
+  id: string;
+  nome: string;
+  email?: string;
+  profile_id?: string;
+  tipo_membro?: 'sistema' | 'operacional' | 'ambos';
+  avatar_url?: string;
+}

@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useContratos } from '@/hooks/contratos';
+import type { TipoTemplate } from '@/types/eventos';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { X } from 'lucide-react';
@@ -94,7 +95,7 @@ export function NovoTemplateSheet({ open, onOpenChange }: NovoTemplateSheetProps
 
         <div>
           <Label htmlFor="tipo">Tipo</Label>
-          <Select value={tipo} onValueChange={(value: any) => setTipo(value)}>
+          <Select value={tipo} onValueChange={(value: TipoTemplate) => setTipo(value)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>

@@ -14,6 +14,7 @@ import type { MaterialAlocado } from '@/types/estoque';
 import type { Cliente } from '@/types/eventos';
 import type { Transportadora } from '@/types/transportadoras';
 import { useOperacionalQueries } from '@/contexts/equipe/useOperacionalQueries';
+import type { OperacionalEquipe } from '@/types/equipe';
 
 const declaracaoSchema = z.object({
   remetenteTipo: z.enum(['empresa', 'membro_equipe']),
@@ -134,7 +135,7 @@ export function GerarDeclaracaoTransporteDialog({
                       <SelectValue placeholder="Selecione um membro" />
                     </SelectTrigger>
                     <SelectContent>
-                      {operacionais.operacionais?.map((membro: any) => (
+                      {operacionais.operacionais?.map((membro: OperacionalEquipe) => (
                         <SelectItem key={membro.id} value={membro.id}>
                           <div className="flex flex-col">
                             <span>{membro.nome}</span>

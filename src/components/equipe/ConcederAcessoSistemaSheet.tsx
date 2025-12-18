@@ -18,6 +18,7 @@ import { useSheetState } from '@/components/shared/sheets/useSheetState';
 import { PasswordStrengthIndicator } from '@/components/shared/PasswordStrengthIndicator';
 import { passwordSchema } from '@/lib/validations/auth';
 import { permissionsPresets, PresetType } from '@/lib/permissionsPresets';
+import { ZodError } from 'zod';
 
 interface ConcederAcessoSistemaSheetProps {
   open: boolean;
@@ -95,8 +96,10 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
     // Validar senha com passwordSchema
     try {
       passwordSchema.parse(senha);
-    } catch (error: any) {
-      const messages = error.errors?.map((e: any) => e.message).join('\n') || 'Senha inválida';
+    } catch (error: unknown) {
+      const messages = error instanceof ZodError 
+        ? error.errors.map(e => e.message).join('\n') 
+        : 'Senha inválida';
       toast.error('Senha não atende aos requisitos', {
         description: messages,
       });

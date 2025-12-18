@@ -433,3 +433,39 @@ export type StatusTemplate = 'ativo' | 'inativo';
 
 // Tipos para formas de pagamento frete
 export type FormaPagamentoFrete = 'antecipado' | 'na_entrega' | 'a_combinar';
+
+// Tipos para formulários dinâmicos CadastroEvento
+export type SetorCampo = 'nome' | 'capacidade';
+export type TipoIngressoCampo = 'nome' | 'descricao';
+export type LoteCampo = 'quantidade' | 'preco' | 'dataAberturaOnline' | 'dataAberturaPDV' | 'dataFechamentoOnline' | 'dataFechamentoPDV';
+export type PDVCampo = 'nome' | 'responsavel' | 'telefone';
+export type PDVEnderecoCampo = `endereco.${keyof EnderecoCliente}`;
+export type EstabelecimentoCampo = 'nome' | 'quantidadeMaquinas' | 'cardapioUrl';
+
+// Tipos para Dashboard stats
+export interface EventoProximo {
+  id: string;
+  data_inicio: string;
+  status: StatusEvento;
+  nome?: string;
+}
+
+export interface OperacaoHoje {
+  id: string;
+  nome: string;
+  local?: string;
+  hora_inicio?: string;
+  hora_fim?: string;
+}
+
+export interface RastreamentoAtivo {
+  id: string;
+  rastreio?: string;
+  status: string;
+  tipo: string;
+}
+
+export interface ChecklistItem {
+  alocado: number;
+  quantidade: number;
+}

@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertCircle, CheckCircle, Clock, Users, Package, TrendingUp } from 'lucide-react';
 import { useDashboardStats, useComercialStats, useSuporteStats } from '@/hooks/useDashboardStats';
+import type { EventoProximo, OperacaoHoje, RastreamentoAtivo } from '@/types/eventos';
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -236,7 +237,7 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {comercialStats?.eventosProximos && comercialStats.eventosProximos.length > 0 ? (
-            comercialStats.eventosProximos.slice(0, 3).map((evento: any, index: number) => {
+            comercialStats.eventosProximos.slice(0, 3).map((evento: EventoProximo, index: number) => {
               const dataEvento = new Date(evento.data_inicio);
               const diasFaltam = differenceInDays(dataEvento, new Date());
               const statusLabels: Record<string, string> = {
@@ -395,7 +396,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {suporteStats?.operacoesHoje && suporteStats.operacoesHoje.length > 0 ? (
-              suporteStats.operacoesHoje.map((evento: any, index: number) => (
+              suporteStats.operacoesHoje.map((evento: OperacaoHoje, index: number) => (
                 <div 
                   key={index}
                   className="flex items-start gap-4 p-4 bg-primary/5 rounded-xl border border-primary/20 hover:bg-primary/10 transition-colors"
@@ -425,7 +426,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {suporteStats?.rastreamentosAtivos && suporteStats.rastreamentosAtivos.length > 0 ? (
-              suporteStats.rastreamentosAtivos.slice(0, 5).map((envio: any, index: number) => (
+              suporteStats.rastreamentosAtivos.slice(0, 5).map((envio: RastreamentoAtivo, index: number) => (
                 <div 
                   key={index}
                   className="flex items-center justify-between p-3 bg-muted/30 rounded-xl hover:bg-muted/50 transition-colors"

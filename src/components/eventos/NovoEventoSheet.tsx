@@ -80,7 +80,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
             description: 'Endereço preenchido automaticamente.',
           });
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Erro ao buscar CEP:', error);
         toast({
           title: 'CEP não encontrado',
@@ -180,10 +180,11 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
       resetForm();
       onOpenChange(false);
       onEventoCreated?.();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Ocorreu um erro ao criar o evento. Tente novamente.';
       toast({
         title: 'Erro ao criar evento',
-        description: error.message || 'Ocorreu um erro ao criar o evento. Tente novamente.',
+        description: errorMessage,
         variant: 'destructive',
       });
     }

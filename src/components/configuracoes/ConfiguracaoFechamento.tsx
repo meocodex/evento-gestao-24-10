@@ -62,7 +62,7 @@ export function ConfiguracaoFechamento() {
         description: 'O papel timbrado foi configurado com sucesso.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Erro ao salvar',
         description: error.message || 'Não foi possível salvar a configuração.',

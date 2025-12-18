@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus } from 'lucide-react';
 import { useEquipe } from '@/hooks/equipe';
 import { useCategorias } from '@/hooks/categorias';
+import { TipoVinculo, StatusOperacional } from '@/types/equipe';
 import { OperacionalEquipe } from '@/types/equipe';
 import { formatarCPF, formatarCNPJ, formatarTelefone } from '@/lib/formatters';
 
@@ -233,7 +234,7 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
 
         <div>
           <Label htmlFor="tipo">Tipo de Vínculo *</Label>
-          <Select value={formData.tipo_vinculo} onValueChange={(value: any) => setFormData({ ...formData, tipo_vinculo: value })}>
+          <Select value={formData.tipo_vinculo} onValueChange={(value: TipoVinculo) => setFormData({ ...formData, tipo_vinculo: value })}>
             <SelectTrigger id="tipo">
               <SelectValue />
             </SelectTrigger>
@@ -260,7 +261,7 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
 
         <div>
           <Label htmlFor="status">Status *</Label>
-          <Select value={formData.status} onValueChange={(value: any) => setFormData({ ...formData, status: value })}>
+          <Select value={formData.status} onValueChange={(value: StatusOperacional) => setFormData({ ...formData, status: value })}>
             <SelectTrigger id="status">
               <SelectValue />
             </SelectTrigger>

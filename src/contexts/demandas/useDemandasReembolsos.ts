@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { ItemReembolso } from '@/types/demandas';
+import { ItemReembolso, DadosReembolsoDB } from '@/types/demandas';
 
 export function useDemandasReembolsos() {
   const queryClient = useQueryClient();
@@ -81,7 +81,7 @@ export function useDemandasReembolsos() {
 
       if (fetchError) throw fetchError;
 
-      const reembolsoAtual = demanda.dados_reembolso as any;
+      const reembolsoAtual = demanda.dados_reembolso as DadosReembolsoDB;
 
       // Atualizar dados de reembolso
       const dadosAtualizados = {
@@ -133,7 +133,7 @@ export function useDemandasReembolsos() {
 
       if (fetchError) throw fetchError;
 
-      const reembolsoAtual = demanda.dados_reembolso as any;
+      const reembolsoAtual = demanda.dados_reembolso as DadosReembolsoDB;
 
       // Atualizar dados de reembolso
       const dadosAtualizados = {
@@ -177,7 +177,7 @@ export function useDemandasReembolsos() {
 
       if (fetchError) throw fetchError;
 
-      const reembolsoAtual = demanda.dados_reembolso as any;
+      const reembolsoAtual = demanda.dados_reembolso as DadosReembolsoDB;
 
       // Atualizar dados de reembolso
       const dadosAtualizados = {

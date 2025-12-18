@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useCadastros } from '@/hooks/cadastros';
 import { useEventos } from '@/hooks/eventos';
 import { CheckCircle, XCircle, Eye, Calendar, MapPin, User } from 'lucide-react';
-import { CadastroPublico } from '@/types/eventos';
+import { CadastroPublico, EstabelecimentoBar } from '@/types/eventos';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
@@ -259,7 +259,7 @@ export default function CadastrosPendentes() {
                         <Label>Estabelecimentos</Label>
                         <p>{selectedCadastro.configuracaoBar.estabelecimentos?.length || 0} estabelecimento(s) cadastrado(s)</p>
                       </div>
-                      {selectedCadastro.configuracaoBar.estabelecimentos?.map((estab: any, idx: number) => (
+                      {selectedCadastro.configuracaoBar.estabelecimentos?.map((estab: EstabelecimentoBar, idx: number) => (
                         <div key={idx} className="col-span-2 border-l-2 pl-2">
                           <p className="font-medium">{estab.nome}</p>
                           <p className="text-xs text-muted-foreground">{estab.quantidadeMaquinas} máquina(s)</p>
