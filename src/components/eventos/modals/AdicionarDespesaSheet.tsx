@@ -5,11 +5,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useCategorias } from '@/hooks/categorias';
+import { DespesaFormData } from '@/types/eventos';
 
 interface AdicionarDespesaSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdicionar: (data: any) => void;
+  onAdicionar: (data: DespesaFormData) => void;
 }
 
 export function AdicionarDespesaSheet({ open, onOpenChange, onAdicionar }: AdicionarDespesaSheetProps) {

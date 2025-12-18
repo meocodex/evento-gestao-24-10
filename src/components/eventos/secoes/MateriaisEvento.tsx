@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Plus, Trash2, CheckCircle2, Clock, Package, Truck, Users, FileText, Download, Printer, AlertCircle, Pencil } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Evento } from "@/types/eventos";
+import { Evento, ItemChecklistUI, MaterialAlocadoUI, FiltroDocumento } from "@/types/eventos";
 import { AdicionarMaterialDialog } from "../modals/AdicionarMaterialDialog";
 import { AlocarMaterialDialog } from "../modals/AlocarMaterialDialog";
 import { DevolverMaterialDialog } from "../modals/DevolverMaterialDialog";
@@ -32,23 +32,23 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   const [showAlocarMaterial, setShowAlocarMaterial] = useState(false);
   const [showDevolverMaterial, setShowDevolverMaterial] = useState(false);
   const [showDevolverLote, setShowDevolverLote] = useState(false);
-  const [itemSelecionado, setItemSelecionado] = useState<any>(null);
-  const [materialParaDevolucao, setMaterialParaDevolucao] = useState<any>(null);
-  const [materiaisParaDevolucao, setMateriaisParaDevolucao] = useState<any[]>([]);
+  const [itemSelecionado, setItemSelecionado] = useState<ItemChecklistUI | null>(null);
+  const [materialParaDevolucao, setMaterialParaDevolucao] = useState<MaterialAlocadoUI | null>(null);
+  const [materiaisParaDevolucao, setMateriaisParaDevolucao] = useState<MaterialAlocadoUI[]>([]);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'checklist' | 'alocado' } | null>(null);
-  const [filtroDocumento, setFiltroDocumento] = useState<'todos' | 'sem-documento' | 'com-documento' | 'equipe-tecnica'>('todos');
+  const [filtroDocumento, setFiltroDocumento] = useState<FiltroDocumento>('todos');
   const [showGerarRetroativo, setShowGerarRetroativo] = useState(false);
   const [showGerarDeclaracaoRetroativo, setShowGerarDeclaracaoRetroativo] = useState(false);
-  const [materiaisRetroativos, setMateriaisRetroativos] = useState<any[]>([]);
+  const [materiaisRetroativos, setMateriaisRetroativos] = useState<MaterialAlocadoUI[]>([]);
   const [showConfirmReimprimir, setShowConfirmReimprimir] = useState(false);
-  const [materialReimprimir, setMaterialReimprimir] = useState<any>(null);
+  const [materialReimprimir, setMaterialReimprimir] = useState<MaterialAlocadoUI | null>(null);
   const [showVincularFrete, setShowVincularFrete] = useState(false);
   const [showEditarQuantidade, setShowEditarQuantidade] = useState(false);
-  const [itemParaEditar, setItemParaEditar] = useState<any>(null);
+  const [itemParaEditar, setItemParaEditar] = useState<ItemChecklistUI | null>(null);
 
   // Helper para verificar se material pode ser removido
-  const podeRemoverMaterial = (material: any) => {
+  const podeRemoverMaterial = (material: MaterialAlocadoUI) => {
     const dataHoraEvento = new Date(`${evento.dataInicio}T${evento.horaInicio}`);
     const eventoIniciou = dataHoraEvento <= new Date();
     const vinculadoFrete = material.envio_id;
@@ -58,7 +58,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
     return !eventoIniciou && !vinculadoFrete && !jaDevolvido && statusPermiteRemocao;
   };
 
-  const getMotivoNaoRemocao = (material: any) => {
+  const getMotivoNaoRemocao = (material: MaterialAlocadoUI) => {
     const dataHoraEvento = new Date(`${evento.dataInicio}T${evento.horaInicio}`);
     const eventoIniciou = dataHoraEvento <= new Date();
     
@@ -89,11 +89,11 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
 
   // Filtrar materiais pendentes de devolução
   const materiaisPendentes = materiaisAlocados.filter(
-    (m: any) => m.statusDevolucao === 'pendente'
+    (m: MaterialAlocadoUI) => m.statusDevolucao === 'pendente'
   );
 
   // Aplicar filtros
-  const materiaisFiltrados = materiaisAlocados.filter((m: any) => {
+  const materiaisFiltrados = materiaisAlocados.filter((m: MaterialAlocadoUI) => {
     const temDocumento = m.termoRetiradaUrl || m.declaracaoTransporteUrl;
     
     if (filtroDocumento === 'sem-documento') {
@@ -111,24 +111,24 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
   // Contadores para os filtros
   const contadores = {
     todos: materiaisAlocados.length,
-    'sem-documento': materiaisAlocados.filter((m: any) => 
+    'sem-documento': materiaisAlocados.filter((m: MaterialAlocadoUI) => 
       m.tipo_envio === 'antecipado' && !m.termoRetiradaUrl && !m.declaracaoTransporteUrl
     ).length,
-    'com-documento': materiaisAlocados.filter((m: any) => 
+    'com-documento': materiaisAlocados.filter((m: MaterialAlocadoUI) => 
       m.termoRetiradaUrl || m.declaracaoTransporteUrl
     ).length,
-    'equipe-tecnica': materiaisAlocados.filter((m: any) => 
+    'equipe-tecnica': materiaisAlocados.filter((m: MaterialAlocadoUI) => 
       m.tipo_envio === 'com_tecnicos'
     ).length,
   };
 
   // Materiais sem documento para geração retroativa
-  const materiaisSemDocumento = materiaisAlocados.filter((m: any) =>
+  const materiaisSemDocumento = materiaisAlocados.filter((m: MaterialAlocadoUI) =>
     m.tipo_envio === 'antecipado' && !m.termoRetiradaUrl && !m.declaracaoTransporteUrl
   );
 
   // Materiais elegíveis para vincular a frete
-  const materiaisParaFrete = materiaisAlocados.filter((m: any) =>
+  const materiaisParaFrete = materiaisAlocados.filter((m: MaterialAlocadoUI) =>
     m.tipo_envio === 'antecipado' && !m.envio_id && m.status_devolucao === 'pendente'
   );
 
@@ -142,8 +142,8 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       }
       setShowConfirmDelete(false);
       setItemToDelete(null);
-    } catch (error: any) {
-      toast.error(`Erro ao remover: ${error.message}`);
+    } catch (error) {
+      toast.error(`Erro ao remover: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
     }
   };
 
@@ -195,7 +195,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
             </div>
           ) : (
             <div className="space-y-2">
-              {checklistData.map((item: any) => (
+              {checklistData.map((item: ItemChecklistUI) => (
                 <Card key={item.id}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
@@ -258,7 +258,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
         <TabsContent value="alocacao" className="space-y-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2 flex-1">
-              <Select value={filtroDocumento} onValueChange={(value: any) => setFiltroDocumento(value)}>
+              <Select value={filtroDocumento} onValueChange={(value) => setFiltroDocumento(value as FiltroDocumento)}>
                 <SelectTrigger className="w-[200px]">
                   <SelectValue placeholder="Filtrar por status" />
                 </SelectTrigger>
@@ -324,7 +324,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
           ) : (
             <div className="space-y-6">
               {/* Envio Antecipado */}
-              {materiaisFiltrados.some((m: any) => m.tipo_envio === 'antecipado') && (
+              {materiaisFiltrados.some((m: MaterialAlocadoUI) => m.tipo_envio === 'antecipado') && (
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <Truck className="h-4 w-4" />
@@ -332,8 +332,8 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                   </div>
                   <div className="space-y-2">
                     {materiaisFiltrados
-                      .filter((m: any) => m.tipo_envio === 'antecipado')
-                      .map((material: any) => {
+                      .filter((m: MaterialAlocadoUI) => m.tipo_envio === 'antecipado')
+                      .map((material: MaterialAlocadoUI) => {
                         const temDocumento = material.termoRetiradaUrl || material.declaracaoTransporteUrl;
 
                         return (
@@ -607,7 +607,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       <DevolverMaterialDialog
         open={showDevolverMaterial}
         onOpenChange={setShowDevolverMaterial}
-        material={materialParaDevolucao}
+        material={materialParaDevolucao as unknown as import('@/types/estoque').MaterialAlocado | null}
         onConfirmar={async (dados) => {
           if (!materialParaDevolucao) return;
           
@@ -631,7 +631,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       <DevolverMaterialLoteDialog
         open={showDevolverLote}
         onOpenChange={setShowDevolverLote}
-        materiais={materiaisPendentes}
+        materiais={materiaisPendentes as unknown as import('@/types/estoque').MaterialAlocado[]}
         onConfirmar={async (materiaisIds, statusDevolucao, observacoes, fotos) => {
           setShowDevolverLote(false);
         }}
@@ -654,7 +654,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       <RegistrarRetiradaDialog
         open={showGerarRetroativo}
         onOpenChange={setShowGerarRetroativo}
-        materiais={materiaisRetroativos}
+        materiais={materiaisRetroativos as unknown as import('@/types/estoque').MaterialAlocado[]}
         onConfirmar={async (dados) => {
           try {
             const { retiradoPorNome, retiradoPorDocumento, retiradoPorTelefone } = dados;
@@ -667,8 +667,8 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
             toast.success('Termos de retirada gerados com sucesso!');
             setShowGerarRetroativo(false);
             setMateriaisRetroativos([]);
-          } catch (error: any) {
-            toast.error(`Erro ao gerar termos: ${error.message}`);
+          } catch (error) {
+            toast.error(`Erro ao gerar termos: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
           }
         }}
       />
@@ -677,9 +677,9 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
       <GerarDeclaracaoTransporteDialog
         open={showGerarDeclaracaoRetroativo}
         onOpenChange={setShowGerarDeclaracaoRetroativo}
-        materiais={materiaisRetroativos}
+        materiais={materiaisRetroativos as unknown as import('@/types/estoque').MaterialAlocado[]}
         cliente={evento.cliente}
-        transportadora={materiaisRetroativos[0]?.transportadora}
+        transportadora={materiaisRetroativos[0]?.transportadora as unknown as import('@/types/transportadoras').Transportadora | undefined}
               onConfirmar={async (dados) => {
                 try {
                   await gerarDeclaracaoTransporte.mutateAsync({

@@ -30,8 +30,8 @@ export default function Equipe() {
   // ⭐ Verificar se usuário tem permissão admin para excluir usuários de sistema
   const canDeleteSystemUsers = hasPermission('admin.full_access');
   
-  const membrosUnificados = useMemo(() => {
-    const unificados: any[] = [];
+  const membrosUnificados = useMemo((): MembroEquipeUnificado[] => {
+    const unificados: MembroEquipeUnificado[] = [];
     
     // Processar operacionais e verificar se têm acesso ao sistema
     operacionais.forEach(op => {
@@ -83,23 +83,21 @@ export default function Equipe() {
       
       if (!jaAdicionado) {
         unificados.push({
-          ...p,
+          id: p.id,
           tipo_membro: 'sistema' as const,
+          nome: p.nome,
+          email: p.email || '',
+          telefone: p.telefone || null,
+          cpf: p.cpf || null,
+          avatar_url: p.avatar_url || null,
           funcao_principal: p.funcao_principal || 'Sistema',
-          funcoes_secundarias: [],
-          tipo_vinculo: 'CLT' as any,
-          cnpj_pj: '',
-          foto: p.avatar_url,
-          telefone: p.telefone || '',
-          cpf: p.cpf || '',
-          whatsapp: null,
-          documentos: [],
-          status: 'ativo' as any,
-          avaliacao: undefined,
-          observacoes: '',
+          tipo_vinculo: 'CLT',
+          status: 'ativo',
           roles: p.roles || [],
           role: p.role,
-          permissions: p.permissions
+          permissions: p.permissions,
+          created_at: p.created_at || '',
+          updated_at: p.updated_at || '',
         });
       }
     });
@@ -273,9 +271,9 @@ export default function Equipe() {
   const stats = useMemo(() => {
     return {
       total: membrosUnificados.length,
-      sistema: membrosUnificados.filter((m: any) => m.tipo_membro === 'sistema').length,
-      operacional: membrosUnificados.filter((m: any) => m.tipo_membro === 'operacional').length,
-      ambos: membrosUnificados.filter((m: any) => m.tipo_membro === 'ambos').length,
+      sistema: membrosUnificados.filter((m: MembroEquipeUnificado) => m.tipo_membro === 'sistema').length,
+      operacional: membrosUnificados.filter((m: MembroEquipeUnificado) => m.tipo_membro === 'operacional').length,
+      ambos: membrosUnificados.filter((m: MembroEquipeUnificado) => m.tipo_membro === 'ambos').length,
     };
   }, [membrosUnificados]);
 

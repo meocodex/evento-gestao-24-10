@@ -10,19 +10,21 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle, CheckCircle2, Clock, FileText, Truck } from "lucide-react";
-import { Evento } from "@/types/eventos";
+import { Evento, MaterialParaFrete, EnderecoCliente, FormaPagamentoFrete } from "@/types/eventos";
 import { useTransportadoras } from "@/hooks/transportadoras";
 import { useClienteEvento } from "@/hooks/transportadoras/useClienteEvento";
 import { useEnderecoEmpresa } from "@/hooks/transportadoras/useEnderecoEmpresa";
 import { format, addDays } from "date-fns";
 import { cn } from "@/lib/utils";
+import { UseMutationResult } from "@tanstack/react-query";
+import { RotaAtendida } from "@/types/transportadoras";
 
 interface VincularFreteDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   evento: Evento;
-  materiais: any[];
-  onVincular: any;
+  materiais: MaterialParaFrete[];
+  onVincular: UseMutationResult<unknown, Error, unknown>;
 }
 
 export function VincularFreteDialog({
@@ -35,7 +37,7 @@ export function VincularFreteDialog({
   const [etapa, setEtapa] = useState<'selecionar-materiais' | 'selecionar-transportadora' | 'confirmar'>('selecionar-materiais');
   const [materiaisSelecionados, setMateriaisSelecionados] = useState<string[]>([]);
   const [transportadoraSelecionada, setTransportadoraSelecionada] = useState<string | null>(null);
-  const [formaPagamento, setFormaPagamento] = useState<'antecipado' | 'na_entrega' | 'a_combinar'>('a_combinar');
+  const [formaPagamento, setFormaPagamento] = useState<FormaPagamentoFrete>('a_combinar');
   const [observacoes, setObservacoes] = useState('');
 
   const { transportadoras } = useTransportadoras();
@@ -46,14 +48,14 @@ export function VincularFreteDialog({
   const transportadorasDisponiveis = transportadoras.filter((t) => {
     if (!t.rotasAtendidas || t.rotasAtendidas.length === 0) return false;
     return t.rotasAtendidas.some(
-      (r: any) => r.cidadeDestino === evento.cidade && r.estadoDestino === evento.estado && r.ativa === true
+      (r: RotaAtendida) => r.cidadeDestino === evento.cidade && r.estadoDestino === evento.estado && r.ativa === true
     );
   });
 
   // Dados calculados
   const transportadora = transportadoras.find((t) => t.id === transportadoraSelecionada);
   const rota = transportadora?.rotasAtendidas?.find(
-    (r: any) => r.cidadeDestino === evento.cidade && r.estadoDestino === evento.estado
+    (r: RotaAtendida) => r.cidadeDestino === evento.cidade && r.estadoDestino === evento.estado
   );
   
   const dataEvento = new Date(evento.dataInicio);
@@ -63,7 +65,7 @@ export function VincularFreteDialog({
   // Endereço destino completo
   let destino = '';
   if (clienteEventoData?.clienteEndereco) {
-    const end = clienteEventoData.clienteEndereco as any;
+    const end = clienteEventoData.clienteEndereco as EnderecoCliente;
     destino = `${end.logradouro || ''}, ${end.numero || ''} - ${end.bairro || ''}, ${end.cidade || ''}/${end.estado || ''} - CEP ${end.cep || ''}`;
   } else {
     destino = `${evento.endereco}, ${evento.cidade} - ${evento.estado}`;
@@ -180,7 +182,7 @@ export function VincularFreteDialog({
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {transportadorasDisponiveis.map((t) => {
                   const rotaEvento = t.rotasAtendidas?.find(
-                    (r: any) => r.cidadeDestino === evento.cidade && r.estadoDestino === evento.estado
+                    (r: RotaAtendida) => r.cidadeDestino === evento.cidade && r.estadoDestino === evento.estado
                   );
                   return (
                     <Card
@@ -260,7 +262,7 @@ export function VincularFreteDialog({
             <div className="space-y-3">
               <div>
                 <Label>Forma de Pagamento *</Label>
-                <Select value={formaPagamento} onValueChange={(v: any) => setFormaPagamento(v)}>
+                <Select value={formaPagamento} onValueChange={(v) => setFormaPagamento(v as FormaPagamentoFrete)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
