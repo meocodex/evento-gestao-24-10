@@ -101,9 +101,9 @@ export function EstoqueFilters({ filtros, setFiltros }: EstoqueFiltersProps) {
 
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select
+            <Select
                 value={filtros.status}
-                onValueChange={(value: any) => setFiltros({ ...filtros, status: value })}
+                onValueChange={(value: string) => setFiltros({ ...filtros, status: value as FiltrosEstoque['status'] })}
               >
                 <SelectTrigger>
                   <SelectValue />

@@ -70,10 +70,10 @@ export function EquipeFiltersPopover({
           <div className="space-y-3">
             <div className="space-y-2">
               <Label>Tipo de Membro</Label>
-              <Select
+            <Select
                 value={filtros.tipoMembro}
-                onValueChange={(value: any) =>
-                  onFiltrosChange({ ...filtros, tipoMembro: value })
+                onValueChange={(value: string) =>
+                  onFiltrosChange({ ...filtros, tipoMembro: value as EquipeFiltersType['tipoMembro'] })
                 }
               >
                 <SelectTrigger>
@@ -112,10 +112,10 @@ export function EquipeFiltersPopover({
 
             <div className="space-y-2">
               <Label>Status</Label>
-              <Select
+            <Select
                 value={filtros.status}
-                onValueChange={(value: any) =>
-                  onFiltrosChange({ ...filtros, status: value })
+                onValueChange={(value: string) =>
+                  onFiltrosChange({ ...filtros, status: value as EquipeFiltersType['status'] })
                 }
               >
                 <SelectTrigger>

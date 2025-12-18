@@ -39,10 +39,10 @@ export interface MaterialEstoque {
 }
 
 export interface FiltrosEstoque {
-  busca: string;
-  categoria: string;
-  status: 'todos' | 'disponivel' | 'em-uso' | 'manutencao' | 'perdido';
-  localizacao: string;
+  busca?: string;
+  categoria?: string;
+  status?: 'todos' | 'disponivel' | 'em-uso' | 'manutencao' | 'perdido';
+  localizacao?: string;
 }
 
 export interface DevolucaoInput {

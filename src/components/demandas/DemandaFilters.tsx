@@ -11,11 +11,11 @@ import { Switch } from '@/components/ui/switch';
 import { useCategorias } from '@/hooks/categorias';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useUsuarios } from '@/hooks/useUsuarios';
-import { StatusDemanda, PrioridadeDemanda, CategoriaDemanda, TipoReembolso } from '@/types/demandas';
+import { StatusDemanda, PrioridadeDemanda, CategoriaDemanda, TipoReembolso, FiltroDemandas } from '@/types/demandas';
 
 interface DemandaFiltersProps {
-  filtros: any;
-  setFiltros: (filtros: any) => void;
+  filtros: FiltroDemandas;
+  setFiltros: (filtros: FiltroDemandas) => void;
 }
 
 export function DemandaFilters({ filtros, setFiltros }: DemandaFiltersProps) {

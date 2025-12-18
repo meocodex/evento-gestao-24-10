@@ -11,10 +11,11 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { UsePermissionsResult } from '@/hooks/usePermissions';
 
 interface OperacaoEventoProps {
   evento: Evento;
-  permissions: any;
+  permissions: UsePermissionsResult;
 }
 
 export function OperacaoEvento({ evento, permissions }: OperacaoEventoProps) {

@@ -20,10 +20,11 @@ import { EditarQuantidadeChecklistDialog } from "../modals/EditarQuantidadeCheck
 import { useEventosMateriaisAlocados } from "@/contexts/eventos/useEventosMateriaisAlocados";
 import { useEventosChecklist } from "@/hooks/eventos";
 import { downloadFile } from "@/utils/downloadFile";
+import { UsePermissionsResult } from "@/hooks/usePermissions";
 
 interface MateriaisEventoProps {
   evento: Evento;
-  permissions: any;
+  permissions: UsePermissionsResult;
 }
 
 export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {

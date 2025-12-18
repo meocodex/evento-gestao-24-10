@@ -45,7 +45,7 @@ import { Evento } from '@/types/eventos';
 /**
  * Resultado retornado pelo hook usePermissions
  */
-interface UsePermissionsResult {
+export interface UsePermissionsResult {
   /** Verifica se o usuário possui uma permissão específica */
   hasPermission: (permissionId: string) => boolean;
   
