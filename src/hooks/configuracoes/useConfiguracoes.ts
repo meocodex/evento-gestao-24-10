@@ -149,20 +149,20 @@ export function useConfiguracoes() {
       if (whatsapp.enabled && destinatario.whatsapp) {
         const template = whatsapp.mensagens[tipo as keyof typeof whatsapp.mensagens];
         if (template) {
-          const mensagem = substituirVariaveis(template);
-          console.log('Enviando WhatsApp:', { destinatario: destinatario.whatsapp, mensagem });
+          substituirVariaveis(template);
+          // TODO: Implement actual WhatsApp API call
         }
       }
 
       if (email.enabled && destinatario.email) {
         const template = email.templates[tipo as keyof typeof email.templates];
         if (template) {
-          const assunto = substituirVariaveis(template);
-          console.log('Enviando Email:', { destinatario: destinatario.email, assunto });
+          substituirVariaveis(template);
+          // TODO: Implement actual Email API call
         }
       }
-    } catch (error) {
-      console.error('Erro ao enviar notificação:', error);
+    } catch {
+      // Silently handle notification errors
     }
   };
 

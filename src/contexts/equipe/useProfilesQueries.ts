@@ -52,8 +52,6 @@ export function useProfilesQueries(enabled = true) {
     queryKey: ['profiles-equipe'],
     enabled,
     queryFn: async () => {
-      console.log('🔍 Buscando profiles...');
-      
       // Buscar profiles sem joins aninhados
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
@@ -68,7 +66,7 @@ export function useProfilesQueries(enabled = true) {
         .select('user_id, role');
 
       if (rolesError) {
-        console.warn('⚠️ Erro ao buscar roles:', rolesError);
+        // Silently handle - roles are optional
       }
 
       // Buscar permissões separadamente
@@ -77,7 +75,7 @@ export function useProfilesQueries(enabled = true) {
         .select('user_id, permission_id');
 
       if (permsError) {
-        console.warn('⚠️ Erro ao buscar permissões:', permsError);
+        // Silently handle - permissions are optional
       }
 
       // Mapear múltiplas roles por usuário
@@ -93,10 +91,6 @@ export function useProfilesQueries(enabled = true) {
         acc[perm.user_id].push(perm.permission_id);
         return acc;
       }, {} as Record<string, string[]>);
-
-      console.log('✅ Profiles carregados:', profilesData?.length || 0);
-      console.log('✅ Roles carregados:', rolesData?.length || 0);
-      console.log('✅ Permissões carregadas:', permsData?.length || 0);
 
       // Transformar para incluir permissões e múltiplas roles
       return (profilesData || []).map(profile => ({

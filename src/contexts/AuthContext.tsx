@@ -106,10 +106,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           permissions: (perms || []).map(p => p.permission_id),
           isAdmin: isAdminFinal,
         }));
-      } catch (e) {
-        if (!isCancelled) {
-          console.warn('⚠️ Não foi possível hidratar perfil/permissões:', e);
-        }
+      } catch {
+        // Silently handle hydration errors
       } finally {
         if (!isCancelled) {
           setHydrating(false);
@@ -137,9 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           table: 'user_permissions',
           filter: `user_id=eq.${session.user.id}`
         },
-        (payload) => {
-          console.log('🔄 Permissões atualizadas em tempo real:', payload);
-          
+        () => {
           // Invalidar cache de categorias quando permissões mudam
           queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
           

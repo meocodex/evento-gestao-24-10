@@ -216,7 +216,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 variant="ghost"
                 size="icon"
                 onClick={async () => {
-                  console.log('🔄 Recarregando permissões...');
                   await supabase.auth.refreshSession();
                   window.location.reload();
                 }}

@@ -48,13 +48,6 @@ export function useUsuarios() {
         .select('user_id, permission_id')
         .in('user_id', userIds);
 
-      console.log('📊 useUsuarios debug:', {
-        profilesCount: profiles?.length,
-        rolesCount: roles?.length,
-        permissionsCount: permissions?.length,
-        userIds: userIds.slice(0, 3)
-      });
-
       // 4. Combinar dados
       return profiles.map(profile => {
         const userRole = roles?.find(r => r.user_id === profile.id);

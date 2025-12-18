@@ -8,11 +8,8 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js')
-      .then(registration => {
-        console.log('SW registrado:', registration.scope);
-      })
-      .catch(error => {
-        console.log('SW falhou:', error);
+      .catch(() => {
+        // Service Worker registration failed silently
       });
   });
 }
