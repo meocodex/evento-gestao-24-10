@@ -14,12 +14,13 @@ import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import type { Notificacao } from '@/types/notificacoes';
 
 export function NotificationCenter() {
   const { notificacoes, naoLidas, marcarComoLida, marcarTodasComoLidas } = useNotificacoes();
   const navigate = useNavigate();
 
-  const handleNotificationClick = (notificacao: any) => {
+  const handleNotificationClick = (notificacao: Notificacao) => {
     marcarComoLida(notificacao.id);
     if (notificacao.link) {
       navigate(notificacao.link);

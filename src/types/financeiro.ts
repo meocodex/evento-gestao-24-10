@@ -4,6 +4,14 @@ export type StatusContaReceber = 'pendente' | 'recebido' | 'vencido' | 'cancelad
 export type FormaPagamento = 'PIX' | 'Boleto' | 'Transferência' | 'Cartão' | 'Dinheiro';
 export type TipoContaReceber = 'venda' | 'locacao' | 'servico' | 'outros';
 
+// Tipos para badges de status
+export type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline';
+
+export interface StatusBadgeConfig {
+  variant: BadgeVariant;
+  label: string;
+}
+
 export interface AnexoFinanceiro {
   nome: string;
   url: string;

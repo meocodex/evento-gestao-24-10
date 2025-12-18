@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Demanda } from '@/types/demandas';
+import { Demanda, AnexoDemanda } from '@/types/demandas';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileViewer } from '@/components/shared/FileViewer';
@@ -16,7 +16,7 @@ export function DemandaAnexos({ demanda }: DemandaAnexosProps) {
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ url: string; nome: string; tipo: string } | null>(null);
 
-  const handleVisualizarArquivo = (anexo: any) => {
+  const handleVisualizarArquivo = (anexo: AnexoDemanda) => {
     setSelectedFile({ 
       url: anexo.url, 
       nome: anexo.nome, 
@@ -25,7 +25,7 @@ export function DemandaAnexos({ demanda }: DemandaAnexosProps) {
     setFileViewerOpen(true);
   };
 
-  const handleRemoverAnexo = (anexo: any) => {
+  const handleRemoverAnexo = (anexo: AnexoDemanda) => {
     if (confirm('Deseja realmente remover este anexo?')) {
       removerAnexo.mutate({
         demandaId: demanda.id,

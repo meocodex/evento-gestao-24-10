@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import type { ContaReceber } from '@/types/financeiro';
+import type { ContaReceber, StatusBadgeConfig } from '@/types/financeiro';
 
 interface TabelaContasReceberProps {
   contas: ContaReceber[];
@@ -31,7 +31,7 @@ export function TabelaContasReceber({ contas, onDetalhes, onEditar, onMarcarRece
   });
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; label: string }> = {
+    const variants: Record<string, StatusBadgeConfig> = {
       pendente: { variant: 'outline', label: 'Pendente' },
       recebido: { variant: 'default', label: 'Recebido' },
       vencido: { variant: 'destructive', label: 'Vencido' },

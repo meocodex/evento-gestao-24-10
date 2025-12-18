@@ -19,7 +19,8 @@ import {
   User,
   Calendar,
   DollarSign,
-  MapPin
+  MapPin,
+  LucideIcon
 } from 'lucide-react';
 import { useClientes } from '@/hooks/clientes';
 import { useEventos } from '@/hooks/eventos';
@@ -34,7 +35,7 @@ interface DetalhesContratoSheetProps {
   onConverter?: () => void;
 }
 
-const statusConfig: Record<StatusContrato, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: any }> = {
+const statusConfig: Record<StatusContrato, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: LucideIcon }> = {
   proposta: { label: 'Proposta', variant: 'secondary', icon: FileText },
   em_negociacao: { label: 'Em Negociação', variant: 'default', icon: Clock },
   aprovada: { label: 'Aprovada', variant: 'default', icon: CheckCircle2 },

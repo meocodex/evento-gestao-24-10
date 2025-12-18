@@ -71,10 +71,11 @@ export function NovoOperacionalSheet({ open, onOpenChange }: NovoOperacionalShee
       setMostrarAdicionarFuncao(false);
       setNovaFuncaoNome('');
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao criar operacional';
       toast({
         title: 'Erro',
-        description: error.message || 'Erro ao criar operacional',
+        description: message,
         variant: 'destructive'
       });
     }
