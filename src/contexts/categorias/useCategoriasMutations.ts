@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { TipoCategoria, Categoria } from '@/types/categorias';
+import { DatabaseError, getErrorMessage, CategoriasConfigCache, toJson } from '@/types/utils';
 
 export function useCategoriasMutations() {
   const queryClient = useQueryClient();
@@ -12,7 +13,7 @@ export function useCategoriasMutations() {
         .from('configuracoes_categorias')
         .upsert({
           tipo,
-          categorias: categorias as any,
+          categorias: toJson(categorias),
         }, {
           onConflict: 'tipo'
         });
@@ -25,9 +26,9 @@ export function useCategoriasMutations() {
         description: 'As configurações foram salvas com sucesso.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro ao atualizar categorias', {
-        description: error.message,
+        description: getErrorMessage(error),
       });
     },
   });
@@ -54,7 +55,7 @@ export function useCategoriasMutations() {
         .from('configuracoes_categorias')
         .upsert({
           tipo,
-          categorias: categorias as any,
+          categorias: toJson(categorias),
         }, {
           onConflict: 'tipo'
         });
@@ -65,9 +66,9 @@ export function useCategoriasMutations() {
     },
     onSuccess: (data) => {
       // Atualização otimista sem refetch completo
-      queryClient.setQueryData(['configuracoes_categorias'], (old: any) => {
+      queryClient.setQueryData<CategoriasConfigCache[]>(['configuracoes_categorias'], (old) => {
         if (!old) return old;
-        return old.map((config: any) => {
+        return old.map((config) => {
           if (config.tipo === data.tipo) {
             const categorias = (config.categorias as Categoria[]) || [];
             return {
@@ -84,9 +85,9 @@ export function useCategoriasMutations() {
         description: 'A nova categoria foi criada com sucesso.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro ao adicionar categoria', {
-        description: error.message,
+        description: getErrorMessage(error),
       });
     },
   });
@@ -106,7 +107,7 @@ export function useCategoriasMutations() {
 
       const { error } = await supabase
         .from('configuracoes_categorias')
-        .update({ categorias: updated as any })
+        .update({ categorias: toJson(updated) })
         .eq('tipo', tipo);
 
       if (error) throw error;
@@ -117,9 +118,9 @@ export function useCategoriasMutations() {
         description: 'O status da categoria foi alterado.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro ao atualizar categoria', {
-        description: error.message,
+        description: getErrorMessage(error),
       });
     },
   });
@@ -139,7 +140,7 @@ export function useCategoriasMutations() {
 
       const { error } = await supabase
         .from('configuracoes_categorias')
-        .update({ categorias: updated as any })
+        .update({ categorias: toJson(updated) })
         .eq('tipo', tipo);
 
       if (error) throw error;
@@ -150,9 +151,9 @@ export function useCategoriasMutations() {
         description: 'O nome da categoria foi atualizado.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro ao editar categoria', {
-        description: error.message,
+        description: getErrorMessage(error),
       });
     },
   });
@@ -176,7 +177,7 @@ export function useCategoriasMutations() {
 
       const { error } = await supabase
         .from('configuracoes_categorias')
-        .update({ categorias: updated as any })
+        .update({ categorias: toJson(updated) })
         .eq('tipo', tipo);
 
       if (error) throw error;
@@ -187,9 +188,9 @@ export function useCategoriasMutations() {
         description: 'A categoria foi removida com sucesso.',
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro ao excluir categoria', {
-        description: error.message,
+        description: getErrorMessage(error),
       });
     },
   });
