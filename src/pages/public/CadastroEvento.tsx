@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCadastros } from '@/hooks/cadastros';
-import { TipoEvento, SetorEvento, PontoVenda, EstabelecimentoBar, TipoIngresso } from '@/types/eventos';
+import { TipoEvento, SetorEvento, PontoVenda, EstabelecimentoBar, TipoIngresso, SetorCampo, TipoIngressoCampo, LoteCampo, PDVCampo, PDVEnderecoCampo, EstabelecimentoCampo } from '@/types/eventos';
 import { estados, formatarDocumento, formatarTelefone, formatarCEP, validarCPF, validarCNPJ } from '@/lib/validations/cliente';
 import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
 import { toast } from '@/hooks/use-toast';
@@ -267,10 +267,11 @@ export default function CadastroEvento() {
       });
 
       navigate(`/cadastro-evento/${protocolo}`);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Tente novamente mais tarde.';
       toast({
         title: 'Erro ao cadastrar evento',
-        description: error.message || 'Tente novamente mais tarde.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -291,7 +292,7 @@ export default function CadastroEvento() {
     setSetores(setores.filter(s => s.id !== setorId));
   };
 
-  const atualizarSetor = (setorId: string, campo: string, valor: any) => {
+  const atualizarSetor = (setorId: string, campo: SetorCampo, valor: string | number) => {
     setSetores(setores.map(s => 
       s.id === setorId ? { ...s, [campo]: valor } : s
     ));
@@ -320,7 +321,7 @@ export default function CadastroEvento() {
     }));
   };
 
-  const atualizarTipoIngresso = (setorId: string, tipoId: string, campo: string, valor: any) => {
+  const atualizarTipoIngresso = (setorId: string, tipoId: string, campo: TipoIngressoCampo, valor: string) => {
     setSetores(setores.map(s => {
       if (s.id === setorId) {
         return {
@@ -338,8 +339,8 @@ export default function CadastroEvento() {
     setorId: string, 
     tipoId: string, 
     numeroLote: number, 
-    campo: string, 
-    valor: any
+    campo: LoteCampo, 
+    valor: string | number
   ) => {
     setSetores(setores.map(s => {
       if (s.id === setorId) {
@@ -351,11 +352,14 @@ export default function CadastroEvento() {
               
               if (loteExistente >= 0) {
                 const novosLotes = [...t.lotes];
+                const valorConvertido = (campo === 'quantidade' || campo === 'preco') 
+                  ? Number(valor) 
+                  : String(valor);
                 novosLotes[loteExistente] = {
                   ...novosLotes[loteExistente],
-                  [campo]: valor,
+                  [campo]: valorConvertido,
                 };
-                return { ...t, lotes: novosLotes };
+                return { ...t, lotes: novosLotes as typeof t.lotes };
               } else {
                 return {
                   ...t,
@@ -363,12 +367,12 @@ export default function CadastroEvento() {
                     ...t.lotes,
                     {
                       numero: numeroLote as 1 | 2 | 3 | 4,
-                      quantidade: campo === 'quantidade' ? valor : 0,
-                      preco: campo === 'preco' ? valor : 0,
-                      dataAberturaOnline: campo === 'dataAberturaOnline' ? valor : '',
-                      dataAberturaPDV: campo === 'dataAberturaPDV' ? valor : '',
-                      dataFechamentoOnline: campo === 'dataFechamentoOnline' ? valor : '',
-                      dataFechamentoPDV: campo === 'dataFechamentoPDV' ? valor : '',
+                      quantidade: campo === 'quantidade' ? Number(valor) : 0,
+                      preco: campo === 'preco' ? Number(valor) : 0,
+                      dataAberturaOnline: campo === 'dataAberturaOnline' ? String(valor) : '',
+                      dataAberturaPDV: campo === 'dataAberturaPDV' ? String(valor) : '',
+                      dataFechamentoOnline: campo === 'dataFechamentoOnline' ? String(valor) : '',
+                      dataFechamentoPDV: campo === 'dataFechamentoPDV' ? String(valor) : '',
                     },
                   ],
                 };
@@ -405,7 +409,7 @@ export default function CadastroEvento() {
     setPontosVenda(pontosVenda.filter(p => p.id !== pdvId));
   };
 
-  const atualizarPDV = (pdvId: string, campo: string, valor: any) => {
+  const atualizarPDV = (pdvId: string, campo: PDVCampo | PDVEnderecoCampo, valor: string) => {
     setPontosVenda(pontosVenda.map(p => {
       if (p.id === pdvId) {
         if (campo.startsWith('endereco.')) {
@@ -466,7 +470,7 @@ export default function CadastroEvento() {
     setEstabelecimentosBares(estabelecimentosBares.filter(e => e.id !== estabId));
   };
 
-  const atualizarEstabelecimento = (estabId: string, campo: string, valor: any) => {
+  const atualizarEstabelecimento = (estabId: string, campo: EstabelecimentoCampo, valor: string | number) => {
     setEstabelecimentosBares(estabelecimentosBares.map(e =>
       e.id === estabId ? { ...e, [campo]: valor } : e
     ));

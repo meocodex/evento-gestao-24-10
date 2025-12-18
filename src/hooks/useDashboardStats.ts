@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect } from 'react';
 import { startOfMonth, endOfMonth, addDays, isAfter, isBefore, differenceInDays } from 'date-fns';
+import type { ChecklistItem } from '@/types/eventos';
 
 export interface DashboardStats {
   // Eventos
@@ -117,7 +118,7 @@ export function useDashboardStats() {
 
       // Eventos próximos sem materiais alocados
       const eventosSemMateriais = eventosProximos.filter(e => {
-        const checklist = e.eventos_checklist as any[];
+        const checklist = e.eventos_checklist as ChecklistItem[];
         if (!checklist || checklist.length === 0) return true;
         return checklist.some(item => item.alocado < item.quantidade);
       });

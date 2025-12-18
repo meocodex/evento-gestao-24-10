@@ -46,6 +46,19 @@ export interface DadosReembolso {
   comprovantePagamento?: Anexo;
 }
 
+// Interface para dados de reembolso vindos do banco (parcialmente tipado)
+export interface DadosReembolsoDB {
+  itens?: ItemReembolso[];
+  valorTotal?: number;
+  membroEquipeId?: string;
+  membroEquipeNome?: string;
+  statusPagamento?: 'pendente' | 'aprovado' | 'pago' | 'recusado';
+  formaPagamento?: string;
+  dataPagamento?: string;
+  comprovantePagamento?: string;
+  observacoesPagamento?: string;
+}
+
 export interface Demanda {
   id: string;
   numeroId: number;

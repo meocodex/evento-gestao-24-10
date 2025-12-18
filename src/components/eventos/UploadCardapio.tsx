@@ -87,10 +87,11 @@ export function UploadCardapio({
         title: 'Cardápio enviado!',
         description: 'O arquivo foi enviado com sucesso.'
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: 'Erro ao enviar arquivo',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive'
       });
     } finally {

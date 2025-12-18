@@ -22,11 +22,12 @@ import { Loader2, Search, CheckSquare, XCircle, HelpCircle, Lightbulb, AlertCirc
 import { cn } from '@/lib/utils';
 import { FormSheet } from '@/components/shared/sheets';
 import { useSheetState } from '@/components/shared/sheets/useSheetState';
+import { MembroParaPermissoes } from '@/types/equipe';
 
 interface GerenciarPermissoesMembroSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  membro: any;
+  membro: MembroParaPermissoes | null;
 }
 
 export function GerenciarPermissoesMembroSheet({
