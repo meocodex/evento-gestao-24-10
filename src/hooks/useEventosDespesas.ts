@@ -1,4 +1,5 @@
 import { useEventosFinanceiro } from '@/hooks/eventos';
+import { DadosReembolso } from '@/types/demandas';
 
 /**
  * Hook para gerenciar despesas de eventos relacionadas a demandas de reembolso.
@@ -8,7 +9,7 @@ import { useEventosFinanceiro } from '@/hooks/eventos';
  * entre EventosContext e DemandasContext.
  */
 export function useEventosDespesas(eventoId: string) {
-  const financeiro = useEventosFinanceiro(eventoId || undefined as any);
+  const financeiro = useEventosFinanceiro(eventoId || undefined);
 
   return {
     /**
@@ -17,12 +18,12 @@ export function useEventosDespesas(eventoId: string) {
      */
     vincularReembolsoADespesa: async (
       demandaId: string, 
-      reembolso: any, 
+      reembolso: DadosReembolso, 
       dataPagamento: string, 
       comprovante?: string
     ) => {
       if (!eventoId) return; // no-op quando não há evento associado
-      const valor = reembolso.valorTotal || reembolso.valor || 0;
+      const valor = reembolso.valorTotal || 0;
       
       await financeiro.adicionarDespesa({
         descricao: `Reembolso - ${reembolso.membroEquipeNome}`,

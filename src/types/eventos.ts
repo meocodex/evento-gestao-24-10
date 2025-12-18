@@ -364,3 +364,72 @@ export interface ReceitaComTaxasData {
   receita: ReceitaFormData;
   formasPagamento: FormaPagamentoData[];
 }
+
+// Interfaces para componentes de Materiais
+export interface ItemChecklistUI {
+  id: string;
+  itemId?: string;
+  item_id?: string;
+  nome: string;
+  quantidade: number;
+  alocado: number;
+}
+
+export interface MaterialAlocadoUI {
+  id: string;
+  nome: string;
+  serial?: string;
+  item_id?: string;
+  tipo_envio: 'antecipado' | 'com_tecnicos';
+  status: StatusMaterial;
+  status_devolucao?: string;
+  statusDevolucao?: string;
+  devolvido?: boolean;
+  termoRetiradaUrl?: string;
+  declaracaoTransporteUrl?: string;
+  transportadora?: string;
+  envio_id?: string;
+  responsavel?: string;
+  quantidade_alocada?: number;
+}
+
+export interface MaterialParaFrete {
+  id: string;
+  nome: string;
+  serial?: string;
+  transportadora?: string;
+  tipo_envio?: string;
+  envio_id?: string;
+  status_devolucao?: string;
+}
+
+export interface EnderecoCliente {
+  logradouro?: string;
+  numero?: string;
+  complemento?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+}
+
+export interface MaterialAlocadoDB {
+  id: string;
+  evento_id: string;
+  item_id: string;
+  serial?: string;
+  nome: string;
+  tipo_envio: string;
+  quantidade_alocada: number;
+  created_at: string;
+}
+
+// Tipos para filtros de documentos
+export type FiltroDocumento = 'todos' | 'sem-documento' | 'com-documento' | 'equipe-tecnica';
+
+// Tipos para templates
+export type TipoTemplate = 'evento' | 'fornecedor' | 'cliente' | 'outros';
+export type StatusTemplate = 'ativo' | 'inativo';
+
+// Tipos para formas de pagamento frete
+export type FormaPagamentoFrete = 'antecipado' | 'na_entrega' | 'a_combinar';

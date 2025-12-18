@@ -119,7 +119,7 @@ export default function Estoque() {
   const localizacoesUnicas = useMemo(() => {
     const locs: string[] = [];
     materiais.forEach(material => {
-      (material.seriais || []).forEach((serial: any) => {
+      (material.seriais || []).forEach((serial) => {
         if (serial.localizacao && !locs.includes(serial.localizacao)) {
           locs.push(serial.localizacao);
         }

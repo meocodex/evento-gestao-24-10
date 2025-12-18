@@ -1,12 +1,12 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import type { Evento } from '@/types/eventos';
+import type { Evento, MaterialAlocadoDB } from '@/types/eventos';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { useState, useEffect, useMemo } from 'react';
-import { useEstoque } from '@/hooks/estoque';
+import { useEstoque, type MaterialEstoque } from '@/hooks/estoque';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { Search, CheckCircle2, Lock, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { RegistrarRetiradaDialog } from './RegistrarRetiradaDialog';
 import { GerarDeclaracaoTransporteDialog } from './GerarDeclaracaoTransporteDialog';
 import { useAlocacaoQuantidade } from '@/hooks/useAlocacaoQuantidade';
+import { SerialEstoque } from '@/types/estoque';
 
 interface AlocarMaterialDialogProps {
   open: boolean;
@@ -57,12 +58,15 @@ export function AlocarMaterialDialog({
   const [transportadora, setTransportadora] = useState('');
   const [responsavel, setResponsavel] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [materialEstoque, setMaterialEstoque] = useState<any>(null);
+  const [materialEstoque, setMaterialEstoque] = useState<MaterialEstoque | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedCount, setProcessedCount] = useState(0);
   const [showRegistrarRetirada, setShowRegistrarRetirada] = useState(false);
   const [showGerarDeclaracao, setShowGerarDeclaracao] = useState(false);
-  const [materiaisAlocadosTemp, setMateriaisAlocadosTemp] = useState<any[]>([]);
+  const [materiaisAlocadosTemp, setMateriaisAlocadosTemp] = useState<MaterialAlocadoDB[]>([]);
+
+  // Type for buscarMaterialPorId result
+  type MaterialEstoqueResponse = Omit<MaterialEstoque, 'tipoControle'> & { tipoControle: string };
 
   // Buscar materiais já alocados neste evento
   const { materiaisAlocados } = useEventosMateriaisAlocados(eventoId);
@@ -84,7 +88,14 @@ export function AlocarMaterialDialog({
   useEffect(() => {
     if (open && itemId) {
       // Forçar refetch sempre que abrir
-      buscarMaterialPorId(itemId).then(setMaterialEstoque);
+      buscarMaterialPorId(itemId).then((result) => {
+        if (result) {
+          setMaterialEstoque({
+            ...result,
+            tipoControle: result.tipoControle as 'serial' | 'quantidade'
+          });
+        }
+      });
       
       // Invalidar cache ao abrir para garantir dados frescos
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
@@ -101,12 +112,20 @@ export function AlocarMaterialDialog({
   }, [materiaisAlocados, itemId]);
 
   // Mapear seriais alocados em qualquer evento
+  interface MaterialAlocadoGlobal {
+    serial: string;
+    evento_id: string;
+    eventos: { nome: string } | null;
+  }
+  
   const serialsAlocadosGlobal = useMemo(() => {
-    return (todosMateriaisAlocados || []).reduce((acc, m: any) => {
-      acc[m.serial] = {
-        eventoId: m.evento_id,
-        eventoNome: m.eventos?.nome || 'Evento desconhecido'
-      };
+    return (todosMateriaisAlocados || []).reduce((acc, m: MaterialAlocadoGlobal) => {
+      if (m.serial) {
+        acc[m.serial] = {
+          eventoId: m.evento_id,
+          eventoNome: m.eventos?.nome || 'Evento desconhecido'
+        };
+      }
       return acc;
     }, {} as Record<string, { eventoId: string; eventoNome: string }>);
   }, [todosMateriaisAlocados]);
@@ -116,12 +135,12 @@ export function AlocarMaterialDialog({
     if (!materialEstoque?.seriais) return [];
     
     const seriais = materialEstoque.seriais
-      .filter((s: any) => {
+      .filter((s: SerialEstoque) => {
         const matchSearch = s.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           s.localizacao.toLowerCase().includes(searchTerm.toLowerCase());
         return matchSearch;
       })
-      .sort((a: any, b: any) => {
+      .sort((a: SerialEstoque, b: SerialEstoque) => {
         // Ordenar: já alocados aqui primeiro (verde), depois disponíveis, depois bloqueados
         const aAlocadoAqui = serialsAlocadosNesteEvento.includes(a.numero);
         const bAlocadoAqui = serialsAlocadosNesteEvento.includes(b.numero);
@@ -299,7 +318,7 @@ export function AlocarMaterialDialog({
 
           <div className="space-y-2">
             <Label>Tipo de Envio</Label>
-            <Select value={tipoEnvio} onValueChange={(v) => setTipoEnvio(v as any)}>
+            <Select value={tipoEnvio} onValueChange={(v) => setTipoEnvio(v as 'antecipado' | 'com_tecnicos')}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -360,7 +379,7 @@ export function AlocarMaterialDialog({
                         Limpar
                       </Button>
                     )}
-                    {serialsFiltrados.some((s: any) => 
+                    {serialsFiltrados.some((s: SerialEstoque) => 
                       s.status === 'disponivel' && 
                       !serialsAlocadosNesteEvento.includes(s.numero) &&
                       !serialsAlocadosGlobal[s.numero]
@@ -370,13 +389,13 @@ export function AlocarMaterialDialog({
                         size="sm"
                         onClick={() => {
                           const disponiveis = serialsFiltrados
-                            .filter((s: any) => {
+                            .filter((s: SerialEstoque) => {
                               const jaAlocadoAqui = serialsAlocadosNesteEvento.includes(s.numero);
                               const alocadoEmOutro = serialsAlocadosGlobal[s.numero];
                               return s.status === 'disponivel' && !jaAlocadoAqui && !alocadoEmOutro;
                             })
                             .slice(0, quantidadeRestante - serialsSelecionados.length)
-                            .map((s: any) => s.numero);
+                            .map((s: SerialEstoque) => s.numero);
                           
                           setSerialsSelecionados(prev => [...prev, ...disponiveis]);
                         }}
@@ -405,7 +424,7 @@ export function AlocarMaterialDialog({
                     )}
                   </div>
                 ) : (
-                  serialsFiltrados.map((s: any) => {
+                  serialsFiltrados.map((s: SerialEstoque) => {
                     const jaAlocadoAqui = serialsAlocadosNesteEvento.includes(s.numero);
                     const alocadoEmOutro = serialsAlocadosGlobal[s.numero] && 
                                           serialsAlocadosGlobal[s.numero].eventoId !== eventoId;
@@ -580,7 +599,7 @@ export function AlocarMaterialDialog({
             onOpenChange(false);
           }
         }}
-        materiais={materiaisAlocadosTemp}
+        materiais={materiaisAlocadosTemp as unknown as import('@/types/estoque').MaterialAlocado[]}
         onConfirmar={async (dados) => {
           await registrarRetirada.mutateAsync({
             alocacaoIds: materiaisAlocadosTemp.map(m => m.id),
@@ -603,7 +622,7 @@ export function AlocarMaterialDialog({
             onOpenChange(false);
           }
         }}
-        materiais={materiaisAlocadosTemp}
+        materiais={materiaisAlocadosTemp as unknown as import('@/types/estoque').MaterialAlocado[]}
         cliente={evento.cliente}
         transportadora={undefined}
         onConfirmar={async (dados) => {

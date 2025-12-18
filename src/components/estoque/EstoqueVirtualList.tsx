@@ -3,11 +3,11 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Edit, Trash2 } from 'lucide-react';
-import type { MaterialEstoque } from '@/types/estoque';
+import type { MaterialEstoque, SerialEstoque } from '@/types/estoque';
 import { CardSkeleton } from '@/components/shared/LoadingSkeleton';
 
 interface EstoqueVirtualListProps {
-  materiais: any[];
+  materiais: MaterialEstoque[];
   loading?: boolean;
   onVerDetalhes: (material: MaterialEstoque) => void;
   onEditar: (material: MaterialEstoque) => void;
@@ -51,8 +51,8 @@ export function EstoqueVirtualList({
       >
         {virtualizer.getVirtualItems().map((virtualRow) => {
           const material = materiais[virtualRow.index];
-          const emUso = material.seriais?.filter((s: any) => s.status === 'em-uso').length || 0;
-          const manutencao = material.seriais?.filter((s: any) => s.status === 'manutencao').length || 0;
+          const emUso = material.seriais?.filter((s: SerialEstoque) => s.status === 'em-uso').length || 0;
+          const manutencao = material.seriais?.filter((s: SerialEstoque) => s.status === 'manutencao').length || 0;
 
           return (
             <div

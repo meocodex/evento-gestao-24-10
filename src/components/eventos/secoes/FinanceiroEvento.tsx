@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useEventosFinanceiro } from '@/hooks/eventos';
 import { useDemandas } from '@/hooks/demandas';
 import { Evento } from '@/types/eventos';
+import { Demanda } from '@/types/demandas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -24,7 +25,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
   const { toast } = useToast();
   const financeiro = useEventosFinanceiro(evento.id);
   const { demandas } = useDemandas(1, 1000);
-  const getDemandasReembolsoPorEvento = (id: string) => demandas.filter((d: any) => d.eventoRelacionado === id && d.categoria === 'reembolso');
+  const getDemandasReembolsoPorEvento = (id: string) => demandas.filter((d: Demanda) => d.eventoRelacionado === id && d.categoria === 'reembolso');
   const [showAddReceita, setShowAddReceita] = useState(false);
   const [showAddDespesa, setShowAddDespesa] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);

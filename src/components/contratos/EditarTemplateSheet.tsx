@@ -11,6 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TipoTemplate, StatusTemplate } from '@/types/eventos';
 
 interface EditarTemplateSheetProps {
   open: boolean;
@@ -105,7 +106,7 @@ export function EditarTemplateSheet({ open, onOpenChange, template }: EditarTemp
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="tipo">Tipo</Label>
-            <Select value={tipo} onValueChange={(value: any) => setTipo(value)}>
+            <Select value={tipo} onValueChange={(value) => setTipo(value as TipoTemplate)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -120,7 +121,7 @@ export function EditarTemplateSheet({ open, onOpenChange, template }: EditarTemp
 
           <div>
             <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={(value: any) => setStatus(value)}>
+            <Select value={status} onValueChange={(value) => setStatus(value as StatusTemplate)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

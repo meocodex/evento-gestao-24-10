@@ -28,8 +28,8 @@ const prioridadeConfig = {
 
 export function DemandasEvento({ eventoId }: DemandasEventoProps) {
   const { demandas: todasDemandas } = useDemandas(1, 1000);
-  const getDemandasPorEvento = (id: string) => todasDemandas.filter((d: any) => d.eventoRelacionado === id);
-  const getDemandasReembolsoPorEvento = (id: string) => todasDemandas.filter((d: any) => d.eventoRelacionado === id && d.categoria === 'reembolso');
+  const getDemandasPorEvento = (id: string) => todasDemandas.filter((d: Demanda) => d.eventoRelacionado === id);
+  const getDemandasReembolsoPorEvento = (id: string) => todasDemandas.filter((d: Demanda) => d.eventoRelacionado === id && d.categoria === 'reembolso');
   const [demandaSelecionada, setDemandaSelecionada] = useState<Demanda | null>(null);
   const [detalhesOpen, setDetalhesOpen] = useState(false);
 

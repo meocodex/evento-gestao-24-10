@@ -150,9 +150,10 @@ export function RelatorioFechamentoDialog({
       const empresaConfig = configuracoes?.empresa;
       
       // Função para formatar endereço
-      const formatarEnderecoEmpresa = (endereco: any) => {
-        if (!endereco) return '-';
-        const { logradouro = '', numero = '', complemento = '', bairro = '', cidade = '', estado = '', cep = '' } = endereco;
+      const formatarEnderecoEmpresa = (endereco: unknown) => {
+        if (!endereco || typeof endereco !== 'object') return '-';
+        const end = endereco as Record<string, string>;
+        const { logradouro = '', numero = '', complemento = '', bairro = '', cidade = '', estado = '', cep = '' } = end;
         const partes = [
           logradouro && numero ? `${logradouro}, ${numero}` : logradouro || numero,
           complemento,
@@ -283,7 +284,7 @@ export function RelatorioFechamentoDialog({
           0: { cellWidth: 100 },
           1: { cellWidth: 60, halign: 'right' }
         },
-        didParseCell: (data: any) => {
+        didParseCell: (data) => {
           if (data.row.index === 0 && data.column.index === 1) {
             data.cell.styles.textColor = [34, 197, 94]; // green
           }
