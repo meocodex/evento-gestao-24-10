@@ -4,6 +4,7 @@ import { transformEvento } from './transformEvento';
 import { Evento } from '@/types/eventos';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useEffect } from 'react';
+import { SearchResultRow } from '@/types/utils';
 
 interface EventosQueryResult {
   eventos: Evento[];
@@ -33,7 +34,7 @@ export function useEventosQueries(page = 1, pageSize = 50, searchTerm?: string, 
         if (searchError) throw searchError;
 
         // Buscar dados completos dos eventos encontrados
-        const eventosIds = (searchResults || []).map((r: any) => r.id);
+        const eventosIds = (searchResults || []).map((r: SearchResultRow) => r.id);
         
         if (eventosIds.length === 0) {
           return { eventos: [], totalCount: 0 };

@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect } from 'react';
+import { RotaTransportadoraDB } from '@/types/utils';
 
 export interface FiltrosTransportadora {
   searchTerm?: string;
@@ -48,7 +49,7 @@ export function useTransportadorasQueries(
       // Transformar rotas para formato camelCase esperado pelo código
       const transportadorasTransformadas = (data || []).map(t => ({
         ...t,
-        rotasAtendidas: (t.rotas || []).map((r: any) => ({
+        rotasAtendidas: (t.rotas || []).map((r: RotaTransportadoraDB) => ({
           id: r.id,
           cidadeDestino: r.cidade_destino,
           estadoDestino: r.estado_destino,

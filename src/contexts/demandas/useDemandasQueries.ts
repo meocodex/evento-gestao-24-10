@@ -4,6 +4,12 @@ import { transformDemanda } from './transformDemanda';
 import { Demanda } from '@/types/demandas';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useEffect } from 'react';
+import { SearchResultRow, RawDemandaFromDB } from '@/types/utils';
+
+// Interface para demanda com relações do banco
+interface RawDemandaWithRelations extends RawDemandaFromDB {
+  // As relações já estão definidas na interface base como opcionais
+}
 
 export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string, enabled = true) {
   const queryClient = useQueryClient();
@@ -27,7 +33,7 @@ export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string,
 
         if (searchError) throw searchError;
 
-        const demandasIds = (searchResults || []).map((r: any) => r.id);
+        const demandasIds = (searchResults || []).map((r: SearchResultRow) => r.id);
         
         if (demandasIds.length === 0) {
           return { demandas: [], totalCount: 0 };
@@ -45,8 +51,8 @@ export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string,
         if (error) throw error;
 
         return {
-          demandas: (data || []).map((d: any) => {
-            const transformed = transformDemanda(d);
+          demandas: (data || []).map((d) => {
+            const transformed = transformDemanda(d as RawDemandaWithRelations);
             return {
               ...transformed,
               comentarios: transformed.comentarios || [],
@@ -71,8 +77,8 @@ export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string,
       if (error) throw error;
       
       return {
-        demandas: (data || []).map((d: any) => {
-          const transformed = transformDemanda(d);
+        demandas: (data || []).map((d) => {
+          const transformed = transformDemanda(d as RawDemandaWithRelations);
           return {
             ...transformed,
             comentarios: transformed.comentarios || [],

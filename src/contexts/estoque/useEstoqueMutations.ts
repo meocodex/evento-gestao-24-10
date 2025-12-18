@@ -216,9 +216,8 @@ export const useEstoqueMutations = () => {
         description: 'Novo item adicionado ao estoque.',
       });
     },
-    onError: (error: any) => {
-      const errorMsg = error.message || 'Erro ao adicionar serial';
-      toast.error(errorMsg);
+    onError: (error: Error) => {
+      toast.error(error.message || 'Erro ao adicionar serial');
     },
   });
 
@@ -234,7 +233,7 @@ export const useEstoqueMutations = () => {
 
       if (fetchError) throw fetchError;
 
-      const oldStatusDb = serialAtual.status as any; // status vem do DB (em_uso)
+      const oldStatusDb = serialAtual.status as string; // status vem do DB (em_uso)
       const newStatusDb = dados.status ? uiToDbStatus(dados.status) : oldStatusDb;
 
       // Atualizar o serial com status convertido
@@ -272,9 +271,8 @@ export const useEstoqueMutations = () => {
         description: 'As alterações foram salvas com sucesso.',
       });
     },
-    onError: (error: any) => {
-      const errorMsg = error.message || 'Erro ao atualizar serial';
-      toast.error(errorMsg);
+    onError: (error: Error) => {
+      toast.error(error.message || 'Erro ao atualizar serial');
     },
   });
 
@@ -346,7 +344,7 @@ export const useEstoqueMutations = () => {
       }
       queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error('Erro ao sincronizar estoque', {
         description: error.message,
       });

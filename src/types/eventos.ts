@@ -331,3 +331,36 @@ export interface ClienteFormData {
     estado: string;
   };
 }
+
+// Interfaces para formulários de receita/despesa
+export interface ReceitaFormData {
+  descricao: string;
+  quantidade: number;
+  valor_unitario: number;
+  valor: number;
+  tipo: TipoReceita;
+  status: string;
+  data: string;
+  tipo_servico?: string;
+}
+
+export interface DespesaFormData {
+  descricao: string;
+  quantidade: number;
+  valor_unitario: number;
+  valor: number;
+  categoria: string;
+  status: string;
+  data: string;
+}
+
+export interface FormaPagamentoData {
+  forma: string;
+  valor: number;
+  taxa_percentual: number;
+}
+
+export interface ReceitaComTaxasData {
+  receita: ReceitaFormData;
+  formasPagamento: FormaPagamentoData[];
+}

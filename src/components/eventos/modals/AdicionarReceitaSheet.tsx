@@ -7,12 +7,13 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Trash2, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ReceitaFormData, ReceitaComTaxasData } from '@/types/eventos';
 
 interface AdicionarReceitaSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdicionar: (data: any) => void;
-  onAdicionarComTaxas?: (data: { receita: any; formasPagamento: any[] }) => void;
+  onAdicionar: (data: ReceitaFormData) => void;
+  onAdicionarComTaxas?: (data: ReceitaComTaxasData) => void;
 }
 
 interface FormaPagamento {
@@ -27,7 +28,7 @@ export function AdicionarReceitaSheet({ open, onOpenChange, onAdicionar, onAdici
   const [tipoServico, setTipoServico] = useState('');
   const [quantidade, setQuantidade] = useState(1);
   const [valorUnitario, setValorUnitario] = useState('');
-  const [tipo, setTipo] = useState<string>('');
+  const [tipo, setTipo] = useState<'venda' | 'locacao' | 'servico' | 'outros' | ''>('');
   const [temTaxas, setTemTaxas] = useState(false);
   const [formasPagamento, setFormasPagamento] = useState<FormaPagamento[]>([
     { forma: 'pix', valor: '', taxa_percentual: '1.0' }
@@ -126,11 +127,12 @@ export function AdicionarReceitaSheet({ open, onOpenChange, onAdicionar, onAdici
           receita: {
             descricao: descricao.trim() || tipoServico,
             tipo_servico: tipoServico,
-            tipo,
+            tipo: tipo as 'venda' | 'locacao' | 'servico' | 'outros',
             status: 'pendente',
             data: new Date().toISOString().split('T')[0],
             quantidade: 1,
             valor_unitario: valorTotalComTaxas,
+            valor: valorTotalComTaxas,
           },
           formasPagamento: formasValidas.map(fp => ({
             forma: fp.forma,
@@ -164,7 +166,7 @@ export function AdicionarReceitaSheet({ open, onOpenChange, onAdicionar, onAdici
           quantidade,
           valor_unitario: parseFloat(valorUnitario),
           valor: valorTotal,
-          tipo,
+          tipo: tipo as 'venda' | 'locacao' | 'servico' | 'outros',
           status: 'pendente',
           data: new Date().toISOString().split('T')[0]
         });
@@ -264,7 +266,7 @@ export function AdicionarReceitaSheet({ open, onOpenChange, onAdicionar, onAdici
 
             <div>
               <Label>Tipo *</Label>
-              <Select value={tipo} onValueChange={setTipo}>
+              <Select value={tipo} onValueChange={(v) => setTipo(v as 'venda' | 'locacao' | 'servico' | 'outros')}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
@@ -303,7 +305,7 @@ export function AdicionarReceitaSheet({ open, onOpenChange, onAdicionar, onAdici
 
             <div>
               <Label>Categoria *</Label>
-              <Select value={tipo} onValueChange={setTipo}>
+              <Select value={tipo} onValueChange={(v) => setTipo(v as 'venda' | 'locacao' | 'servico' | 'outros')}>
                 <SelectTrigger>
                   <SelectValue placeholder="Selecione a categoria" />
                 </SelectTrigger>

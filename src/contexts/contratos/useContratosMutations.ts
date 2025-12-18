@@ -3,6 +3,32 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Contrato } from '@/types/contratos';
 
+// Interface para dados de atualização de contrato (snake_case para o banco)
+interface ContratoUpdateData {
+  template_id?: string;
+  numero?: string;
+  titulo?: string;
+  tipo?: string;
+  status?: string;
+  cliente_id?: string;
+  evento_id?: string;
+  valor?: number;
+  conteudo?: string;
+  data_inicio?: string;
+  data_fim?: string;
+  validade?: string;
+  itens?: unknown;
+  condicoes_pagamento?: string;
+  prazo_execucao?: string;
+  garantia?: string;
+  observacoes?: string;
+  observacoes_comerciais?: string;
+  assinaturas?: unknown;
+  anexos?: string[];
+  dados_evento?: unknown;
+  aprovacoes_historico?: unknown;
+}
+
 export function useContratosMutations() {
   const queryClient = useQueryClient();
 
@@ -49,7 +75,7 @@ export function useContratosMutations() {
 
   const editarContrato = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Contrato> }) => {
-      const updateData: any = {};
+      const updateData: ContratoUpdateData = {};
       if (data.templateId !== undefined) updateData.template_id = data.templateId;
       if (data.numero !== undefined) updateData.numero = data.numero;
       if (data.titulo !== undefined) updateData.titulo = data.titulo;
