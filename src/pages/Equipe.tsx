@@ -118,13 +118,6 @@ export default function Equipe() {
       return true;
     });
     
-    console.log('📊 Membros Unificados:', {
-      total: membrosValidos.length,
-      operacional: membrosValidos.filter(m => m.tipo_membro === 'operacional').length,
-      sistema: membrosValidos.filter(m => m.tipo_membro === 'sistema').length,
-      ambos: membrosValidos.filter(m => m.tipo_membro === 'ambos').length,
-      filtrados: unificados.length - membrosValidos.length
-    });
     
     return membrosValidos;
   }, [operacionais, profiles]);
