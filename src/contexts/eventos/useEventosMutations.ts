@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { EventoFormData, Evento, StatusEvento } from '@/types/eventos';
+import { DatabaseError, getErrorMessage, EventosQueryCache, EventoUpdateData, toJson } from '@/types/utils';
 
 export function useEventosMutations() {
   const queryClient = useQueryClient();
@@ -38,8 +39,8 @@ export function useEventosMutations() {
           descricao: data.descricao,
           observacoes: data.observacoes,
           tags: data.tags || [],
-          configuracao_bar: data.configuracaoBar as any,
-          configuracao_ingresso: data.configuracaoIngresso as any,
+          configuracao_bar: data.configuracaoBar ? toJson(data.configuracaoBar) : null,
+          configuracao_ingresso: data.configuracaoIngresso ? toJson(data.configuracaoIngresso) : null,
           utiliza_pos_empresa: data.utilizaPosEmpresa || false
         }])
         .select(`
@@ -63,20 +64,20 @@ export function useEventosMutations() {
         description: `${data.nome} foi criado com sucesso.`
       });
 
-      return evento as any;
+      return evento as Evento;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro ao criar evento', {
-        description: error.message
+        description: getErrorMessage(error)
       });
     }
   });
 
   const editarEvento = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<Evento> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Evento> & { clienteId?: string; comercialId?: string } }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
@@ -87,7 +88,7 @@ export function useEventosMutations() {
         }
       }
 
-      const updateData: any = {};
+      const updateData: EventoUpdateData = {};
       
       if (data.nome !== undefined) updateData.nome = data.nome;
       if (data.tipoEvento !== undefined) updateData.tipo_evento = data.tipoEvento;
@@ -109,10 +110,10 @@ export function useEventosMutations() {
       if (data.contatosAdicionais !== undefined) updateData.contatos_adicionais = data.contatosAdicionais;
       if (data.observacoesOperacionais !== undefined) updateData.observacoes_operacionais = data.observacoesOperacionais;
       if (data.plantaBaixa !== undefined) updateData.planta_baixa = data.plantaBaixa;
-      if (data.configuracaoBar !== undefined) updateData.configuracao_bar = data.configuracaoBar;
-      if (data.configuracaoIngresso !== undefined) updateData.configuracao_ingresso = data.configuracaoIngresso;
-      if ((data as any).clienteId !== undefined) updateData.cliente_id = (data as any).clienteId;
-      if ((data as any).comercialId !== undefined) updateData.comercial_id = (data as any).comercialId;
+      if (data.configuracaoBar !== undefined) updateData.configuracao_bar = toJson(data.configuracaoBar);
+      if (data.configuracaoIngresso !== undefined) updateData.configuracao_ingresso = toJson(data.configuracaoIngresso);
+      if (data.clienteId !== undefined) updateData.cliente_id = data.clienteId;
+      if (data.comercialId !== undefined) updateData.comercial_id = data.comercialId;
 
       const { error } = await supabase
         .from('eventos')
@@ -139,11 +140,11 @@ export function useEventosMutations() {
       const previousEventos = queryClient.getQueryData(['eventos']);
       
       // Update otimista - atualizar cache com novos dados
-      queryClient.setQueriesData({ queryKey: ['eventos'] }, (old: any) => {
+      queryClient.setQueriesData<EventosQueryCache>({ queryKey: ['eventos'] }, (old) => {
         if (!old) return old;
         return {
           ...old,
-          eventos: old.eventos?.map((e: Evento) => 
+          eventos: old.eventos?.map((e) => 
             e.id === id ? { ...e, ...data } : e
           )
         };
@@ -158,13 +159,13 @@ export function useEventosMutations() {
       // Invalidar apenas evento-detalhes para recarregar dados completos
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
     },
-    onError: (error: any, variables, context) => {
+    onError: (error: DatabaseError, _variables, context) => {
       // Rollback em caso de erro
       if (context?.previousEventos) {
         queryClient.setQueryData(['eventos'], context.previousEventos);
       }
       toast.error('Erro ao atualizar evento', {
-        description: error.message
+        description: getErrorMessage(error)
       });
     }
   });
@@ -185,9 +186,9 @@ export function useEventosMutations() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['eventos'] });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro ao excluir evento', {
-        description: error.message
+        description: getErrorMessage(error)
       });
     }
   });
@@ -226,11 +227,11 @@ export function useEventosMutations() {
       const previousEventos = queryClient.getQueryData(['eventos']);
       
       // Update otimista
-      queryClient.setQueriesData({ queryKey: ['eventos'] }, (old: any) => {
+      queryClient.setQueriesData<EventosQueryCache>({ queryKey: ['eventos'] }, (old) => {
         if (!old) return old;
         return {
           ...old,
-          eventos: old.eventos?.map((e: Evento) => 
+          eventos: old.eventos?.map((e) => 
             e.id === id ? { ...e, status: novoStatus } : e
           )
         };
@@ -244,13 +245,13 @@ export function useEventosMutations() {
       });
       queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
     },
-    onError: (error: any, variables, context) => {
+    onError: (error: DatabaseError, _variables, context) => {
       // Rollback em caso de erro
       if (context?.previousEventos) {
         queryClient.setQueryData(['eventos'], context.previousEventos);
       }
       toast.error('Erro ao alterar status', {
-        description: error.message
+        description: getErrorMessage(error)
       });
     }
   });
@@ -311,9 +312,9 @@ export function useEventosMutations() {
         description: 'O evento foi movido para arquivados.' 
       });
     },
-    onError: (error: any) => {
+    onError: (error: DatabaseError) => {
       toast.error('Erro ao arquivar evento', { 
-        description: error.message
+        description: getErrorMessage(error)
       });
     }
   });
