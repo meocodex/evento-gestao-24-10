@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Demanda } from '@/types/demandas';
+import { Demanda, DemandasQueryData } from '@/types/demandas';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,11 +36,11 @@ export function DemandaComentarios({ demanda }: DemandaComentariosProps) {
           filter: `demanda_id=eq.${demanda.id}`
         },
         (payload) => {
-          queryClient.setQueriesData({ queryKey: ['demandas'] }, (old: any) => {
+          queryClient.setQueriesData({ queryKey: ['demandas'] }, (old: DemandasQueryData | undefined) => {
             if (!old) return old;
             return {
               ...old,
-              demandas: old.demandas?.map((d: any) => 
+              demandas: old.demandas?.map((d: Demanda) => 
                 d.id === demanda.id 
                   ? {
                       ...d,

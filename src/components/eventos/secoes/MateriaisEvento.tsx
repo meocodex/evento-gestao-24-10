@@ -580,11 +580,11 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
           try {
             await adicionarMaterialChecklist.mutateAsync(data);
             setShowAdicionarMaterial(false);
-          } catch (error: any) {
+          } catch (error: unknown) {
             console.error('Erro ao adicionar material:', error);
           }
         }}
-        itensJaNoChecklist={checklistData.map((item: any) => item.item_id)}
+        itensJaNoChecklist={checklistData.map((item: ItemChecklistUI) => item.item_id)}
       />
 
       {itemSelecionado && (
@@ -692,10 +692,11 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                   toast.success('Declarações de transporte geradas com sucesso!');
                   setShowGerarDeclaracaoRetroativo(false);
                   setMateriaisRetroativos([]);
-                } catch (error: any) {
-                  toast.error(`Erro ao gerar declarações: ${error.message}`);
-                }
-              }}
+              } catch (error: unknown) {
+                const message = error instanceof Error ? error.message : 'Erro desconhecido';
+                toast.error(`Erro ao gerar declarações: ${message}`);
+              }
+            }}
       />
 
       {/* Confirm Dialog - Reimprimir */}
@@ -714,8 +715,9 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
             toast.success('Documento reimpresso com sucesso!');
             setShowConfirmReimprimir(false);
             setMaterialReimprimir(null);
-          } catch (error: any) {
-            toast.error(`Erro ao reimprimir: ${error.message}`);
+          } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Erro desconhecido';
+            toast.error(`Erro ao reimprimir: ${message}`);
           }
         }}
         title="Reimprimir documento"

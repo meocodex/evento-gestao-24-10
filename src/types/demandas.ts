@@ -86,6 +86,12 @@ export interface Demanda {
   arquivada: boolean;
 }
 
+// Interface para dados de query do React Query
+export interface DemandasQueryData {
+  demandas: Demanda[];
+  total?: number;
+}
+
 export interface DemandaFormData {
   titulo: string;
   descricao: string;

@@ -6,6 +6,7 @@
 
 export type StatusUI = 'disponivel' | 'em-uso' | 'manutencao' | 'perdido' | 'consumido';
 export type StatusDB = 'disponivel' | 'em_uso' | 'manutencao' | 'perdido' | 'consumido';
+export type StatusSerialDB = StatusDB;
 
 export const uiToDbStatus = (status: StatusUI): StatusDB => {
   return status === 'em-uso' ? 'em_uso' : status;

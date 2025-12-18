@@ -13,14 +13,17 @@ const ESTADOS_BRASILEIROS = [
   'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
 ];
 
+type TipoClienteFiltro = 'todos' | 'CPF' | 'CNPJ';
+type StatusClienteFiltro = 'todos' | 'ativo' | 'inativo';
+
 export function ClienteFilters() {
   const { clientes } = useClientes();
   const [filtros, setFiltros] = useState({
     busca: '',
-    tipo: 'todos' as 'todos' | 'CPF' | 'CNPJ',
+    tipo: 'todos' as TipoClienteFiltro,
     estado: '',
     cidade: '',
-    status: 'todos' as 'todos' | 'ativo' | 'inativo',
+    status: 'todos' as StatusClienteFiltro,
   });
   const [isOpen, setIsOpen] = useState(false);
 
@@ -96,7 +99,7 @@ export function ClienteFilters() {
             <label className="text-sm font-medium mb-2 block">Tipo</label>
             <Select
               value={filtros.tipo}
-              onValueChange={(value) => aplicarFiltros({ tipo: value as any })}
+              onValueChange={(value) => aplicarFiltros({ tipo: value as TipoClienteFiltro })}
             >
               <SelectTrigger>
                 <SelectValue />
@@ -156,7 +159,7 @@ export function ClienteFilters() {
             <label className="text-sm font-medium mb-2 block">Status</label>
             <Select
               value={filtros.status}
-              onValueChange={(value) => aplicarFiltros({ status: value as any })}
+              onValueChange={(value) => aplicarFiltros({ status: value as StatusClienteFiltro })}
             >
               <SelectTrigger>
                 <SelectValue />

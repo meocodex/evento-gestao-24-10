@@ -131,7 +131,7 @@ export function GerenciarQuantidadeDialog({
           </p>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'entrada' | 'saida' | 'ajuste')}>
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="entrada">
               <Plus className="h-4 w-4 mr-2" />

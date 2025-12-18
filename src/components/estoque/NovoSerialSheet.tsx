@@ -59,10 +59,11 @@ export function NovoSerialSheet({
 
       form.reset();
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Ocorreu um erro ao adicionar a unidade.';
       toast({
         title: 'Erro ao adicionar unidade',
-        description: error.message,
+        description: message,
         variant: 'destructive',
       });
     }

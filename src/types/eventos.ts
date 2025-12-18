@@ -469,3 +469,31 @@ export interface ChecklistItem {
   alocado: number;
   quantidade: number;
 }
+
+// Interface para endereço da empresa (configurações)
+export interface EnderecoEmpresa {
+  logradouro?: string;
+  numero?: string;
+  complemento?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  cep?: string;
+}
+
+// Interface para alocação com evento (useConflitosEquipe)
+export interface AlocacaoComEvento {
+  id: string;
+  evento_id: string;
+  nome: string;
+  funcao: string;
+  data_inicio: string | null;
+  data_fim: string | null;
+  eventos: {
+    id: string;
+    nome: string;
+    data_inicio: string;
+    data_fim: string;
+    status: string;
+  } | null;
+}

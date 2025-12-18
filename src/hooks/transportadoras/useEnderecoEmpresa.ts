@@ -1,4 +1,5 @@
 import { useConfiguracoesEmpresaQueries } from '@/contexts/configuracoes/useConfiguracoesEmpresaQueries';
+import { EnderecoEmpresa } from '@/types/eventos';
 
 export function useEnderecoEmpresa() {
   const { configuracoes } = useConfiguracoesEmpresaQueries();
@@ -12,7 +13,7 @@ export function useEnderecoEmpresa() {
     };
   }
   
-  const enderecoObj = endereco as any;
+  const enderecoObj = endereco as EnderecoEmpresa;
   const enderecoFormatado = `${enderecoObj.logradouro || ''}, ${enderecoObj.numero || ''} - ${enderecoObj.bairro || ''}, ${enderecoObj.cidade || ''}/${enderecoObj.estado || ''} - CEP ${enderecoObj.cep || ''}`.trim();
   
   return {

@@ -4,17 +4,27 @@ export interface ApiError {
   message: string;
   code?: string;
   status?: number;
-  details?: any;
+  details?: unknown;
+}
+
+// Interface para erros do Supabase/Postgres
+interface SupabaseError {
+  message?: string;
+  code?: string;
+  status?: number;
+  details?: unknown;
 }
 
 /**
  * Handles API errors and displays user-friendly messages
  */
-export function handleApiError(error: any, customMessage?: string): ApiError {
+export function handleApiError(error: unknown, customMessage?: string): ApiError {
+  const supabaseError = error as SupabaseError | null;
+  
   const apiError: ApiError = {
     message: customMessage || 'Ocorreu um erro. Por favor, tente novamente.',
-    code: error?.code,
-    status: error?.status,
+    code: supabaseError?.code,
+    status: supabaseError?.status,
     details: error,
   };
 
@@ -26,8 +36,8 @@ export function handleApiError(error: any, customMessage?: string): ApiError {
   }
 
   // Supabase specific errors
-  if (error?.message) {
-    const errorMessage = error.message.toLowerCase();
+  if (supabaseError?.message) {
+    const errorMessage = supabaseError.message.toLowerCase();
 
     // Auth errors
     if (errorMessage.includes('invalid login credentials')) {
@@ -50,14 +60,14 @@ export function handleApiError(error: any, customMessage?: string): ApiError {
       apiError.message = 'Dados inválidos. Verifique as informações.';
     }
     // Generic database errors
-    else if (error.code && error.code.startsWith('PGRST')) {
+    else if (supabaseError.code && supabaseError.code.startsWith('PGRST')) {
       apiError.message = 'Erro ao acessar os dados. Tente novamente.';
     }
   }
 
   // HTTP status codes
-  if (error?.status) {
-    switch (error.status) {
+  if (supabaseError?.status) {
+    switch (supabaseError.status) {
       case 400:
         apiError.message = 'Requisição inválida. Verifique os dados.';
         break;

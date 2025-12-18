@@ -124,7 +124,7 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
           // DESTINO: Endereço completo do cliente (se disponível) ou endereço do evento
           let novoDestino = '';
           if (clienteEventoData?.clienteEndereco) {
-            const end = clienteEventoData.clienteEndereco as any;
+            const end = clienteEventoData.clienteEndereco as import('@/types/eventos').EnderecoCliente;
             novoDestino = `${end.logradouro || ''}, ${end.numero || ''} - ${end.bairro || ''}, ${end.cidade || ''}/${end.estado || ''} - CEP ${end.cep || ''}`.trim();
           } else if (clienteEventoData?.eventoEndereco) {
             novoDestino = `${clienteEventoData.eventoEndereco}, ${clienteEventoData.eventoCidade} - ${clienteEventoData.eventoEstado}`;
