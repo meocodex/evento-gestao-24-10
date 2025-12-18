@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import type { DemandasQueryCache, DatabaseError } from '@/types/utils';
+import type { Demanda } from '@/types/demandas';
 
 export function useDemandasConversa() {
   const queryClient = useQueryClient();
@@ -32,14 +34,14 @@ export function useDemandasConversa() {
     onMutate: async ({ demandaId, conteudo, autor, autorId }) => {
       await queryClient.cancelQueries({ queryKey: ['demandas'] });
       
-      const previousData = queryClient.getQueryData(['demandas']);
+      const previousData = queryClient.getQueryData<DemandasQueryCache>(['demandas']);
       
       // Atualizar cache localmente ANTES da resposta do servidor
-      queryClient.setQueriesData({ queryKey: ['demandas'] }, (old: any) => {
+      queryClient.setQueriesData<DemandasQueryCache>({ queryKey: ['demandas'] }, (old) => {
         if (!old) return old;
         return {
           ...old,
-          demandas: old.demandas?.map((d: any) => 
+          demandas: old.demandas?.map((d) => 
             d.id === demandaId 
               ? {
                   ...d,
@@ -62,12 +64,11 @@ export function useDemandasConversa() {
       
       return { previousData };
     },
-    onError: (error, variables, context) => {
+    onError: (error: DatabaseError, variables, context) => {
       // Se der erro, reverter para estado anterior
       if (context?.previousData) {
         queryClient.setQueryData(['demandas'], context.previousData);
       }
-      console.error('Erro ao adicionar mensagem:', error);
       toast({ title: 'Erro ao adicionar mensagem', variant: 'destructive' });
     },
     onSuccess: () => {

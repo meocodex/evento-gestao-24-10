@@ -2,7 +2,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { FiltrosEstoque } from '@/types/estoque';
-import { dbToUiStatus } from '@/lib/estoqueStatus';
+import type { RawEstoqueMaterialFromDB, RawSerialFromDB } from '@/types/utils';
+import { dbToUiStatus, StatusDB } from '@/lib/estoqueStatus';
 
 export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEstoque) => {
   const queryClient = useQueryClient();
@@ -44,7 +45,7 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
       if (error) throw error;
 
       // Transformar dados para o formato esperado
-      const materiaisTransformados = (data || []).map((m: any) => ({
+      const materiaisTransformados = (data || []).map((m: RawEstoqueMaterialFromDB) => ({
         id: m.id,
         nome: m.nome,
         categoria: m.categoria,
@@ -55,9 +56,9 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
         quantidadeDisponivel: m.quantidade_disponivel,
         tipoControle: m.tipo_controle,
         unidade: 'un',
-        seriais: (m.materiais_seriais || []).map((s: any) => ({
+        seriais: (m.materiais_seriais || []).map((s: RawSerialFromDB) => ({
           numero: s.numero,
-          status: dbToUiStatus(s.status),
+          status: dbToUiStatus(s.status as StatusDB),
           localizacao: s.localizacao,
           tags: s.tags || [],
           ultimaManutencao: s.ultima_manutencao || undefined,
@@ -139,21 +140,23 @@ export const useEstoqueQueries = (page = 1, pageSize = 50, filtros?: FiltrosEsto
     
     if (error) throw error;
     
+    const materialData = data as RawEstoqueMaterialFromDB;
+    
     // Transformar para o formato esperado
     return {
-      id: data.id,
-      nome: data.nome,
-      categoria: data.categoria,
-      descricao: data.descricao || undefined,
-      foto: data.foto || undefined,
-      valorUnitario: data.valor_unitario || undefined,
-      quantidadeTotal: data.quantidade_total,
-      quantidadeDisponivel: data.quantidade_disponivel,
-      tipoControle: data.tipo_controle,
+      id: materialData.id,
+      nome: materialData.nome,
+      categoria: materialData.categoria,
+      descricao: materialData.descricao || undefined,
+      foto: materialData.foto || undefined,
+      valorUnitario: materialData.valor_unitario || undefined,
+      quantidadeTotal: materialData.quantidade_total,
+      quantidadeDisponivel: materialData.quantidade_disponivel,
+      tipoControle: materialData.tipo_controle,
       unidade: 'un',
-      seriais: (data.materiais_seriais || []).map((s: any) => ({
+      seriais: (materialData.materiais_seriais || []).map((s: RawSerialFromDB) => ({
         numero: s.numero,
-        status: dbToUiStatus(s.status),
+        status: dbToUiStatus(s.status as StatusDB),
         localizacao: s.localizacao,
         tags: s.tags || [],
         ultimaManutencao: s.ultima_manutencao || undefined,
