@@ -18,7 +18,6 @@ export function useOperacionalQueries(
     queryKey: ['equipe-operacional', page, pageSize, debouncedSearchTerm, filtros?.funcao, filtros?.tipo, filtros?.status],
     enabled,
     queryFn: async () => {
-      console.log('🔍 Buscando operacionais...', { page, pageSize, filtros });
 
       // Se houver termo de busca, usar Full-Text Search otimizado
       if (debouncedSearchTerm && debouncedSearchTerm.trim().length > 0) {

@@ -62,6 +62,31 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
   const { data: clienteEventoData } = useClienteEvento(eventoSelecionado);
   const { enderecoFormatado: enderecoEmpresa } = useEnderecoEmpresa();
 
+  const handleUploadComprovante = async (file: File) => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `comprovante-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('financeiro-anexos')
+        .upload(fileName, file);
+      
+      if (uploadError) {
+        toast.error('Erro ao enviar comprovante');
+        return;
+      }
+      
+      const { data: { publicUrl } } = supabase.storage
+        .from('financeiro-anexos')
+        .getPublicUrl(fileName);
+      
+      setFormData(prev => ({ ...prev, comprovantePagamento: publicUrl }));
+      toast.success('Comprovante enviado!');
+    } catch {
+      toast.error('Erro no upload');
+    }
+  };
+
   const transportadorasFiltradas = useMemo(() => {
     if (eventoSelecionado) {
       const evento = eventos.find(e => e.id === eventoSelecionado);
@@ -362,7 +387,7 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
               <div>
                 <Label className="text-navy-700 text-sm">Comprovante</Label>
                 <DocumentUpload
-                  onFileSelect={(file) => console.log('File selected:', file)}
+                  onFileSelect={handleUploadComprovante}
                   currentFile={formData.comprovantePagamento}
                 />
               </div>
