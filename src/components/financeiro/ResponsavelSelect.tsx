@@ -22,6 +22,9 @@ export function ResponsavelSelect({ value, onChange }: ResponsavelSelectProps) {
         <SelectValue placeholder={isLoading ? "Carregando..." : "Selecione um responsável"} />
       </SelectTrigger>
       <SelectContent>
+        <SelectItem value="">
+          <span className="text-muted-foreground">Nenhum responsável</span>
+        </SelectItem>
         {usuarios.map((usuario) => (
           <SelectItem key={usuario.id} value={usuario.nome}>
             <div className="flex items-center gap-2">
