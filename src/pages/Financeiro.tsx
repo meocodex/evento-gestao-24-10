@@ -1,9 +1,13 @@
 import { useMemo, useState } from 'react';
-import { DollarSign, TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight, Eye, Receipt, Plus } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight, Eye, Receipt, Plus, Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { useEventos } from '@/hooks/eventos';
 import { useDemandasReembolso } from '@/hooks/demandas';
@@ -18,21 +22,12 @@ import { TabelaContasReceber } from '@/components/financeiro/TabelaContasReceber
 import { MarcarPagoDialog } from '@/components/financeiro/MarcarPagoDialog';
 import { MarcarRecebidoDialog } from '@/components/financeiro/MarcarRecebidoDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { FiltrosPeriodo, type FiltrosFinanceiro } from '@/components/financeiro/FiltrosPeriodo';
 import { FinanceiroChartsDrawer } from '@/components/financeiro/FinanceiroChartsDrawer';
 import { FinanceiroSummaryBar } from '@/components/financeiro/FinanceiroSummaryBar';
 import { RelatorioFinanceiroDialog } from '@/components/financeiro/RelatorioFinanceiroDialog';
-import { format, isWithinInterval, parseISO } from 'date-fns';
+import { format, isWithinInterval, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
-const filtrosIniciais: FiltrosFinanceiro = {
-  dataInicio: undefined,
-  dataFim: undefined,
-  status: '',
-  categoria: '',
-  fornecedor: '',
-  cliente: '',
-};
+import type { DateRange } from 'react-day-picker';
 
 export default function Financeiro() {
   const { eventos } = useEventos();
@@ -50,55 +45,61 @@ export default function Financeiro() {
   const [contaSelecionada, setContaSelecionada] = useState<ContaPagar | ContaReceber | null>(null);
   const [tipoContaDelete, setTipoContaDelete] = useState<'pagar' | 'receber'>('pagar');
 
-  // Filtros separados para cada aba
-  const [filtrosPagar, setFiltrosPagar] = useState<FiltrosFinanceiro>(filtrosIniciais);
-  const [filtrosReceber, setFiltrosReceber] = useState<FiltrosFinanceiro>(filtrosIniciais);
-
-  // Extrair categorias e fornecedores/clientes únicos
-  const categoriasPagar = useMemo(() => 
-    [...new Set(contasPagar.map(c => c.categoria).filter(Boolean))],
-    [contasPagar]
-  );
-
-  const fornecedores = useMemo(() => 
-    [...new Set(contasPagar.map(c => c.fornecedor).filter((f): f is string => Boolean(f)))],
-    [contasPagar]
-  );
-
-  const clientes = useMemo(() => 
-    [...new Set(contasReceber.map(c => c.cliente).filter((c): c is string => Boolean(c)))],
-    [contasReceber]
-  );
+  // Filtros globais (consolidados)
+  const [buscaGlobal, setBuscaGlobal] = useState('');
+  const [statusFiltro, setStatusFiltro] = useState('todos');
+  const [periodoRange, setPeriodoRange] = useState<DateRange | undefined>(undefined);
 
   // Aplicar filtros às contas
   const contasPagarFiltradas = useMemo(() => {
     return contasPagar.filter(conta => {
-      if (filtrosPagar.dataInicio && filtrosPagar.dataFim) {
+      // Filtro por período
+      if (periodoRange?.from && periodoRange?.to) {
         const dataVenc = parseISO(conta.data_vencimento);
-        if (!isWithinInterval(dataVenc, { start: filtrosPagar.dataInicio, end: filtrosPagar.dataFim })) {
+        if (!isWithinInterval(dataVenc, { start: periodoRange.from, end: periodoRange.to })) {
           return false;
         }
       }
-      if (filtrosPagar.status && conta.status !== filtrosPagar.status) return false;
-      if (filtrosPagar.categoria && conta.categoria !== filtrosPagar.categoria) return false;
-      if (filtrosPagar.fornecedor && conta.fornecedor !== filtrosPagar.fornecedor) return false;
+      // Filtro por status
+      if (statusFiltro !== 'todos' && conta.status !== statusFiltro) return false;
+      // Filtro por busca
+      if (buscaGlobal) {
+        const busca = buscaGlobal.toLowerCase();
+        const matchBusca = 
+          conta.descricao.toLowerCase().includes(busca) ||
+          conta.fornecedor?.toLowerCase().includes(busca) ||
+          conta.categoria.toLowerCase().includes(busca);
+        if (!matchBusca) return false;
+      }
       return true;
     });
-  }, [contasPagar, filtrosPagar]);
+  }, [contasPagar, periodoRange, statusFiltro, buscaGlobal]);
 
   const contasReceberFiltradas = useMemo(() => {
     return contasReceber.filter(conta => {
-      if (filtrosReceber.dataInicio && filtrosReceber.dataFim) {
+      // Filtro por período
+      if (periodoRange?.from && periodoRange?.to) {
         const dataVenc = parseISO(conta.data_vencimento);
-        if (!isWithinInterval(dataVenc, { start: filtrosReceber.dataInicio, end: filtrosReceber.dataFim })) {
+        if (!isWithinInterval(dataVenc, { start: periodoRange.from, end: periodoRange.to })) {
           return false;
         }
       }
-      if (filtrosReceber.status && conta.status !== filtrosReceber.status) return false;
-      if (filtrosReceber.cliente && conta.cliente !== filtrosReceber.cliente) return false;
+      // Filtro por status
+      const statusMatch = statusFiltro === 'todos' || 
+        (statusFiltro === 'pago' ? conta.status === 'recebido' : conta.status === statusFiltro);
+      if (!statusMatch) return false;
+      // Filtro por busca
+      if (buscaGlobal) {
+        const busca = buscaGlobal.toLowerCase();
+        const matchBusca = 
+          conta.descricao.toLowerCase().includes(busca) ||
+          conta.cliente?.toLowerCase().includes(busca) ||
+          conta.tipo.toLowerCase().includes(busca);
+        if (!matchBusca) return false;
+      }
       return true;
     });
-  }, [contasReceber, filtrosReceber]);
+  }, [contasReceber, periodoRange, statusFiltro, buscaGlobal]);
 
   // Calcular valores pagas/recebidas no mês
   const pagasNoMes = useMemo(() => {
@@ -274,14 +275,79 @@ export default function Financeiro() {
         />
       </div>
 
-      {/* Tabs - Simplificadas (removido tab Fluxo de Caixa) */}
+      {/* Tabs com filtros inline */}
       <Tabs defaultValue="eventos" className="space-y-4">
-        <TabsList className="glass-card">
-          <TabsTrigger value="eventos">Por Evento</TabsTrigger>
-          <TabsTrigger value="pagar">Contas a Pagar</TabsTrigger>
-          <TabsTrigger value="receber">Contas a Receber</TabsTrigger>
-          <TabsTrigger value="reembolsos">Reembolsos</TabsTrigger>
-        </TabsList>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <TabsList className="glass-card">
+            <TabsTrigger value="eventos">Por Evento</TabsTrigger>
+            <TabsTrigger value="pagar">Contas a Pagar</TabsTrigger>
+            <TabsTrigger value="receber">Contas a Receber</TabsTrigger>
+            <TabsTrigger value="reembolsos">Reembolsos</TabsTrigger>
+          </TabsList>
+          
+          {/* Filtros inline */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar..."
+                value={buscaGlobal}
+                onChange={(e) => setBuscaGlobal(e.target.value)}
+                className="pl-8 w-[180px] h-9"
+              />
+            </div>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 h-9">
+                  <Calendar className="h-4 w-4" />
+                  {periodoRange?.from && periodoRange?.to
+                    ? `${format(periodoRange.from, 'dd/MM')} - ${format(periodoRange.to, 'dd/MM')}`
+                    : 'Período'
+                  }
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <CalendarComponent
+                  mode="range"
+                  selected={periodoRange}
+                  onSelect={setPeriodoRange}
+                  numberOfMonths={2}
+                  locale={ptBR}
+                />
+                <div className="p-3 border-t flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setPeriodoRange(undefined)}
+                  >
+                    Limpar
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setPeriodoRange({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) })}
+                  >
+                    Mês Atual
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+            
+            <Select value={statusFiltro} onValueChange={setStatusFiltro}>
+              <SelectTrigger className="w-[110px] h-9">
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Todos</SelectItem>
+                <SelectItem value="pendente">Pendente</SelectItem>
+                <SelectItem value="pago">Pago</SelectItem>
+                <SelectItem value="vencido">Vencido</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
         <TabsContent value="eventos" className="space-y-4">
           <Card className="smooth-hover">
@@ -362,13 +428,6 @@ export default function Financeiro() {
             </Button>
           </div>
 
-          <FiltrosPeriodo
-            filtros={filtrosPagar}
-            onFiltrosChange={setFiltrosPagar}
-            categorias={categoriasPagar}
-            fornecedores={fornecedores}
-            tipo="pagar"
-          />
 
           <TabelaContasPagar
             contas={contasPagarFiltradas}
@@ -394,12 +453,6 @@ export default function Financeiro() {
             </Button>
           </div>
 
-          <FiltrosPeriodo
-            filtros={filtrosReceber}
-            onFiltrosChange={setFiltrosReceber}
-            clientes={clientes}
-            tipo="receber"
-          />
 
           <TabelaContasReceber
             contas={contasReceberFiltradas}
