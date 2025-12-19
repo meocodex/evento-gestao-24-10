@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { DollarSign, TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight, Eye, Receipt, Plus, BarChart3 } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight, Eye, Receipt, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { StatCard } from '@/components/dashboard/StatCard';
 import { useEventos } from '@/hooks/eventos';
 import { useDemandasReembolso } from '@/hooks/demandas';
 import { useContasPagar, useContasReceber } from '@/hooks/financeiro';
@@ -18,7 +19,8 @@ import { MarcarPagoDialog } from '@/components/financeiro/MarcarPagoDialog';
 import { MarcarRecebidoDialog } from '@/components/financeiro/MarcarRecebidoDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { FiltrosPeriodo, type FiltrosFinanceiro } from '@/components/financeiro/FiltrosPeriodo';
-import { FluxoCaixaChart, DespesasPorCategoriaChart, VencimentosProximosChart } from '@/components/financeiro/FinanceiroCharts';
+import { FinanceiroChartsDrawer } from '@/components/financeiro/FinanceiroChartsDrawer';
+import { FinanceiroSummaryBar } from '@/components/financeiro/FinanceiroSummaryBar';
 import { RelatorioFinanceiroDialog } from '@/components/financeiro/RelatorioFinanceiroDialog';
 import { format, isWithinInterval, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -47,7 +49,6 @@ export default function Financeiro() {
   const [dialogConfirmDelete, setDialogConfirmDelete] = useState(false);
   const [contaSelecionada, setContaSelecionada] = useState<ContaPagar | ContaReceber | null>(null);
   const [tipoContaDelete, setTipoContaDelete] = useState<'pagar' | 'receber'>('pagar');
-  const [mostrarGraficos, setMostrarGraficos] = useState(true);
 
   // Filtros separados para cada aba
   const [filtrosPagar, setFiltrosPagar] = useState<FiltrosFinanceiro>(filtrosIniciais);
@@ -99,6 +100,21 @@ export default function Financeiro() {
     });
   }, [contasReceber, filtrosReceber]);
 
+  // Calcular valores pagas/recebidas no mês
+  const pagasNoMes = useMemo(() => {
+    const mesAtual = new Date().getMonth();
+    return contasPagar
+      .filter(c => c.status === 'pago' && c.data_pagamento && new Date(c.data_pagamento).getMonth() === mesAtual)
+      .reduce((sum, c) => sum + Number(c.valor), 0);
+  }, [contasPagar]);
+
+  const recebidasNoMes = useMemo(() => {
+    const mesAtual = new Date().getMonth();
+    return contasReceber
+      .filter(c => c.status === 'recebido' && c.data_recebimento && new Date(c.data_recebimento).getMonth() === mesAtual)
+      .reduce((sum, c) => sum + Number(c.valor), 0);
+  }, [contasReceber]);
+
   const stats = useMemo(() => {
     const receitasEventos = eventos.reduce((acc, evento) => {
       const receitas = evento.financeiro?.receitas || [];
@@ -119,6 +135,9 @@ export default function Financeiro() {
       .filter(d => d.dadosReembolso?.statusPagamento === 'aprovado')
       .reduce((acc, d) => acc + (d.dadosReembolso?.valorTotal || 0), 0);
 
+    const reembolsosCount = demandasReembolso
+      .filter(d => d.dadosReembolso?.statusPagamento === 'aprovado').length;
+
     const totalReceitas = receitasEventos;
     const totalDespesas = despesasEventos + reembolsosPagos;
     const lucro = totalReceitas - totalDespesas;
@@ -137,6 +156,7 @@ export default function Financeiro() {
       margemLucro,
       reembolsosPagos,
       reembolsosPendentes,
+      reembolsosCount,
       contasPagarPendentes,
       contasPagarVencidas,
       contasReceberPendentes,
@@ -207,118 +227,59 @@ export default function Financeiro() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">Financeiro</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">Visão consolidada das finanças</p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setMostrarGraficos(!mostrarGraficos)}
-            className="gap-2"
-          >
-            <BarChart3 className="h-4 w-4" />
-            {mostrarGraficos ? 'Ocultar Gráficos' : 'Mostrar Gráficos'}
-          </Button>
+        <div className="flex flex-wrap gap-2">
+          <FinanceiroChartsDrawer contasPagar={contasPagar} contasReceber={contasReceber} />
           <RelatorioFinanceiroDialog contasPagar={contasPagar} contasReceber={contasReceber} />
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Padronizados com StatCard */}
       <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="smooth-hover">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">Receitas Totais</CardTitle>
-              <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                <ArrowUpRight className="h-4 w-4 text-green-600 dark:text-green-400" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {formatCurrency(stats.totalReceitas)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">De {eventos.length} eventos</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Receitas Totais"
+          value={formatCurrency(stats.totalReceitas)}
+          subtitle={`De ${eventos.length} eventos`}
+          icon={ArrowUpRight}
+          variant="success"
+        />
 
-        <Card className="smooth-hover">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">Despesas Totais</CardTitle>
-              <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                <ArrowDownRight className="h-4 w-4 text-red-600 dark:text-red-400" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-              {formatCurrency(stats.totalDespesas)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Incluindo reembolsos</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Despesas Totais"
+          value={formatCurrency(stats.totalDespesas)}
+          subtitle="Incluindo reembolsos"
+          icon={ArrowDownRight}
+          variant="danger"
+        />
 
-        <Card className="smooth-hover">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">Lucro Líquido</CardTitle>
-              <div className={`p-2 rounded-lg ${stats.lucro >= 0 ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'}`}>
-                {stats.lucro >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${stats.lucro >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-              {formatCurrency(stats.lucro)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Margem: {stats.margemLucro.toFixed(1)}%</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Lucro Líquido"
+          value={formatCurrency(stats.lucro)}
+          subtitle={`Margem: ${stats.margemLucro.toFixed(1)}%`}
+          icon={stats.lucro >= 0 ? TrendingUp : TrendingDown}
+          variant={stats.lucro >= 0 ? 'success' : 'danger'}
+        />
 
-        <Card className="smooth-hover">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium">Reembolsos Pendentes</CardTitle>
-              <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
-                <DollarSign className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-              {formatCurrency(stats.reembolsosPendentes)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">A serem pagos</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Reembolsos Pendentes"
+          value={formatCurrency(stats.reembolsosPendentes)}
+          subtitle={`${stats.reembolsosCount} a serem pagos`}
+          icon={DollarSign}
+          variant="warning"
+        />
       </div>
 
-      {/* Gráficos */}
-      {mostrarGraficos && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <FluxoCaixaChart contasPagar={contasPagar} contasReceber={contasReceber} meses={6} />
-          <DespesasPorCategoriaChart contasPagar={contasPagar} />
-          <div className="lg:col-span-2">
-            <VencimentosProximosChart contasPagar={contasPagar} contasReceber={contasReceber} />
-          </div>
-        </div>
-      )}
-
-      {/* Tabs */}
+      {/* Tabs - Simplificadas (removido tab Fluxo de Caixa) */}
       <Tabs defaultValue="eventos" className="space-y-4">
         <TabsList className="glass-card">
           <TabsTrigger value="eventos">Por Evento</TabsTrigger>
           <TabsTrigger value="pagar">Contas a Pagar</TabsTrigger>
           <TabsTrigger value="receber">Contas a Receber</TabsTrigger>
-          <TabsTrigger value="fluxo">Fluxo de Caixa</TabsTrigger>
           <TabsTrigger value="reembolsos">Reembolsos</TabsTrigger>
         </TabsList>
 
@@ -357,15 +318,15 @@ export default function Financeiro() {
                     <div className="grid grid-cols-4 gap-6 text-right items-center">
                       <div>
                         <p className="text-xs text-muted-foreground">Receita</p>
-                        <p className="font-semibold text-green-600">{formatCurrency(evento.receita)}</p>
+                        <p className="font-semibold text-success">{formatCurrency(evento.receita)}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Despesa</p>
-                        <p className="font-semibold text-red-600">{formatCurrency(evento.despesa)}</p>
+                        <p className="font-semibold text-destructive">{formatCurrency(evento.despesa)}</p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Lucro</p>
-                        <p className={`font-semibold ${evento.lucro >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <p className={`font-semibold ${evento.lucro >= 0 ? 'text-success' : 'text-destructive'}`}>
                           {formatCurrency(evento.lucro)}
                         </p>
                       </div>
@@ -387,42 +348,17 @@ export default function Financeiro() {
         </TabsContent>
 
         <TabsContent value="pagar" className="space-y-4">
+          {/* Header com barra de resumo e botão */}
           <div className="flex flex-col lg:flex-row justify-between gap-4">
-            <div className="grid gap-4 md:grid-cols-3 flex-1">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Pendente</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-destructive">
-                    {formatCurrency(stats.contasPagarPendentes)}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Vencidas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-destructive">
-                    {formatCurrency(stats.contasPagarVencidas)}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Pagas no Mês</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-primary">
-                    {formatCurrency(contasPagar.filter(c => c.status === 'pago' && c.data_pagamento && new Date(c.data_pagamento).getMonth() === new Date().getMonth()).reduce((sum, c) => sum + Number(c.valor), 0))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <FinanceiroSummaryBar
+              pendente={stats.contasPagarPendentes}
+              vencidas={stats.contasPagarVencidas}
+              pagasNoMes={pagasNoMes}
+              tipo="pagar"
+            />
             <Button onClick={() => setDialogNovaPagar(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Nova Conta a Pagar
+              Nova Conta
             </Button>
           </div>
 
@@ -444,42 +380,17 @@ export default function Financeiro() {
         </TabsContent>
 
         <TabsContent value="receber" className="space-y-4">
+          {/* Header com barra de resumo e botão */}
           <div className="flex flex-col lg:flex-row justify-between gap-4">
-            <div className="grid gap-4 md:grid-cols-3 flex-1">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Pendente</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-primary">
-                    {formatCurrency(stats.contasReceberPendentes)}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Vencidas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-destructive">
-                    {formatCurrency(stats.contasReceberVencidas)}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Recebidas no Mês</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-primary">
-                    {formatCurrency(contasReceber.filter(c => c.status === 'recebido' && c.data_recebimento && new Date(c.data_recebimento).getMonth() === new Date().getMonth()).reduce((sum, c) => sum + Number(c.valor), 0))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <FinanceiroSummaryBar
+              pendente={stats.contasReceberPendentes}
+              vencidas={stats.contasReceberVencidas}
+              pagasNoMes={recebidasNoMes}
+              tipo="receber"
+            />
             <Button onClick={() => setDialogNovaReceber(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Nova Conta a Receber
+              Nova Conta
             </Button>
           </div>
 
@@ -499,39 +410,6 @@ export default function Financeiro() {
           />
         </TabsContent>
 
-        <TabsContent value="fluxo" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Fluxo de Caixa</CardTitle>
-              <CardDescription>Entradas e saídas consolidadas</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Total de Entradas</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {formatCurrency(stats.totalReceitas)}
-                    </p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Total de Saídas</p>
-                    <p className="text-2xl font-bold text-red-600">
-                      {formatCurrency(stats.totalDespesas)}
-                    </p>
-                  </div>
-                </div>
-                <div className="p-4 border rounded-lg bg-accent/50">
-                  <p className="text-sm text-muted-foreground mb-1">Saldo</p>
-                  <p className={`text-3xl font-bold ${stats.lucro >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatCurrency(stats.lucro)}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="reembolsos" className="space-y-4">
           <Card>
             <CardHeader>
@@ -539,26 +417,28 @@ export default function Financeiro() {
               <CardDescription>Lista completa de reembolsos solicitados</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4 mb-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Reembolsos Pagos</p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {formatCurrency(stats.reembolsosPagos)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {demandasReembolso.filter(d => d.dadosReembolso?.statusPagamento === 'pago').length} reembolsos
-                    </p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground mb-1">Pendentes de Pagamento</p>
-                    <p className="text-2xl font-bold text-orange-600">
-                      {formatCurrency(stats.reembolsosPendentes)}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {demandasReembolso.filter(d => d.dadosReembolso?.statusPagamento === 'aprovado').length} reembolsos
-                    </p>
-                  </div>
+              {/* Resumo compacto em badges */}
+              <div className="flex flex-wrap items-center gap-3 p-3 bg-muted/30 border rounded-lg mb-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Pagos:</span>
+                  <Badge variant="secondary" className="font-bold text-success">
+                    {formatCurrency(stats.reembolsosPagos)}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    ({demandasReembolso.filter(d => d.dadosReembolso?.statusPagamento === 'pago').length})
+                  </span>
+                </div>
+                
+                <div className="h-4 w-px bg-border hidden sm:block" />
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Pendentes:</span>
+                  <Badge variant="outline" className="font-bold text-warning border-warning/30">
+                    {formatCurrency(stats.reembolsosPendentes)}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    ({stats.reembolsosCount})
+                  </span>
                 </div>
               </div>
 
