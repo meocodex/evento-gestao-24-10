@@ -1,9 +1,8 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { transformEvento } from './transformEvento';
 import { Evento } from '@/types/eventos';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useEffect } from 'react';
 import { SearchResultRow } from '@/types/utils';
 
 interface EventosQueryResult {
@@ -12,7 +11,6 @@ interface EventosQueryResult {
 }
 
 export function useEventosQueries(page = 1, pageSize = 50, searchTerm?: string, enabled = true) {
-  const queryClient = useQueryClient();
   // Debounce do termo de busca para evitar queries desnecessárias
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -130,31 +128,11 @@ export function useEventosQueries(page = 1, pageSize = 50, searchTerm?: string, 
       
       return { eventos, totalCount: count || 0 };
     },
-    staleTime: 1000 * 60 * 5, // 5 minutos (eventos mudam com frequência moderada)
+    staleTime: 1000 * 60 * 5, // 5 minutos
     gcTime: 1000 * 60 * 30,
   });
 
-  // Realtime listener para eventos
-  useEffect(() => {
-    const channel = supabase
-      .channel('eventos-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'eventos'
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['eventos'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime é gerenciado pelo useRealtimeHub centralizado
 
   return {
     eventos: (data?.eventos || []) as Evento[],

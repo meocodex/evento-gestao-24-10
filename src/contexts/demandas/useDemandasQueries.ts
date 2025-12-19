@@ -1,9 +1,8 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { transformDemanda } from './transformDemanda';
 import { Demanda } from '@/types/demandas';
 import { useDebounce } from '@/hooks/useDebounce';
-import { useEffect } from 'react';
 import { SearchResultRow, RawDemandaFromDB } from '@/types/utils';
 
 // Interface para demanda com relações do banco
@@ -12,7 +11,6 @@ interface RawDemandaWithRelations extends RawDemandaFromDB {
 }
 
 export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string, enabled = true) {
-  const queryClient = useQueryClient();
   // Debounce do termo de busca
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -88,41 +86,11 @@ export function useDemandasQueries(page = 1, pageSize = 20, searchTerm?: string,
         totalCount: count || 0
       };
     },
-    staleTime: 1000 * 60 * 2, // 2 minutos (com real-time não precisa ser tão baixo)
+    staleTime: 1000 * 60 * 5, // 5 minutos (aumentado - realtime cuida das atualizações)
     gcTime: 1000 * 60 * 15,
   });
 
-  // Realtime listeners para demandas e tabelas relacionadas
-  useEffect(() => {
-    const channel = supabase
-      .channel('demandas-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'demandas' },
-        () => queryClient.invalidateQueries({ queryKey: ['demandas'] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'demandas_comentarios' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['demandas'] });
-          queryClient.refetchQueries({ queryKey: ['demandas'], type: 'active' });
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'demandas_anexos' },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['demandas'] });
-          queryClient.refetchQueries({ queryKey: ['demandas'], type: 'active' });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime é gerenciado pelo useRealtimeHub centralizado
 
   return {
     demandas: data?.demandas || [],

@@ -142,22 +142,22 @@ export function usePrefetchPages() {
       }
     };
 
-    // Mapa de prefetch: define quais dados carregar para cada rota
+    // Mapa de prefetch simplificado: apenas recursos essenciais
     const prefetchMap: Record<string, Array<keyof typeof fetchFunctions>> = {
-      '/dashboard': ['eventos', 'clientes'],
-      '/eventos': ['clientes', 'demandas', 'estoque', 'equipe'],
-      '/clientes': ['eventos'],
-      '/demandas': ['eventos', 'equipe'],
-      '/estoque': ['eventos'],
-      '/equipe': ['eventos'],
-      '/contratos': ['clientes', 'eventos'],
-      '/transportadoras': ['eventos'],
+      '/dashboard': ['eventos'],
+      '/eventos': ['clientes'],
+      '/clientes': [],
+      '/demandas': [],
+      '/estoque': [],
+      '/equipe': [],
+      '/contratos': ['clientes'],
+      '/transportadoras': [],
     };
 
     const currentPath = location.pathname.split('/')[1] ? `/${location.pathname.split('/')[1]}` : '/dashboard';
     const resourcesToPrefetch = prefetchMap[currentPath] || [];
 
-    // Prefetch com delay para não impactar a navegação atual
+    // Prefetch com delay maior para não impactar a navegação atual
     const timeoutId = setTimeout(() => {
       resourcesToPrefetch.forEach(resource => {
         if (resource === 'eventos') {
@@ -172,28 +172,10 @@ export function usePrefetchPages() {
             queryFn: fetchFunctions.clientes,
             staleTime: 1000 * 60 * 10,
           });
-        } else if (resource === 'demandas') {
-          queryClient.prefetchQuery({
-            queryKey: ['demandas', 1, 20],
-            queryFn: fetchFunctions.demandas,
-            staleTime: 1000 * 60 * 10,
-          });
-        } else if (resource === 'estoque') {
-          queryClient.prefetchQuery({
-            queryKey: ['materiais_estoque', 1, 50, undefined],
-            queryFn: fetchFunctions.estoque,
-            staleTime: 1000 * 60 * 5,
-          });
-        } else if (resource === 'equipe') {
-          queryClient.prefetchQuery({
-            queryKey: ['equipe-operacional', 1, 50, undefined],
-            queryFn: fetchFunctions.equipe,
-            staleTime: 1000 * 60 * 30,
-          });
         }
       });
       isPrefetchingRef.current = false;
-    }, 1000);
+    }, 2000); // Aumentado para 2 segundos
 
     return () => {
       clearTimeout(timeoutId);
