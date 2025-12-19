@@ -135,12 +135,12 @@ export function FiltrosPeriodo({
         </Popover>
 
         {/* Filtro de Status */}
-        <Select value={filtros.status} onValueChange={(value) => onFiltrosChange({ ...filtros, status: value })}>
+        <Select value={filtros.status || 'all'} onValueChange={(value) => onFiltrosChange({ ...filtros, status: value === 'all' ? '' : value })}>
           <SelectTrigger className="w-[140px] h-9">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos</SelectItem>
+            <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="pendente">Pendente</SelectItem>
             {tipo === 'pagar' ? (
               <SelectItem value="pago">Pago</SelectItem>
@@ -154,12 +154,12 @@ export function FiltrosPeriodo({
 
         {/* Filtro de Categoria */}
         {categorias.length > 0 && (
-          <Select value={filtros.categoria} onValueChange={(value) => onFiltrosChange({ ...filtros, categoria: value })}>
+          <Select value={filtros.categoria || 'all'} onValueChange={(value) => onFiltrosChange({ ...filtros, categoria: value === 'all' ? '' : value })}>
             <SelectTrigger className="w-[160px] h-9">
               <SelectValue placeholder="Categoria" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas</SelectItem>
+              <SelectItem value="all">Todas</SelectItem>
               {categorias.map((cat) => (
                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
               ))}
@@ -169,12 +169,12 @@ export function FiltrosPeriodo({
 
         {/* Filtro de Fornecedor/Cliente */}
         {tipo === 'pagar' && fornecedores.length > 0 && (
-          <Select value={filtros.fornecedor} onValueChange={(value) => onFiltrosChange({ ...filtros, fornecedor: value })}>
+          <Select value={filtros.fornecedor || 'all'} onValueChange={(value) => onFiltrosChange({ ...filtros, fornecedor: value === 'all' ? '' : value })}>
             <SelectTrigger className="w-[160px] h-9">
               <SelectValue placeholder="Fornecedor" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               {fornecedores.map((f) => (
                 <SelectItem key={f} value={f}>{f}</SelectItem>
               ))}
@@ -183,12 +183,12 @@ export function FiltrosPeriodo({
         )}
 
         {tipo === 'receber' && clientes.length > 0 && (
-          <Select value={filtros.cliente} onValueChange={(value) => onFiltrosChange({ ...filtros, cliente: value })}>
+          <Select value={filtros.cliente || 'all'} onValueChange={(value) => onFiltrosChange({ ...filtros, cliente: value === 'all' ? '' : value })}>
             <SelectTrigger className="w-[160px] h-9">
               <SelectValue placeholder="Cliente" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               {clientes.map((c) => (
                 <SelectItem key={c} value={c}>{c}</SelectItem>
               ))}
