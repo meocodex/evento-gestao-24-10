@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { AnexosUpload } from './AnexosUpload';
+import { ClienteSelectFinanceiro } from './ClienteSelectFinanceiro';
+import { ResponsavelSelect } from './ResponsavelSelect';
 import { useContasReceber } from '@/hooks/financeiro';
 import { contaReceberSchema } from '@/lib/validations/financeiro';
 import { toast } from 'sonner';
@@ -38,6 +40,8 @@ export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSh
 
   const status = watch('status');
   const recorrencia = watch('recorrencia');
+  const cliente = watch('cliente');
+  const responsavel = watch('responsavel');
 
   const valorTotal = quantidade * valorUnitario;
 
@@ -94,8 +98,11 @@ export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSh
           </div>
 
           <div>
-            <Label htmlFor="cliente">Cliente</Label>
-            <Input id="cliente" {...register('cliente')} />
+            <Label>Cliente</Label>
+            <ClienteSelectFinanceiro 
+              value={cliente || ''} 
+              onChange={(value) => setValue('cliente', value)} 
+            />
           </div>
         </div>
 
@@ -195,8 +202,11 @@ export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSh
         )}
 
         <div>
-          <Label htmlFor="responsavel">Responsável</Label>
-          <Input id="responsavel" {...register('responsavel')} />
+          <Label>Responsável</Label>
+          <ResponsavelSelect 
+            value={responsavel || ''} 
+            onChange={(value) => setValue('responsavel', value)} 
+          />
         </div>
 
         <div>
