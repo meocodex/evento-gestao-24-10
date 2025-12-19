@@ -8,6 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { AnexosUpload } from './AnexosUpload';
+import { CategoriaSelect } from './CategoriaSelect';
+import { FornecedorCombobox } from './FornecedorCombobox';
+import { ResponsavelSelect } from './ResponsavelSelect';
 import { useContasPagar } from '@/hooks/financeiro';
 import { contaPagarSchema } from '@/lib/validations/financeiro';
 import { toast } from 'sonner';
@@ -37,6 +40,9 @@ export function NovaContaPagarSheet({ open, onOpenChange }: NovaContaPagarSheetP
 
   const status = watch('status');
   const recorrencia = watch('recorrencia');
+  const categoria = watch('categoria');
+  const fornecedor = watch('fornecedor');
+  const responsavel = watch('responsavel');
 
   const valorTotal = quantidade * valorUnitario;
 
@@ -78,14 +84,20 @@ export function NovaContaPagarSheet({ open, onOpenChange }: NovaContaPagarSheetP
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="categoria">Categoria *</Label>
-            <Input id="categoria" {...register('categoria')} placeholder="Ex: Infraestrutura" />
+            <Label>Categoria *</Label>
+            <CategoriaSelect 
+              value={categoria || ''} 
+              onChange={(value) => setValue('categoria', value)} 
+            />
             {errors.categoria && <p className="text-sm text-destructive">{errors.categoria.message}</p>}
           </div>
 
           <div>
-            <Label htmlFor="fornecedor">Fornecedor</Label>
-            <Input id="fornecedor" {...register('fornecedor')} />
+            <Label>Fornecedor</Label>
+            <FornecedorCombobox 
+              value={fornecedor || ''} 
+              onChange={(value) => setValue('fornecedor', value)} 
+            />
           </div>
         </div>
 
@@ -185,8 +197,11 @@ export function NovaContaPagarSheet({ open, onOpenChange }: NovaContaPagarSheetP
         )}
 
         <div>
-          <Label htmlFor="responsavel">Responsável</Label>
-          <Input id="responsavel" {...register('responsavel')} />
+          <Label>Responsável</Label>
+          <ResponsavelSelect 
+            value={responsavel || ''} 
+            onChange={(value) => setValue('responsavel', value)} 
+          />
         </div>
 
         <div>
