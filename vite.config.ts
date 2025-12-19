@@ -46,10 +46,33 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Chunks otimizados - menos fragmentação
+          // Core vendor - React e roteamento
           "vendor": ["react", "react-dom", "react-router-dom"],
-          "ui": ["@radix-ui/react-dialog", "@radix-ui/react-dropdown-menu", "@radix-ui/react-select", "@radix-ui/react-tabs", "@radix-ui/react-popover"],
+          // UI components - Radix UI
+          "ui": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-select",
+            "@radix-ui/react-tabs",
+            "@radix-ui/react-popover",
+            "@radix-ui/react-accordion",
+            "@radix-ui/react-checkbox",
+            "@radix-ui/react-radio-group",
+            "@radix-ui/react-switch",
+            "@radix-ui/react-tooltip",
+          ],
+          // Data fetching e state
           "data": ["@tanstack/react-query", "@supabase/supabase-js"],
+          // PDF generation
+          "pdf": ["jspdf", "jspdf-autotable"],
+          // Forms
+          "forms": ["react-hook-form", "zod", "@hookform/resolvers"],
+          // Charts
+          "charts": ["recharts"],
+          // Date utilities
+          "dates": ["date-fns"],
+          // Drag and drop
+          "dnd": ["@dnd-kit/core", "@dnd-kit/sortable"],
         },
       },
     },

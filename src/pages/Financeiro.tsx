@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { DollarSign, TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight, Eye, Receipt, Plus } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight, Eye, Receipt, Plus, BarChart3 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -17,8 +17,20 @@ import { TabelaContasReceber } from '@/components/financeiro/TabelaContasReceber
 import { MarcarPagoDialog } from '@/components/financeiro/MarcarPagoDialog';
 import { MarcarRecebidoDialog } from '@/components/financeiro/MarcarRecebidoDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { format } from 'date-fns';
+import { FiltrosPeriodo, type FiltrosFinanceiro } from '@/components/financeiro/FiltrosPeriodo';
+import { FluxoCaixaChart, DespesasPorCategoriaChart, VencimentosProximosChart } from '@/components/financeiro/FinanceiroCharts';
+import { RelatorioFinanceiroDialog } from '@/components/financeiro/RelatorioFinanceiroDialog';
+import { format, isWithinInterval, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+
+const filtrosIniciais: FiltrosFinanceiro = {
+  dataInicio: undefined,
+  dataFim: undefined,
+  status: '',
+  categoria: '',
+  fornecedor: '',
+  cliente: '',
+};
 
 export default function Financeiro() {
   const { eventos } = useEventos();
@@ -35,6 +47,57 @@ export default function Financeiro() {
   const [dialogConfirmDelete, setDialogConfirmDelete] = useState(false);
   const [contaSelecionada, setContaSelecionada] = useState<ContaPagar | ContaReceber | null>(null);
   const [tipoContaDelete, setTipoContaDelete] = useState<'pagar' | 'receber'>('pagar');
+  const [mostrarGraficos, setMostrarGraficos] = useState(true);
+
+  // Filtros separados para cada aba
+  const [filtrosPagar, setFiltrosPagar] = useState<FiltrosFinanceiro>(filtrosIniciais);
+  const [filtrosReceber, setFiltrosReceber] = useState<FiltrosFinanceiro>(filtrosIniciais);
+
+  // Extrair categorias e fornecedores/clientes únicos
+  const categoriasPagar = useMemo(() => 
+    [...new Set(contasPagar.map(c => c.categoria).filter(Boolean))],
+    [contasPagar]
+  );
+
+  const fornecedores = useMemo(() => 
+    [...new Set(contasPagar.map(c => c.fornecedor).filter((f): f is string => Boolean(f)))],
+    [contasPagar]
+  );
+
+  const clientes = useMemo(() => 
+    [...new Set(contasReceber.map(c => c.cliente).filter((c): c is string => Boolean(c)))],
+    [contasReceber]
+  );
+
+  // Aplicar filtros às contas
+  const contasPagarFiltradas = useMemo(() => {
+    return contasPagar.filter(conta => {
+      if (filtrosPagar.dataInicio && filtrosPagar.dataFim) {
+        const dataVenc = parseISO(conta.data_vencimento);
+        if (!isWithinInterval(dataVenc, { start: filtrosPagar.dataInicio, end: filtrosPagar.dataFim })) {
+          return false;
+        }
+      }
+      if (filtrosPagar.status && conta.status !== filtrosPagar.status) return false;
+      if (filtrosPagar.categoria && conta.categoria !== filtrosPagar.categoria) return false;
+      if (filtrosPagar.fornecedor && conta.fornecedor !== filtrosPagar.fornecedor) return false;
+      return true;
+    });
+  }, [contasPagar, filtrosPagar]);
+
+  const contasReceberFiltradas = useMemo(() => {
+    return contasReceber.filter(conta => {
+      if (filtrosReceber.dataInicio && filtrosReceber.dataFim) {
+        const dataVenc = parseISO(conta.data_vencimento);
+        if (!isWithinInterval(dataVenc, { start: filtrosReceber.dataInicio, end: filtrosReceber.dataFim })) {
+          return false;
+        }
+      }
+      if (filtrosReceber.status && conta.status !== filtrosReceber.status) return false;
+      if (filtrosReceber.cliente && conta.cliente !== filtrosReceber.cliente) return false;
+      return true;
+    });
+  }, [contasReceber, filtrosReceber]);
 
   const stats = useMemo(() => {
     const receitasEventos = eventos.reduce((acc, evento) => {
@@ -60,6 +123,12 @@ export default function Financeiro() {
     const lucro = totalReceitas - totalDespesas;
     const margemLucro = totalReceitas > 0 ? (lucro / totalReceitas) * 100 : 0;
 
+    // Estatísticas de contas
+    const contasPagarPendentes = contasPagar.filter(c => c.status === 'pendente').reduce((sum, c) => sum + Number(c.valor), 0);
+    const contasPagarVencidas = contasPagar.filter(c => c.status === 'vencido').reduce((sum, c) => sum + Number(c.valor), 0);
+    const contasReceberPendentes = contasReceber.filter(c => c.status === 'pendente').reduce((sum, c) => sum + Number(c.valor), 0);
+    const contasReceberVencidas = contasReceber.filter(c => c.status === 'vencido').reduce((sum, c) => sum + Number(c.valor), 0);
+
     return {
       totalReceitas,
       totalDespesas,
@@ -67,8 +136,12 @@ export default function Financeiro() {
       margemLucro,
       reembolsosPagos,
       reembolsosPendentes,
+      contasPagarPendentes,
+      contasPagarVencidas,
+      contasReceberPendentes,
+      contasReceberVencidas,
     };
-  }, [eventos, demandas]);
+  }, [eventos, demandas, contasPagar, contasReceber]);
 
   const eventosFinanceiros = useMemo(() => {
     return eventos.map(evento => {
@@ -133,368 +206,410 @@ export default function Financeiro() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">Financeiro</h1>
           <p className="text-sm sm:text-base text-muted-foreground mt-1">Visão consolidada das finanças</p>
         </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card className="smooth-hover">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Receitas Totais</CardTitle>
-                <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                  <ArrowUpRight className="h-4 w-4 text-green-600 dark:text-green-400" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {formatCurrency(stats.totalReceitas)}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">De {eventos.length} eventos</p>
-            </CardContent>
-          </Card>
-
-          <Card className="smooth-hover">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Despesas Totais</CardTitle>
-                <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                  <ArrowDownRight className="h-4 w-4 text-red-600 dark:text-red-400" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-600 dark:text-red-400">
-                {formatCurrency(stats.totalDespesas)}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Incluindo reembolsos</p>
-            </CardContent>
-          </Card>
-
-          <Card className="smooth-hover">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Lucro Líquido</CardTitle>
-                <div className={`p-2 rounded-lg ${stats.lucro >= 0 ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'}`}>
-                  {stats.lucro >= 0 ? (
-                    <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  ) : (
-                    <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${stats.lucro >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                {formatCurrency(stats.lucro)}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Margem: {stats.margemLucro.toFixed(1)}%</p>
-            </CardContent>
-          </Card>
-
-          <Card className="smooth-hover">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">Reembolsos Pendentes</CardTitle>
-                <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
-                  <DollarSign className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                {formatCurrency(stats.reembolsosPendentes)}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">A serem pagos</p>
-            </CardContent>
-          </Card>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setMostrarGraficos(!mostrarGraficos)}
+            className="gap-2"
+          >
+            <BarChart3 className="h-4 w-4" />
+            {mostrarGraficos ? 'Ocultar Gráficos' : 'Mostrar Gráficos'}
+          </Button>
+          <RelatorioFinanceiroDialog contasPagar={contasPagar} contasReceber={contasReceber} />
         </div>
+      </div>
 
-        {/* Tabs */}
-        <Tabs defaultValue="eventos" className="space-y-4">
-          <TabsList className="glass-card">
-            <TabsTrigger value="eventos">Por Evento</TabsTrigger>
-            <TabsTrigger value="pagar">Contas a Pagar</TabsTrigger>
-            <TabsTrigger value="receber">Contas a Receber</TabsTrigger>
-            <TabsTrigger value="fluxo">Fluxo de Caixa</TabsTrigger>
-            <TabsTrigger value="reembolsos">Reembolsos</TabsTrigger>
-          </TabsList>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="smooth-hover">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium">Receitas Totais</CardTitle>
+              <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                <ArrowUpRight className="h-4 w-4 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+              {formatCurrency(stats.totalReceitas)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">De {eventos.length} eventos</p>
+          </CardContent>
+        </Card>
 
-          <TabsContent value="eventos" className="space-y-4">
-            <Card className="smooth-hover">
-              <CardHeader>
-                <CardTitle>Resultado por Evento</CardTitle>
-                <CardDescription>Receitas, despesas e lucro de cada evento</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {eventosFinanceiros.map((evento) => (
-                    <div
-                      key={evento.id}
-                      className="flex items-center justify-between p-4 border rounded-lg smooth-hover cursor-pointer"
-                      onClick={() => {
-                        const eventoCompleto = eventos.find(e => e.id === evento.id);
-                        if (eventoCompleto) {
-                          setSelectedEvento(eventoCompleto);
-                          setDetailsOpen(true);
-                        }
-                      }}
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <h4 className="font-semibold">{evento.nome}</h4>
-                          <Badge variant={evento.status === 'finalizado' ? 'default' : 'secondary'}>
-                            {evento.status.replace('_', ' ')}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {format(new Date(evento.data), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+        <Card className="smooth-hover">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium">Despesas Totais</CardTitle>
+              <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                <ArrowDownRight className="h-4 w-4 text-red-600 dark:text-red-400" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+              {formatCurrency(stats.totalDespesas)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Incluindo reembolsos</p>
+          </CardContent>
+        </Card>
+
+        <Card className="smooth-hover">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium">Lucro Líquido</CardTitle>
+              <div className={`p-2 rounded-lg ${stats.lucro >= 0 ? 'bg-green-100 dark:bg-green-900/20' : 'bg-red-100 dark:bg-red-900/20'}`}>
+                {stats.lucro >= 0 ? (
+                  <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
+                ) : (
+                  <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-400" />
+                )}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className={`text-2xl font-bold ${stats.lucro >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {formatCurrency(stats.lucro)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Margem: {stats.margemLucro.toFixed(1)}%</p>
+          </CardContent>
+        </Card>
+
+        <Card className="smooth-hover">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium">Reembolsos Pendentes</CardTitle>
+              <div className="p-2 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
+                <DollarSign className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+              {formatCurrency(stats.reembolsosPendentes)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">A serem pagos</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Gráficos */}
+      {mostrarGraficos && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <FluxoCaixaChart contasPagar={contasPagar} contasReceber={contasReceber} meses={6} />
+          <DespesasPorCategoriaChart contasPagar={contasPagar} />
+          <div className="lg:col-span-2">
+            <VencimentosProximosChart contasPagar={contasPagar} contasReceber={contasReceber} />
+          </div>
+        </div>
+      )}
+
+      {/* Tabs */}
+      <Tabs defaultValue="eventos" className="space-y-4">
+        <TabsList className="glass-card">
+          <TabsTrigger value="eventos">Por Evento</TabsTrigger>
+          <TabsTrigger value="pagar">Contas a Pagar</TabsTrigger>
+          <TabsTrigger value="receber">Contas a Receber</TabsTrigger>
+          <TabsTrigger value="fluxo">Fluxo de Caixa</TabsTrigger>
+          <TabsTrigger value="reembolsos">Reembolsos</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="eventos" className="space-y-4">
+          <Card className="smooth-hover">
+            <CardHeader>
+              <CardTitle>Resultado por Evento</CardTitle>
+              <CardDescription>Receitas, despesas e lucro de cada evento</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {eventosFinanceiros.map((evento) => (
+                  <div
+                    key={evento.id}
+                    className="flex items-center justify-between p-4 border rounded-lg smooth-hover cursor-pointer"
+                    onClick={() => {
+                      const eventoCompleto = eventos.find(e => e.id === evento.id);
+                      if (eventoCompleto) {
+                        setSelectedEvento(eventoCompleto);
+                        setDetailsOpen(true);
+                      }
+                    }}
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <h4 className="font-semibold">{evento.nome}</h4>
+                        <Badge variant={evento.status === 'finalizado' ? 'default' : 'secondary'}>
+                          {evento.status.replace('_', ' ')}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {format(new Date(evento.data), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-4 gap-6 text-right items-center">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Receita</p>
+                        <p className="font-semibold text-green-600">{formatCurrency(evento.receita)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Despesa</p>
+                        <p className="font-semibold text-red-600">{formatCurrency(evento.despesa)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Lucro</p>
+                        <p className={`font-semibold ${evento.lucro >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {formatCurrency(evento.lucro)}
                         </p>
                       </div>
-                      <div className="grid grid-cols-4 gap-6 text-right items-center">
+                      <div>
+                        <Button size="sm" variant="ghost">
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ver
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {eventosFinanceiros.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">Nenhum evento cadastrado</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="pagar" className="space-y-4">
+          <div className="flex flex-col lg:flex-row justify-between gap-4">
+            <div className="grid gap-4 md:grid-cols-3 flex-1">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Pendente</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-destructive">
+                    {formatCurrency(stats.contasPagarPendentes)}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Vencidas</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-destructive">
+                    {formatCurrency(stats.contasPagarVencidas)}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Pagas no Mês</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary">
+                    {formatCurrency(contasPagar.filter(c => c.status === 'pago' && c.data_pagamento && new Date(c.data_pagamento).getMonth() === new Date().getMonth()).reduce((sum, c) => sum + Number(c.valor), 0))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <Button onClick={() => setDialogNovaPagar(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Conta a Pagar
+            </Button>
+          </div>
+
+          <FiltrosPeriodo
+            filtros={filtrosPagar}
+            onFiltrosChange={setFiltrosPagar}
+            categorias={categoriasPagar}
+            fornecedores={fornecedores}
+            tipo="pagar"
+          />
+
+          <TabelaContasPagar
+            contas={contasPagarFiltradas}
+            onDetalhes={() => {}}
+            onEditar={() => {}}
+            onMarcarPago={handleMarcarPago}
+            onExcluir={handleExcluirPagar}
+          />
+        </TabsContent>
+
+        <TabsContent value="receber" className="space-y-4">
+          <div className="flex flex-col lg:flex-row justify-between gap-4">
+            <div className="grid gap-4 md:grid-cols-3 flex-1">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Pendente</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary">
+                    {formatCurrency(stats.contasReceberPendentes)}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Vencidas</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-destructive">
+                    {formatCurrency(stats.contasReceberVencidas)}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Recebidas no Mês</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-primary">
+                    {formatCurrency(contasReceber.filter(c => c.status === 'recebido' && c.data_recebimento && new Date(c.data_recebimento).getMonth() === new Date().getMonth()).reduce((sum, c) => sum + Number(c.valor), 0))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            <Button onClick={() => setDialogNovaReceber(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nova Conta a Receber
+            </Button>
+          </div>
+
+          <FiltrosPeriodo
+            filtros={filtrosReceber}
+            onFiltrosChange={setFiltrosReceber}
+            clientes={clientes}
+            tipo="receber"
+          />
+
+          <TabelaContasReceber
+            contas={contasReceberFiltradas}
+            onDetalhes={() => {}}
+            onEditar={() => {}}
+            onMarcarRecebido={handleMarcarRecebido}
+            onExcluir={handleExcluirReceber}
+          />
+        </TabsContent>
+
+        <TabsContent value="fluxo" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Fluxo de Caixa</CardTitle>
+              <CardDescription>Entradas e saídas consolidadas</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-1">Total de Entradas</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {formatCurrency(stats.totalReceitas)}
+                    </p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-1">Total de Saídas</p>
+                    <p className="text-2xl font-bold text-red-600">
+                      {formatCurrency(stats.totalDespesas)}
+                    </p>
+                  </div>
+                </div>
+                <div className="p-4 border rounded-lg bg-accent/50">
+                  <p className="text-sm text-muted-foreground mb-1">Saldo</p>
+                  <p className={`text-3xl font-bold ${stats.lucro >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {formatCurrency(stats.lucro)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="reembolsos" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Reembolsos</CardTitle>
+              <CardDescription>Lista completa de reembolsos solicitados</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 mb-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-1">Reembolsos Pagos</p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {formatCurrency(stats.reembolsosPagos)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {demandas.filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'pago').length} reembolsos
+                    </p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-muted-foreground mb-1">Pendentes de Pagamento</p>
+                    <p className="text-2xl font-bold text-orange-600">
+                      {formatCurrency(stats.reembolsosPendentes)}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {demandas.filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'aprovado').length} reembolsos
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {demandas
+                  .filter(d => d.categoria === 'reembolso')
+                  .map(demanda => (
+                    <div key={demanda.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
+                      <div className="flex justify-between items-start mb-2">
                         <div>
-                          <p className="text-xs text-muted-foreground">Receita</p>
-                          <p className="font-semibold text-green-600">{formatCurrency(evento.receita)}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Despesa</p>
-                          <p className="font-semibold text-red-600">{formatCurrency(evento.despesa)}</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Lucro</p>
-                          <p className={`font-semibold ${evento.lucro >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {formatCurrency(evento.lucro)}
+                          <h4 className="font-semibold">{demanda.titulo}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Solicitante: {demanda.dadosReembolso?.membroEquipeNome}
                           </p>
+                          {demanda.eventoNome && (
+                            <p className="text-xs text-muted-foreground">
+                              Evento: {demanda.eventoNome}
+                            </p>
+                          )}
                         </div>
-                        <div>
-                          <Button size="sm" variant="ghost">
-                            <Eye className="h-4 w-4 mr-1" />
-                            Ver
-                          </Button>
+                        <div className="text-right">
+                          <p className="text-lg font-bold">
+                            {formatCurrency(demanda.dadosReembolso?.valorTotal || 0)}
+                          </p>
+                          <Badge variant={
+                            demanda.dadosReembolso?.statusPagamento === 'pago' ? 'default' :
+                            demanda.dadosReembolso?.statusPagamento === 'aprovado' ? 'secondary' :
+                            demanda.dadosReembolso?.statusPagamento === 'recusado' ? 'destructive' :
+                            'outline'
+                          }>
+                            {demanda.dadosReembolso?.statusPagamento || 'Pendente'}
+                          </Badge>
                         </div>
+                      </div>
+                      <div className="flex items-center gap-2 mt-3">
+                        <Receipt className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {demanda.dadosReembolso?.itens.length || 0} itens
+                        </span>
                       </div>
                     </div>
                   ))}
-                  {eventosFinanceiros.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">Nenhum evento cadastrado</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="pagar" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="grid gap-4 md:grid-cols-3 flex-1 mr-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Pendente</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-destructive">
-                      {formatCurrency(contasPagar.filter(c => c.status === 'pendente').reduce((sum, c) => sum + Number(c.valor), 0))}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Vencidas</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-destructive">
-                      {formatCurrency(contasPagar.filter(c => c.status === 'vencido').reduce((sum, c) => sum + Number(c.valor), 0))}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Pagas no Mês</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-primary">
-                      {formatCurrency(contasPagar.filter(c => c.status === 'pago' && c.data_pagamento && new Date(c.data_pagamento).getMonth() === new Date().getMonth()).reduce((sum, c) => sum + Number(c.valor), 0))}
-                    </div>
-                  </CardContent>
-                </Card>
+                {demandas.filter(d => d.categoria === 'reembolso').length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">
+                    Nenhum reembolso cadastrado
+                  </p>
+                )}
               </div>
-              <Button onClick={() => setDialogNovaPagar(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Nova Conta a Pagar
-              </Button>
-            </div>
-            <TabelaContasPagar
-              contas={contasPagar}
-              onDetalhes={() => {}}
-              onEditar={() => {}}
-              onMarcarPago={handleMarcarPago}
-              onExcluir={handleExcluirPagar}
-            />
-          </TabsContent>
-
-          <TabsContent value="receber" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div className="grid gap-4 md:grid-cols-3 flex-1 mr-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Pendente</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-primary">
-                      {formatCurrency(contasReceber.filter(c => c.status === 'pendente').reduce((sum, c) => sum + Number(c.valor), 0))}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Vencidas</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-destructive">
-                      {formatCurrency(contasReceber.filter(c => c.status === 'vencido').reduce((sum, c) => sum + Number(c.valor), 0))}
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Recebidas no Mês</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-primary">
-                      {formatCurrency(contasReceber.filter(c => c.status === 'recebido' && c.data_recebimento && new Date(c.data_recebimento).getMonth() === new Date().getMonth()).reduce((sum, c) => sum + Number(c.valor), 0))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              <Button onClick={() => setDialogNovaReceber(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Nova Conta a Receber
-              </Button>
-            </div>
-            <TabelaContasReceber
-              contas={contasReceber}
-              onDetalhes={() => {}}
-              onEditar={() => {}}
-              onMarcarRecebido={handleMarcarRecebido}
-              onExcluir={handleExcluirReceber}
-            />
-          </TabsContent>
-
-          <TabsContent value="fluxo" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Fluxo de Caixa</CardTitle>
-                <CardDescription>Entradas e saídas consolidadas</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 border rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-1">Total de Entradas</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {formatCurrency(stats.totalReceitas)}
-                      </p>
-                    </div>
-                    <div className="p-4 border rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-1">Total de Saídas</p>
-                      <p className="text-2xl font-bold text-red-600">
-                        {formatCurrency(stats.totalDespesas)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-4 border rounded-lg bg-accent/50">
-                    <p className="text-sm text-muted-foreground mb-1">Saldo</p>
-                    <p className={`text-3xl font-bold ${stats.lucro >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatCurrency(stats.lucro)}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="reembolsos" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Reembolsos</CardTitle>
-                <CardDescription>Lista completa de reembolsos solicitados</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4 mb-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 border rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-1">Reembolsos Pagos</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {formatCurrency(stats.reembolsosPagos)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {demandas.filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'pago').length} reembolsos
-                      </p>
-                    </div>
-                    <div className="p-4 border rounded-lg">
-                      <p className="text-sm text-muted-foreground mb-1">Pendentes de Pagamento</p>
-                      <p className="text-2xl font-bold text-orange-600">
-                        {formatCurrency(stats.reembolsosPendentes)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {demandas.filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'aprovado').length} reembolsos
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  {demandas
-                    .filter(d => d.categoria === 'reembolso')
-                    .map(demanda => (
-                      <div key={demanda.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h4 className="font-semibold">{demanda.titulo}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Solicitante: {demanda.dadosReembolso?.membroEquipeNome}
-                            </p>
-                            {demanda.eventoNome && (
-                              <p className="text-xs text-muted-foreground">
-                                Evento: {demanda.eventoNome}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <p className="text-lg font-bold">
-                              {formatCurrency(demanda.dadosReembolso?.valorTotal || 0)}
-                            </p>
-                            <Badge variant={
-                              demanda.dadosReembolso?.statusPagamento === 'pago' ? 'default' :
-                              demanda.dadosReembolso?.statusPagamento === 'aprovado' ? 'secondary' :
-                              demanda.dadosReembolso?.statusPagamento === 'recusado' ? 'destructive' :
-                              'outline'
-                            }>
-                              {demanda.dadosReembolso?.statusPagamento || 'Pendente'}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 mt-3">
-                          <Receipt className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">
-                            {demanda.dadosReembolso?.itens.length || 0} itens
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  {demandas.filter(d => d.categoria === 'reembolso').length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">
-                      Nenhum reembolso cadastrado
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
       {selectedEvento && (
         <EventoDetailsSheet
