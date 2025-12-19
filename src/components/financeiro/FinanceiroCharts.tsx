@@ -105,7 +105,7 @@ export function FluxoCaixaChart({ contasPagar, contasReceber, meses = 6 }: Finan
               <XAxis dataKey="mes" className="text-xs fill-muted-foreground" />
               <YAxis tickFormatter={formatCurrency} className="text-xs fill-muted-foreground" />
               <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value: number | string | Array<number | string>) => formatCurrency(Number(value))}
                 contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
                 labelStyle={{ color: 'hsl(var(--foreground))' }}
               />
@@ -189,7 +189,7 @@ export function DespesasPorCategoriaChart({ contasPagar }: { contasPagar: ContaP
                     <Cell key={`cell-${index}`} fill={COLORS.categorias[index % COLORS.categorias.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                <Tooltip formatter={(value: number | string | Array<number | string>) => formatCurrency(Number(value))} />
               </LazyPieChart>
             </ResponsiveContainer>
             <div className="flex-1 space-y-2">
@@ -277,7 +277,7 @@ export function VencimentosProximosChart({ contasPagar, contasReceber }: Finance
               <XAxis dataKey="dia" className="text-xs fill-muted-foreground" />
               <YAxis tickFormatter={formatCurrency} className="text-xs fill-muted-foreground" />
               <Tooltip
-                formatter={(value: number) => formatCurrency(value)}
+                formatter={(value: number | string | Array<number | string>) => formatCurrency(Number(value))}
                 contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }}
               />
               <Legend />
