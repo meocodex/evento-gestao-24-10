@@ -1,6 +1,5 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useEffect } from 'react';
 import { RotaTransportadoraDB } from '@/types/utils';
 
 export interface FiltrosTransportadora {
@@ -17,7 +16,6 @@ export function useTransportadorasQueries(
   pageSizeTransportadoras = 50,
   filtrosTransportadoras?: FiltrosTransportadora
 ) {
-  const queryClient = useQueryClient();
 
   const transportadorasResult = useQuery({
     queryKey: ['transportadoras', pageTransportadoras, pageSizeTransportadoras, filtrosTransportadoras],
@@ -81,26 +79,7 @@ export function useTransportadorasQueries(
     return data;
   };
 
-  // Realtime listeners para transportadoras e rotas
-  useEffect(() => {
-    const channel = supabase
-      .channel('transportadoras-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'transportadoras' },
-        () => queryClient.invalidateQueries({ queryKey: ['transportadoras'] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'transportadoras_rotas' },
-        () => queryClient.invalidateQueries({ queryKey: ['transportadoras'] })
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime é gerenciado pelo useRealtimeHub centralizado
 
   return {
     ...transportadorasResult,
@@ -115,8 +94,6 @@ export function useEnviosQueries(
   pageSizeEnvios = 50,
   filtrosEnvios?: FiltrosEnvio
 ) {
-  const queryClient = useQueryClient();
-
   const query = useQuery({
     queryKey: ['envios', pageEnvios, pageSizeEnvios, filtrosEnvios],
     queryFn: async () => {
@@ -146,21 +123,7 @@ export function useEnviosQueries(
     gcTime: 1000 * 60 * 60,
   });
 
-  // Realtime listener para envios
-  useEffect(() => {
-    const channel = supabase
-      .channel('envios-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'envios' },
-        () => queryClient.invalidateQueries({ queryKey: ['envios'] })
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime é gerenciado pelo useRealtimeHub centralizado
 
   return query;
 }

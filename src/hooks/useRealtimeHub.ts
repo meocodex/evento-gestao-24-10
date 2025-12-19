@@ -20,34 +20,55 @@ type TableName =
   | 'contas_pagar'
   | 'contas_receber'
   | 'contratos'
+  | 'contratos_templates'
   | 'envios'
   | 'transportadoras'
+  | 'transportadoras_rotas'
   | 'user_permissions'
   | 'profiles';
 
 // Mapeamento de tabelas para query keys que precisam ser invalidadas
 const TABLE_QUERY_MAP: Record<TableName, string[][]> = {
+  // Eventos e relacionados
   eventos: [['eventos'], ['dashboard-stats'], ['evento-detalhes']],
-  demandas: [['demandas'], ['dashboard-stats']],
-  demandas_comentarios: [['demandas'], ['demanda-detalhes']],
-  demandas_anexos: [['demandas'], ['demanda-detalhes']],
-  clientes: [['clientes']],
-  materiais_estoque: [['materiais_estoque'], ['estoque']],
-  materiais_seriais: [['materiais_estoque'], ['seriais']],
-  eventos_materiais_alocados: [['evento-detalhes'], ['materiais-alocados'], ['dashboard-stats']],
-  eventos_despesas: [['evento-detalhes'], ['eventos-financeiro']],
-  eventos_receitas: [['evento-detalhes'], ['eventos-financeiro']],
+  eventos_materiais_alocados: [['evento-detalhes'], ['eventos-materiais-alocados'], ['eventos-checklist'], ['materiais_estoque'], ['dashboard-stats']],
+  eventos_despesas: [['evento-detalhes'], ['eventos-despesas']],
+  eventos_receitas: [['evento-detalhes'], ['eventos-receitas']],
   eventos_equipe: [['evento-detalhes'], ['eventos-equipe']],
   eventos_checklist: [['evento-detalhes'], ['eventos-checklist']],
   eventos_timeline: [['evento-detalhes']],
-  equipe_operacional: [['equipe-operacional'], ['operacionais']],
-  contas_pagar: [['contas-pagar'], ['financeiro']],
-  contas_receber: [['contas-receber'], ['financeiro']],
+  
+  // Demandas
+  demandas: [['demandas'], ['dashboard-stats'], ['demandas-reembolso']],
+  demandas_comentarios: [['demandas'], ['demanda-detalhes']],
+  demandas_anexos: [['demandas'], ['demanda-detalhes']],
+  
+  // Clientes
+  clientes: [['clientes']],
+  
+  // Estoque
+  materiais_estoque: [['materiais_estoque']],
+  materiais_seriais: [['materiais_estoque']],
+  
+  // Equipe
+  equipe_operacional: [['equipe-operacional']],
+  
+  // Financeiro
+  contas_pagar: [['contas-pagar']],
+  contas_receber: [['contas-receber']],
+  
+  // Contratos
   contratos: [['contratos']],
-  envios: [['envios'], ['transportadoras']],
+  contratos_templates: [['contratos-templates']],
+  
+  // Transportadoras
+  envios: [['envios']],
   transportadoras: [['transportadoras']],
-  user_permissions: [['user-permissions']],
-  profiles: [['profiles']],
+  transportadoras_rotas: [['transportadoras']],
+  
+  // Usuários
+  user_permissions: [['user-permissions'], ['usuarios']],
+  profiles: [['profiles'], ['usuarios']],
 };
 
 // Singleton para garantir único canal em toda a aplicação

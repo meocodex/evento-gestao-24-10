@@ -1,12 +1,8 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { transformEvento } from './transformEvento';
-import { Evento } from '@/types/eventos';
-import { useEffect } from 'react';
 
 export function useEventoDetalhes(eventoId: string | null | undefined) {
-  const queryClient = useQueryClient();
-
   const query = useQuery({
     queryKey: ['evento-detalhes', eventoId],
     queryFn: async () => {
@@ -38,48 +34,7 @@ export function useEventoDetalhes(eventoId: string | null | undefined) {
     gcTime: 1000 * 60 * 15,
   });
 
-  // Realtime listeners para todas as tabelas relacionadas ao evento
-  useEffect(() => {
-    if (!eventoId) return;
-
-    const channel = supabase
-      .channel(`evento-detalhes-${eventoId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'eventos', filter: `id=eq.${eventoId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'eventos_timeline', filter: `evento_id=eq.${eventoId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'eventos_equipe', filter: `evento_id=eq.${eventoId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'eventos_receitas', filter: `evento_id=eq.${eventoId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'eventos_despesas', filter: `evento_id=eq.${eventoId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'eventos_cobrancas', filter: `evento_id=eq.${eventoId}` },
-        () => queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] })
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [eventoId, queryClient]);
+  // Realtime é gerenciado pelo useRealtimeHub centralizado
 
   return query;
 }

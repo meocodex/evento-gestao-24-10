@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { gerarTermoRetirada } from '@/utils/termoRetiradaPDF';
@@ -236,29 +235,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     },
   });
 
-  // Listener para updates em tempo real
-  useEffect(() => {
-    const channel = supabase
-      .channel(`evento-materiais-${eventoId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'eventos_materiais_alocados',
-          filter: `evento_id=eq.${eventoId}`
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['eventos-materiais-alocados', eventoId] });
-          queryClient.invalidateQueries({ queryKey: ['evento-detalhes', eventoId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [eventoId, queryClient]);
+  // Realtime é gerenciado pelo useRealtimeHub centralizado
 
   const registrarRetirada = useMutation({
     mutationFn: async (dados: {
