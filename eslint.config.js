@@ -21,6 +21,14 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      "@typescript-eslint/no-explicit-any": "error",
+    },
+  },
+  // Override para arquivos de teste - permite 'any' com warning
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "**/tests/**/*", "**/__tests__/**/*"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 );
