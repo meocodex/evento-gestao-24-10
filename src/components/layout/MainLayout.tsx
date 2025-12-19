@@ -1,6 +1,5 @@
-import { useEffect, Suspense } from 'react';
-import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { Suspense } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { NotificationCenter } from './NotificationCenter';
@@ -9,15 +8,17 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { usePrefetchPages } from '@/hooks/usePrefetchPages';
 import { NavigationLoadingBar } from '@/components/shared/NavigationLoadingBar';
 import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
+import { useRealtimeSubscription } from '@/hooks/useRealtimeHub';
 
 export function MainLayout() {
-  const { isAuthenticated } = useAuth();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const location = useLocation();
   
   // Prefetch inteligente de páginas relacionadas
   usePrefetchPages();
+  
+  // Ativar hub centralizado de realtime
+  useRealtimeSubscription();
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
