@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useEventos } from '@/hooks/eventos';
-import { useDemandas } from '@/hooks/demandas';
+import { useDemandasReembolso } from '@/hooks/demandas';
 import { useContasPagar, useContasReceber } from '@/hooks/financeiro';
 import { Evento } from '@/types/eventos';
 import type { ContaPagar, ContaReceber } from '@/types/financeiro';
@@ -34,7 +34,7 @@ const filtrosIniciais: FiltrosFinanceiro = {
 
 export default function Financeiro() {
   const { eventos } = useEventos();
-  const { demandas } = useDemandas(1, 1000);
+  const { data: demandasReembolso = [] } = useDemandasReembolso();
   const { contas: contasPagar, marcarComoPago, deletar: deletarContaPagar } = useContasPagar();
   const { contas: contasReceber, marcarComoRecebido, deletar: deletarContaReceber } = useContasReceber();
 
@@ -110,12 +110,13 @@ export default function Financeiro() {
       return acc + despesas.reduce((sum, d) => sum + d.valor, 0);
     }, 0);
 
-    const reembolsosPagos = demandas
-      .filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'pago')
+    // Usar apenas demandas de reembolso (query otimizada)
+    const reembolsosPagos = demandasReembolso
+      .filter(d => d.dadosReembolso?.statusPagamento === 'pago')
       .reduce((acc, d) => acc + (d.dadosReembolso?.valorTotal || 0), 0);
 
-    const reembolsosPendentes = demandas
-      .filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'aprovado')
+    const reembolsosPendentes = demandasReembolso
+      .filter(d => d.dadosReembolso?.statusPagamento === 'aprovado')
       .reduce((acc, d) => acc + (d.dadosReembolso?.valorTotal || 0), 0);
 
     const totalReceitas = receitasEventos;
@@ -141,7 +142,7 @@ export default function Financeiro() {
       contasReceberPendentes,
       contasReceberVencidas,
     };
-  }, [eventos, demandas, contasPagar, contasReceber]);
+  }, [eventos, demandasReembolso, contasPagar, contasReceber]);
 
   const eventosFinanceiros = useMemo(() => {
     return eventos.map(evento => {
@@ -546,7 +547,7 @@ export default function Financeiro() {
                       {formatCurrency(stats.reembolsosPagos)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {demandas.filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'pago').length} reembolsos
+                      {demandasReembolso.filter(d => d.dadosReembolso?.statusPagamento === 'pago').length} reembolsos
                     </p>
                   </div>
                   <div className="p-4 border rounded-lg">
@@ -555,16 +556,14 @@ export default function Financeiro() {
                       {formatCurrency(stats.reembolsosPendentes)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {demandas.filter(d => d.categoria === 'reembolso' && d.dadosReembolso?.statusPagamento === 'aprovado').length} reembolsos
+                      {demandasReembolso.filter(d => d.dadosReembolso?.statusPagamento === 'aprovado').length} reembolsos
                     </p>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                {demandas
-                  .filter(d => d.categoria === 'reembolso')
-                  .map(demanda => (
+                {demandasReembolso.map(demanda => (
                     <div key={demanda.id} className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
                       <div className="flex justify-between items-start mb-2">
                         <div>
@@ -600,7 +599,7 @@ export default function Financeiro() {
                       </div>
                     </div>
                   ))}
-                {demandas.filter(d => d.categoria === 'reembolso').length === 0 && (
+                {demandasReembolso.length === 0 && (
                   <p className="text-center text-muted-foreground py-8">
                     Nenhum reembolso cadastrado
                   </p>

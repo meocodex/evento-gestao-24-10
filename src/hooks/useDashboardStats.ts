@@ -1,6 +1,5 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useEffect } from 'react';
 import { startOfMonth, endOfMonth, addDays, isAfter, isBefore, differenceInDays } from 'date-fns';
 import type { ChecklistItem } from '@/types/eventos';
 
@@ -31,8 +30,6 @@ export interface DashboardStats {
 }
 
 export function useDashboardStats() {
-  const queryClient = useQueryClient();
-
   const query = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async (): Promise<DashboardStats> => {
@@ -167,35 +164,11 @@ export function useDashboardStats() {
         alertas,
       };
     },
-    staleTime: 1000 * 60 * 2,
-    gcTime: 1000 * 60 * 10,
+    staleTime: 1000 * 60 * 5, // 5 minutos (aumentado - realtime hub cuida das atualizações)
+    gcTime: 1000 * 60 * 15,
   });
 
-  // Realtime listeners apenas para eventos e demandas
-  useEffect(() => {
-    const channel = supabase
-      .channel('dashboard-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'eventos' },
-        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'eventos_materiais_alocados' },
-        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'demandas' },
-        () => queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime é gerenciado pelo useRealtimeHub centralizado
 
   return query;
 }

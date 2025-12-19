@@ -1,4 +1,4 @@
-import { useMemo, lazy, Suspense } from 'react';
+import { useMemo, memo, lazy, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Line, Bar, Cell, Pie, Area } from 'recharts';
@@ -6,7 +6,7 @@ import { format, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths, isWit
 import { ptBR } from 'date-fns/locale';
 import type { ContaPagar, ContaReceber } from '@/types/financeiro';
 
-// Lazy load dos componentes de chart pesados
+// Lazy load dos componentes de chart pesados - importando diretamente para evitar re-imports
 const LazyLineChart = lazy(() => import('recharts').then(m => ({ default: m.LineChart })));
 const LazyBarChart = lazy(() => import('recharts').then(m => ({ default: m.BarChart })));
 const LazyPieChart = lazy(() => import('recharts').then(m => ({ default: m.PieChart })));
@@ -32,9 +32,9 @@ const COLORS = {
   ],
 };
 
-function ChartSkeleton({ height = 300 }: { height?: number }) {
+const ChartSkeleton = memo(function ChartSkeleton({ height = 300 }: { height?: number }) {
   return <Skeleton className="w-full rounded-lg" style={{ height }} />;
-}
+});
 
 export function FluxoCaixaChart({ contasPagar, contasReceber, meses = 6 }: FinanceiroChartsProps) {
   const dados = useMemo(() => {
