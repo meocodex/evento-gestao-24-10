@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -24,12 +24,6 @@ type TableName =
   | 'transportadoras'
   | 'user_permissions'
   | 'profiles';
-
-interface InvalidationConfig {
-  tables: TableName[];
-  queryKeys: string[][];
-  debounceMs?: number;
-}
 
 // Mapeamento de tabelas para query keys que precisam ser invalidadas
 const TABLE_QUERY_MAP: Record<TableName, string[][]> = {
@@ -66,42 +60,8 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null;
  * Hook centralizado para gerenciar realtime do Supabase
  * Consolida todos os canais em um único para melhor performance
  */
-export function useRealtimeHub(config?: InvalidationConfig) {
+export function useRealtimeHub() {
   const queryClient = useQueryClient();
-  const configRef = useRef(config);
-  configRef.current = config;
-
-  // Função de invalidação com debounce
-  const processInvalidations = useCallback(() => {
-    if (pendingInvalidations.size === 0) return;
-
-    const keysToInvalidate = Array.from(pendingInvalidations);
-    pendingInvalidations.clear();
-
-    // Agrupar invalidações por prefixo para evitar duplicatas
-    const uniqueKeys = new Set<string>();
-    keysToInvalidate.forEach(key => {
-      const parsed = JSON.parse(key);
-      uniqueKeys.add(JSON.stringify(parsed));
-    });
-
-    uniqueKeys.forEach(keyStr => {
-      const key = JSON.parse(keyStr);
-      queryClient.invalidateQueries({ queryKey: key });
-    });
-  }, [queryClient]);
-
-  const scheduleInvalidation = useCallback((queryKeys: string[][]) => {
-    queryKeys.forEach(key => {
-      pendingInvalidations.add(JSON.stringify(key));
-    });
-
-    // Debounce de 300ms para agrupar invalidações
-    if (debounceTimer) {
-      clearTimeout(debounceTimer);
-    }
-    debounceTimer = setTimeout(processInvalidations, 300);
-  }, [processInvalidations]);
 
   useEffect(() => {
     subscriberCount++;
@@ -120,14 +80,16 @@ export function useRealtimeHub(config?: InvalidationConfig) {
           () => {
             const queryKeys = TABLE_QUERY_MAP[table];
             if (queryKeys) {
-              // Adicionar à fila de invalidação com debounce
+              // Adicionar à fila de invalidação
               queryKeys.forEach(key => {
                 pendingInvalidations.add(JSON.stringify(key));
               });
 
+              // Debounce de 300ms para agrupar invalidações
               if (debounceTimer) {
                 clearTimeout(debounceTimer);
               }
+              
               debounceTimer = setTimeout(() => {
                 if (pendingInvalidations.size === 0) return;
                 
@@ -169,13 +131,6 @@ export function useRealtimeHub(config?: InvalidationConfig) {
       }
     };
   }, [queryClient]);
-
-  // Função para invalidação manual (útil para casos específicos)
-  const invalidate = useCallback((queryKeys: string[][]) => {
-    scheduleInvalidation(queryKeys);
-  }, [scheduleInvalidation]);
-
-  return { invalidate };
 }
 
 /**
