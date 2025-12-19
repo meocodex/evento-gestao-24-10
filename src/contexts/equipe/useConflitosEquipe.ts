@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ConflitoDatas } from '@/types/equipe';
+import { AlocacaoComEvento, EventoConflitoJoin } from '@/types/eventos';
 
 export function useConflitosEquipe() {
   const verificarConflitos = async ({
@@ -53,8 +54,8 @@ export function useConflitosEquipe() {
       // Filtrar apenas os que têm conflito de datas
       const conflitos: ConflitoDatas[] = [];
 
-      for (const alocacao of data) {
-        const evento = alocacao.eventos as any;
+      for (const alocacao of data as AlocacaoComEvento[]) {
+        const evento = alocacao.eventos as EventoConflitoJoin | null;
         if (!evento) continue;
 
         // Usar datas da alocação se existirem, senão usar datas do evento
