@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Evento } from '@/types/eventos';
+import { Evento, AutoTableDocument, EmpresaConfig } from '@/types/eventos';
 import { FileDown, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
@@ -116,7 +116,7 @@ export function RelatorioFechamentoDialog({
           1: { cellWidth: 'auto' }
         }
       });
-      currentY = (doc as any).lastAutoTable.finalY + 10;
+      currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
       
       // Dados do Cliente
       doc.setFont(undefined, 'bold');
@@ -140,7 +140,7 @@ export function RelatorioFechamentoDialog({
           1: { cellWidth: 'auto' }
         }
       });
-      currentY = (doc as any).lastAutoTable.finalY + 10;
+      currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
       
       // Dados da Empresa
       doc.setFont(undefined, 'bold');
@@ -164,8 +164,9 @@ export function RelatorioFechamentoDialog({
         return partes.length > 0 ? partes.join(' - ') : '-';
       };
 
+      const empresa = empresaConfig as EmpresaConfig | undefined;
       const dadosEmpresa = [
-        ['Nome:', empresaConfig?.nome || (empresaConfig as any)?.razaoSocial || '-'],
+        ['Nome:', empresa?.nome || empresa?.razaoSocial || '-'],
         ['CNPJ:', empresaConfig?.cnpj || '-'],
         ['Endereço:', formatarEnderecoEmpresa(empresaConfig?.endereco)],
         ['Telefone:', empresaConfig?.telefone || '-']
@@ -181,7 +182,7 @@ export function RelatorioFechamentoDialog({
           1: { cellWidth: 'auto' }
         }
       });
-      currentY = (doc as any).lastAutoTable.finalY + 15;
+      currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 15;
 
       // Tabela de Receitas
       if (receitasFiltradas.length > 0) {
@@ -219,7 +220,7 @@ export function RelatorioFechamentoDialog({
             3: { cellWidth: 35, halign: 'right', fontStyle: 'bold' }
           }
         });
-        currentY = (doc as any).lastAutoTable.finalY + 10;
+        currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
       }
 
       // Tabela de Despesas
@@ -256,11 +257,11 @@ export function RelatorioFechamentoDialog({
             2: { cellWidth: 35, halign: 'right', fontStyle: 'bold' }
           }
         });
-        currentY = (doc as any).lastAutoTable.finalY + 10;
+        currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
       }
 
       // Resumo Financeiro
-      const yPos = (doc as any).lastAutoTable.finalY + 10;
+      const yPos = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
 
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');
@@ -299,7 +300,7 @@ export function RelatorioFechamentoDialog({
       });
 
       // Nota explicativa
-      const finalY = (doc as any).lastAutoTable.finalY + 5;
+      const finalY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 5;
       const notaExplicativa = saldoFinal >= 0 
         ? 'Valor que a empresa deve repassar ao cliente'
         : 'Valor que o cliente deve pagar à empresa';

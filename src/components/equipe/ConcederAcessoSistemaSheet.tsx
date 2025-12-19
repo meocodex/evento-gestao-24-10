@@ -185,14 +185,15 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
       queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
 
       close();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao conceder acesso:', error);
       
       let errorMessage = 'Erro ao conceder acesso. Tente novamente.';
       
       // Parse de erros de validação da edge function
-      if (error.message?.includes('Dados inválidos') || error.context) {
-        const details = error.context?.details || {};
+      const err = error as { message?: string; context?: { details?: Record<string, string[]> } };
+      if (err.message?.includes('Dados inválidos') || err.context) {
+        const details = err.context?.details || {};
         if (Object.keys(details).length > 0) {
           const fieldNames: Record<string, string> = {
             cpf: 'CPF',
@@ -201,9 +202,9 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
             email: 'Email'
           };
           errorMessage = Object.entries(details)
-            .map(([field, msgs]: [string, any]) => {
+            .map(([field, msgs]) => {
               const fieldName = fieldNames[field] || field;
-              const messages = Array.isArray(msgs) ? msgs.join(', ') : msgs;
+              const messages = Array.isArray(msgs) ? msgs.join(', ') : String(msgs);
               return `${fieldName}: ${messages}`;
             })
             .join('\n');

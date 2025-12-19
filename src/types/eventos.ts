@@ -497,3 +497,30 @@ export interface AlocacaoComEvento {
     status: string;
   } | null;
 }
+
+// Interface para jsPDF com autoTable
+export interface AutoTableOutput {
+  finalY: number;
+}
+
+export interface AutoTableDocument {
+  lastAutoTable: AutoTableOutput;
+}
+
+// Interface para configuração de empresa no PDF
+export interface EmpresaConfig {
+  nome?: string;
+  razaoSocial?: string;
+  cnpj?: string;
+  endereco?: Record<string, string> | string;
+  telefone?: string;
+}
+
+// Interface para evento de conflito no join
+export interface EventoConflitoJoin {
+  id: string;
+  nome: string;
+  data_inicio: string;
+  data_fim: string;
+  status: string;
+}

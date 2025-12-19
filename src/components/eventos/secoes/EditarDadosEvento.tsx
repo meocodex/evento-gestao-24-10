@@ -119,7 +119,7 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
     try {
       setIsSubmitting(true);
 
-      const dadosAtualizados: Partial<Evento> = {
+      const dadosAtualizados = {
         nome,
         dataInicio,
         dataFim,
@@ -133,7 +133,7 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
         tags,
         clienteId,
         comercialId,
-      } as any;
+      } as Partial<Evento> & { clienteId: string; comercialId: string };
 
       await onSave(dadosAtualizados);
     } catch (error: unknown) {

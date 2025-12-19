@@ -236,7 +236,7 @@ export function GerenciarPermissoesMembroSheet({
       });
       close();
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast({
         title: 'Erro ao salvar permissões',
         description: error.message,

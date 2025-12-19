@@ -141,7 +141,7 @@ export default function Auth() {
         password: setupData.password,
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof ZodError) {
         const firstError = error.errors[0];
         toast.error(firstError.message, {
@@ -149,7 +149,7 @@ export default function Auth() {
           duration: 4000,
         });
       } else {
-        const errorMsg = error.message || "Erro ao criar administrador";
+        const errorMsg = error instanceof Error ? error.message : "Erro ao criar administrador";
         
         // Se for erro de duplicação ou usuário já existe, orientar login
         if (errorMsg.includes('duplicate') || errorMsg.includes('já está cadastrado') || errorMsg.includes('already registered')) {

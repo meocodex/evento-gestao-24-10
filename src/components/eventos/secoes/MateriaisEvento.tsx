@@ -457,7 +457,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
               )}
 
               {/* Com Técnicos */}
-              {materiaisFiltrados.some((m: any) => m.tipo_envio === 'com_tecnicos') && (
+              {materiaisFiltrados.some((m) => m.tipo_envio === 'com_tecnicos') && (
                 <div>
                   <div className="flex items-center gap-2 mb-3">
                     <Users className="h-4 w-4" />
@@ -465,8 +465,8 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
                   </div>
                   <div className="space-y-2">
                     {materiaisFiltrados
-                      .filter((m: any) => m.tipo_envio === 'com_tecnicos')
-                      .map((material: any) => (
+                      .filter((m) => m.tipo_envio === 'com_tecnicos')
+                      .map((material) => (
                         <Card key={material.id}>
                           <CardContent className="p-4">
                             <div className="flex items-start justify-between">
@@ -534,7 +534,7 @@ export function MateriaisEvento({ evento, permissions }: MateriaisEventoProps) {
             </div>
           ) : (
             <div className="space-y-2">
-              {materiaisPendentes.map((material: any) => (
+              {materiaisPendentes.map((material) => (
                 <Card key={material.id}>
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
