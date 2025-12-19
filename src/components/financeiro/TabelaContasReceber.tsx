@@ -1,11 +1,8 @@
-import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Eye, Pencil, Trash2, CheckCircle, Repeat, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { ContaReceber, StatusBadgeConfig } from '@/types/financeiro';
 
@@ -18,18 +15,6 @@ interface TabelaContasReceberProps {
 }
 
 export function TabelaContasReceber({ contas, onDetalhes, onEditar, onMarcarRecebido, onExcluir }: TabelaContasReceberProps) {
-  const [filtroStatus, setFiltroStatus] = useState<string>('todos');
-  const [busca, setBusca] = useState('');
-
-  const contasFiltradas = contas.filter(conta => {
-    const matchStatus = filtroStatus === 'todos' || conta.status === filtroStatus;
-    const matchBusca = busca === '' || 
-      conta.descricao.toLowerCase().includes(busca.toLowerCase()) ||
-      conta.cliente?.toLowerCase().includes(busca.toLowerCase()) ||
-      conta.tipo.toLowerCase().includes(busca.toLowerCase());
-    return matchStatus && matchBusca;
-  });
-
   const getStatusBadge = (status: string) => {
     const variants: Record<string, StatusBadgeConfig> = {
       pendente: { variant: 'outline', label: 'Pendente' },
@@ -43,26 +28,6 @@ export function TabelaContasReceber({ contas, onDetalhes, onEditar, onMarcarRece
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-3">
-        <Input
-          placeholder="Buscar por descrição, cliente ou tipo..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          className="flex-1"
-        />
-        <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos</SelectItem>
-            <SelectItem value="pendente">Pendente</SelectItem>
-            <SelectItem value="recebido">Recebido</SelectItem>
-            <SelectItem value="vencido">Vencido</SelectItem>
-            <SelectItem value="cancelado">Cancelado</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
       <div className="rounded-md border">
         <Table>
@@ -78,7 +43,7 @@ export function TabelaContasReceber({ contas, onDetalhes, onEditar, onMarcarRece
             </TableRow>
           </TableHeader>
           <TableBody>
-            {contasFiltradas.map((conta) => (
+            {contas.map((conta) => (
               <TableRow key={conta.id} className="h-12">
                 <TableCell className="py-2.5">
                   {format(new Date(conta.data_vencimento), 'dd/MM/yyyy', { locale: ptBR })}
