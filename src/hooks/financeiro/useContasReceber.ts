@@ -1,28 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
 import type { ContaReceber } from '@/types/financeiro';
 import { DatabaseError, getErrorMessage } from '@/types/utils';
 
 export function useContasReceber() {
   const queryClient = useQueryClient();
 
-  // Real-time listener
-  useEffect(() => {
-    const channel = supabase
-      .channel('contas-receber-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'contas_receber' },
-        () => queryClient.invalidateQueries({ queryKey: ['contas-receber'] })
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime é gerenciado pelo useRealtimeHub centralizado
   
   const { data: contas = [], isLoading } = useQuery({
     queryKey: ['contas-receber'],

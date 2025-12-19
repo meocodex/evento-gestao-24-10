@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
 import { 
   DatabaseError, 
   getErrorMessage,
@@ -26,28 +25,7 @@ export function useEventosChecklist(eventoId: string) {
     },
   });
 
-  // Realtime updates
-  useEffect(() => {
-    const channel = supabase
-      .channel(`eventos-checklist-${eventoId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'eventos_checklist',
-          filter: `evento_id=eq.${eventoId}`,
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['eventos-checklist', eventoId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [eventoId, queryClient]);
+  // Realtime é gerenciado pelo useRealtimeHub centralizado
 
   const adicionarMaterialChecklist = useMutation({
     mutationFn: async (data: ChecklistItemData) => {

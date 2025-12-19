@@ -1,7 +1,6 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { transformContrato, transformTemplate } from './transformContrato';
-import { useEffect } from 'react';
 
 export interface FiltrosContrato {
   searchTerm?: string;
@@ -20,7 +19,6 @@ export function useContratosQueries(
   pageSizeTemplates = 50,
   filtrosTemplates?: FiltrosTemplate
 ) {
-  const queryClient = useQueryClient();
 
   const { data: templatesData, isLoading: loadingTemplates } = useQuery({
     queryKey: ['contratos-templates', pageTemplates, pageSizeTemplates, filtrosTemplates],
@@ -85,26 +83,7 @@ export function useContratosQueries(
     gcTime: 1000 * 60 * 60,
   });
 
-  // Realtime listeners para contratos e templates
-  useEffect(() => {
-    const channel = supabase
-      .channel('contratos-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'contratos' },
-        () => queryClient.invalidateQueries({ queryKey: ['contratos'] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'contratos_templates' },
-        () => queryClient.invalidateQueries({ queryKey: ['contratos-templates'] })
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime é gerenciado pelo useRealtimeHub centralizado
 
   return {
     templates: templatesData?.templates || [],
