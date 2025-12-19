@@ -14,7 +14,7 @@ interface ResponsavelSelectProps {
 }
 
 export function ResponsavelSelect({ value, onChange }: ResponsavelSelectProps) {
-  const { usuarios, isLoading } = useUsuarios();
+  const { usuarios = [], isLoading } = useUsuarios();
 
   return (
     <Select value={value} onValueChange={onChange}>
