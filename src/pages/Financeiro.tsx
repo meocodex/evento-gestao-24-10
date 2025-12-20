@@ -25,6 +25,10 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { FinanceiroChartsDrawer } from '@/components/financeiro/FinanceiroChartsDrawer';
 import { FinanceiroSummaryBar } from '@/components/financeiro/FinanceiroSummaryBar';
 import { RelatorioFinanceiroDialog } from '@/components/financeiro/RelatorioFinanceiroDialog';
+import { DetalhesContaPagarSheet } from '@/components/financeiro/DetalhesContaPagarSheet';
+import { EditarContaPagarSheet } from '@/components/financeiro/EditarContaPagarSheet';
+import { DetalhesContaReceberSheet } from '@/components/financeiro/DetalhesContaReceberSheet';
+import { EditarContaReceberSheet } from '@/components/financeiro/EditarContaReceberSheet';
 import { format, isWithinInterval, parseISO, startOfMonth, endOfMonth } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
@@ -44,6 +48,12 @@ export default function Financeiro() {
   const [dialogConfirmDelete, setDialogConfirmDelete] = useState(false);
   const [contaSelecionada, setContaSelecionada] = useState<ContaPagar | ContaReceber | null>(null);
   const [tipoContaDelete, setTipoContaDelete] = useState<'pagar' | 'receber'>('pagar');
+
+  // Estados para sheets de detalhes e edição
+  const [detalhesContaPagar, setDetalhesContaPagar] = useState<ContaPagar | null>(null);
+  const [editarContaPagar, setEditarContaPagar] = useState<ContaPagar | null>(null);
+  const [detalhesContaReceber, setDetalhesContaReceber] = useState<ContaReceber | null>(null);
+  const [editarContaReceber, setEditarContaReceber] = useState<ContaReceber | null>(null);
 
   // Filtros globais (consolidados)
   const [buscaGlobal, setBuscaGlobal] = useState('');
@@ -185,6 +195,25 @@ export default function Financeiro() {
     }).sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime());
   }, [eventos]);
 
+  // Filtrar eventos financeiros com filtros globais
+  const eventosFinanceirosFiltrados = useMemo(() => {
+    return eventosFinanceiros.filter(evento => {
+      // Filtro por busca (nome do evento)
+      if (buscaGlobal) {
+        const busca = buscaGlobal.toLowerCase();
+        if (!evento.nome.toLowerCase().includes(busca)) return false;
+      }
+      // Filtro por período (data do evento)
+      if (periodoRange?.from && periodoRange?.to) {
+        const dataEvento = new Date(evento.data);
+        if (!isWithinInterval(dataEvento, { start: periodoRange.from, end: periodoRange.to })) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [eventosFinanceiros, buscaGlobal, periodoRange]);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -192,14 +221,18 @@ export default function Financeiro() {
     }).format(value);
   };
 
+  // Handlers para contas a pagar
+  const handleDetalhesContaPagar = (conta: ContaPagar) => {
+    setDetalhesContaPagar(conta);
+  };
+
+  const handleEditarContaPagar = (conta: ContaPagar) => {
+    setEditarContaPagar(conta);
+  };
+
   const handleMarcarPago = (conta: ContaPagar) => {
     setContaSelecionada(conta);
     setDialogMarcarPago(true);
-  };
-
-  const handleMarcarRecebido = (conta: ContaReceber) => {
-    setContaSelecionada(conta);
-    setDialogMarcarRecebido(true);
   };
 
   const handleExcluirPagar = (id: string) => {
@@ -207,6 +240,20 @@ export default function Financeiro() {
     setContaSelecionada(conta || null);
     setTipoContaDelete('pagar');
     setDialogConfirmDelete(true);
+  };
+
+  // Handlers para contas a receber
+  const handleDetalhesContaReceber = (conta: ContaReceber) => {
+    setDetalhesContaReceber(conta);
+  };
+
+  const handleEditarContaReceber = (conta: ContaReceber) => {
+    setEditarContaReceber(conta);
+  };
+
+  const handleMarcarRecebido = (conta: ContaReceber) => {
+    setContaSelecionada(conta);
+    setDialogMarcarRecebido(true);
   };
 
   const handleExcluirReceber = (id: string) => {
@@ -357,7 +404,7 @@ export default function Financeiro() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {eventosFinanceiros.map((evento) => (
+                {eventosFinanceirosFiltrados.map((evento) => (
                   <div
                     key={evento.id}
                     className="flex items-center justify-between p-4 border rounded-lg smooth-hover cursor-pointer"
@@ -405,8 +452,10 @@ export default function Financeiro() {
                     </div>
                   </div>
                 ))}
-                {eventosFinanceiros.length === 0 && (
-                  <p className="text-center text-muted-foreground py-8">Nenhum evento cadastrado</p>
+                {eventosFinanceirosFiltrados.length === 0 && (
+                  <p className="text-center text-muted-foreground py-8">
+                    {buscaGlobal || periodoRange ? 'Nenhum evento encontrado com os filtros aplicados' : 'Nenhum evento cadastrado'}
+                  </p>
                 )}
               </div>
             </CardContent>
@@ -431,8 +480,8 @@ export default function Financeiro() {
 
           <TabelaContasPagar
             contas={contasPagarFiltradas}
-            onDetalhes={() => {}}
-            onEditar={() => {}}
+            onDetalhes={handleDetalhesContaPagar}
+            onEditar={handleEditarContaPagar}
             onMarcarPago={handleMarcarPago}
             onExcluir={handleExcluirPagar}
           />
@@ -456,8 +505,8 @@ export default function Financeiro() {
 
           <TabelaContasReceber
             contas={contasReceberFiltradas}
-            onDetalhes={() => {}}
-            onEditar={() => {}}
+            onDetalhes={handleDetalhesContaReceber}
+            onEditar={handleEditarContaReceber}
             onMarcarRecebido={handleMarcarRecebido}
             onExcluir={handleExcluirReceber}
           />
@@ -553,6 +602,64 @@ export default function Financeiro() {
 
       <NovaContaPagarSheet open={dialogNovaPagar} onOpenChange={setDialogNovaPagar} />
       <NovaContaReceberSheet open={dialogNovaReceber} onOpenChange={setDialogNovaReceber} />
+
+      {/* Sheets de detalhes e edição - Contas a Pagar */}
+      {detalhesContaPagar && (
+        <DetalhesContaPagarSheet
+          conta={detalhesContaPagar}
+          open={!!detalhesContaPagar}
+          onOpenChange={(open) => !open && setDetalhesContaPagar(null)}
+          onEditar={() => {
+            setEditarContaPagar(detalhesContaPagar);
+            setDetalhesContaPagar(null);
+          }}
+          onMarcarPago={() => {
+            handleMarcarPago(detalhesContaPagar);
+            setDetalhesContaPagar(null);
+          }}
+          onExcluir={() => {
+            handleExcluirPagar(detalhesContaPagar.id);
+            setDetalhesContaPagar(null);
+          }}
+        />
+      )}
+
+      {editarContaPagar && (
+        <EditarContaPagarSheet
+          conta={editarContaPagar}
+          open={!!editarContaPagar}
+          onOpenChange={(open) => !open && setEditarContaPagar(null)}
+        />
+      )}
+
+      {/* Sheets de detalhes e edição - Contas a Receber */}
+      {detalhesContaReceber && (
+        <DetalhesContaReceberSheet
+          conta={detalhesContaReceber}
+          open={!!detalhesContaReceber}
+          onOpenChange={(open) => !open && setDetalhesContaReceber(null)}
+          onEditar={() => {
+            setEditarContaReceber(detalhesContaReceber);
+            setDetalhesContaReceber(null);
+          }}
+          onMarcarRecebido={() => {
+            handleMarcarRecebido(detalhesContaReceber);
+            setDetalhesContaReceber(null);
+          }}
+          onExcluir={() => {
+            handleExcluirReceber(detalhesContaReceber.id);
+            setDetalhesContaReceber(null);
+          }}
+        />
+      )}
+
+      {editarContaReceber && (
+        <EditarContaReceberSheet
+          conta={editarContaReceber}
+          open={!!editarContaReceber}
+          onOpenChange={(open) => !open && setEditarContaReceber(null)}
+        />
+      )}
 
       <MarcarPagoDialog
         open={dialogMarcarPago}
