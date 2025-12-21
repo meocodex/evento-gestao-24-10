@@ -156,27 +156,8 @@ export default function Estoque() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-end gap-2">
-        {hasPermission('admin.full_access') && (
-          <Button
-            variant="outline"
-            onClick={() => sincronizarQuantidades.mutate(undefined)}
-            disabled={sincronizarQuantidades.isPending}
-            className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4"
-          >
-            <RefreshCw className={`h-4 w-4 sm:mr-2 ${sincronizarQuantidades.isPending ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Sincronizar</span>
-          </Button>
-        )}
-        <Button onClick={() => setShowNovoMaterial(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-          <Plus className="h-4 w-4 sm:mr-2" />
-          <span className="hidden xs:inline">Novo Material</span>
-        </Button>
-      </div>
-
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Estatísticas - Desktop only */}
+      <div className="hidden md:grid md:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Total de Itens"
           value={stats.totalItens.toString()}
@@ -205,6 +186,25 @@ export default function Estoque() {
           icon={Wrench}
           variant="danger"
         />
+      </div>
+
+      {/* Header */}
+      <div className="flex items-center justify-end gap-2">
+        {hasPermission('admin.full_access') && (
+          <Button
+            variant="outline"
+            onClick={() => sincronizarQuantidades.mutate(undefined)}
+            disabled={sincronizarQuantidades.isPending}
+            className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4"
+          >
+            <RefreshCw className={`h-4 w-4 sm:mr-2 ${sincronizarQuantidades.isPending ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Sincronizar</span>
+          </Button>
+        )}
+        <Button onClick={() => setShowNovoMaterial(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+          <Plus className="h-4 w-4 sm:mr-2" />
+          <span className="hidden xs:inline">Novo Material</span>
+        </Button>
       </div>
 
       {/* Busca e Filtros */}

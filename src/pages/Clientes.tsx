@@ -91,37 +91,31 @@ export default function Clientes() {
 
   return (
     <div className="space-y-6">
+      {/* Estatísticas - Desktop only */}
+      <div className="hidden md:grid md:grid-cols-3 gap-4">
+        <StatCard
+          title="Total de Clientes"
+          value={totalClientes.toString()}
+          icon={Users}
+          variant="primary"
+        />
+        <StatCard
+          title="Pessoa Física (CPF)"
+          value={totalCPF.toString()}
+          icon={User}
+          variant="default"
+        />
+        <StatCard
+          title="Pessoa Jurídica (CNPJ)"
+          value={totalCNPJ.toString()}
+          icon={Building2}
+          variant="default"
+        />
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-end">
         <NovoClienteSheet />
-      </div>
-
-      {/* Estatísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
-          <StatCard
-            title="Total de Clientes"
-            value={totalClientes.toString()}
-            icon={Users}
-            variant="primary"
-          />
-        </div>
-        <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
-          <StatCard
-            title="Pessoa Física (CPF)"
-            value={totalCPF.toString()}
-            icon={User}
-            variant="default"
-          />
-        </div>
-        <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
-          <StatCard
-            title="Pessoa Jurídica (CNPJ)"
-            value={totalCNPJ.toString()}
-            icon={Building2}
-            variant="default"
-          />
-        </div>
       </div>
 
       {/* Busca e Filtros */}
