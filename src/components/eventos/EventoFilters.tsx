@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Filter, X, Archive } from 'lucide-react';
+import { Filter, X, Archive, AlertTriangle, Zap } from 'lucide-react';
 import { StatusEvento } from '@/types/eventos';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -22,6 +22,8 @@ export interface EventoFiltersType {
   cidade: string;
   tags: string[];
   incluirArquivados: boolean;
+  urgentes: boolean;
+  altaPrioridade: boolean;
 }
 
 interface EventoFiltersProps {
@@ -52,7 +54,9 @@ export function EventoFilters({
     filters.status.length +
     (filters.cidade ? 1 : 0) +
     filters.tags.length +
-    (filters.incluirArquivados ? 1 : 0);
+    (filters.incluirArquivados ? 1 : 0) +
+    (filters.urgentes ? 1 : 0) +
+    (filters.altaPrioridade ? 1 : 0);
 
   const handleStatusToggle = (status: StatusEvento) => {
     const newStatus = filters.status.includes(status)
@@ -76,6 +80,8 @@ export function EventoFilters({
       cidade: '',
       tags: [],
       incluirArquivados: false,
+      urgentes: false,
+      altaPrioridade: false,
     });
   };
 
@@ -167,6 +173,44 @@ export function EventoFilters({
                   </label>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="pt-2 border-t space-y-3">
+            <label className="text-sm font-medium">Filtros Rápidos</label>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="urgentes"
+                checked={filters.urgentes}
+                onCheckedChange={(checked) =>
+                  onFiltersChange({ ...filters, urgentes: !!checked })
+                }
+              />
+              <label
+                htmlFor="urgentes"
+                className="text-sm cursor-pointer flex items-center gap-1.5"
+              >
+                <AlertTriangle className="h-4 w-4 text-destructive" />
+                Urgentes (próximos 7 dias)
+              </label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="altaPrioridade"
+                checked={filters.altaPrioridade}
+                onCheckedChange={(checked) =>
+                  onFiltersChange({ ...filters, altaPrioridade: !!checked })
+                }
+              />
+              <label
+                htmlFor="altaPrioridade"
+                className="text-sm cursor-pointer flex items-center gap-1.5"
+              >
+                <Zap className="h-4 w-4 text-warning" />
+                Alta Prioridade
+              </label>
             </div>
           </div>
 

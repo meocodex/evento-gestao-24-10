@@ -13,7 +13,6 @@ import { useNavigate } from 'react-router-dom';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useEventos } from '@/hooks/eventos';
 import { EventosStats } from '@/components/eventos/EventosStats';
-import { EventosQuickFilters } from '@/components/eventos/EventosQuickFilters';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { differenceInDays, parseISO, startOfMonth, endOfMonth, addMonths, isWithinInterval } from 'date-fns';
@@ -32,11 +31,17 @@ export default function Eventos() {
   const [searchTerm, setSearchTerm] = useState('');
   const { eventos = [], totalCount = 0 } = useEventos(page, pageSize, searchTerm);
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [], incluirArquivados: false });
+  const [filters, setFilters] = useState<EventoFiltersType>({ 
+    status: [], 
+    cidade: '', 
+    tags: [], 
+    incluirArquivados: false,
+    urgentes: false,
+    altaPrioridade: false,
+  });
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const permissions = usePermissions();
   const [activeTab, setActiveTab] = useState<string>('todos');
-  const [quickFilter, setQuickFilter] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list' | 'kanban' | 'calendar'>('grid');
   const [sortBy, setSortBy] = useState<string>('dataProxima');
 
@@ -81,23 +86,22 @@ export default function Eventos() {
         matchTab = evento.status === 'finalizado';
       }
       
-      // Quick filter
-      let matchQuickFilter = true;
-      if (quickFilter === 'urgentes') {
+      // Quick filters (from advanced filters)
+      let matchUrgentes = true;
+      if (filters.urgentes) {
         const dataEvento = parseISO(evento.dataInicio);
         const diasAteEvento = differenceInDays(dataEvento, hoje);
-        matchQuickFilter = diasAteEvento >= 0 && diasAteEvento < 7 && evento.status !== 'finalizado' && evento.status !== 'cancelado';
-      } else if (quickFilter === 'confirmados') {
-        matchQuickFilter = evento.status === 'confirmado';
-      } else if (quickFilter === 'emPreparacao') {
-        matchQuickFilter = evento.status === 'em_preparacao';
-      } else if (quickFilter === 'altaPrioridade') {
-        matchQuickFilter = evento.tags.includes('Alta Prioridade');
+        matchUrgentes = diasAteEvento >= 0 && diasAteEvento < 7 && evento.status !== 'finalizado' && evento.status !== 'cancelado';
       }
       
-      return matchArquivado && matchSearch && matchStatus && matchCidade && matchTags && matchTab && matchQuickFilter;
+      let matchAltaPrioridade = true;
+      if (filters.altaPrioridade) {
+        matchAltaPrioridade = evento.tags.includes('Alta Prioridade');
+      }
+      
+      return matchArquivado && matchSearch && matchStatus && matchCidade && matchTags && matchTab && matchUrgentes && matchAltaPrioridade;
     });
-  }, [eventos, searchTerm, filters, activeTab, quickFilter]);
+  }, [eventos, searchTerm, filters, activeTab]);
 
   const sortedEventos = useMemo(() => {
     const sorted = [...filteredEventos];
@@ -163,17 +167,6 @@ export default function Eventos() {
               <TabsTrigger value="finalizados" className="text-xs px-2 h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hidden lg:flex">Fin</TabsTrigger>
             </TabsList>
           </Tabs>
-
-          <div className="hidden xl:block h-6 w-px bg-border/50" />
-
-          {/* Quick Filters */}
-          <div className="hidden lg:flex gap-1.5 flex-shrink-0">
-            <EventosQuickFilters 
-              eventos={eventos}
-              activeFilter={quickFilter}
-              onFilterChange={setQuickFilter}
-            />
-          </div>
 
           <div className="hidden xl:block h-6 w-px bg-border/50" />
 
@@ -294,15 +287,6 @@ export default function Eventos() {
               </>
             )}
           </div>
-        </div>
-
-        {/* Quick Filters - mobile/tablet only */}
-        <div className="flex lg:hidden gap-2 overflow-x-auto scrollbar-hide p-2 rounded-xl glass-card">
-          <EventosQuickFilters 
-            eventos={eventos}
-            activeFilter={quickFilter}
-            onFilterChange={setQuickFilter}
-          />
         </div>
 
         {/* Events Views */}
