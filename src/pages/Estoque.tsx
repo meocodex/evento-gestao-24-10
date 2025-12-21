@@ -157,30 +157,22 @@ export default function Estoque() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-display font-bold text-foreground">Estoque</h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Gerencie materiais e controle de seriais
-          </p>
-        </div>
-        <div className="flex gap-2">
-          {hasPermission('admin.full_access') && (
-            <Button
-              variant="outline"
-              onClick={() => sincronizarQuantidades.mutate(undefined)}
-              disabled={sincronizarQuantidades.isPending}
-              className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4"
-            >
-              <RefreshCw className={`h-4 w-4 sm:mr-2 ${sincronizarQuantidades.isPending ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Sincronizar</span>
-            </Button>
-          )}
-          <Button onClick={() => setShowNovoMaterial(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-            <Plus className="h-4 w-4 sm:mr-2" />
-            <span className="hidden xs:inline">Novo Material</span>
+      <div className="flex items-center justify-end gap-2">
+        {hasPermission('admin.full_access') && (
+          <Button
+            variant="outline"
+            onClick={() => sincronizarQuantidades.mutate(undefined)}
+            disabled={sincronizarQuantidades.isPending}
+            className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4"
+          >
+            <RefreshCw className={`h-4 w-4 sm:mr-2 ${sincronizarQuantidades.isPending ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Sincronizar</span>
           </Button>
-        </div>
+        )}
+        <Button onClick={() => setShowNovoMaterial(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+          <Plus className="h-4 w-4 sm:mr-2" />
+          <span className="hidden xs:inline">Novo Material</span>
+        </Button>
       </div>
 
       {/* Estatísticas */}
