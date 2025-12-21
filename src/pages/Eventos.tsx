@@ -1,9 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Grid3x3, List, ArrowUpDown, Kanban, Sparkles, Calendar, ChevronLeft, ChevronRight, Archive } from 'lucide-react';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { Plus, Search, Grid3x3, List, ArrowUpDown, Kanban, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Evento } from '@/types/eventos';
 import { EventosList } from '@/components/eventos/EventosList';
 import { EventosListAccordion } from '@/components/eventos/EventosListAccordion';
@@ -32,10 +30,9 @@ export default function Eventos() {
   const [page, setPage] = useState(1);
   const pageSize = 50;
   const [searchTerm, setSearchTerm] = useState('');
-  const [mostrarArquivados, setMostrarArquivados] = useState(false);
   const { eventos = [], totalCount = 0 } = useEventos(page, pageSize, searchTerm);
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [] });
+  const [filters, setFilters] = useState<EventoFiltersType>({ status: [], cidade: '', tags: [], incluirArquivados: false });
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const permissions = usePermissions();
   const [activeTab, setActiveTab] = useState<string>('todos');
@@ -55,8 +52,8 @@ export default function Eventos() {
     const hoje = new Date();
     
     return eventos.filter(evento => {
-      // Filtro de arquivados
-      const matchArquivado = evento.arquivado === mostrarArquivados;
+      // Filtro de arquivados - mostra não arquivados sempre, arquivados apenas se filtro ativo
+      const matchArquivado = !evento.arquivado || filters.incluirArquivados;
       
       // Search filter
       const matchSearch = evento.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -264,23 +261,11 @@ export default function Eventos() {
             <span className="hidden sm:inline">Criar</span>
           </Button>
 
-          {/* Counter + Archived + Pagination - pushed right */}
+          {/* Counter + Pagination - pushed right */}
           <div className="flex items-center gap-2 ml-auto flex-shrink-0">
             <span className="hidden xl:flex items-center gap-1 text-xs text-muted-foreground">
               <span className="font-semibold text-primary">{sortedEventos.length}</span>/<span>{totalCount}</span>
             </span>
-            
-            <div className="flex items-center gap-1.5">
-              <Switch
-                id="arquivados"
-                checked={mostrarArquivados}
-                onCheckedChange={setMostrarArquivados}
-                className="scale-75"
-              />
-              <Label htmlFor="arquivados" className="text-xs flex items-center gap-1 cursor-pointer">
-                <Archive className="h-3 w-3" />
-              </Label>
-            </div>
 
             {totalCount > pageSize && (
               <>
