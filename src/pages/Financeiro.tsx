@@ -276,15 +276,9 @@ export default function Financeiro() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">Financeiro</h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">Visão consolidada das finanças</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <FinanceiroChartsDrawer contasPagar={contasPagar} contasReceber={contasReceber} />
-          <RelatorioFinanceiroDialog contasPagar={contasPagar} contasReceber={contasReceber} />
-        </div>
+      <div className="flex items-center justify-end gap-2">
+        <FinanceiroChartsDrawer contasPagar={contasPagar} contasReceber={contasReceber} />
+        <RelatorioFinanceiroDialog contasPagar={contasPagar} contasReceber={contasReceber} />
       </div>
 
       {/* Stats Cards - Padronizados com StatCard */}

@@ -305,10 +305,6 @@ export default function Configuracoes() {
   return (
     <div className="min-h-screen overflow-x-hidden">
       <div className="w-full max-w-4xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
-        <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Configurações</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Gerencie as configurações do sistema</p>
-        </div>
 
         <Tabs defaultValue="perfil">
           <TabsList>

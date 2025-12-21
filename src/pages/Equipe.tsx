@@ -280,18 +280,6 @@ export default function Equipe() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold flex items-center gap-2">
-            <Users className="h-6 w-6 sm:h-8 sm:w-8" />
-            Membros da Equipe
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Gestão unificada de equipe operacional e usuários do sistema
-          </p>
-        </div>
-      </div>
 
       {/* Estatísticas */}
       <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

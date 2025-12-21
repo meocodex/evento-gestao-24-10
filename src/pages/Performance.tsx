@@ -59,24 +59,13 @@ export default function Performance() {
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16 py-6 lg:py-8 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl lg:text-3xl font-bold font-display text-foreground flex items-center gap-3">
-            <Activity className="h-7 w-7 text-primary" />
-            Métricas de Performance
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            Monitoramento em tempo real de queries e performance do sistema
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={handleRefresh} variant="outline" size="sm">
-            Atualizar
-          </Button>
-          <Button onClick={handleClear} variant="destructive" size="sm">
-            Limpar Dados
-          </Button>
-        </div>
+      <div className="flex items-center justify-end gap-2">
+        <Button onClick={handleRefresh} variant="outline" size="sm">
+          Atualizar
+        </Button>
+        <Button onClick={handleClear} variant="destructive" size="sm">
+          Limpar Dados
+        </Button>
       </div>
 
       {/* Stats Overview */}

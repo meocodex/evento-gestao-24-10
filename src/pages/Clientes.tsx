@@ -92,11 +92,7 @@ export default function Clientes() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-foreground">Clientes</h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">Gerencie seus clientes e contatos</p>
-        </div>
+      <div className="flex items-center justify-end">
         <NovoClienteSheet />
       </div>
 

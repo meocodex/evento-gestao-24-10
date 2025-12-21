@@ -120,26 +120,20 @@ export default function Contratos() {
   return (
     <div className="min-h-screen overflow-x-hidden">
       <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in bg-navy-50 dark:bg-navy-950">
-        {/* Hero Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-navy-900 dark:text-navy-50">Contratos & Propostas</h1>
-            <p className="text-sm sm:text-base text-navy-600 dark:text-navy-400 mt-1">Gestão de propostas comerciais, contratos e templates</p>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <Button onClick={() => setMostrarNovaProposta(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-              <FileText className="h-4 w-4 sm:mr-1" />
-              <span className="hidden xs:inline">Nova Proposta</span>
-            </Button>
-            <Button onClick={() => setMostrarNovoContrato(true)} variant="outline" className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-              <FileSignature className="h-4 w-4 sm:mr-1" />
-              <span className="hidden xs:inline">Novo Contrato</span>
-            </Button>
-            <Button onClick={() => setMostrarNovoTemplate(true)} variant="outline" className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-              <FileSignature className="h-4 w-4 sm:mr-1" />
-              <span className="hidden xs:inline">Novo Template</span>
-            </Button>
-          </div>
+        {/* Header */}
+        <div className="flex items-center justify-end gap-2 flex-wrap">
+          <Button onClick={() => setMostrarNovaProposta(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+            <FileText className="h-4 w-4 sm:mr-1" />
+            <span className="hidden xs:inline">Nova Proposta</span>
+          </Button>
+          <Button onClick={() => setMostrarNovoContrato(true)} variant="outline" className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+            <FileSignature className="h-4 w-4 sm:mr-1" />
+            <span className="hidden xs:inline">Novo Contrato</span>
+          </Button>
+          <Button onClick={() => setMostrarNovoTemplate(true)} variant="outline" className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+            <FileSignature className="h-4 w-4 sm:mr-1" />
+            <span className="hidden xs:inline">Novo Template</span>
+          </Button>
         </div>
 
         {/* Stats Cards Navy */}
