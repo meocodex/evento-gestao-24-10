@@ -154,24 +154,23 @@ export default function Eventos() {
         {/* Stats Cards */}
         <EventosStats eventos={eventos} />
 
-        {/* Linha 1: Tabs + Quick Filters + Search + Counter/Toggle */}
-        <div className="flex flex-wrap items-center gap-3 p-3 sm:p-4 rounded-2xl glass-card">
+        {/* Single Unified Toolbar */}
+        <div className="flex flex-wrap items-center gap-2 lg:gap-3 p-2 sm:p-3 rounded-2xl glass-card">
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-shrink-0">
-            <TabsList className="h-9 sm:h-10 p-1 bg-muted/50">
-              <TabsTrigger value="todos" className="text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-8 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
-              <TabsTrigger value="proximos7" className="text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-8 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">7 Dias</TabsTrigger>
-              <TabsTrigger value="esteMes" className="text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-8 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Este Mês</TabsTrigger>
-              <TabsTrigger value="proximoMes" className="text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-8 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hidden sm:flex">Próximo</TabsTrigger>
-              <TabsTrigger value="finalizados" className="text-xs sm:text-sm px-2 sm:px-3 h-7 sm:h-8 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hidden sm:flex">Finalizados</TabsTrigger>
+            <TabsList className="h-8 p-0.5 bg-muted/50">
+              <TabsTrigger value="todos" className="text-xs px-2 h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Todos</TabsTrigger>
+              <TabsTrigger value="proximos7" className="text-xs px-2 h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">7D</TabsTrigger>
+              <TabsTrigger value="esteMes" className="text-xs px-2 h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Mês</TabsTrigger>
+              <TabsTrigger value="proximoMes" className="text-xs px-2 h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hidden lg:flex">Próx</TabsTrigger>
+              <TabsTrigger value="finalizados" className="text-xs px-2 h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground hidden lg:flex">Fin</TabsTrigger>
             </TabsList>
           </Tabs>
 
-          {/* Divider */}
-          <div className="hidden lg:block h-8 w-px bg-border/50" />
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
 
           {/* Quick Filters */}
-          <div className="hidden md:flex gap-2 overflow-x-auto scrollbar-hide flex-shrink-0">
+          <div className="hidden lg:flex gap-1.5 flex-shrink-0">
             <EventosQuickFilters 
               eventos={eventos}
               activeFilter={quickFilter}
@@ -179,151 +178,146 @@ export default function Eventos() {
             />
           </div>
 
-          {/* Divider */}
-          <div className="hidden xl:block h-8 w-px bg-border/50" />
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
 
           {/* Search */}
-          <div className="relative flex-1 min-w-[140px] max-w-[200px]">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative min-w-[100px] max-w-[140px] flex-shrink">
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               placeholder="Buscar..."
-              className="pl-10 h-9 sm:h-10 text-sm bg-background/60"
+              className="pl-8 h-8 text-xs bg-background/60"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
 
-          {/* Counter + Archived Toggle - pushed to right */}
-          <div className="flex items-center gap-3 ml-auto flex-shrink-0">
-            <div className="hidden lg:flex items-center gap-2 text-sm">
-              <span className="px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold">{sortedEventos.length}</span>
-              <span className="text-muted-foreground">/</span>
-              <span className="text-muted-foreground">{totalCount}</span>
-            </div>
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
+
+          {/* Sort */}
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[90px] h-8 text-xs">
+              <ArrowUpDown className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+              <SelectValue placeholder="Ord" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="dataProxima">Data ↑</SelectItem>
+              <SelectItem value="dataDistante">Data ↓</SelectItem>
+              <SelectItem value="nomeAZ">Nome</SelectItem>
+              <SelectItem value="status">Status</SelectItem>
+              <SelectItem value="ultimaAtualizacao">Atualiz.</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Filters */}
+          <EventoFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            availableCities={availableCities}
+            availableTags={availableTags}
+          />
+
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
+
+          {/* View Mode */}
+          <div className="flex border border-border/60 rounded-lg overflow-hidden bg-background/40">
+            <Button
+              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+              size="icon"
+              className="rounded-none h-8 w-8"
+              onClick={() => setViewMode('grid')}
+              aria-label="Grade"
+            >
+              <Grid3x3 className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+              size="icon"
+              className="rounded-none h-8 w-8"
+              onClick={() => setViewMode('list')}
+              aria-label="Lista"
+            >
+              <List className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+              size="icon"
+              className="rounded-none h-8 w-8"
+              onClick={() => setViewMode('kanban')}
+              aria-label="Kanban"
+            >
+              <Kanban className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+              size="icon"
+              className="rounded-none h-8 w-8"
+              onClick={() => setViewMode('calendar')}
+              aria-label="Calendário"
+            >
+              <Calendar className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
+          {/* Create */}
+          <Button onClick={() => setQuickCreateOpen(true)} size="sm" className="gap-1 h-8 text-xs px-2.5">
+            <Plus className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Criar</span>
+          </Button>
+
+          {/* Counter + Archived + Pagination - pushed right */}
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+            <span className="hidden xl:flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">{sortedEventos.length}</span>/<span>{totalCount}</span>
+            </span>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Switch
                 id="arquivados"
                 checked={mostrarArquivados}
                 onCheckedChange={setMostrarArquivados}
+                className="scale-75"
               />
-              <Label htmlFor="arquivados" className="text-xs sm:text-sm flex items-center gap-1 cursor-pointer">
+              <Label htmlFor="arquivados" className="text-xs flex items-center gap-1 cursor-pointer">
                 <Archive className="h-3 w-3" />
-                <span className="hidden sm:inline">Arquivados</span>
               </Label>
             </div>
+
+            {totalCount > pageSize && (
+              <>
+                <div className="h-6 w-px bg-border/50" />
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground">{page}/{Math.ceil(totalCount / pageSize)}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setPage(Math.min(Math.ceil(totalCount / pageSize), page + 1))}
+                    disabled={page >= Math.ceil(totalCount / pageSize)}
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Linha 2: Sort + Filters + View Mode + Create */}
-        <div className="flex flex-wrap items-center gap-3 p-3 sm:p-4 rounded-2xl glass-card">
-          {/* Quick Filters - mobile only */}
-          <div className="flex md:hidden gap-2 overflow-x-auto scrollbar-hide w-full pb-2 border-b border-border/30">
-            <EventosQuickFilters 
-              eventos={eventos}
-              activeFilter={quickFilter}
-              onFilterChange={setQuickFilter}
-            />
-          </div>
-
-          {/* Sort & Filters */}
-          <div className="flex gap-2 flex-shrink-0">
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[130px] h-9 sm:h-10 text-xs sm:text-sm">
-                <ArrowUpDown className="h-4 w-4 mr-1 flex-shrink-0" />
-                <SelectValue placeholder="Ordenar" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="dataProxima">Data Próxima</SelectItem>
-                <SelectItem value="dataDistante">Data Distante</SelectItem>
-                <SelectItem value="nomeAZ">Nome (A-Z)</SelectItem>
-                <SelectItem value="status">Status</SelectItem>
-                <SelectItem value="ultimaAtualizacao">Última Atualização</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <EventoFilters
-              filters={filters}
-              onFiltersChange={setFilters}
-              availableCities={availableCities}
-              availableTags={availableTags}
-            />
-          </div>
-
-          {/* Divider */}
-          <div className="hidden lg:block h-8 w-px bg-border/50" />
-
-          {/* View Mode + Create - pushed to the right */}
-          <div className="flex gap-2 ml-auto flex-shrink-0">
-            <div className="flex border border-border/60 rounded-xl overflow-hidden bg-background/40">
-              <Button
-                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
-                onClick={() => setViewMode('grid')}
-                aria-label="Visualização em grade"
-              >
-                <Grid3x3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
-                onClick={() => setViewMode('list')}
-                aria-label="Visualização em lista"
-              >
-                <List className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
-                onClick={() => setViewMode('kanban')}
-                aria-label="Visualização kanban"
-              >
-                <Kanban className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
-                size="icon"
-                className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
-                onClick={() => setViewMode('calendar')}
-                aria-label="Visualização calendário"
-              >
-                <Calendar className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <Button onClick={() => setQuickCreateOpen(true)} className="gap-1 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-              <Sparkles className="h-4 w-4" />
-              <span className="hidden sm:inline">Criar</span>
-            </Button>
-          </div>
-
-          {/* Pagination - only if needed */}
-          {totalCount > pageSize && (
-            <div className="flex items-center gap-2 ml-4">
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => setPage(Math.max(1, page - 1))}
-                disabled={page === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-muted-foreground px-2">{page}/{Math.ceil(totalCount / pageSize)}</span>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-9 w-9"
-                onClick={() => setPage(Math.min(Math.ceil(totalCount / pageSize), page + 1))}
-                disabled={page >= Math.ceil(totalCount / pageSize)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
+        {/* Quick Filters - mobile/tablet only */}
+        <div className="flex lg:hidden gap-2 overflow-x-auto scrollbar-hide p-2 rounded-xl glass-card">
+          <EventosQuickFilters 
+            eventos={eventos}
+            activeFilter={quickFilter}
+            onFilterChange={setQuickFilter}
+          />
         </div>
 
         {/* Events Views */}
