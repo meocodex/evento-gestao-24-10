@@ -12,10 +12,9 @@ import { EditarDemandaSheet } from '@/components/demandas/EditarDemandaSheet';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { Card } from '@/components/ui/card';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
-import { Clock, AlertTriangle, XCircle, Bell } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Clock, AlertTriangle, XCircle, Bell, Search, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Demandas() {
   const [page, setPage] = useState(1);
@@ -44,7 +43,9 @@ export default function Demandas() {
       return true;
     });
   }, [demandas, filtros]);
+
   const totalPages = Math.ceil(totalCount / pageSize);
+  
   const estatisticas = useMemo(() => ({
     total: demandas.length,
     abertas: demandas.filter(d => d.status === 'aberta').length,
@@ -73,8 +74,8 @@ export default function Demandas() {
   }, [demandaSelecionada, excluirDemanda]);
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
-      <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in bg-background">
+    <div className="min-h-full overflow-x-hidden">
+      <div className="w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4 animate-fade-in bg-background">
         {/* Stats Cards - Desktop only */}
         <div className="hidden md:grid md:grid-cols-4 gap-3 sm:gap-4">
           <StatCard
@@ -103,80 +104,83 @@ export default function Demandas() {
           />
         </div>
 
-        {/* Header */}
-        <div className="flex items-center justify-end gap-2">
+        {/* Single Unified Toolbar */}
+        <div className="flex flex-wrap items-center gap-2 lg:gap-3 p-2 sm:p-3 rounded-2xl glass-card">
+          {/* Search */}
+          <div className="relative min-w-[100px] max-w-[200px] flex-shrink flex-1 sm:flex-none">
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar..."
+              className="pl-8 h-8 text-xs bg-background/60"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
+
+          {/* Filters */}
           <DemandaFiltersPopover filters={filtros} onFiltersChange={setFiltros} />
+
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
+
+          {/* Create Buttons */}
           <NovaDemandaSheet />
           <NovaDemandaReembolsoSheet />
-        </div>
 
-        {/* Busca */}
-        <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por título, descrição..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 h-9 sm:h-10 text-sm"
-          />
+          {/* Counter + Pagination - pushed right */}
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+            <span className="hidden xl:flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">{demandasFiltradas.length}</span>/<span>{totalCount}</span>
+            </span>
+
+            {totalPages > 1 && (
+              <>
+                <div className="h-6 w-px bg-border/50" />
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground">{page}/{totalPages}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setPage(Math.min(totalPages, page + 1))}
+                    disabled={page >= totalPages}
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Lista de Demandas */}
-        <div className="space-y-4">
-            {demandasFiltradas.length === 0 ? (
-              <Card className="p-12">
-                <div className="text-center text-muted-foreground">
-                  <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium">Nenhuma demanda encontrada</p>
-                  <p className="text-sm">Ajuste os filtros ou crie uma nova demanda</p>
-                </div>
-              </Card>
-            ) : (
-              <>
-                <DemandasVirtualList
-                  demandas={demandasFiltradas}
-                  onClick={(demanda) => {
-                    setDemandaSelecionada(demanda);
-                    setSheetDetalhes(true);
-                  }}
-                />
-                
-                {/* Paginação */}
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        onClick={() => setPage(Math.max(1, page - 1))}
-                        className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                      />
-                    </PaginationItem>
-                    
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      const pageNumber = i + 1;
-                      return (
-                        <PaginationItem key={pageNumber}>
-                          <PaginationLink
-                            onClick={() => setPage(pageNumber)}
-                            isActive={page === pageNumber}
-                            className="cursor-pointer"
-                          >
-                            {pageNumber}
-                          </PaginationLink>
-                        </PaginationItem>
-                      );
-                    })}
-
-                    <PaginationItem>
-                      <PaginationNext 
-                        onClick={() => setPage(Math.min(totalPages, page + 1))}
-                        className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </>
-            )}
-        </div>
+        {demandasFiltradas.length === 0 ? (
+          <Card className="p-12">
+            <div className="text-center text-muted-foreground">
+              <Bell className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-lg font-medium">Nenhuma demanda encontrada</p>
+              <p className="text-sm">Ajuste os filtros ou crie uma nova demanda</p>
+            </div>
+          </Card>
+        ) : (
+          <DemandasVirtualList
+            demandas={demandasFiltradas}
+            onClick={(demanda) => {
+              setDemandaSelecionada(demanda);
+              setSheetDetalhes(true);
+            }}
+          />
+        )}
       </div>
 
       {/* Dialogs */}
