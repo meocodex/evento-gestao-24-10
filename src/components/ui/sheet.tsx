@@ -22,7 +22,8 @@ const SheetOverlay = React.forwardRef<
       "fixed inset-0 z-50 bg-black/80 backdrop-blur-sm",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      "data-[state=open]:duration-300 data-[state=closed]:duration-200",
+      "data-[state=open]:duration-400 data-[state=closed]:duration-300",
+      "transition-all ease-in-out",
       className,
     )}
     {...props}
@@ -32,14 +33,14 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-background shadow-xl transition-all ease-in-out theme-transition data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:duration-300 overflow-y-auto",
+  "fixed z-50 gap-4 bg-background shadow-xl transition-all ease-out theme-transition data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-400 overflow-y-auto",
   {
     variants: {
       side: {
-        top: "inset-x-0 top-0 max-h-[85vh] border-b p-4 sm:p-6 data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
-        bottom: "inset-x-0 bottom-0 max-h-[85vh] border-t p-4 sm:p-6 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
-        left: "inset-y-0 left-0 h-full w-[85vw] sm:w-3/4 md:w-2/3 lg:w-1/2 xl:max-w-xl border-r p-4 sm:p-6 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
-        right: "inset-y-0 right-0 h-full w-[85vw] sm:w-3/4 md:w-2/3 lg:w-1/2 xl:max-w-xl border-l p-4 sm:p-6 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0",
+        top: "inset-x-0 top-0 max-h-[85vh] border-b p-4 sm:p-6 data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-[0.98] data-[state=closed]:zoom-out-[0.98]",
+        bottom: "inset-x-0 bottom-0 max-h-[85vh] border-t p-4 sm:p-6 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-[0.98] data-[state=closed]:zoom-out-[0.98]",
+        left: "inset-y-0 left-0 h-full w-[85vw] sm:w-3/4 md:w-2/3 lg:w-1/2 xl:max-w-xl border-r p-4 sm:p-6 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-[0.98] data-[state=closed]:zoom-out-[0.98]",
+        right: "inset-y-0 right-0 h-full w-[85vw] sm:w-3/4 md:w-2/3 lg:w-1/2 xl:max-w-xl border-l p-4 sm:p-6 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 data-[state=open]:zoom-in-[0.98] data-[state=closed]:zoom-out-[0.98]",
       },
     },
     defaultVariants: {

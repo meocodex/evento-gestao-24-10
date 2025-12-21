@@ -1,9 +1,11 @@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Eye, Pencil, Trash2, CheckCircle, Repeat, FileText } from 'lucide-react';
+import { Eye, Pencil, Trash2, CheckCircle, Repeat, FileText, FileSpreadsheet, FileX2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { exportarContasReceberPDF, exportarContasReceberExcel } from '@/utils/exportFinanceiro';
 import type { ContaReceber, StatusBadgeConfig } from '@/types/financeiro';
 
 interface TabelaContasReceberProps {
@@ -26,8 +28,44 @@ export function TabelaContasReceber({ contas, onDetalhes, onEditar, onMarcarRece
     return <Badge variant={variant}>{label}</Badge>;
   };
 
+  if (contas.length === 0) {
+    return (
+      <EmptyState
+        icon={FileX2}
+        title="Nenhuma conta encontrada"
+        description="Não há contas a receber que correspondam aos filtros aplicados."
+      />
+    );
+  }
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 animate-fade-in">
+      {/* Header com contador e botões de exportação */}
+      <div className="flex justify-between items-center">
+        <span className="text-sm text-muted-foreground">
+          {contas.length} conta{contas.length !== 1 ? 's' : ''} encontrada{contas.length !== 1 ? 's' : ''}
+        </span>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => exportarContasReceberPDF(contas)}
+            className="transition-all duration-200 hover:scale-105"
+          >
+            <FileText className="h-4 w-4 mr-1" />
+            PDF
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => exportarContasReceberExcel(contas)}
+            className="transition-all duration-200 hover:scale-105"
+          >
+            <FileSpreadsheet className="h-4 w-4 mr-1" />
+            Excel
+          </Button>
+        </div>
+      </div>
 
       <div className="rounded-md border">
         <Table>
@@ -44,7 +82,7 @@ export function TabelaContasReceber({ contas, onDetalhes, onEditar, onMarcarRece
           </TableHeader>
           <TableBody>
             {contas.map((conta) => (
-              <TableRow key={conta.id} className="h-12">
+              <TableRow key={conta.id} className="h-12 transition-colors duration-200">
                 <TableCell className="py-2.5">
                   {format(new Date(conta.data_vencimento), 'dd/MM/yyyy', { locale: ptBR })}
                 </TableCell>
