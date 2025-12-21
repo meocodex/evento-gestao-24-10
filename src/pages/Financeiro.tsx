@@ -275,14 +275,8 @@ export default function Financeiro() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-end gap-2">
-        <FinanceiroChartsDrawer contasPagar={contasPagar} contasReceber={contasReceber} />
-        <RelatorioFinanceiroDialog contasPagar={contasPagar} contasReceber={contasReceber} />
-      </div>
-
-      {/* Stats Cards - Padronizados com StatCard */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Stats Cards - Desktop only */}
+      <div className="hidden md:grid md:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title="Receitas Totais"
           value={formatCurrency(stats.totalReceitas)}
@@ -314,6 +308,12 @@ export default function Financeiro() {
           icon={DollarSign}
           variant="warning"
         />
+      </div>
+
+      {/* Header */}
+      <div className="flex items-center justify-end gap-2">
+        <FinanceiroChartsDrawer contasPagar={contasPagar} contasReceber={contasReceber} />
+        <RelatorioFinanceiroDialog contasPagar={contasPagar} contasReceber={contasReceber} />
       </div>
 
       {/* Tabs com filtros inline */}

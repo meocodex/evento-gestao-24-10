@@ -142,8 +142,10 @@ export default function Eventos() {
     <div className="min-h-full overflow-x-hidden">
       {/* Container responsivo sem max-width fixo */}
       <div className="w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4 animate-fade-in bg-background">
-        {/* Stats Cards */}
-        <EventosStats eventos={eventos} />
+        {/* Stats Cards - Desktop only */}
+        <div className="hidden md:block">
+          <EventosStats eventos={eventos} />
+        </div>
 
         {/* Single Unified Toolbar */}
         <div className="flex flex-wrap items-center gap-2 lg:gap-3 p-2 sm:p-3 rounded-2xl glass-card">
