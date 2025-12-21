@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Filter, X } from 'lucide-react';
+import { Filter, X, Archive } from 'lucide-react';
 import { StatusEvento } from '@/types/eventos';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -21,6 +21,7 @@ export interface EventoFiltersType {
   status: StatusEvento[];
   cidade: string;
   tags: string[];
+  incluirArquivados: boolean;
 }
 
 interface EventoFiltersProps {
@@ -50,7 +51,8 @@ export function EventoFilters({
   const activeFiltersCount =
     filters.status.length +
     (filters.cidade ? 1 : 0) +
-    filters.tags.length;
+    filters.tags.length +
+    (filters.incluirArquivados ? 1 : 0);
 
   const handleStatusToggle = (status: StatusEvento) => {
     const newStatus = filters.status.includes(status)
@@ -73,6 +75,7 @@ export function EventoFilters({
       status: [],
       cidade: '',
       tags: [],
+      incluirArquivados: false,
     });
   };
 
@@ -164,6 +167,25 @@ export function EventoFilters({
                   </label>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="pt-2 border-t">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="incluirArquivados"
+                checked={filters.incluirArquivados}
+                onCheckedChange={(checked) =>
+                  onFiltersChange({ ...filters, incluirArquivados: !!checked })
+                }
+              />
+              <label
+                htmlFor="incluirArquivados"
+                className="text-sm cursor-pointer flex items-center gap-1.5"
+              >
+                <Archive className="h-4 w-4 text-muted-foreground" />
+                Incluir arquivados
+              </label>
             </div>
           </div>
         </div>
