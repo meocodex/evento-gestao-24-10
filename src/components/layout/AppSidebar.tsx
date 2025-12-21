@@ -3,7 +3,6 @@ import {
   Calendar,
   Users,
   Package,
-  Bell,
   Truck,
   DollarSign,
   FileText,
@@ -134,14 +133,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar className="border-r-0 bg-sidebar" {...props}>
       <SidebarHeader className="border-b border-sidebar-border/30 p-4 md:p-6">
         <div className="flex items-center gap-3 md:gap-4">
-          <div className="p-2 md:p-3 bg-logo-icon/10 backdrop-blur-sm rounded-xl shadow-lg shadow-logo-icon/20 ring-2 ring-logo-icon/30">
-            <Calendar className="h-5 w-5 md:h-6 md:w-6 text-logo-icon" />
-          </div>
+          <img 
+            src="/logo-ticket-up.png" 
+            alt="Ticket Up" 
+            className="h-8 w-8 md:h-10 md:w-10 object-contain"
+          />
           
           {state !== 'collapsed' && (
             <div>
               <p className="text-sm md:text-base font-display font-bold text-sidebar-foreground">
-                Gestão Eventos
+                Ticket Up
               </p>
               <p className="text-xs text-sidebar-foreground/70 truncate max-w-[150px]">
                 {user?.name}

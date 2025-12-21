@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Calendar, Loader2, ShieldAlert, UserCog } from "lucide-react";
+import { Loader2, ShieldAlert, UserCog } from "lucide-react";
 import { loginSchema, signupSchema } from "@/lib/validations/auth";
 import { ZodError } from "zod";
 
@@ -187,10 +187,14 @@ export default function Auth() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 mb-2">
-              <Calendar className="h-10 w-10 text-primary" />
+            <div className="inline-flex items-center gap-3 mb-2">
+              <img 
+                src="/logo-ticket-up.png" 
+                alt="Ticket Up" 
+                className="h-12 w-auto"
+              />
               <h1 className="text-4xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                EventFlow
+                Ticket Up
               </h1>
             </div>
             <p className="text-muted-foreground">
@@ -342,10 +346,14 @@ export default function Auth() {
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 mb-2">
-            <Calendar className="h-10 w-10 text-primary" />
+          <div className="inline-flex items-center gap-3 mb-2">
+            <img 
+              src="/logo-ticket-up.png" 
+              alt="Ticket Up" 
+              className="h-12 w-auto"
+            />
             <h1 className="text-4xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              EventFlow
+              Ticket Up
             </h1>
           </div>
           <p className="text-muted-foreground">
