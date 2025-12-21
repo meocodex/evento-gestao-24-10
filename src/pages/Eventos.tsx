@@ -167,98 +167,107 @@ export default function Eventos() {
           </Tabs>
         </div>
 
-        {/* Quick Filters */}
-        <div className="flex flex-col gap-4">
-          <EventosQuickFilters 
-            eventos={eventos}
-            activeFilter={quickFilter}
-            onFilterChange={setQuickFilter}
-          />
-          
-          {/* Search, Filters, Sort and View Toggle - Premium glassmorphic container */}
-          <div className="flex flex-col gap-3 p-3 sm:p-4 rounded-2xl glass-card">
-            {/* Search */}
-            <div className="relative w-full group">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar eventos..."
-                className="pl-10 h-9 sm:h-10 text-sm bg-background/60"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            {/* Filtros e Controles - Stack em mobile */}
-            <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
-              {/* Linha 1: Sort e Filtros */}
-              <div className="flex gap-2 flex-1 min-w-0">
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="flex-1 sm:w-[180px] h-9 sm:h-10 text-xs sm:text-sm">
-                    <ArrowUpDown className="h-4 w-4 mr-1 sm:mr-2 flex-shrink-0" />
-                    <SelectValue placeholder="Ordenar" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="dataProxima">Data Próxima</SelectItem>
-                    <SelectItem value="dataDistante">Data Distante</SelectItem>
-                    <SelectItem value="nomeAZ">Nome (A-Z)</SelectItem>
-                    <SelectItem value="status">Status</SelectItem>
-                    <SelectItem value="ultimaAtualizacao">Última Atualização</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <EventoFilters
-                  filters={filters}
-                  onFiltersChange={setFilters}
-                  availableCities={availableCities}
-                  availableTags={availableTags}
-                />
-              </div>
-
-              {/* Linha 2: View Mode e Criar */}
-              <div className="flex gap-2 justify-between sm:justify-start">
-                <div className="flex border border-border/60 rounded-xl overflow-hidden bg-background/40">
-                  <Button
-                    variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-                    size="icon"
-                    className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
-                    onClick={() => setViewMode('grid')}
-                  >
-                    <Grid3x3 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-                    size="icon"
-                    className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
-                    onClick={() => setViewMode('list')}
-                  >
-                    <List className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
-                    size="icon"
-                    className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
-                    onClick={() => setViewMode('kanban')}
-                  >
-                    <Kanban className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
-                    size="icon"
-                    className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
-                    onClick={() => setViewMode('calendar')}
-                  >
-                    <Calendar className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                <Button onClick={() => setQuickCreateOpen(true)} className="gap-1 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-                  <Sparkles className="h-4 w-4" />
-                  <span className="hidden xs:inline">Criação Rápida</span>
-                  <span className="xs:hidden">Criar</span>
-                </Button>
-              </div>
-            </div>
+        {/* Unified Toolbar - Uma linha em desktop */}
+        <div className="flex flex-wrap items-center gap-3 p-3 sm:p-4 rounded-2xl glass-card">
+          {/* Quick Filters */}
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide flex-shrink-0 order-1">
+            <EventosQuickFilters 
+              eventos={eventos}
+              activeFilter={quickFilter}
+              onFilterChange={setQuickFilter}
+            />
           </div>
+
+          {/* Divider (hidden on mobile/tablet) */}
+          <div className="hidden xl:block h-8 w-px bg-border/50 order-2" />
+
+          {/* Search */}
+          <div className="relative flex-1 min-w-[180px] max-w-xs order-3 lg:order-3">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar eventos..."
+              className="pl-10 h-9 sm:h-10 text-sm bg-background/60"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          {/* Divider (hidden on mobile/tablet) */}
+          <div className="hidden xl:block h-8 w-px bg-border/50 order-4" />
+
+          {/* Sort & Filters */}
+          <div className="flex gap-2 flex-shrink-0 order-5">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-[140px] h-9 sm:h-10 text-xs sm:text-sm">
+                <ArrowUpDown className="h-4 w-4 mr-1 flex-shrink-0" />
+                <SelectValue placeholder="Ordenar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="dataProxima">Data Próxima</SelectItem>
+                <SelectItem value="dataDistante">Data Distante</SelectItem>
+                <SelectItem value="nomeAZ">Nome (A-Z)</SelectItem>
+                <SelectItem value="status">Status</SelectItem>
+                <SelectItem value="ultimaAtualizacao">Última Atualização</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <EventoFilters
+              filters={filters}
+              onFiltersChange={setFilters}
+              availableCities={availableCities}
+              availableTags={availableTags}
+            />
+          </div>
+
+          {/* View Mode + Create - pushed to the right */}
+          <div className="flex gap-2 ml-auto flex-shrink-0 order-6">
+            <div className="flex border border-border/60 rounded-xl overflow-hidden bg-background/40">
+              <Button
+                variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
+                onClick={() => setViewMode('grid')}
+                aria-label="Visualização em grade"
+              >
+                <Grid3x3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
+                onClick={() => setViewMode('list')}
+                aria-label="Visualização em lista"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
+                onClick={() => setViewMode('kanban')}
+                aria-label="Visualização kanban"
+              >
+                <Kanban className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+                size="icon"
+                className="rounded-none h-9 w-9 sm:h-10 sm:w-10"
+                onClick={() => setViewMode('calendar')}
+                aria-label="Visualização calendário"
+              >
+                <Calendar className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <Button onClick={() => setQuickCreateOpen(true)} className="gap-1 sm:gap-2 h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
+              <Sparkles className="h-4 w-4" />
+              <span className="hidden sm:inline">Criar</span>
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
 
           {/* Results counter with premium styling */}
           <div className="flex items-center justify-between gap-2 px-1">
