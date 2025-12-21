@@ -8,32 +8,33 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Navy Blue Suavizado - Modo Claro */
-    --background: 220 40% 98%;
-    --foreground: 220 60% 20%;
+    /* Ticket Up - Modo Claro */
+    /* Baseado no logo: Dourado #8B7E41 e Navy #1E2433 */
+    --background: 40 20% 98%;
+    --foreground: 220 29% 16%;
 
-    --card: 220 40% 99%;
-    --card-foreground: 220 60% 20%;
+    --card: 40 15% 99%;
+    --card-foreground: 220 29% 16%;
 
-    --popover: 220 40% 99%;
-    --popover-foreground: 220 60% 20%;
+    --popover: 40 15% 99%;
+    --popover-foreground: 220 29% 16%;
 
-    /* Navy Blue Principal - Mais Claro */
-    --primary: 220 70% 40%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Navy do Logo */
+    --primary: 220 29% 16%;
+    --primary-foreground: 40 20% 98%;
 
-    --secondary: 220 20% 97%;
-    --secondary-foreground: 220 60% 20%;
+    --secondary: 220 15% 95%;
+    --secondary-foreground: 220 29% 20%;
 
-    --muted: 220 20% 97%;
-    --muted-foreground: 220 30% 50%;
+    --muted: 40 10% 96%;
+    --muted-foreground: 220 20% 45%;
 
-    /* Dourado Elegante como Accent */
-    --accent: 45 93% 58%;
-    --accent-foreground: 26 83% 14%;
+    /* Accent - Dourado do Logo */
+    --accent: 48 38% 40%;
+    --accent-foreground: 40 20% 98%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 40 20% 98%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 26 83% 14%;
@@ -41,24 +42,24 @@ All colors MUST be HSL.
     --success: 142 71% 45%;
     --success-foreground: 144 61% 20%;
 
-    --border: 220 20% 92%;
-    --input: 220 20% 92%;
-    --ring: 220 70% 40%;
+    --border: 40 15% 88%;
+    --input: 40 15% 90%;
+    --ring: 48 38% 40%;
 
     --radius: 0.75rem;
 
-    /* Sidebar Clara - Modo Claro */
-    --sidebar-background: 220 40% 97%;
-    --sidebar-foreground: 220 60% 20%;
-    --sidebar-primary: 220 70% 40%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 220 30% 92%;
-    --sidebar-accent-foreground: 220 60% 20%;
-    --sidebar-border: 220 20% 88%;
-    --sidebar-ring: 45 93% 58%;
+    /* Sidebar - Navy escuro elegante */
+    --sidebar-background: 220 29% 16%;
+    --sidebar-foreground: 40 20% 98%;
+    --sidebar-primary: 48 38% 45%;
+    --sidebar-primary-foreground: 220 29% 12%;
+    --sidebar-accent: 220 29% 22%;
+    --sidebar-accent-foreground: 40 20% 98%;
+    --sidebar-border: 220 29% 22%;
+    --sidebar-ring: 48 38% 50%;
 
-    /* Cor customizada do ícone do logo - Modo Claro */
-    --logo-icon: 44 26% 33%;
+    /* Logo Icon - Dourado */
+    --logo-icon: 48 38% 40%;
 
     /* Spacing System - 8pt Grid */
     --spacing-xs: 0.5rem;
@@ -72,32 +73,33 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* Navy Blue Escuro Aprimorado - Mais Contraste e Profundidade */
-    --background: 220 35% 12%;
-    --foreground: 210 20% 98%;
+    /* Ticket Up - Modo Escuro */
+    /* Navy profundo com dourado vibrante */
+    --background: 220 30% 10%;
+    --foreground: 40 15% 95%;
 
-    --card: 220 40% 16%;
-    --card-foreground: 210 20% 98%;
+    --card: 220 28% 14%;
+    --card-foreground: 40 15% 95%;
 
-    --popover: 220 42% 18%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 220 28% 16%;
+    --popover-foreground: 40 15% 95%;
 
-    /* Navy Primary - Mais Vibrante no Escuro */
-    --primary: 220 70% 55%;
-    --primary-foreground: 210 20% 98%;
+    /* Primary - Dourado brilhante no escuro */
+    --primary: 48 45% 50%;
+    --primary-foreground: 220 29% 12%;
 
-    --secondary: 220 35% 20%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 220 28% 18%;
+    --secondary-foreground: 40 15% 95%;
 
-    --muted: 220 30% 24%;
-    --muted-foreground: 220 20% 80%;
+    --muted: 220 25% 22%;
+    --muted-foreground: 40 10% 70%;
 
-    /* Accent Dourado - Mantém o Brilho */
-    --accent: 45 93% 62%;
-    --accent-foreground: 26 83% 14%;
+    /* Accent - Dourado vibrante */
+    --accent: 48 50% 55%;
+    --accent-foreground: 220 29% 12%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 20% 98%;
+    --destructive-foreground: 40 15% 95%;
 
     --warning: 38 92% 55%;
     --warning-foreground: 26 83% 14%;
@@ -105,23 +107,23 @@ All colors MUST be HSL.
     --success: 142 71% 50%;
     --success-foreground: 144 100% 98%;
 
-    /* Bordas e Inputs - Melhor Visibilidade */
-    --border: 220 40% 28%;
-    --input: 220 38% 26%;
-    --ring: 45 93% 62%;
+    /* Bordas e Inputs */
+    --border: 220 25% 25%;
+    --input: 220 25% 20%;
+    --ring: 48 45% 55%;
 
-    /* Sidebar Escura Premium - Navy Profundo */
-    --sidebar-background: 220 45% 10%;
-    --sidebar-foreground: 210 20% 98%;
-    --sidebar-primary: 220 70% 55%;
-    --sidebar-primary-foreground: 210 20% 98%;
-    --sidebar-accent: 220 45% 18%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 220 40% 16%;
-    --sidebar-ring: 45 93% 62%;
+    /* Sidebar - Navy profundo premium */
+    --sidebar-background: 220 35% 8%;
+    --sidebar-foreground: 40 15% 95%;
+    --sidebar-primary: 48 50% 55%;
+    --sidebar-primary-foreground: 220 29% 10%;
+    --sidebar-accent: 220 30% 16%;
+    --sidebar-accent-foreground: 40 15% 95%;
+    --sidebar-border: 220 30% 14%;
+    --sidebar-ring: 48 50% 55%;
 
-    /* Cor customizada do ícone do logo - Modo Escuro */
-    --logo-icon: 210 29% 11%;
+    /* Logo Icon - Dourado brilhante */
+    --logo-icon: 48 50% 55%;
   }
 }
 
