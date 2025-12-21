@@ -109,6 +109,7 @@ export function TabelaContasPagar({ contas, onDetalhes, onEditar, onMarcarPago, 
                       variant="ghost"
                       size="icon"
                       onClick={() => onDetalhes(conta)}
+                      aria-label="Ver detalhes"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -117,6 +118,7 @@ export function TabelaContasPagar({ contas, onDetalhes, onEditar, onMarcarPago, 
                         variant="ghost"
                         size="icon"
                         onClick={() => onMarcarPago(conta)}
+                        aria-label="Marcar como pago"
                       >
                         <CheckCircle className="h-4 w-4" />
                       </Button>
@@ -125,6 +127,7 @@ export function TabelaContasPagar({ contas, onDetalhes, onEditar, onMarcarPago, 
                       variant="ghost"
                       size="icon"
                       onClick={() => onEditar(conta)}
+                      aria-label="Editar"
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -132,6 +135,7 @@ export function TabelaContasPagar({ contas, onDetalhes, onEditar, onMarcarPago, 
                       variant="ghost"
                       size="icon"
                       onClick={() => onExcluir(conta.id)}
+                      aria-label="Excluir"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

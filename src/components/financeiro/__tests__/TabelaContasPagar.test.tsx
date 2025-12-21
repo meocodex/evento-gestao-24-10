@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { TabelaContasPagar } from '../TabelaContasPagar';
 import type { ContaPagar } from '@/types/financeiro';
@@ -88,33 +89,32 @@ describe('TabelaContasPagar', () => {
       expect(screen.getByText('Assinatura Software')).toBeInTheDocument();
     });
 
-    it('deve renderizar com array vazio', () => {
+    it('deve renderizar EmptyState com array vazio', () => {
       render(<TabelaContasPagar contas={[]} {...mockCallbacks} />);
 
-      expect(screen.getByText('Vencimento')).toBeInTheDocument();
-      expect(screen.queryByText('Conta de Luz')).not.toBeInTheDocument();
+      expect(screen.getByText('Nenhuma conta encontrada')).toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
     });
   });
 
-  describe('Filtros', () => {
-    it('deve ter input de busca', () => {
+  describe('Exportação e contador', () => {
+    it('deve exibir botões de exportação PDF e Excel', () => {
       render(<TabelaContasPagar contas={mockContas} {...mockCallbacks} />);
 
-      const searchInput = screen.getByPlaceholderText(/buscar por/i);
-      expect(searchInput).toBeInTheDocument();
+      expect(screen.getByText('PDF')).toBeInTheDocument();
+      expect(screen.getByText('Excel')).toBeInTheDocument();
     });
 
-    it('deve permitir busca', () => {
-      render(<TabelaContasPagar contas={mockContas} {...mockCallbacks} />);
+    it('deve exibir contador de resultados singular', () => {
+      render(<TabelaContasPagar contas={[mockContas[0]]} {...mockCallbacks} />);
 
-      const searchInput = screen.getByPlaceholderText(/buscar por/i);
-      expect(searchInput).toBeInTheDocument();
+      expect(screen.getByText('1 conta encontrada')).toBeInTheDocument();
     });
 
-    it('deve ter select de status', () => {
+    it('deve exibir contador de resultados plural', () => {
       render(<TabelaContasPagar contas={mockContas} {...mockCallbacks} />);
 
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByText('4 contas encontradas')).toBeInTheDocument();
     });
   });
 
@@ -190,11 +190,51 @@ describe('TabelaContasPagar', () => {
   });
 
   describe('Ações', () => {
-    it('deve ter botões de ação', () => {
+    it('deve chamar onDetalhes ao clicar no botão de detalhes', async () => {
+      const user = userEvent.setup();
       render(<TabelaContasPagar contas={mockContas} {...mockCallbacks} />);
 
-      const buttons = screen.getAllByRole('button');
-      expect(buttons.length).toBeGreaterThan(0);
+      const viewButtons = screen.getAllByRole('button', { name: /ver detalhes/i });
+      await user.click(viewButtons[0]);
+
+      expect(mockCallbacks.onDetalhes).toHaveBeenCalledWith(mockContas[0]);
+    });
+
+    it('deve chamar onEditar ao clicar no botão de editar', async () => {
+      const user = userEvent.setup();
+      render(<TabelaContasPagar contas={mockContas} {...mockCallbacks} />);
+
+      const editButtons = screen.getAllByRole('button', { name: /editar/i });
+      await user.click(editButtons[0]);
+
+      expect(mockCallbacks.onEditar).toHaveBeenCalledWith(mockContas[0]);
+    });
+
+    it('deve chamar onMarcarPago ao clicar no botão de marcar pago', async () => {
+      const user = userEvent.setup();
+      render(<TabelaContasPagar contas={mockContas} {...mockCallbacks} />);
+
+      const payButtons = screen.getAllByRole('button', { name: /marcar como pago/i });
+      await user.click(payButtons[0]);
+
+      expect(mockCallbacks.onMarcarPago).toHaveBeenCalledWith(mockContas[0]);
+    });
+
+    it('deve chamar onExcluir ao clicar no botão de excluir', async () => {
+      const user = userEvent.setup();
+      render(<TabelaContasPagar contas={mockContas} {...mockCallbacks} />);
+
+      const deleteButtons = screen.getAllByRole('button', { name: /excluir/i });
+      await user.click(deleteButtons[0]);
+
+      expect(mockCallbacks.onExcluir).toHaveBeenCalledWith(mockContas[0].id);
+    });
+
+    it('não deve mostrar botão marcar pago para contas já pagas', () => {
+      render(<TabelaContasPagar contas={[mockContas[1]]} {...mockCallbacks} />);
+
+      const payButtons = screen.queryAllByRole('button', { name: /marcar como pago/i });
+      expect(payButtons.length).toBe(0);
     });
   });
 
@@ -237,6 +277,23 @@ describe('TabelaContasPagar', () => {
       render(<TabelaContasPagar contas={[contaDescricaoLonga]} {...mockCallbacks} />);
 
       expect(screen.getByText(/Descrição muito longa/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Acessibilidade', () => {
+    it('deve ter estrutura de tabela acessível', () => {
+      render(<TabelaContasPagar contas={mockContas} {...mockCallbacks} />);
+
+      const table = screen.getByRole('table');
+      expect(table).toBeInTheDocument();
+    });
+
+    it('deve ter botões de ação com aria-labels', () => {
+      render(<TabelaContasPagar contas={mockContas} {...mockCallbacks} />);
+
+      expect(screen.getAllByRole('button', { name: /ver detalhes/i }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole('button', { name: /editar/i }).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole('button', { name: /excluir/i }).length).toBeGreaterThan(0);
     });
   });
 });
