@@ -142,16 +142,6 @@ export default function Eventos() {
     <div className="min-h-full overflow-x-hidden">
       {/* Container responsivo sem max-width fixo */}
       <div className="w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4 animate-fade-in bg-background">
-        {/* Navy Hero Header */}
-        <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
-            Eventos
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            Gerencie todos os eventos da sua empresa
-          </p>
-        </div>
-
         {/* Stats Cards */}
         <EventosStats eventos={eventos} />
 
