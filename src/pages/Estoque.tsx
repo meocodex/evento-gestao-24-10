@@ -11,14 +11,6 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { EstoqueVirtualList } from '@/components/estoque/EstoqueVirtualList';
 import { useEstoque, type MaterialEstoque } from '@/hooks/estoque';
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
   Package,
   PackageCheck,
   PackageX,
@@ -26,7 +18,8 @@ import {
   Plus,
   Search,
   RefreshCw,
-  LayoutGrid,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -43,15 +36,12 @@ export default function Estoque() {
   const { materiais = [], totalCount = 0, isLoading: loading, excluirMaterial, sincronizarQuantidades } = useEstoque(page, pageSize, { busca: searchTerm });
   const { hasPermission } = usePermissions();
 
-  // Filtrar materiais localmente com base nos filtros do popover
   const materiaisFiltrados = useMemo(() => {
     return materiais.filter(material => {
-      // Filtro de categoria
       if (filtros.categoria !== 'todas' && material.categoria !== filtros.categoria) {
         return false;
       }
 
-      // Filtro de status (baseado nos seriais)
       if (filtros.status !== 'todos') {
         const hasMatchingStatus = material.seriais?.some(serial => {
           if (filtros.status === 'disponivel') return serial.status === 'disponivel';
@@ -63,7 +53,6 @@ export default function Estoque() {
         if (!hasMatchingStatus) return false;
       }
 
-      // Filtro de localização
       if (filtros.localizacao !== 'todas') {
         const hasMatchingLocation = material.seriais?.some(
           serial => serial.localizacao === filtros.localizacao
@@ -107,7 +96,6 @@ export default function Estoque() {
   const stats = getEstatisticas();
   const totalPages = Math.ceil(totalCount / pageSize);
 
-  // Extrair categorias e localizações únicas para os filtros
   const categoriasUnicas = useMemo(() => {
     const cats: string[] = [];
     materiais.forEach(m => {
@@ -155,137 +143,143 @@ export default function Estoque() {
   }, [materialParaExcluir, excluirMaterial]);
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Estatísticas - Desktop only */}
-      <div className="hidden md:grid md:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard
-          title="Total de Itens"
-          value={stats.totalItens.toString()}
-          subtitle={`${materiaisFiltrados.length} tipos`}
-          icon={Package}
-          variant="primary"
-        />
-        <StatCard
-          title="Disponíveis"
-          value={stats.totalDisponiveis.toString()}
-          subtitle="Prontos para uso"
-          icon={PackageCheck}
-          variant="success"
-        />
-        <StatCard
-          title="Em Uso"
-          value={stats.totalEmUso.toString()}
-          subtitle="Alocados"
-          icon={PackageX}
-          variant="warning"
-        />
-        <StatCard
-          title="Manutenção"
-          value={stats.totalManutencao.toString()}
-          subtitle="Necessitam reparo"
-          icon={Wrench}
-          variant="danger"
-        />
-      </div>
-
-      {/* Header */}
-      <div className="flex items-center justify-end gap-2">
-        {hasPermission('admin.full_access') && (
-          <Button
-            variant="outline"
-            onClick={() => sincronizarQuantidades.mutate(undefined)}
-            disabled={sincronizarQuantidades.isPending}
-            className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4"
-          >
-            <RefreshCw className={`h-4 w-4 sm:mr-2 ${sincronizarQuantidades.isPending ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Sincronizar</span>
-          </Button>
-        )}
-        <Button onClick={() => setShowNovoMaterial(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-          <Plus className="h-4 w-4 sm:mr-2" />
-          <span className="hidden xs:inline">Novo Material</span>
-        </Button>
-      </div>
-
-      {/* Busca e Filtros */}
-      <div className="flex items-center gap-2 sm:gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar materiais..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-9 sm:h-10 text-sm"
+    <div className="min-h-full overflow-x-hidden">
+      <div className="w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4 animate-fade-in bg-background">
+        {/* Stats Cards - Desktop only */}
+        <div className="hidden md:grid md:grid-cols-4 gap-3 sm:gap-4">
+          <StatCard
+            title="Total de Itens"
+            value={stats.totalItens.toString()}
+            subtitle={`${materiaisFiltrados.length} tipos`}
+            icon={Package}
+            variant="primary"
+          />
+          <StatCard
+            title="Disponíveis"
+            value={stats.totalDisponiveis.toString()}
+            subtitle="Prontos para uso"
+            icon={PackageCheck}
+            variant="success"
+          />
+          <StatCard
+            title="Em Uso"
+            value={stats.totalEmUso.toString()}
+            subtitle="Alocados"
+            icon={PackageX}
+            variant="warning"
+          />
+          <StatCard
+            title="Manutenção"
+            value={stats.totalManutencao.toString()}
+            subtitle="Necessitam reparo"
+            icon={Wrench}
+            variant="danger"
           />
         </div>
-        <EstoqueFiltersPopover
-          filtros={filtros}
-          onFiltrosChange={setFiltros}
-          categorias={categoriasUnicas}
-          localizacoes={localizacoesUnicas}
-        />
-      </div>
 
-      {/* Controles */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-navy-600">
-          Mostrando {materiaisFiltrados.length} de {totalCount} materiais
-        </p>
-      </div>
-
-      {/* Lista Virtualizada */}
-      <Card className="p-0">
-        <div className="flex items-center gap-4 px-4 py-3 border-b bg-muted/50 text-sm font-medium">
-          <div className="w-24 flex-shrink-0">Código</div>
-          <div className="flex-1">Material</div>
-          <div className="flex-shrink-0">Categoria</div>
-          <div className="flex items-center gap-4 flex-shrink-0">
-            <div className="w-16 text-center">Total</div>
-            <div className="w-16 text-center">Disponível</div>
-            <div className="w-16 text-center">Em Uso</div>
-            <div className="w-16 text-center">Manutenção</div>
+        {/* Single Unified Toolbar */}
+        <div className="flex flex-wrap items-center gap-2 lg:gap-3 p-2 sm:p-3 rounded-2xl glass-card">
+          {/* Search */}
+          <div className="relative min-w-[100px] max-w-[200px] flex-shrink flex-1 sm:flex-none">
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar..."
+              className="pl-8 h-8 text-xs bg-background/60"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-          <div className="w-32 text-right">Ações</div>
-        </div>
-        <EstoqueVirtualList
-          materiais={materiaisFiltrados}
-          loading={loading}
-          onVerDetalhes={handleVerDetalhes}
-          onEditar={handleEditarMaterial}
-          onExcluir={handleDeleteClick}
-        />
-      </Card>
 
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious 
-                onClick={() => setPage(Math.max(1, page - 1))}
-                className={page === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-              />
-            </PaginationItem>
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum = i + 1;
-              if (totalPages > 5 && page > 3) pageNum = page - 2 + i;
-              return pageNum <= totalPages ? (
-                <PaginationItem key={pageNum}>
-                  <PaginationLink onClick={() => setPage(pageNum)} isActive={page === pageNum} className="cursor-pointer">
-                    {pageNum}
-                  </PaginationLink>
-                </PaginationItem>
-              ) : null;
-            })}
-            <PaginationItem>
-              <PaginationNext 
-                onClick={() => setPage(Math.min(totalPages, page + 1))}
-                className={page === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
+
+          {/* Filters */}
+          <EstoqueFiltersPopover
+            filtros={filtros}
+            onFiltrosChange={setFiltros}
+            categorias={categoriasUnicas}
+            localizacoes={localizacoesUnicas}
+          />
+
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
+
+          {/* Sync Button */}
+          {hasPermission('admin.full_access') && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => sincronizarQuantidades.mutate(undefined)}
+              disabled={sincronizarQuantidades.isPending}
+              className="gap-1 h-8 text-xs px-2.5"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${sincronizarQuantidades.isPending ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">Sincronizar</span>
+            </Button>
+          )}
+
+          {/* Create */}
+          <Button onClick={() => setShowNovoMaterial(true)} size="sm" className="gap-1 h-8 text-xs px-2.5">
+            <Plus className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Novo Material</span>
+          </Button>
+
+          {/* Counter + Pagination - pushed right */}
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+            <span className="hidden xl:flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">{materiaisFiltrados.length}</span>/<span>{totalCount}</span>
+            </span>
+
+            {totalPages > 1 && (
+              <>
+                <div className="h-6 w-px bg-border/50" />
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground">{page}/{totalPages}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => setPage(Math.min(totalPages, page + 1))}
+                    disabled={page >= totalPages}
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Lista Virtualizada */}
+        <Card className="p-0">
+          <div className="flex items-center gap-4 px-4 py-3 border-b bg-muted/50 text-sm font-medium">
+            <div className="w-24 flex-shrink-0">Código</div>
+            <div className="flex-1">Material</div>
+            <div className="flex-shrink-0">Categoria</div>
+            <div className="flex items-center gap-4 flex-shrink-0">
+              <div className="w-16 text-center">Total</div>
+              <div className="w-16 text-center">Disponível</div>
+              <div className="w-16 text-center">Em Uso</div>
+              <div className="w-16 text-center">Manutenção</div>
+            </div>
+            <div className="w-32 text-right">Ações</div>
+          </div>
+          <EstoqueVirtualList
+            materiais={materiaisFiltrados}
+            loading={loading}
+            onVerDetalhes={handleVerDetalhes}
+            onEditar={handleEditarMaterial}
+            onExcluir={handleDeleteClick}
+          />
+        </Card>
+      </div>
 
       <NovoMaterialSheet open={showNovoMaterial} onOpenChange={setShowNovoMaterial} />
       {materialSelecionado && (

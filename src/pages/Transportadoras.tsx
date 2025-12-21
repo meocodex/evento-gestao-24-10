@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Truck, Search, Filter, Package } from 'lucide-react';
+import { Plus, Truck, Search, Filter, Package, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ export default function Transportadoras() {
   } = useTransportadoras();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'todas' | 'ativa' | 'inativa'>('todas');
+  const [activeTab, setActiveTab] = useState('transportadoras');
   const [novaTransportadoraOpen, setNovaTransportadoraOpen] = useState(false);
   const [editarTransportadora, setEditarTransportadora] = useState<Transportadora | null>(null);
   const [detalhesTransportadora, setDetalhesTransportadora] = useState<Transportadora | null>(null);
@@ -43,22 +44,10 @@ export default function Transportadoras() {
   const enviosFinalizados = useMemo(() => envios.filter(e => e.status === 'entregue' || e.status === 'cancelado'), [envios]);
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
-      <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in bg-navy-50 dark:bg-navy-950">
-        {/* Header */}
-        <div className="flex items-center justify-end gap-2 flex-wrap">
-          <Button onClick={() => setNovoEnvioOpen(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-            <Plus className="h-4 w-4 sm:mr-2" />
-            <span className="hidden xs:inline">Novo Envio</span>
-          </Button>
-          <Button onClick={() => setNovaTransportadoraOpen(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-            <Plus className="h-4 w-4 sm:mr-2" />
-            <span className="hidden xs:inline">Nova Transportadora</span>
-          </Button>
-        </div>
-
-        {/* Stats Cards Navy */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    <div className="min-h-full overflow-x-hidden">
+      <div className="w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4 animate-fade-in bg-background">
+        {/* Stats Cards - Desktop only */}
+        <div className="hidden md:grid md:grid-cols-4 gap-3 sm:gap-4">
           <StatCard
             title="Total"
             value={transportadoras.length}
@@ -85,49 +74,69 @@ export default function Transportadoras() {
           />
         </div>
 
-        {/* Tabs Navy-themed */}
-        <Tabs defaultValue="transportadoras" className="space-y-4">
-          <TabsList className="bg-navy-100 dark:bg-navy-900">
-            <TabsTrigger value="transportadoras" className="data-[state=active]:bg-navy-600 data-[state=active]:text-white">
-              Transportadoras
-            </TabsTrigger>
-            <TabsTrigger value="envios" className="data-[state=active]:bg-navy-600 data-[state=active]:text-white">
-              Envios
-            </TabsTrigger>
-          </TabsList>
+        {/* Single Unified Toolbar */}
+        <div className="flex flex-wrap items-center gap-2 lg:gap-3 p-2 sm:p-3 rounded-2xl glass-card">
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-shrink-0">
+            <TabsList className="h-8 p-0.5 bg-muted/50">
+              <TabsTrigger value="transportadoras" className="text-xs px-2 h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Transportadoras</TabsTrigger>
+              <TabsTrigger value="envios" className="text-xs px-2 h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Envios</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-          {/* Transportadoras Tab */}
-          <TabsContent value="transportadoras" className="space-y-4">
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome ou CNPJ..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-9 sm:h-10 text-sm"
-                />
-              </div>
-              <Button variant="outline" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 flex-shrink-0">
-                <Filter className="h-4 w-4" />
-              </Button>
-            </div>
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
 
-            <TransportadorasVirtualGrid
-              transportadoras={transportadoras}
-              loading={loading}
-              onDetalhes={setDetalhesTransportadora}
-              onRotas={setGerenciarRotasTransportadora}
-              onEditar={setEditarTransportadora}
-              onExcluir={(t) => {
-                setTransportadoraExcluir(t);
-                setConfirmExcluirTransportadora(true);
-              }}
+          {/* Search */}
+          <div className="relative min-w-[100px] max-w-[160px] flex-shrink flex-1 sm:flex-none">
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar..."
+              className="pl-8 h-8 text-xs bg-background/60"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </TabsContent>
+          </div>
 
-          {/* Envios Tab */}
-          <TabsContent value="envios" className="space-y-4">
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
+
+          {/* Create Buttons */}
+          <Button onClick={() => setNovoEnvioOpen(true)} size="sm" className="gap-1 h-8 text-xs px-2.5">
+            <Plus className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Envio</span>
+          </Button>
+          <Button onClick={() => setNovaTransportadoraOpen(true)} variant="outline" size="sm" className="gap-1 h-8 text-xs px-2.5">
+            <Plus className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Transportadora</span>
+          </Button>
+
+          {/* Counter - pushed right */}
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+            <span className="hidden xl:flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">
+                {activeTab === 'transportadoras' ? transportadoras.length : envios.length}
+              </span>
+              <span>{activeTab === 'transportadoras' ? 'transportadoras' : 'envios'}</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Content */}
+        {activeTab === 'transportadoras' && (
+          <TransportadorasVirtualGrid
+            transportadoras={transportadoras}
+            loading={loading}
+            onDetalhes={setDetalhesTransportadora}
+            onRotas={setGerenciarRotasTransportadora}
+            onEditar={setEditarTransportadora}
+            onExcluir={(t) => {
+              setTransportadoraExcluir(t);
+              setConfirmExcluirTransportadora(true);
+            }}
+          />
+        )}
+
+        {activeTab === 'envios' && (
+          <div className="space-y-4">
             <EnviosVirtualList
               envios={enviosAtivos}
               loading={loading}
@@ -140,50 +149,50 @@ export default function Transportadoras() {
               title="Envios Finalizados"
               emptyMessage="Nenhum envio finalizado"
             />
-          </TabsContent>
-        </Tabs>
-
-        {/* Sheets */}
-        <NovaTransportadoraSheet open={novaTransportadoraOpen} onOpenChange={setNovaTransportadoraOpen} />
-        {editarTransportadora && (
-          <EditarTransportadoraSheet
-            transportadora={editarTransportadora}
-            open={!!editarTransportadora}
-            onOpenChange={(open) => !open && setEditarTransportadora(null)}
-          />
+          </div>
         )}
-        {detalhesTransportadora && (
-          <DetalhesTransportadoraSheet
-            transportadora={detalhesTransportadora}
-            open={!!detalhesTransportadora}
-            onOpenChange={(open) => !open && setDetalhesTransportadora(null)}
-          />
-        )}
-        {gerenciarRotasTransportadora && (
-          <GerenciarRotasSheet
-            transportadora={gerenciarRotasTransportadora}
-            open={!!gerenciarRotasTransportadora}
-            onOpenChange={(open) => !open && setGerenciarRotasTransportadora(null)}
-          />
-        )}
-        {novoEnvioOpen && <NovoEnvioSheet open={novoEnvioOpen} onOpenChange={setNovoEnvioOpen} />}
-
-        <ConfirmDialog
-          open={confirmExcluirTransportadora}
-          onOpenChange={setConfirmExcluirTransportadora}
-          onConfirm={() => {
-            if (transportadoraExcluir) {
-              excluirTransportadora.mutateAsync(transportadoraExcluir.id);
-              setConfirmExcluirTransportadora(false);
-              setTransportadoraExcluir(null);
-            }
-          }}
-          title="Excluir Transportadora"
-          description={`Tem certeza que deseja excluir a transportadora "${transportadoraExcluir?.nome}"? Esta ação não pode ser desfeita.`}
-          variant="danger"
-          confirmText="Excluir"
-        />
       </div>
+
+      {/* Sheets */}
+      <NovaTransportadoraSheet open={novaTransportadoraOpen} onOpenChange={setNovaTransportadoraOpen} />
+      {editarTransportadora && (
+        <EditarTransportadoraSheet
+          transportadora={editarTransportadora}
+          open={!!editarTransportadora}
+          onOpenChange={(open) => !open && setEditarTransportadora(null)}
+        />
+      )}
+      {detalhesTransportadora && (
+        <DetalhesTransportadoraSheet
+          transportadora={detalhesTransportadora}
+          open={!!detalhesTransportadora}
+          onOpenChange={(open) => !open && setDetalhesTransportadora(null)}
+        />
+      )}
+      {gerenciarRotasTransportadora && (
+        <GerenciarRotasSheet
+          transportadora={gerenciarRotasTransportadora}
+          open={!!gerenciarRotasTransportadora}
+          onOpenChange={(open) => !open && setGerenciarRotasTransportadora(null)}
+        />
+      )}
+      {novoEnvioOpen && <NovoEnvioSheet open={novoEnvioOpen} onOpenChange={setNovoEnvioOpen} />}
+
+      <ConfirmDialog
+        open={confirmExcluirTransportadora}
+        onOpenChange={setConfirmExcluirTransportadora}
+        onConfirm={() => {
+          if (transportadoraExcluir) {
+            excluirTransportadora.mutateAsync(transportadoraExcluir.id);
+            setConfirmExcluirTransportadora(false);
+            setTransportadoraExcluir(null);
+          }
+        }}
+        title="Excluir Transportadora"
+        description={`Tem certeza que deseja excluir a transportadora "${transportadoraExcluir?.nome}"? Esta ação não pode ser desfeita.`}
+        variant="danger"
+        confirmText="Excluir"
+      />
     </div>
   );
 }

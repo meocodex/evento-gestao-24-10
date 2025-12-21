@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { FileText, Plus, Search, Eye, Edit, MoreVertical, FileSignature, CheckCircle2, Clock, Trash2 } from 'lucide-react';
+import { FileText, Plus, Search, Eye, Edit, MoreVertical, FileSignature, CheckCircle2, Clock, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { useContratos } from '@/hooks/contratos';
@@ -22,7 +20,6 @@ import { Contrato, ContratoTemplate, StatusContrato } from '@/types/contratos';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ContratosVirtualList } from '@/components/contratos/ContratosVirtualList';
 import { TemplatesVirtualGrid } from '@/components/contratos/TemplatesVirtualGrid';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 
 export default function Contratos() {
   const [pageContratos, setPageContratos] = useState(1);
@@ -31,6 +28,7 @@ export default function Contratos() {
   const [pageSizeTemplates] = useState(50);
   const [filtrosContratos, setFiltrosContratos] = useState<any>({});
   const [filtrosTemplates, setFiltrosTemplates] = useState<any>({});
+  const [activeTab, setActiveTab] = useState('contratos');
   
   const {
     contratos,
@@ -67,7 +65,6 @@ export default function Contratos() {
   const [contratoSelecionado, setContratoSelecionado] = useState<Contrato | null>(null);
   const [templateSelecionado, setTemplateSelecionado] = useState<ContratoTemplate | null>(null);
 
-  // Debounce para filtros
   useEffect(() => {
     const timer = setTimeout(() => {
       setFiltrosContratos({
@@ -118,8 +115,8 @@ export default function Contratos() {
   const totalPagesTemplates = Math.ceil(totalTemplates / pageSizeTemplates);
 
   return (
-    <div className="min-h-screen overflow-x-hidden">
-      <div className="w-full px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 animate-fade-in bg-navy-50 dark:bg-navy-950">
+    <div className="min-h-full overflow-x-hidden">
+      <div className="w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4 animate-fade-in bg-background">
         {/* Stats Cards - Desktop only */}
         <div className="hidden md:grid md:grid-cols-4 gap-3 sm:gap-4">
           <StatCard
@@ -148,47 +145,37 @@ export default function Contratos() {
           />
         </div>
 
-        {/* Header */}
-        <div className="flex items-center justify-end gap-2 flex-wrap">
-          <Button onClick={() => setMostrarNovaProposta(true)} className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-            <FileText className="h-4 w-4 sm:mr-1" />
-            <span className="hidden xs:inline">Nova Proposta</span>
-          </Button>
-          <Button onClick={() => setMostrarNovoContrato(true)} variant="outline" className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-            <FileSignature className="h-4 w-4 sm:mr-1" />
-            <span className="hidden xs:inline">Novo Contrato</span>
-          </Button>
-          <Button onClick={() => setMostrarNovoTemplate(true)} variant="outline" className="h-9 sm:h-10 text-xs sm:text-sm px-3 sm:px-4">
-            <FileSignature className="h-4 w-4 sm:mr-1" />
-            <span className="hidden xs:inline">Novo Template</span>
-          </Button>
-        </div>
+        {/* Single Unified Toolbar */}
+        <div className="flex flex-wrap items-center gap-2 lg:gap-3 p-2 sm:p-3 rounded-2xl glass-card">
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-shrink-0">
+            <TabsList className="h-8 p-0.5 bg-muted/50">
+              <TabsTrigger value="contratos" className="text-xs px-2 h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Contratos</TabsTrigger>
+              <TabsTrigger value="templates" className="text-xs px-2 h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Templates</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-        {/* Tabs Navy-themed */}
-        <Tabs defaultValue="contratos" className="space-y-4">
-          <TabsList className="bg-navy-100 dark:bg-navy-900">
-            <TabsTrigger value="contratos" className="data-[state=active]:bg-navy-600 data-[state=active]:text-white">
-              Contratos & Propostas
-            </TabsTrigger>
-            <TabsTrigger value="templates" className="data-[state=active]:bg-navy-600 data-[state=active]:text-white">
-              Templates
-            </TabsTrigger>
-          </TabsList>
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
 
-          <TabsContent value="contratos" className="space-y-4">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar contratos e propostas..."
-                  value={searchContratos}
-                  onChange={(e) => setSearchContratos(e.target.value)}
-                  className="pl-9 h-9 sm:h-10 text-sm"
-                />
-              </div>
+          {/* Search */}
+          <div className="relative min-w-[100px] max-w-[140px] flex-shrink">
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar..."
+              className="pl-8 h-8 text-xs bg-background/60"
+              value={activeTab === 'contratos' ? searchContratos : searchTemplates}
+              onChange={(e) => activeTab === 'contratos' ? setSearchContratos(e.target.value) : setSearchTemplates(e.target.value)}
+            />
+          </div>
+
+          {activeTab === 'contratos' && (
+            <>
+              <div className="hidden xl:block h-6 w-px bg-border/50" />
+
+              {/* Status Filter */}
               <Select value={filtroStatus} onValueChange={setFiltroStatus}>
-                <SelectTrigger className="w-full sm:w-[180px] md:w-[200px] h-9 sm:h-10 text-xs sm:text-sm">
-                  <SelectValue />
+                <SelectTrigger className="w-[100px] h-8 text-xs">
+                  <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
@@ -201,144 +188,119 @@ export default function Contratos() {
                   <SelectItem value="aguardando_assinatura">Aguardando</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </>
+          )}
 
-            <ContratosVirtualList
-              contratos={contratos}
-              loading={loading}
-              statusColors={statusColors}
-              statusLabels={statusLabels}
-              onDetalhes={(contrato) => {
-                setContratoSelecionado(contrato);
-                setMostrarDetalhesContrato(true);
-              }}
-              onEditar={(contrato) => {
-                setContratoSelecionado(contrato);
-                setMostrarEditarContrato(true);
-              }}
-              onConverter={(contrato) => {
-                setContratoSelecionado(contrato);
-                setMostrarConverterContrato(true);
-              }}
-              onExcluir={(contrato) => {
-                setContratoSelecionado(contrato);
-                setConfirmExcluirContrato(true);
-              }}
-            />
+          <div className="hidden xl:block h-6 w-px bg-border/50" />
 
-            {totalPagesContratos > 1 && (
-              <Pagination className="mt-6">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() => setPageContratos(Math.max(1, pageContratos - 1))}
-                      className={pageContratos === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                  {Array.from({ length: Math.min(5, totalPagesContratos) }, (_, i) => {
-                    let pageNum = i + 1;
-                    if (totalPagesContratos > 5) {
-                      if (pageContratos > 3) {
-                        pageNum = pageContratos - 2 + i;
-                      }
-                      if (pageNum > totalPagesContratos - 2) {
-                        pageNum = totalPagesContratos - 4 + i;
-                      }
+          {/* Create Buttons */}
+          <Button onClick={() => setMostrarNovaProposta(true)} size="sm" className="gap-1 h-8 text-xs px-2.5">
+            <FileText className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Proposta</span>
+          </Button>
+          <Button onClick={() => setMostrarNovoContrato(true)} variant="outline" size="sm" className="gap-1 h-8 text-xs px-2.5">
+            <FileSignature className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Contrato</span>
+          </Button>
+          {activeTab === 'templates' && (
+            <Button onClick={() => setMostrarNovoTemplate(true)} variant="outline" size="sm" className="gap-1 h-8 text-xs px-2.5">
+              <Plus className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Template</span>
+            </Button>
+          )}
+
+          {/* Counter + Pagination - pushed right */}
+          <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+            <span className="hidden xl:flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="font-semibold text-primary">
+                {activeTab === 'contratos' ? contratos.length : templates.length}
+              </span>/<span>{activeTab === 'contratos' ? totalContratos : totalTemplates}</span>
+            </span>
+
+            {(activeTab === 'contratos' ? totalPagesContratos : totalPagesTemplates) > 1 && (
+              <>
+                <div className="h-6 w-px bg-border/50" />
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => activeTab === 'contratos' 
+                      ? setPageContratos(Math.max(1, pageContratos - 1))
+                      : setPageTemplates(Math.max(1, pageTemplates - 1))
                     }
-                    return (
-                      <PaginationItem key={pageNum}>
-                        <PaginationLink
-                          onClick={() => setPageContratos(pageNum)}
-                          isActive={pageContratos === pageNum}
-                          className="cursor-pointer"
-                        >
-                          {pageNum}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  })}
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() => setPageContratos(Math.min(totalPagesContratos, pageContratos + 1))}
-                      className={pageContratos === totalPagesContratos ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            )}
-          </TabsContent>
-
-          <TabsContent value="templates" className="space-y-4">
-            <div className="flex items-center gap-2 sm:gap-4 mb-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar templates..."
-                  value={searchTemplates}
-                  onChange={(e) => setSearchTemplates(e.target.value)}
-                  className="pl-9 h-9 sm:h-10 text-sm"
-                />
-              </div>
-            </div>
-            <TemplatesVirtualGrid
-              templates={templates}
-              loading={loading}
-              onDetalhes={(template) => {
-                setTemplateSelecionado(template);
-                setMostrarDetalhesTemplate(true);
-              }}
-              onEditar={(template) => {
-                setTemplateSelecionado(template);
-                setMostrarEditarTemplate(true);
-              }}
-              onExcluir={(template) => {
-                setTemplateSelecionado(template);
-                setConfirmExcluirTemplate(true);
-              }}
-            />
-
-            {totalPagesTemplates > 1 && (
-              <Pagination className="mt-6">
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() => setPageTemplates(Math.max(1, pageTemplates - 1))}
-                      className={pageTemplates === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                  {Array.from({ length: Math.min(5, totalPagesTemplates) }, (_, i) => {
-                    let pageNum = i + 1;
-                    if (totalPagesTemplates > 5) {
-                      if (pageTemplates > 3) {
-                        pageNum = pageTemplates - 2 + i;
-                      }
-                      if (pageNum > totalPagesTemplates - 2) {
-                        pageNum = totalPagesTemplates - 4 + i;
-                      }
+                    disabled={activeTab === 'contratos' ? pageContratos === 1 : pageTemplates === 1}
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </Button>
+                  <span className="text-xs text-muted-foreground">
+                    {activeTab === 'contratos' ? pageContratos : pageTemplates}/
+                    {activeTab === 'contratos' ? totalPagesContratos : totalPagesTemplates}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => activeTab === 'contratos'
+                      ? setPageContratos(Math.min(totalPagesContratos, pageContratos + 1))
+                      : setPageTemplates(Math.min(totalPagesTemplates, pageTemplates + 1))
                     }
-                    return (
-                      <PaginationItem key={pageNum}>
-                        <PaginationLink
-                          onClick={() => setPageTemplates(pageNum)}
-                          isActive={pageTemplates === pageNum}
-                          className="cursor-pointer"
-                        >
-                          {pageNum}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  })}
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() => setPageTemplates(Math.min(totalPagesTemplates, pageTemplates + 1))}
-                      className={pageTemplates === totalPagesTemplates ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+                    disabled={activeTab === 'contratos' 
+                      ? pageContratos >= totalPagesContratos 
+                      : pageTemplates >= totalPagesTemplates}
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </>
             )}
-          </TabsContent>
-        </Tabs>
+          </div>
+        </div>
+
+        {/* Content */}
+        {activeTab === 'contratos' && (
+          <ContratosVirtualList
+            contratos={contratos}
+            loading={loading}
+            statusColors={statusColors}
+            statusLabels={statusLabels}
+            onDetalhes={(contrato) => {
+              setContratoSelecionado(contrato);
+              setMostrarDetalhesContrato(true);
+            }}
+            onEditar={(contrato) => {
+              setContratoSelecionado(contrato);
+              setMostrarEditarContrato(true);
+            }}
+            onConverter={(contrato) => {
+              setContratoSelecionado(contrato);
+              setMostrarConverterContrato(true);
+            }}
+            onExcluir={(contrato) => {
+              setContratoSelecionado(contrato);
+              setConfirmExcluirContrato(true);
+            }}
+          />
+        )}
+
+        {activeTab === 'templates' && (
+          <TemplatesVirtualGrid
+            templates={templates}
+            loading={loading}
+            onDetalhes={(template) => {
+              setTemplateSelecionado(template);
+              setMostrarDetalhesTemplate(true);
+            }}
+            onEditar={(template) => {
+              setTemplateSelecionado(template);
+              setMostrarEditarTemplate(true);
+            }}
+            onExcluir={(template) => {
+              setTemplateSelecionado(template);
+              setConfirmExcluirTemplate(true);
+            }}
+          />
+        )}
       </div>
 
       {/* Dialogs */}
