@@ -30,8 +30,8 @@ export function MembrosUnificadosVirtualList({
   const rowVirtualizer = useVirtualizer({
     count: membros.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 180,
-    overscan: 8,
+    estimateSize: () => 72,
+    overscan: 10,
     getItemKey: (index) => {
       const m = membros[index];
       return `${m.id}-${m.tipo_membro}-${m.permissions?.length ?? 0}-${m.role ?? 'norole'}`;
@@ -84,7 +84,7 @@ export function MembrosUnificadosVirtualList({
                 transform: `translateY(${virtualItem.start}px)`,
               }}
             >
-              <div className="px-1 pb-3" ref={rowVirtualizer.measureElement} data-index={virtualItem.index}>
+              <div className="px-1 pb-2" ref={rowVirtualizer.measureElement} data-index={virtualItem.index}>
                 <MembroEquipeCard
                   membro={membro}
                   onDetalhes={() => onDetalhes(membro)}
