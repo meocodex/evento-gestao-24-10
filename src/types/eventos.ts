@@ -40,6 +40,7 @@ export interface EstabelecimentoBar {
   nome: string;
   quantidadeMaquinas: number;
   cardapioUrl?: string;
+  cardapioArquivo?: string; // URL do arquivo de cardápio (PDF/imagem)
   copiadoDeId?: string;
 }
 
@@ -77,6 +78,8 @@ export interface Lote {
 export interface ConfiguracaoBar {
   estabelecimentos: EstabelecimentoBar[];
   mapaLocal?: string;
+  mapaLocalArquivo?: string; // Upload do mapa do local
+  logoEvento?: string; // Logo opcional para eventos de bar
 }
 
 export interface ConfiguracaoIngresso {
@@ -84,9 +87,10 @@ export interface ConfiguracaoIngresso {
   pontosVenda: PontoVenda[];
   mapaEvento?: string;
   banners?: {
-    bannerPrincipal?: string;
-    bannerMobile?: string;
-    bannerSite?: string;
+    bannerSite?: string;      // 1170x400px - Banner do site
+    miniaturaSite?: string;   // 500x500px - Thumbnail/card do evento
+    mapaSite?: string;        // 1000x1000px - Mapa de assentos/setores
+    ingressoPOS?: string;     // 300x200px - Imagem impressa no ingresso
   };
 }
 

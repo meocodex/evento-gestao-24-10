@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, Beer, Zap, Info, CheckCircle, ArrowLeft, ArrowRight, Loader2, Plus, Trash2 } from 'lucide-react';
-import { CadastroEventoLayout } from '@/components/cadastro';
+import { Ticket, Beer, Zap, Info, CheckCircle, ArrowLeft, ArrowRight, Loader2, Plus, Trash2, Upload, Image } from 'lucide-react';
+import { CadastroEventoLayout, ImageUploadField } from '@/components/cadastro';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -73,17 +73,22 @@ export default function CadastroEvento() {
   const [pontosVenda, setPontosVenda] = useState<PontoVenda[]>([]);
   const [pdvCepBusca, setPdvCepBusca] = useState<Record<string, boolean>>({});
   
-  // Banners e Mapa (Ingresso)
-  const [bannerPrincipal, setBannerPrincipal] = useState('');
-  const [bannerMobile, setBannerMobile] = useState('');
-  const [bannerSite, setBannerSite] = useState('');
-  const [mapaEvento, setMapaEvento] = useState('');
+  // ID temporário para uploads (gerado uma vez)
+  const tempUploadId = useMemo(() => `temp-${Date.now()}-${Math.random().toString(36).substring(7)}`, []);
+  
+  // Banners e Imagens (Ingresso/Híbrido)
+  const [bannerSite, setBannerSite] = useState<string | undefined>();
+  const [miniaturaSite, setMiniaturaSite] = useState<string | undefined>();
+  const [mapaSite, setMapaSite] = useState<string | undefined>();
+  const [ingressoPOS, setIngressoPOS] = useState<string | undefined>();
   
   // Estabelecimentos de Bar
   const [estabelecimentosBares, setEstabelecimentosBares] = useState<EstabelecimentoBar[]>([
     { id: '1', nome: 'Bar Principal', quantidadeMaquinas: 1 }
   ]);
   const [mapaLocal, setMapaLocal] = useState('');
+  const [mapaLocalArquivo, setMapaLocalArquivo] = useState<string | undefined>();
+  const [logoEvento, setLogoEvento] = useState<string | undefined>();
   
   // Busca automática de endereço por CEP do produtor
   useEffect(() => {
@@ -219,18 +224,21 @@ export default function CadastroEvento() {
       const configuracaoIngresso = (tipoEvento === 'ingresso' || tipoEvento === 'hibrido') ? {
         setores: setores,
         pontosVenda: pontosVenda,
-        mapaEvento: mapaEvento || undefined,
+        mapaEvento: mapaSite || undefined,
         banners: {
-          bannerPrincipal: bannerPrincipal || undefined,
-          bannerMobile: bannerMobile || undefined,
           bannerSite: bannerSite || undefined,
+          miniaturaSite: miniaturaSite || undefined,
+          mapaSite: mapaSite || undefined,
+          ingressoPOS: ingressoPOS || undefined,
         },
       } : undefined;
 
       // Montar configuração de bar
       const configuracaoBar = (tipoEvento === 'bar' || tipoEvento === 'hibrido') ? {
         estabelecimentos: estabelecimentosBares,
-        mapaLocal: mapaLocal || undefined,
+        mapaLocal: mapaLocal || mapaLocalArquivo || undefined,
+        mapaLocalArquivo: mapaLocalArquivo || undefined,
+        logoEvento: logoEvento || undefined,
       } : undefined;
 
       const protocolo = await criarCadastro.mutateAsync({
@@ -951,165 +959,270 @@ export default function CadastroEvento() {
     return (
       <CadastroEventoLayout currentStep={4} subtitle="Configurações específicas do evento">
         <div className="space-y-6">
-          <Card className="border-border/50 shadow-2xl">
-            <CardHeader>
-              <CardTitle>
-                {tipoEvento === 'bar' ? 'Configuração do Bar' : 'Setores e Ingressos'}
-              </CardTitle>
-              <CardDescription>
-                {tipoEvento === 'bar' ? 'Defina os estabelecimentos e configurações' : 'Configure setores e tipos de ingresso'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {(tipoEvento === 'ingresso' || tipoEvento === 'hibrido') && (
-                <div className="space-y-4">
-                  <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertDescription>
-                      Configure os setores do seu evento e os tipos de ingressos para cada setor
-                    </AlertDescription>
-                  </Alert>
+          {/* Imagens do Evento (Ingresso/Híbrido) */}
+          {(tipoEvento === 'ingresso' || tipoEvento === 'hibrido') && (
+            <Card className="border-border/50 shadow-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Image className="h-5 w-5" />
+                  Imagens do Evento
+                </CardTitle>
+                <CardDescription>
+                  Envie as imagens para divulgação do seu evento (todas opcionais)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid md:grid-cols-2 gap-6">
+                <ImageUploadField
+                  label="Banner Site"
+                  dimensions="1170x400px"
+                  description="Banner principal para o site do evento"
+                  value={bannerSite}
+                  onChange={setBannerSite}
+                  tempId={tempUploadId}
+                />
+                <ImageUploadField
+                  label="Miniatura Site"
+                  dimensions="500x500px"
+                  description="Thumbnail/card do evento nas listagens"
+                  value={miniaturaSite}
+                  onChange={setMiniaturaSite}
+                  tempId={tempUploadId}
+                />
+                <ImageUploadField
+                  label="Mapa Site"
+                  dimensions="1000x1000px"
+                  description="Mapa de assentos ou setores do evento"
+                  value={mapaSite}
+                  onChange={setMapaSite}
+                  tempId={tempUploadId}
+                />
+                <ImageUploadField
+                  label="Ingresso POS"
+                  dimensions="300x200px"
+                  description="Imagem impressa no ingresso físico"
+                  value={ingressoPOS}
+                  onChange={setIngressoPOS}
+                  tempId={tempUploadId}
+                />
+              </CardContent>
+            </Card>
+          )}
 
-                  <Button onClick={adicionarSetor} className="w-full">
-                    + Adicionar Setor
-                  </Button>
+          {/* Setores e Ingressos */}
+          {(tipoEvento === 'ingresso' || tipoEvento === 'hibrido') && (
+            <Card className="border-border/50 shadow-2xl">
+              <CardHeader>
+                <CardTitle>Setores e Ingressos</CardTitle>
+                <CardDescription>Configure setores e tipos de ingresso</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Configure os setores do seu evento e os tipos de ingressos para cada setor
+                  </AlertDescription>
+                </Alert>
 
-                  {setores.map((setor, idx) => (
-                    <Card key={setor.id}>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Setor {idx + 1}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <Label>Nome do Setor</Label>
-                            <Input
-                              value={setor.nome}
-                              onChange={(e) => setSetores(setores.map(s => 
-                                s.id === setor.id ? { ...s, nome: e.target.value } : s
-                              ))}
-                              placeholder="Ex: Pista, Camarote"
-                            />
-                          </div>
-                          <div>
-                            <Label>Capacidade</Label>
-                            <Input
-                              type="number"
-                              value={setor.capacidade}
-                              onChange={(e) => setSetores(setores.map(s => 
-                                s.id === setor.id ? { ...s, capacidade: Number(e.target.value) } : s
-                              ))}
-                            />
-                          </div>
-                        </div>
+                <Button onClick={adicionarSetor} className="w-full">
+                  + Adicionar Setor
+                </Button>
 
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => adicionarTipoIngresso(setor.id)}
-                        >
-                          + Adicionar Tipo de Ingresso
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-
-              {(tipoEvento === 'bar' || tipoEvento === 'hibrido') && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-semibold">Estabelecimentos de Bar</h3>
-                    <Button onClick={adicionarEstabelecimento} size="sm">
-                      + Adicionar Estabelecimento
-                    </Button>
-                  </div>
-
-                  <Alert>
-                    <Info className="h-4 w-4" />
-                    <AlertDescription>
-                      Se houver múltiplos bares no local (Ex: Bar Central, Bar Arena), cadastre todos aqui
-                    </AlertDescription>
-                  </Alert>
-
-                  {estabelecimentosBares.map((estab, idx) => (
-                    <Card key={estab.id} className="border-amber-200">
-                      <CardHeader>
-                        <CardTitle className="text-base flex justify-between items-center">
-                          <span>Bar {idx + 1}: {estab.nome || 'Sem nome'}</span>
-                          {estabelecimentosBares.length > 1 && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => removerEstabelecimento(estab.id)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
+                {setores.map((setor, idx) => (
+                  <Card key={setor.id}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Setor {idx + 1}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                          <Label>Nome do Estabelecimento *</Label>
+                          <Label>Nome do Setor</Label>
                           <Input
-                            value={estab.nome}
-                            onChange={(e) => atualizarEstabelecimento(estab.id, 'nome', e.target.value)}
-                            placeholder="Ex: Bar Central, Bar Arena"
+                            value={setor.nome}
+                            onChange={(e) => setSetores(setores.map(s => 
+                              s.id === setor.id ? { ...s, nome: e.target.value } : s
+                            ))}
+                            placeholder="Ex: Pista, Camarote"
                           />
                         </div>
-
                         <div>
-                          <Label>Quantidade de Máquinas *</Label>
+                          <Label>Capacidade</Label>
                           <Input
                             type="number"
-                            min="1"
-                            value={estab.quantidadeMaquinas}
-                            onChange={(e) => atualizarEstabelecimento(estab.id, 'quantidadeMaquinas', Number(e.target.value))}
-                            placeholder="Quantas máquinas neste bar?"
+                            value={setor.capacidade}
+                            onChange={(e) => setSetores(setores.map(s => 
+                              s.id === setor.id ? { ...s, capacidade: Number(e.target.value) } : s
+                            ))}
                           />
                         </div>
+                      </div>
 
-                        <div>
-                          <Label>Link do Cardápio (opcional)</Label>
-                          <Input
-                            value={estab.cardapioUrl || ''}
-                            onChange={(e) => atualizarEstabelecimento(estab.id, 'cardapioUrl', e.target.value)}
-                            placeholder="https://..."
-                            type="url"
-                          />
-                        </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => adicionarTipoIngresso(setor.id)}
+                      >
+                        + Adicionar Tipo de Ingresso
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
-                        {idx > 0 && estabelecimentosBares.length > 1 && estabelecimentosBares[0].cardapioUrl && (
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => copiarCardapio(estab.id, estabelecimentosBares[0].id)}
-                            >
-                              📋 Copiar cardápio do {estabelecimentosBares[0].nome}
-                            </Button>
-                          </div>
+          {/* Logo do Evento (Bar/Híbrido) */}
+          {(tipoEvento === 'bar' || tipoEvento === 'hibrido') && (
+            <Card className="border-border/50 shadow-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Image className="h-5 w-5" />
+                  Logo do Evento
+                </CardTitle>
+                <CardDescription>
+                  Envie a logo do evento para identificação (opcional)
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ImageUploadField
+                  label="Logo do Evento"
+                  dimensions="500x500px"
+                  description="Logotipo ou identidade visual do evento"
+                  value={logoEvento}
+                  onChange={setLogoEvento}
+                  tempId={tempUploadId}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Configuração de Bar */}
+          {(tipoEvento === 'bar' || tipoEvento === 'hibrido') && (
+            <Card className="border-border/50 shadow-2xl">
+              <CardHeader>
+                <CardTitle>Configuração do Bar</CardTitle>
+                <CardDescription>Defina os estabelecimentos e configurações</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-semibold">Estabelecimentos de Bar</h3>
+                  <Button onClick={adicionarEstabelecimento} size="sm">
+                    + Adicionar Estabelecimento
+                  </Button>
+                </div>
+
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Se houver múltiplos bares no local (Ex: Bar Central, Bar Arena), cadastre todos aqui
+                  </AlertDescription>
+                </Alert>
+
+                {estabelecimentosBares.map((estab, idx) => (
+                  <Card key={estab.id} className="border-amber-500/30">
+                    <CardHeader>
+                      <CardTitle className="text-base flex justify-between items-center">
+                        <span>Bar {idx + 1}: {estab.nome || 'Sem nome'}</span>
+                        {estabelecimentosBares.length > 1 && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => removerEstabelecimento(estab.id)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
                         )}
-                      </CardContent>
-                    </Card>
-                  ))}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <Label>Nome do Estabelecimento *</Label>
+                        <Input
+                          value={estab.nome}
+                          onChange={(e) => atualizarEstabelecimento(estab.id, 'nome', e.target.value)}
+                          placeholder="Ex: Bar Central, Bar Arena"
+                        />
+                      </div>
 
-                  <div className="space-y-2 mt-4">
-                    <Label>Mapa do Local</Label>
-                    <Input
-                      value={mapaLocal}
-                      onChange={(e) => setMapaLocal(e.target.value)}
-                      placeholder="https://..."
-                      type="url"
+                      <div>
+                        <Label>Quantidade de Máquinas *</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={estab.quantidadeMaquinas}
+                          onChange={(e) => atualizarEstabelecimento(estab.id, 'quantidadeMaquinas', Number(e.target.value))}
+                          placeholder="Quantas máquinas neste bar?"
+                        />
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label>Cardápio</Label>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <Input
+                              value={estab.cardapioUrl || ''}
+                              onChange={(e) => atualizarEstabelecimento(estab.id, 'cardapioUrl', e.target.value)}
+                              placeholder="https://link-do-cardapio.com"
+                              type="url"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">Link externo (opcional)</p>
+                          </div>
+                          <ImageUploadField
+                            label="Ou envie o arquivo"
+                            description="PDF ou imagem do cardápio"
+                            value={estab.cardapioArquivo}
+                            onChange={(url) => {
+                              setEstabelecimentosBares(estabelecimentosBares.map(e =>
+                                e.id === estab.id ? { ...e, cardapioArquivo: url } : e
+                              ));
+                            }}
+                            accept={['application/pdf', 'image/jpeg', 'image/png', 'image/webp']}
+                            tempId={`${tempUploadId}-bar-${estab.id}`}
+                          />
+                        </div>
+                      </div>
+
+                      {idx > 0 && estabelecimentosBares.length > 1 && (estabelecimentosBares[0].cardapioUrl || estabelecimentosBares[0].cardapioArquivo) && (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => copiarCardapio(estab.id, estabelecimentosBares[0].id)}
+                          >
+                            📋 Copiar cardápio do {estabelecimentosBares[0].nome}
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+
+                <div className="space-y-4 mt-4 pt-4 border-t">
+                  <h4 className="font-medium">Mapa do Local</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Planta baixa mostrando localização dos bares (link ou upload)
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label>Link do Mapa</Label>
+                      <Input
+                        value={mapaLocal}
+                        onChange={(e) => setMapaLocal(e.target.value)}
+                        placeholder="https://..."
+                        type="url"
+                      />
+                    </div>
+                    <ImageUploadField
+                      label="Ou envie a imagem"
+                      description="Imagem do mapa/planta baixa"
+                      value={mapaLocalArquivo}
+                      onChange={setMapaLocalArquivo}
+                      tempId={tempUploadId}
                     />
-                    <p className="text-xs text-muted-foreground">
-                      Planta baixa mostrando localização dos bares
-                    </p>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="flex justify-between">
             <Button variant="outline" onClick={() => setStep(3)}>
@@ -1164,6 +1277,12 @@ export default function CadastroEvento() {
     );
   }
 
+  // Calcular total de imagens enviadas
+  const imagensEnviadas = [
+    bannerSite, miniaturaSite, mapaSite, ingressoPOS, logoEvento, mapaLocalArquivo,
+    ...estabelecimentosBares.map(e => e.cardapioArquivo).filter(Boolean)
+  ].filter(Boolean);
+
   // Passo 6: Revisão final
   return (
     <CadastroEventoLayout currentStep={6} subtitle="Confira os dados antes de enviar">
@@ -1199,6 +1318,73 @@ export default function CadastroEvento() {
                 <dd className="font-medium">{produtorWhatsapp}</dd>
               </dl>
             </div>
+
+            {/* Imagens Enviadas */}
+            {imagensEnviadas.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2 flex items-center gap-2">
+                  <Image className="h-4 w-4" />
+                  Imagens Enviadas ({imagensEnviadas.length})
+                </h3>
+                <div className="grid grid-cols-4 gap-2">
+                  {bannerSite && (
+                    <div className="space-y-1">
+                      <img src={bannerSite} alt="Banner" className="w-full h-16 object-cover rounded border" />
+                      <p className="text-xs text-muted-foreground text-center">Banner</p>
+                    </div>
+                  )}
+                  {miniaturaSite && (
+                    <div className="space-y-1">
+                      <img src={miniaturaSite} alt="Miniatura" className="w-full h-16 object-cover rounded border" />
+                      <p className="text-xs text-muted-foreground text-center">Miniatura</p>
+                    </div>
+                  )}
+                  {mapaSite && (
+                    <div className="space-y-1">
+                      <img src={mapaSite} alt="Mapa" className="w-full h-16 object-cover rounded border" />
+                      <p className="text-xs text-muted-foreground text-center">Mapa</p>
+                    </div>
+                  )}
+                  {ingressoPOS && (
+                    <div className="space-y-1">
+                      <img src={ingressoPOS} alt="Ingresso" className="w-full h-16 object-cover rounded border" />
+                      <p className="text-xs text-muted-foreground text-center">Ingresso</p>
+                    </div>
+                  )}
+                  {logoEvento && (
+                    <div className="space-y-1">
+                      <img src={logoEvento} alt="Logo" className="w-full h-16 object-cover rounded border" />
+                      <p className="text-xs text-muted-foreground text-center">Logo</p>
+                    </div>
+                  )}
+                  {mapaLocalArquivo && (
+                    <div className="space-y-1">
+                      <img src={mapaLocalArquivo} alt="Mapa Local" className="w-full h-16 object-cover rounded border" />
+                      <p className="text-xs text-muted-foreground text-center">Mapa Local</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Configurações de Bar */}
+            {(tipoEvento === 'bar' || tipoEvento === 'hibrido') && estabelecimentosBares.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2">Estabelecimentos de Bar ({estabelecimentosBares.length})</h3>
+                <ul className="text-sm space-y-1">
+                  {estabelecimentosBares.map((estab, idx) => (
+                    <li key={estab.id} className="flex items-center gap-2">
+                      <span className="text-muted-foreground">{idx + 1}.</span>
+                      <span className="font-medium">{estab.nome}</span>
+                      <span className="text-muted-foreground">({estab.quantidadeMaquinas} máquina{estab.quantidadeMaquinas > 1 ? 's' : ''})</span>
+                      {(estab.cardapioUrl || estab.cardapioArquivo) && (
+                        <span className="text-green-600 text-xs">✓ cardápio</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <Alert>
               <CheckCircle className="h-4 w-4" />
