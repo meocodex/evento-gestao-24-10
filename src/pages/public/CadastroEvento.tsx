@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, Beer, Zap, Info, CheckCircle, ArrowLeft, ArrowRight, Loader2, Plus, Trash2, Upload, Image } from 'lucide-react';
+import { Ticket, Beer, Zap, Info, CheckCircle, AlertCircle, ArrowLeft, ArrowRight, Loader2, Plus, Trash2, Upload, Image } from 'lucide-react';
 import { CadastroEventoLayout, ImageUploadField } from '@/components/cadastro';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,6 +66,7 @@ export default function CadastroEvento() {
   // Estado para busca de cliente por documento
   const [buscandoCliente, setBuscandoCliente] = useState(false);
   const [clienteEncontrado, setClienteEncontrado] = useState(false);
+  const [documentoInvalido, setDocumentoInvalido] = useState(false);
 
   // Honeypot anti-bot (campo oculto que humanos não preenchem)
   const [honeypot, setHoneypot] = useState('');
@@ -102,6 +103,7 @@ export default function CadastroEvento() {
     // Só buscar se documento estiver completo
     if (documentoLimpo.length !== tamanhoEsperado) {
       setClienteEncontrado(false);
+      setDocumentoInvalido(false);
       return;
     }
     
@@ -120,7 +122,10 @@ export default function CadastroEvento() {
         
         const data = await response.json();
         
-        if (data.encontrado && data.cliente) {
+        if (data.documentoInvalido) {
+          setDocumentoInvalido(true);
+          setClienteEncontrado(false);
+        } else if (data.encontrado && data.cliente) {
           // Preencher campos automaticamente
           setProdutorNome(data.cliente.nome || '');
           setProdutorEmail(data.cliente.email || '');
@@ -146,12 +151,14 @@ export default function CadastroEvento() {
           }
           
           setClienteEncontrado(true);
+          setDocumentoInvalido(false);
           toast({
             title: 'Cliente encontrado!',
             description: 'Dados preenchidos automaticamente. Você pode editar se necessário.',
           });
         } else {
           setClienteEncontrado(false);
+          setDocumentoInvalido(false);
         }
       } catch (error) {
         console.error('Erro ao buscar cliente:', error);
@@ -183,6 +190,7 @@ export default function CadastroEvento() {
     setResponsavelCpf('');
     setResponsavelDataNascimento('');
     setClienteEncontrado(false);
+    setDocumentoInvalido(false);
   };
   
   // Busca automática de endereço por CEP do produtor
@@ -868,8 +876,18 @@ export default function CadastroEvento() {
                   )}
                 </div>
                 
+                {/* Feedback: Documento inválido */}
+                {documentoInvalido && !buscandoCliente && (
+                  <Alert className="mt-2 bg-red-50 border-red-200">
+                    <AlertCircle className="h-4 w-4 text-red-600" />
+                    <AlertDescription className="text-red-700">
+                      {produtorTipo} inválido. Verifique o número informado.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
                 {/* Feedback: Cliente encontrado */}
-                {clienteEncontrado && !buscandoCliente && (
+                {clienteEncontrado && !buscandoCliente && !documentoInvalido && (
                   <Alert className="mt-2 bg-green-50 border-green-200">
                     <CheckCircle className="h-4 w-4 text-green-600" />
                     <AlertDescription className="text-green-700">
@@ -881,6 +899,7 @@ export default function CadastroEvento() {
                 {/* Feedback: Novo cadastro */}
                 {!clienteEncontrado && 
                  !buscandoCliente && 
+                 !documentoInvalido &&
                  produtorDocumento.replace(/\D/g, '').length === (produtorTipo === 'CPF' ? 11 : 14) && (
                   <Alert className="mt-2 bg-blue-50 border-blue-200">
                     <Info className="h-4 w-4 text-blue-600" />
