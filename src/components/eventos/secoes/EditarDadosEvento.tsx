@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Evento } from '@/types/eventos';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +11,6 @@ import { ComercialSelect } from '../ComercialSelect';
 import { X, Save, XCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
-import { formatarCEP } from '@/lib/validations/cliente';
 
 interface EditarDadosEventoProps {
   evento: Evento;
@@ -222,15 +222,11 @@ export function EditarDadosEvento({ evento, onSave, onCancel }: EditarDadosEvent
         <div>
           <Label htmlFor="cep">CEP</Label>
           <div className="relative">
-            <Input 
-              id="cep" 
+            <MaskedInput
+              id="cep"
+              mask="cep"
               value={cep}
-              onChange={(e) => {
-                const formatted = formatarCEP(e.target.value);
-                setCep(formatted);
-              }}
-              placeholder="00000-000"
-              maxLength={9}
+              onChange={setCep}
               className={loadingCep ? "pr-10" : ""}
             />
             {loadingCep && (

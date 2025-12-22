@@ -1,16 +1,16 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Loader2, FileText, User, Phone, FileDigit } from 'lucide-react';
 import type { MaterialAlocado } from '@/types/estoque';
-import { formatarCPF, formatarTelefone } from '@/lib/formatters';
 
 const retiradaSchema = z.object({
   retiradoPorNome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
@@ -39,7 +39,7 @@ export function RegistrarRetiradaDialog({
   const [loading, setLoading] = useState(false);
   
   const {
-    register,
+    control,
     handleSubmit,
     setValue,
     watch,
@@ -111,10 +111,16 @@ export function RegistrarRetiradaDialog({
                 <User className="h-4 w-4 inline mr-1" />
                 Nome Completo *
               </Label>
-              <Input
-                id="retiradoPorNome"
-                {...register('retiradoPorNome')}
-                placeholder="Nome completo da pessoa que retira"
+              <Controller
+                name="retiradoPorNome"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    id="retiradoPorNome"
+                    {...field}
+                    placeholder="Nome completo da pessoa que retira"
+                  />
+                )}
               />
               {errors.retiradoPorNome && (
                 <p className="text-sm text-destructive">{errors.retiradoPorNome.message}</p>
@@ -126,16 +132,17 @@ export function RegistrarRetiradaDialog({
                 <FileDigit className="h-4 w-4 inline mr-1" />
                 CPF/RG *
               </Label>
-              <Input
-                id="retiradoPorDocumento"
-                {...register('retiradoPorDocumento')}
-                placeholder="000.000.000-00 ou 00.000.000-0"
-                onChange={(e) => {
-                  const formatted = formatarCPF(e.target.value);
-                  register('retiradoPorDocumento').onChange(e);
-                  e.target.value = formatted;
-                }}
-                maxLength={14}
+              <Controller
+                name="retiradoPorDocumento"
+                control={control}
+                render={({ field }) => (
+                  <MaskedInput
+                    id="retiradoPorDocumento"
+                    mask="cpf"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                )}
               />
               {errors.retiradoPorDocumento && (
                 <p className="text-sm text-destructive">{errors.retiradoPorDocumento.message}</p>
@@ -147,16 +154,17 @@ export function RegistrarRetiradaDialog({
                 <Phone className="h-4 w-4 inline mr-1" />
                 Telefone *
               </Label>
-              <Input
-                id="retiradoPorTelefone"
-                {...register('retiradoPorTelefone')}
-                placeholder="(00) 00000-0000"
-                onChange={(e) => {
-                  const formatted = formatarTelefone(e.target.value);
-                  register('retiradoPorTelefone').onChange(e);
-                  e.target.value = formatted;
-                }}
-                maxLength={15}
+              <Controller
+                name="retiradoPorTelefone"
+                control={control}
+                render={({ field }) => (
+                  <MaskedInput
+                    id="retiradoPorTelefone"
+                    mask="telefone"
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                )}
               />
               {errors.retiradoPorTelefone && (
                 <p className="text-sm text-destructive">{errors.retiradoPorTelefone.message}</p>

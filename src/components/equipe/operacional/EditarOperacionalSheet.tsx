@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FormSheet } from '@/components/shared/sheets';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,7 +11,6 @@ import { useEquipe } from '@/hooks/equipe';
 import { useCategorias } from '@/hooks/categorias';
 import { TipoVinculo, StatusOperacional } from '@/types/equipe';
 import { OperacionalEquipe } from '@/types/equipe';
-import { formatarCPF, formatarCNPJ, formatarTelefone } from '@/lib/formatters';
 
 interface EditarOperacionalSheetProps {
   operacional: OperacionalEquipe;
@@ -118,34 +118,31 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
 
         <div>
           <Label htmlFor="cpf">CPF</Label>
-          <Input
+          <MaskedInput
             id="cpf"
+            mask="cpf"
             value={formData.cpf}
-            onChange={(e) => setFormData({ ...formData, cpf: formatarCPF(e.target.value) })}
-            placeholder="000.000.000-00"
-            maxLength={14}
+            onChange={(value) => setFormData({ ...formData, cpf: value })}
           />
         </div>
 
         <div>
           <Label htmlFor="telefone">Telefone *</Label>
-          <Input
+          <MaskedInput
             id="telefone"
+            mask="telefone"
             value={formData.telefone}
-            onChange={(e) => setFormData({ ...formData, telefone: formatarTelefone(e.target.value) })}
-            placeholder="(00) 00000-0000"
-            maxLength={15}
+            onChange={(value) => setFormData({ ...formData, telefone: value })}
           />
         </div>
 
         <div>
           <Label htmlFor="whatsapp">WhatsApp</Label>
-          <Input
+          <MaskedInput
             id="whatsapp"
+            mask="telefone"
             value={formData.whatsapp}
-            onChange={(e) => setFormData({ ...formData, whatsapp: formatarTelefone(e.target.value) })}
-            placeholder="(00) 00000-0000"
-            maxLength={15}
+            onChange={(value) => setFormData({ ...formData, whatsapp: value })}
           />
         </div>
 
@@ -249,12 +246,11 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
         {formData.tipo_vinculo === 'pj' && (
           <div>
             <Label htmlFor="cnpj_pj">CNPJ da Empresa</Label>
-            <Input
+            <MaskedInput
               id="cnpj_pj"
+              mask="cnpj"
               value={formData.cnpj_pj}
-              onChange={(e) => setFormData({ ...formData, cnpj_pj: formatarCNPJ(e.target.value) })}
-              placeholder="00.000.000/0001-00"
-              maxLength={18}
+              onChange={(value) => setFormData({ ...formData, cnpj_pj: value })}
             />
           </div>
         )}

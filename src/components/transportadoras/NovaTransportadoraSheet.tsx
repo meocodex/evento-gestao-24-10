@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Label } from '@/components/ui/label';
 import { useTransportadoras } from '@/hooks/transportadoras';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Loader2 } from 'lucide-react';
-import { formatarCEP, formatarCNPJ, formatarTelefone } from '@/lib/formatters';
 import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
 import { useToast } from '@/hooks/use-toast';
 
@@ -140,13 +140,12 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
               </div>
               <div>
                 <Label htmlFor="cnpj" className="text-navy-700">CNPJ *</Label>
-                <Input
+                <MaskedInput
                   id="cnpj"
+                  mask="cnpj"
                   required
                   value={formData.cnpj}
-                  onChange={(e) => setFormData({ ...formData, cnpj: formatarCNPJ(e.target.value) })}
-                  placeholder="00.000.000/0000-00"
-                  maxLength={18}
+                  onChange={(value) => setFormData({ ...formData, cnpj: value })}
                   className="border-navy-200 focus:border-navy-400"
                 />
               </div>
@@ -176,13 +175,12 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
               </div>
               <div>
                 <Label htmlFor="telefone" className="text-navy-700">Telefone *</Label>
-                <Input
+                <MaskedInput
                   id="telefone"
+                  mask="telefone"
                   required
                   value={formData.telefone}
-                  onChange={(e) => setFormData({ ...formData, telefone: formatarTelefone(e.target.value) })}
-                  placeholder="(00) 00000-0000"
-                  maxLength={15}
+                  onChange={(value) => setFormData({ ...formData, telefone: value })}
                   className="border-navy-200 focus:border-navy-400"
                 />
               </div>
@@ -207,16 +205,12 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
                   <div>
                     <Label htmlFor="cep" className="text-navy-700">CEP *</Label>
                     <div className="relative">
-                      <Input
+                      <MaskedInput
                         id="cep"
+                        mask="cep"
                         required
                         value={formData.endereco.cep}
-                        onChange={(e) => {
-                          const formatted = formatarCEP(e.target.value);
-                          setFormData({ ...formData, endereco: { ...formData.endereco, cep: formatted } });
-                        }}
-                        placeholder="00000-000"
-                        maxLength={9}
+                        onChange={(value) => setFormData({ ...formData, endereco: { ...formData.endereco, cep: value } })}
                         className={buscandoCEP ? "border-navy-200 pr-10" : "border-navy-200"}
                       />
                       {buscandoCEP && (
