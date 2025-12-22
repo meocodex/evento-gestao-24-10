@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormSheet } from '@/components/shared/sheets';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -10,7 +11,6 @@ import { Loader2 } from 'lucide-react';
 import { useClientes } from '@/hooks/clientes';
 import { clienteSchema } from '@/lib/validations/cliente';
 import { ClienteFormData, Cliente } from '@/types/eventos';
-import { formatarDocumento, formatarTelefone, formatarCEP } from '@/lib/validations/cliente';
 import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
 
 interface EditarClienteSheetProps {
@@ -163,13 +163,11 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
                   {tipo === 'CPF' ? 'CPF' : 'CNPJ'} *
                 </FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder={tipo === 'CPF' ? '000.000.000-00' : '00.000.000/0000-00'}
-                    {...field}
-                    onChange={(e) => {
-                      const formatted = formatarDocumento(e.target.value, tipo);
-                      field.onChange(formatted);
-                    }}
+                  <MaskedInput
+                    mask="documento"
+                    documentType={tipo}
+                    value={field.value || ''}
+                    onChange={field.onChange}
                   />
                 </FormControl>
                 <FormMessage />
@@ -199,13 +197,10 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
                 <FormItem>
                   <FormLabel>Telefone</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="(00) 00000-0000"
-                      {...field}
-                      onChange={(e) => {
-                        const formatted = formatarTelefone(e.target.value);
-                        field.onChange(formatted);
-                      }}
+                    <MaskedInput
+                      mask="telefone"
+                      value={field.value || ''}
+                      onChange={field.onChange}
                     />
                   </FormControl>
                   <FormMessage />
@@ -220,13 +215,10 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
                 <FormItem>
                   <FormLabel>WhatsApp</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="(00) 00000-0000"
-                      {...field}
-                      onChange={(e) => {
-                        const formatted = formatarTelefone(e.target.value);
-                        field.onChange(formatted);
-                      }}
+                    <MaskedInput
+                      mask="telefone"
+                      value={field.value || ''}
+                      onChange={field.onChange}
                     />
                   </FormControl>
                   <FormMessage />
@@ -248,13 +240,10 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
                     {buscandoCEP && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
                   </div>
                   <FormControl>
-                    <Input
-                      placeholder="00000-000"
-                      {...field}
-                      onChange={(e) => {
-                        const formatted = formatarCEP(e.target.value);
-                        field.onChange(formatted);
-                      }}
+                    <MaskedInput
+                      mask="cep"
+                      value={field.value || ''}
+                      onChange={field.onChange}
                     />
                   </FormControl>
                   <FormMessage />

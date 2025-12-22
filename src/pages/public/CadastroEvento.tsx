@@ -68,6 +68,14 @@ export default function CadastroEvento() {
   const [buscandoCliente, setBuscandoCliente] = useState(false);
   const [clienteEncontrado, setClienteEncontrado] = useState(false);
   const [documentoInvalido, setDocumentoInvalido] = useState(false);
+  const [erroRede, setErroRede] = useState(false);
+
+  // Função para verificar se documento é obviamente inválido (todos dígitos iguais)
+  const documentoObviamenteInvalido = (doc: string): boolean => {
+    const limpo = doc.replace(/\D/g, '');
+    if (limpo.length === 0) return false;
+    return /^(\d)\1+$/.test(limpo);
+  };
 
   // Honeypot anti-bot (campo oculto que humanos não preenchem)
   const [honeypot, setHoneypot] = useState('');
@@ -105,11 +113,21 @@ export default function CadastroEvento() {
     if (documentoLimpo.length !== tamanhoEsperado) {
       setClienteEncontrado(false);
       setDocumentoInvalido(false);
+      setErroRede(false);
+      return;
+    }
+
+    // Validação prévia: documentos obviamente inválidos (todos dígitos iguais)
+    if (documentoObviamenteInvalido(documentoLimpo)) {
+      setDocumentoInvalido(true);
+      setClienteEncontrado(false);
+      setErroRede(false);
       return;
     }
     
     const timer = setTimeout(async () => {
       setBuscandoCliente(true);
+      setErroRede(false);
       
       try {
         const response = await fetch(
@@ -164,6 +182,8 @@ export default function CadastroEvento() {
       } catch (error) {
         console.error('Erro ao buscar cliente:', error);
         setClienteEncontrado(false);
+        setDocumentoInvalido(false);
+        setErroRede(true);
       } finally {
         setBuscandoCliente(false);
       }
@@ -192,6 +212,7 @@ export default function CadastroEvento() {
     setResponsavelDataNascimento('');
     setClienteEncontrado(false);
     setDocumentoInvalido(false);
+    setErroRede(false);
   };
   
   // Busca automática de endereço por CEP do produtor
@@ -894,11 +915,22 @@ export default function CadastroEvento() {
                 {!clienteEncontrado && 
                  !buscandoCliente && 
                  !documentoInvalido &&
+                 !erroRede &&
                  produtorDocumento.replace(/\D/g, '').length === (produtorTipo === 'CPF' ? 11 : 14) && (
                   <Alert className="mt-2 bg-blue-50 border-blue-200">
                     <Info className="h-4 w-4 text-blue-600" />
                     <AlertDescription className="text-blue-700">
                       Novo cadastro. Preencha os dados abaixo.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Feedback: Erro de rede */}
+                {erroRede && !buscandoCliente && (
+                  <Alert className="mt-2 bg-amber-50 border-amber-200">
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <AlertDescription className="text-amber-700">
+                      Não foi possível verificar o cadastro. Preencha os dados manualmente.
                     </AlertDescription>
                   </Alert>
                 )}
