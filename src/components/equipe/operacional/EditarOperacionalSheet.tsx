@@ -104,98 +104,111 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
       onCancel={handleCancel}
       isLoading={editarOperacional.isPending}
       submitText="Salvar Alterações"
-      size="xl"
+      size="lg"
     >
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
-          <Label htmlFor="nome">Nome Completo *</Label>
+      <div className="space-y-4">
+        {/* Nome */}
+        <div className="space-y-1.5">
+          <Label htmlFor="nome" className="text-sm">Nome Completo *</Label>
           <Input
             id="nome"
             value={formData.nome}
             onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+            className="h-9"
           />
         </div>
 
-        <div>
-          <Label htmlFor="cpf">CPF</Label>
-          <MaskedInput
-            id="cpf"
-            mask="cpf"
-            value={formData.cpf}
-            onChange={(value) => setFormData({ ...formData, cpf: value })}
-          />
+        {/* CPF + Telefone + WhatsApp */}
+        <div className="grid grid-cols-12 gap-3">
+          <div className="col-span-4 space-y-1.5">
+            <Label htmlFor="cpf" className="text-sm">CPF</Label>
+            <MaskedInput
+              id="cpf"
+              mask="cpf"
+              value={formData.cpf}
+              onChange={(value) => setFormData({ ...formData, cpf: value })}
+              className="h-9"
+            />
+          </div>
+
+          <div className="col-span-4 space-y-1.5">
+            <Label htmlFor="telefone" className="text-sm">Telefone *</Label>
+            <MaskedInput
+              id="telefone"
+              mask="telefone"
+              value={formData.telefone}
+              onChange={(value) => setFormData({ ...formData, telefone: value })}
+              className="h-9"
+            />
+          </div>
+
+          <div className="col-span-4 space-y-1.5">
+            <Label htmlFor="whatsapp" className="text-sm">WhatsApp</Label>
+            <MaskedInput
+              id="whatsapp"
+              mask="telefone"
+              value={formData.whatsapp}
+              onChange={(value) => setFormData({ ...formData, whatsapp: value })}
+              className="h-9"
+            />
+          </div>
         </div>
 
-        <div>
-          <Label htmlFor="telefone">Telefone *</Label>
-          <MaskedInput
-            id="telefone"
-            mask="telefone"
-            value={formData.telefone}
-            onChange={(value) => setFormData({ ...formData, telefone: value })}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="whatsapp">WhatsApp</Label>
-          <MaskedInput
-            id="whatsapp"
-            mask="telefone"
-            value={formData.whatsapp}
-            onChange={(value) => setFormData({ ...formData, whatsapp: value })}
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="email">Email</Label>
+        {/* Email */}
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-sm">Email</Label>
           <Input
             id="email"
             type="email"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            className="h-9"
           />
         </div>
 
-        <div className="col-span-2">
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <Label htmlFor="funcao">Função Principal *</Label>
-              <Select value={formData.funcao_principal} onValueChange={(value) => setFormData({ ...formData, funcao_principal: value })}>
-                <SelectTrigger id="funcao">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {funcoesEquipe.map((funcao) => (
-                    <SelectItem key={funcao.value} value={funcao.label}>
-                      {funcao.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="pt-6">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => setMostrarAdicionarFuncao(true)}
-                title="Adicionar nova função"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
+        {/* Função Principal */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="funcao" className="text-sm">Função Principal *</Label>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-6 text-xs"
+              onClick={() => setMostrarAdicionarFuncao(true)}
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              Nova
+            </Button>
           </div>
+          <Select 
+            value={formData.funcao_principal} 
+            onValueChange={(value) => setFormData({ ...formData, funcao_principal: value })}
+          >
+            <SelectTrigger id="funcao" className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {funcoesEquipe.map((funcao) => (
+                <SelectItem key={funcao.value} value={funcao.label}>
+                  {funcao.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {mostrarAdicionarFuncao && (
             <div className="border rounded-lg p-3 space-y-2 mt-2">
-              <Label>Nova Função</Label>
+              <Label className="text-sm">Nova Função</Label>
               <div className="flex gap-2">
                 <Input
                   placeholder="Nome da função"
                   value={novaFuncaoNome}
                   onChange={(e) => setNovaFuncaoNome(e.target.value)}
+                  className="h-9"
                 />
                 <Button
                   size="sm"
+                  className="h-9"
                   onClick={async () => {
                     if (novaFuncaoNome.trim()) {
                       await adicionarCategoria.mutateAsync({ 
@@ -217,6 +230,7 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
                 <Button
                   size="sm"
                   variant="ghost"
+                  className="h-9"
                   onClick={() => {
                     setMostrarAdicionarFuncao(false);
                     setNovaFuncaoNome('');
@@ -229,53 +243,67 @@ export function EditarOperacionalSheet({ operacional, open, onOpenChange }: Edit
           )}
         </div>
 
-        <div>
-          <Label htmlFor="tipo">Tipo de Vínculo *</Label>
-          <Select value={formData.tipo_vinculo} onValueChange={(value: TipoVinculo) => setFormData({ ...formData, tipo_vinculo: value })}>
-            <SelectTrigger id="tipo">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="clt">CLT</SelectItem>
-              <SelectItem value="freelancer">Freelancer</SelectItem>
-              <SelectItem value="pj">PJ</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {formData.tipo_vinculo === 'pj' && (
-          <div>
-            <Label htmlFor="cnpj_pj">CNPJ da Empresa</Label>
-            <MaskedInput
-              id="cnpj_pj"
-              mask="cnpj"
-              value={formData.cnpj_pj}
-              onChange={(value) => setFormData({ ...formData, cnpj_pj: value })}
-            />
+        {/* Tipo de Vínculo + CNPJ/Status */}
+        <div className="grid grid-cols-12 gap-3">
+          <div className="col-span-4 space-y-1.5">
+            <Label htmlFor="tipo" className="text-sm">Tipo de Vínculo *</Label>
+            <Select 
+              value={formData.tipo_vinculo} 
+              onValueChange={(value: TipoVinculo) => setFormData({ ...formData, tipo_vinculo: value })}
+            >
+              <SelectTrigger id="tipo" className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="clt">CLT</SelectItem>
+                <SelectItem value="freelancer">Freelancer</SelectItem>
+                <SelectItem value="pj">PJ</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        )}
 
-        <div>
-          <Label htmlFor="status">Status *</Label>
-          <Select value={formData.status} onValueChange={(value: StatusOperacional) => setFormData({ ...formData, status: value })}>
-            <SelectTrigger id="status">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ativo">Ativo</SelectItem>
-              <SelectItem value="inativo">Inativo</SelectItem>
-              <SelectItem value="bloqueado">Bloqueado</SelectItem>
-            </SelectContent>
-          </Select>
+          {formData.tipo_vinculo === 'pj' && (
+            <div className="col-span-4 space-y-1.5">
+              <Label htmlFor="cnpj_pj" className="text-sm">CNPJ da Empresa</Label>
+              <MaskedInput
+                id="cnpj_pj"
+                mask="cnpj"
+                value={formData.cnpj_pj}
+                onChange={(value) => setFormData({ ...formData, cnpj_pj: value })}
+                className="h-9"
+              />
+            </div>
+          )}
+
+          <div className={formData.tipo_vinculo === 'pj' ? 'col-span-4' : 'col-span-8'}>
+            <div className="space-y-1.5">
+              <Label htmlFor="status" className="text-sm">Status *</Label>
+              <Select 
+                value={formData.status} 
+                onValueChange={(value: StatusOperacional) => setFormData({ ...formData, status: value })}
+              >
+                <SelectTrigger id="status" className="h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ativo">Ativo</SelectItem>
+                  <SelectItem value="inativo">Inativo</SelectItem>
+                  <SelectItem value="bloqueado">Bloqueado</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
-        <div className="col-span-2">
-          <Label htmlFor="observacoes">Observações</Label>
+        {/* Observações */}
+        <div className="space-y-1.5">
+          <Label htmlFor="observacoes" className="text-sm">Observações</Label>
           <Textarea
             id="observacoes"
             value={formData.observacoes}
             onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
             rows={3}
+            className="resize-none"
           />
         </div>
       </div>

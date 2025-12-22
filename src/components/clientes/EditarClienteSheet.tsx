@@ -103,13 +103,14 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
       size="lg"
     >
       <Form {...form}>
-        <div className="space-y-6">
+        <div className="space-y-4">
+          {/* Tipo de Cliente */}
           <FormField
             control={control}
             name="tipo"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tipo de Cliente</FormLabel>
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-sm">Tipo de Cliente</FormLabel>
                 <FormControl>
                   <RadioGroup
                     value={field.value}
@@ -118,13 +119,13 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="CPF" id="cpf-edit" />
-                      <Label htmlFor="cpf-edit" className="cursor-pointer">
+                      <Label htmlFor="cpf-edit" className="cursor-pointer text-sm">
                         CPF (Pessoa Física)
                       </Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="CNPJ" id="cnpj-edit" />
-                      <Label htmlFor="cnpj-edit" className="cursor-pointer">
+                      <Label htmlFor="cnpj-edit" className="cursor-pointer text-sm">
                         CNPJ (Pessoa Jurídica)
                       </Label>
                     </div>
@@ -135,17 +136,19 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
             )}
           />
 
+          {/* Nome */}
           <FormField
             control={control}
             name="nome"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-sm">
                   {tipo === 'CPF' ? 'Nome Completo' : 'Razão Social'} *
                 </FormLabel>
                 <FormControl>
                   <Input
                     placeholder={tipo === 'CPF' ? 'Ex: João da Silva' : 'Ex: Empresa LTDA'}
+                    className="h-9"
                     {...field}
                   />
                 </FormControl>
@@ -154,140 +157,25 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
             )}
           />
 
-          <FormField
-            control={control}
-            name="documento"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  {tipo === 'CPF' ? 'CPF' : 'CNPJ'} *
-                </FormLabel>
-                <FormControl>
-                  <MaskedInput
-                    mask="documento"
-                    documentType={tipo}
-                    value={field.value || ''}
-                    onChange={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="email@exemplo.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={control}
-              name="telefone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Telefone</FormLabel>
-                  <FormControl>
-                    <MaskedInput
-                      mask="telefone"
-                      value={field.value || ''}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={control}
-              name="whatsapp"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>WhatsApp</FormLabel>
-                  <FormControl>
-                    <MaskedInput
-                      mask="telefone"
-                      value={field.value || ''}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="space-y-4 pt-4 border-t">
-            <h3 className="font-semibold">Endereço</h3>
-            
-            <FormField
-              control={control}
-              name="endereco.cep"
-              render={({ field }) => (
-                <FormItem>
-                  <div className="flex items-center gap-2">
-                    <FormLabel>CEP</FormLabel>
-                    {buscandoCEP && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-                  </div>
-                  <FormControl>
-                    <MaskedInput
-                      mask="cep"
-                      value={field.value || ''}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={control}
-              name="endereco.logradouro"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Logradouro</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Rua, Avenida, etc." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
+          {/* Documento + Telefone + WhatsApp */}
+          <div className="grid grid-cols-12 gap-3">
+            <div className="col-span-4">
               <FormField
                 control={control}
-                name="endereco.numero"
+                name="documento"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Número</FormLabel>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-sm">
+                      {tipo === 'CPF' ? 'CPF' : 'CNPJ'} *
+                    </FormLabel>
                     <FormControl>
-                      <Input placeholder="123" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={control}
-                name="endereco.complemento"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Complemento</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Apt, Sala, etc." {...field} />
+                      <MaskedInput
+                        mask="documento"
+                        documentType={tipo}
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        className="h-9"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -295,48 +183,193 @@ export function EditarClienteSheet({ cliente, open, onOpenChange }: EditarClient
               />
             </div>
 
-            <FormField
-              control={control}
-              name="endereco.bairro"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Bairro</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nome do bairro" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="col-span-4">
               <FormField
                 control={control}
-                name="endereco.cidade"
+                name="telefone"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cidade</FormLabel>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-sm">Telefone *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nome da cidade" {...field} />
+                      <MaskedInput
+                        mask="telefone"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        className="h-9"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            </div>
 
+            <div className="col-span-4">
               <FormField
                 control={control}
-                name="endereco.estado"
+                name="whatsapp"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Estado</FormLabel>
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-sm">WhatsApp</FormLabel>
                     <FormControl>
-                      <Input placeholder="UF" maxLength={2} {...field} />
+                      <MaskedInput
+                        mask="telefone"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        className="h-9"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+            </div>
+          </div>
+
+          {/* Email */}
+          <FormField
+            control={control}
+            name="email"
+            render={({ field }) => (
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-sm">Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="email@exemplo.com" className="h-9" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Endereço */}
+          <div className="pt-3 border-t">
+            <h4 className="text-sm font-medium mb-3">Endereço</h4>
+            
+            {/* CEP + Logradouro + Número */}
+            <div className="grid grid-cols-12 gap-3 mb-3">
+              <div className="col-span-3">
+                <FormField
+                  control={control}
+                  name="endereco.cep"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <FormLabel className="text-sm">CEP</FormLabel>
+                        {buscandoCEP && <Loader2 className="h-3 w-3 animate-spin text-primary" />}
+                      </div>
+                      <FormControl>
+                        <MaskedInput
+                          mask="cep"
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          className="h-9"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="col-span-7">
+                <FormField
+                  control={control}
+                  name="endereco.logradouro"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-sm">Logradouro</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Rua, Avenida, etc." className="h-9" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="col-span-2">
+                <FormField
+                  control={control}
+                  name="endereco.numero"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-sm">Nº</FormLabel>
+                      <FormControl>
+                        <Input placeholder="123" className="h-9" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Complemento */}
+            <div className="mb-3">
+              <FormField
+                control={control}
+                name="endereco.complemento"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-sm">Complemento</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Apt, Sala, etc." className="h-9" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Bairro + Cidade + UF */}
+            <div className="grid grid-cols-12 gap-3">
+              <div className="col-span-4">
+                <FormField
+                  control={control}
+                  name="endereco.bairro"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-sm">Bairro</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome do bairro" className="h-9" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="col-span-6">
+                <FormField
+                  control={control}
+                  name="endereco.cidade"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-sm">Cidade</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Nome da cidade" className="h-9" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="col-span-2">
+                <FormField
+                  control={control}
+                  name="endereco.estado"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-sm">UF</FormLabel>
+                      <FormControl>
+                        <Input placeholder="MT" maxLength={2} className="h-9" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
           </div>
         </div>
