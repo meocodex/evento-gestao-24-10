@@ -62,6 +62,10 @@ export default function CadastroEvento() {
   const [responsavelNome, setResponsavelNome] = useState('');
   const [responsavelCpf, setResponsavelCpf] = useState('');
   const [responsavelDataNascimento, setResponsavelDataNascimento] = useState('');
+  
+  // Estado para busca de cliente por documento
+  const [buscandoCliente, setBuscandoCliente] = useState(false);
+  const [clienteEncontrado, setClienteEncontrado] = useState(false);
 
   // Honeypot anti-bot (campo oculto que humanos não preenchem)
   const [honeypot, setHoneypot] = useState('');
@@ -89,6 +93,97 @@ export default function CadastroEvento() {
   const [mapaLocal, setMapaLocal] = useState('');
   const [mapaLocalArquivo, setMapaLocalArquivo] = useState<string | undefined>();
   const [logoEvento, setLogoEvento] = useState<string | undefined>();
+  
+  // Busca automática de cliente por documento (CPF/CNPJ)
+  useEffect(() => {
+    const documentoLimpo = produtorDocumento.replace(/\D/g, '');
+    const tamanhoEsperado = produtorTipo === 'CPF' ? 11 : 14;
+    
+    // Só buscar se documento estiver completo
+    if (documentoLimpo.length !== tamanhoEsperado) {
+      setClienteEncontrado(false);
+      return;
+    }
+    
+    const timer = setTimeout(async () => {
+      setBuscandoCliente(true);
+      
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/buscar-cliente-por-documento`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ documento: documentoLimpo, tipo: produtorTipo }),
+          }
+        );
+        
+        const data = await response.json();
+        
+        if (data.encontrado && data.cliente) {
+          // Preencher campos automaticamente
+          setProdutorNome(data.cliente.nome || '');
+          setProdutorEmail(data.cliente.email || '');
+          setProdutorTelefone(formatarTelefone(data.cliente.telefone || ''));
+          setProdutorWhatsapp(formatarTelefone(data.cliente.whatsapp || ''));
+          
+          // Endereço
+          if (data.cliente.endereco) {
+            setProdutorCep(formatarCEP(data.cliente.endereco.cep || ''));
+            setProdutorLogradouro(data.cliente.endereco.logradouro || '');
+            setProdutorNumero(data.cliente.endereco.numero || '');
+            setProdutorComplemento(data.cliente.endereco.complemento || '');
+            setProdutorBairro(data.cliente.endereco.bairro || '');
+            setProdutorCidade(data.cliente.endereco.cidade || '');
+            setProdutorEstado(data.cliente.endereco.estado || '');
+          }
+          
+          // Responsável legal (CNPJ)
+          if (data.cliente.responsavelLegal && produtorTipo === 'CNPJ') {
+            setResponsavelNome(data.cliente.responsavelLegal.nome || '');
+            setResponsavelCpf(formatarDocumento(data.cliente.responsavelLegal.cpf || '', 'CPF'));
+            setResponsavelDataNascimento(data.cliente.responsavelLegal.data_nascimento || data.cliente.responsavelLegal.dataNascimento || '');
+          }
+          
+          setClienteEncontrado(true);
+          toast({
+            title: 'Cliente encontrado!',
+            description: 'Dados preenchidos automaticamente. Você pode editar se necessário.',
+          });
+        } else {
+          setClienteEncontrado(false);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar cliente:', error);
+        setClienteEncontrado(false);
+      } finally {
+        setBuscandoCliente(false);
+      }
+    }, 800);
+    
+    return () => clearTimeout(timer);
+  }, [produtorDocumento, produtorTipo]);
+
+  // Limpar campos ao mudar tipo de pessoa
+  const handleTipoProdutorChange = (novoTipo: 'CPF' | 'CNPJ') => {
+    setProdutorTipo(novoTipo);
+    setProdutorDocumento('');
+    setProdutorNome('');
+    setProdutorEmail('');
+    setProdutorTelefone('');
+    setProdutorWhatsapp('');
+    setProdutorCep('');
+    setProdutorLogradouro('');
+    setProdutorNumero('');
+    setProdutorComplemento('');
+    setProdutorBairro('');
+    setProdutorCidade('');
+    setProdutorEstado('');
+    setResponsavelNome('');
+    setResponsavelCpf('');
+    setResponsavelDataNascimento('');
+    setClienteEncontrado(false);
+  };
   
   // Busca automática de endereço por CEP do produtor
   useEffect(() => {
@@ -741,7 +836,7 @@ export default function CadastroEvento() {
             <CardContent className="space-y-4">
               <div>
                 <Label>Tipo de Pessoa *</Label>
-                <Select value={produtorTipo} onValueChange={(v) => setProdutorTipo(v as 'CPF' | 'CNPJ')}>
+                <Select value={produtorTipo} onValueChange={handleTipoProdutorChange}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -753,21 +848,52 @@ export default function CadastroEvento() {
               </div>
 
               <div>
-                <Label>{produtorTipo === 'CNPJ' ? 'Razão Social *' : 'Nome Completo *'}</Label>
-                <Input value={produtorNome} onChange={(e) => setProdutorNome(e.target.value)} />
+                <Label>{produtorTipo === 'CNPJ' ? 'CNPJ *' : 'CPF *'}</Label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Digite seu {produtorTipo} para verificar se já possui cadastro
+                </p>
+                <div className="relative">
+                  <Input
+                    value={produtorDocumento}
+                    onChange={(e) => {
+                      const formatted = formatarDocumento(e.target.value, produtorTipo);
+                      setProdutorDocumento(formatted);
+                    }}
+                    placeholder={produtorTipo === 'CNPJ' ? '00.000.000/0000-00' : '000.000.000-00'}
+                    maxLength={produtorTipo === 'CNPJ' ? 18 : 14}
+                    disabled={buscandoCliente}
+                  />
+                  {buscandoCliente && (
+                    <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+                
+                {/* Feedback: Cliente encontrado */}
+                {clienteEncontrado && !buscandoCliente && (
+                  <Alert className="mt-2 bg-green-50 border-green-200">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-700">
+                      Cliente encontrado! Dados preenchidos automaticamente. Você pode editar se necessário.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                {/* Feedback: Novo cadastro */}
+                {!clienteEncontrado && 
+                 !buscandoCliente && 
+                 produtorDocumento.replace(/\D/g, '').length === (produtorTipo === 'CPF' ? 11 : 14) && (
+                  <Alert className="mt-2 bg-blue-50 border-blue-200">
+                    <Info className="h-4 w-4 text-blue-600" />
+                    <AlertDescription className="text-blue-700">
+                      Novo cadastro. Preencha os dados abaixo.
+                    </AlertDescription>
+                  </Alert>
+                )}
               </div>
 
               <div>
-                <Label>{produtorTipo === 'CNPJ' ? 'CNPJ *' : 'CPF *'}</Label>
-                <Input
-                  value={produtorDocumento}
-                  onChange={(e) => {
-                    const formatted = formatarDocumento(e.target.value, produtorTipo);
-                    setProdutorDocumento(formatted);
-                  }}
-                  placeholder={produtorTipo === 'CNPJ' ? '00.000.000/0000-00' : '000.000.000-00'}
-                  maxLength={produtorTipo === 'CNPJ' ? 18 : 14}
-                />
+                <Label>{produtorTipo === 'CNPJ' ? 'Razão Social *' : 'Nome Completo *'}</Label>
+                <Input value={produtorNome} onChange={(e) => setProdutorNome(e.target.value)} />
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
