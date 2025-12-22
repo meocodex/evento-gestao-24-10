@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useDemandas } from '@/hooks/demandas';
 import { Demanda } from '@/types/demandas';
-import { AlertCircle, Eye, Plus, DollarSign } from 'lucide-react';
+import { AlertCircle, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { DetalhesDemandaSheet } from '@/components/demandas/DetalhesDemandaSheet';
 import { NovaDemandaReembolsoSheet } from '@/components/demandas/NovaDemandaReembolsoSheet';
@@ -28,28 +28,9 @@ const prioridadeConfig = {
 
 export function DemandasEvento({ eventoId }: DemandasEventoProps) {
   const { demandas: todasDemandas } = useDemandas(1, 1000);
-  const getDemandasPorEvento = (id: string) => todasDemandas.filter((d: Demanda) => d.eventoRelacionado === id);
-  const getDemandasReembolsoPorEvento = (id: string) => todasDemandas.filter((d: Demanda) => d.eventoRelacionado === id && d.categoria === 'reembolso');
+  const demandas = todasDemandas.filter((d: Demanda) => d.eventoRelacionado === eventoId);
   const [demandaSelecionada, setDemandaSelecionada] = useState<Demanda | null>(null);
   const [detalhesOpen, setDetalhesOpen] = useState(false);
-
-  const demandas = getDemandasPorEvento(eventoId);
-  const demandasReembolso = getDemandasReembolsoPorEvento(eventoId);
-
-  const estatisticas = {
-    total: demandas.length,
-    abertas: demandas.filter(d => d.status === 'aberta').length,
-    emAndamento: demandas.filter(d => d.status === 'em-andamento').length,
-    concluidas: demandas.filter(d => d.status === 'concluida').length,
-  };
-
-  const totalReembolsoPendente = demandasReembolso
-    .filter(d => d.dadosReembolso?.statusPagamento === 'pendente' || d.dadosReembolso?.statusPagamento === 'aprovado')
-    .reduce((sum, d) => sum + (d.dadosReembolso?.valorTotal || 0), 0);
-  
-  const totalReembolsoPago = demandasReembolso
-    .filter(d => d.dadosReembolso?.statusPagamento === 'pago')
-    .reduce((sum, d) => sum + (d.dadosReembolso?.valorTotal || 0), 0);
 
   const handleVerDetalhes = (demanda: Demanda) => {
     setDemandaSelecionada(demanda);
@@ -60,42 +41,6 @@ export function DemandasEvento({ eventoId }: DemandasEventoProps) {
     <div className="space-y-4">
       <div className="flex justify-end">
         <NovaDemandaReembolsoSheet eventoId={eventoId} />
-      </div>
-
-      {/* Estatísticas */}
-      <div className="grid grid-cols-5 gap-4">
-        <Card className="p-4">
-          <div className="text-2xl font-bold">{estatisticas.total}</div>
-          <div className="text-sm text-muted-foreground">Total</div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-2xl font-bold text-yellow-600">{estatisticas.abertas}</div>
-          <div className="text-sm text-muted-foreground">Abertas</div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-2xl font-bold text-blue-600">{estatisticas.emAndamento}</div>
-          <div className="text-sm text-muted-foreground">Em Andamento</div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-2xl font-bold text-green-600">{estatisticas.concluidas}</div>
-          <div className="text-sm text-muted-foreground">Concluídas</div>
-        </Card>
-        <Card className="p-4 border-purple-200">
-          <div className="flex items-center gap-2 mb-2">
-            <DollarSign className="h-4 w-4 text-purple-600" />
-            <div className="text-sm text-muted-foreground">Reembolsos</div>
-          </div>
-          <div className="space-y-1 text-xs">
-            <div className="flex justify-between">
-              <span>Pendentes:</span>
-              <span className="font-medium text-yellow-600">R$ {totalReembolsoPendente.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Pagos:</span>
-              <span className="font-medium text-green-600">R$ {totalReembolsoPago.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-            </div>
-          </div>
-        </Card>
       </div>
 
       {/* Lista de demandas */}
