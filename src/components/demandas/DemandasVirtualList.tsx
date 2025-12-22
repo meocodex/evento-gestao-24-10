@@ -18,7 +18,7 @@ export function DemandasVirtualList({
   const rowVirtualizer = useVirtualizer({
     count: demandas.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 260,
+    estimateSize: () => 140,
     overscan: 3,
   });
 
@@ -33,7 +33,7 @@ export function DemandasVirtualList({
   }
 
   return (
-    <div ref={parentRef} className="h-[calc(100vh-500px)] overflow-auto"
+    <div ref={parentRef} className="h-[calc(100vh-280px)] overflow-auto"
       style={{ contain: 'strict' }}>
       <div 
         style={{ 
