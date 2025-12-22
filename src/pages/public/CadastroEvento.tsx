@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, Beer, Zap, Info, CheckCircle, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { Ticket, Beer, Zap, Info, CheckCircle, ArrowLeft, ArrowRight, Loader2, Plus, Trash2 } from 'lucide-react';
+import { CadastroEventoLayout } from '@/components/cadastro';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -492,52 +493,67 @@ export default function CadastroEvento() {
   // Passo 1: Escolher tipo de evento
   if (step === 1) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-3xl">
-          <CardHeader>
-            <CardTitle className="text-2xl">Cadastro de Evento</CardTitle>
-            <CardDescription>Qual tipo de evento você quer criar?</CardDescription>
+      <CadastroEventoLayout currentStep={1} subtitle="Qual tipo de evento você quer criar?">
+        <Card className="border-border/50 shadow-2xl">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-xl">Selecione o tipo de evento</CardTitle>
+            <CardDescription>Escolha a opção que melhor se aplica ao seu evento</CardDescription>
           </CardHeader>
-          <CardContent className="grid md:grid-cols-3 gap-4">
+          <CardContent className="grid md:grid-cols-3 gap-4 pt-4">
             <Button
               variant="outline"
-              className="h-40 flex flex-col gap-3 hover:border-primary"
+              className="h-44 flex flex-col gap-4 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 group"
               onClick={() => { setTipoEvento('ingresso'); setStep(2); }}
             >
-              <Ticket className="h-12 w-12" />
-              <span className="text-lg font-medium">Evento com Ingresso</span>
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Ticket className="h-8 w-8 text-primary" />
+              </div>
+              <div className="text-center">
+                <span className="text-lg font-semibold block">Ingresso</span>
+                <span className="text-xs text-muted-foreground">Venda de ingressos</span>
+              </div>
             </Button>
             <Button
               variant="outline"
-              className="h-40 flex flex-col gap-3 hover:border-primary"
+              className="h-44 flex flex-col gap-4 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 group"
               onClick={() => { setTipoEvento('bar'); setStep(2); }}
             >
-              <Beer className="h-12 w-12" />
-              <span className="text-lg font-medium">Evento de Bar</span>
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Beer className="h-8 w-8 text-primary" />
+              </div>
+              <div className="text-center">
+                <span className="text-lg font-semibold block">Bar</span>
+                <span className="text-xs text-muted-foreground">Consumação no local</span>
+              </div>
             </Button>
             <Button
               variant="outline"
-              className="h-40 flex flex-col gap-3 hover:border-primary"
+              className="h-44 flex flex-col gap-4 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 group"
               onClick={() => { setTipoEvento('hibrido'); setStep(2); }}
             >
-              <Zap className="h-12 w-12" />
-              <span className="text-lg font-medium">Híbrido (Ambos)</span>
+              <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Zap className="h-8 w-8 text-primary" />
+              </div>
+              <div className="text-center">
+                <span className="text-lg font-semibold block">Híbrido</span>
+                <span className="text-xs text-muted-foreground">Ingresso + Bar</span>
+              </div>
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </CadastroEventoLayout>
     );
   }
 
   // Passo 2: Dados básicos do evento
   if (step === 2) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <Card>
+      <CadastroEventoLayout currentStep={2} subtitle="Informações básicas do evento">
+        <div className="space-y-6">
+          <Card className="border-border/50 shadow-2xl">
             <CardHeader>
               <CardTitle>Dados do Evento</CardTitle>
-              <CardDescription>Passo 2 de 6</CardDescription>
+              <CardDescription>Preencha as informações básicas</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Nome do Evento + Local */}
@@ -700,19 +716,19 @@ export default function CadastroEvento() {
             </Button>
           </div>
         </div>
-      </div>
+      </CadastroEventoLayout>
     );
   }
 
   // Passo 3: Dados do produtor
   if (step === 3) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <Card>
+      <CadastroEventoLayout currentStep={3} subtitle="Informações do produtor/organizador">
+        <div className="space-y-6">
+          <Card className="border-border/50 shadow-2xl">
             <CardHeader>
               <CardTitle>Dados do Produtor</CardTitle>
-              <CardDescription>Passo 3 de 6</CardDescription>
+              <CardDescription>Preencha os dados do responsável pelo evento</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -926,21 +942,23 @@ export default function CadastroEvento() {
             </Button>
           </div>
         </div>
-      </div>
+      </CadastroEventoLayout>
     );
   }
 
   // Passo 4: Configurações específicas (Ingresso ou Bar)
   if (step === 4) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <Card>
+      <CadastroEventoLayout currentStep={4} subtitle="Configurações específicas do evento">
+        <div className="space-y-6">
+          <Card className="border-border/50 shadow-2xl">
             <CardHeader>
               <CardTitle>
                 {tipoEvento === 'bar' ? 'Configuração do Bar' : 'Setores e Ingressos'}
               </CardTitle>
-              <CardDescription>Passo 4 de 6</CardDescription>
+              <CardDescription>
+                {tipoEvento === 'bar' ? 'Defina os estabelecimentos e configurações' : 'Configure setores e tipos de ingresso'}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {(tipoEvento === 'ingresso' || tipoEvento === 'hibrido') && (
@@ -1104,19 +1122,19 @@ export default function CadastroEvento() {
             </Button>
           </div>
         </div>
-      </div>
+      </CadastroEventoLayout>
     );
   }
 
   // Passo 5: Observações adicionais
   if (step === 5) {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-3xl mx-auto space-y-6">
-          <Card>
+      <CadastroEventoLayout currentStep={5} subtitle="Informações adicionais">
+        <div className="space-y-6">
+          <Card className="border-border/50 shadow-2xl">
             <CardHeader>
               <CardTitle>Informações Adicionais</CardTitle>
-              <CardDescription>Passo 5 de 6</CardDescription>
+              <CardDescription>Observações importantes sobre o evento</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -1142,18 +1160,18 @@ export default function CadastroEvento() {
             </Button>
           </div>
         </div>
-      </div>
+      </CadastroEventoLayout>
     );
   }
 
   // Passo 6: Revisão final
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <Card>
+    <CadastroEventoLayout currentStep={6} subtitle="Confira os dados antes de enviar">
+      <div className="space-y-6">
+        <Card className="border-border/50 shadow-2xl">
           <CardHeader>
             <CardTitle>Revisão Final</CardTitle>
-            <CardDescription>Passo 6 de 6 - Confira os dados antes de enviar</CardDescription>
+            <CardDescription>Verifique todas as informações antes de enviar</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
@@ -1201,6 +1219,6 @@ export default function CadastroEvento() {
           </Button>
         </div>
       </div>
-    </div>
+    </CadastroEventoLayout>
   );
 }
