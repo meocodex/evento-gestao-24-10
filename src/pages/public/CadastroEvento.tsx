@@ -5,6 +5,7 @@ import { CadastroEventoLayout, ImageUploadField } from '@/components/cadastro';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { MaskedInput, formatarTelefoneProgressivo, formatarCEPProgressivo, formatarCPFProgressivo } from '@/components/ui/masked-input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCadastros } from '@/hooks/cadastros';
 import { TipoEvento, SetorEvento, PontoVenda, EstabelecimentoBar, TipoIngresso, SetorCampo, TipoIngressoCampo, LoteCampo, PDVCampo, PDVEnderecoCampo, EstabelecimentoCampo } from '@/types/eventos';
-import { estados, formatarDocumento, formatarTelefone, formatarCEP, validarCPF, validarCNPJ } from '@/lib/validations/cliente';
+import { estados, validarCPF, validarCNPJ } from '@/lib/validations/cliente';
 import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
 import { toast } from '@/hooks/use-toast';
 import { X } from 'lucide-react';
@@ -129,12 +130,12 @@ export default function CadastroEvento() {
           // Preencher campos automaticamente
           setProdutorNome(data.cliente.nome || '');
           setProdutorEmail(data.cliente.email || '');
-          setProdutorTelefone(formatarTelefone(data.cliente.telefone || ''));
-          setProdutorWhatsapp(formatarTelefone(data.cliente.whatsapp || ''));
+          setProdutorTelefone(formatarTelefoneProgressivo(data.cliente.telefone || ''));
+          setProdutorWhatsapp(formatarTelefoneProgressivo(data.cliente.whatsapp || ''));
           
           // Endereço
           if (data.cliente.endereco) {
-            setProdutorCep(formatarCEP(data.cliente.endereco.cep || ''));
+            setProdutorCep(formatarCEPProgressivo(data.cliente.endereco.cep || ''));
             setProdutorLogradouro(data.cliente.endereco.logradouro || '');
             setProdutorNumero(data.cliente.endereco.numero || '');
             setProdutorComplemento(data.cliente.endereco.complemento || '');
@@ -146,7 +147,7 @@ export default function CadastroEvento() {
           // Responsável legal (CNPJ)
           if (data.cliente.responsavelLegal && produtorTipo === 'CNPJ') {
             setResponsavelNome(data.cliente.responsavelLegal.nome || '');
-            setResponsavelCpf(formatarDocumento(data.cliente.responsavelLegal.cpf || '', 'CPF'));
+            setResponsavelCpf(formatarCPFProgressivo(data.cliente.responsavelLegal.cpf || ''));
             setResponsavelDataNascimento(data.cliente.responsavelLegal.data_nascimento || data.cliente.responsavelLegal.dataNascimento || '');
           }
           
@@ -730,14 +731,10 @@ export default function CadastroEvento() {
                 <div>
                   <Label>CEP</Label>
                   <div className="relative">
-                    <Input
+                    <MaskedInput
+                      mask="cep"
                       value={cep}
-                      onChange={(e) => {
-                        const formatted = formatarCEP(e.target.value);
-                        setCep(formatted);
-                      }}
-                      placeholder="00000-000"
-                      maxLength={9}
+                      onChange={setCep}
                       disabled={buscandoCEPEvento}
                     />
                     {buscandoCEPEvento && (
@@ -861,14 +858,11 @@ export default function CadastroEvento() {
                   Digite seu {produtorTipo} para verificar se já possui cadastro
                 </p>
                 <div className="relative">
-                  <Input
+                  <MaskedInput
+                    mask="documento"
+                    documentType={produtorTipo}
                     value={produtorDocumento}
-                    onChange={(e) => {
-                      const formatted = formatarDocumento(e.target.value, produtorTipo);
-                      setProdutorDocumento(formatted);
-                    }}
-                    placeholder={produtorTipo === 'CNPJ' ? '00.000.000/0000-00' : '000.000.000-00'}
-                    maxLength={produtorTipo === 'CNPJ' ? 18 : 14}
+                    onChange={setProdutorDocumento}
                     disabled={buscandoCliente}
                   />
                   {buscandoCliente && (
@@ -918,20 +912,18 @@ export default function CadastroEvento() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label>Telefone *</Label>
-                  <Input
+                  <MaskedInput
+                    mask="telefone"
                     value={produtorTelefone}
-                    onChange={(e) => setProdutorTelefone(formatarTelefone(e.target.value))}
-                    placeholder="(00) 00000-0000"
-                    maxLength={15}
+                    onChange={setProdutorTelefone}
                   />
                 </div>
                 <div>
                   <Label>WhatsApp</Label>
-                  <Input
+                  <MaskedInput
+                    mask="telefone"
                     value={produtorWhatsapp}
-                    onChange={(e) => setProdutorWhatsapp(formatarTelefone(e.target.value))}
-                    placeholder="(00) 00000-0000"
-                    maxLength={15}
+                    onChange={setProdutorWhatsapp}
                   />
                 </div>
               </div>
@@ -948,11 +940,10 @@ export default function CadastroEvento() {
                   <div>
                     <Label>CEP *</Label>
                     <div className="relative">
-                      <Input
+                      <MaskedInput
+                        mask="cep"
                         value={produtorCep}
-                        onChange={(e) => setProdutorCep(formatarCEP(e.target.value))}
-                        placeholder="00000-000"
-                        maxLength={9}
+                        onChange={setProdutorCep}
                         disabled={buscandoCEP}
                       />
                       {buscandoCEP && (
@@ -1043,14 +1034,10 @@ export default function CadastroEvento() {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
                         <Label>CPF do Responsável *</Label>
-                        <Input
+                        <MaskedInput
+                          mask="cpf"
                           value={responsavelCpf}
-                          onChange={(e) => {
-                            const formatted = formatarDocumento(e.target.value, 'CPF');
-                            setResponsavelCpf(formatted);
-                          }}
-                          placeholder="000.000.000-00"
-                          maxLength={14}
+                          onChange={setResponsavelCpf}
                         />
                       </div>
                       <div>
