@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +13,6 @@ import { useEquipe } from '@/hooks/equipe';
 import { useConflitosEquipe } from '@/hooks/equipe';
 import { MembroEquipe } from '@/types/eventos';
 import { AlertTriangle, User, UserPlus } from 'lucide-react';
-import { formatarTelefone } from '@/lib/formatters';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -245,22 +245,20 @@ export function AdicionarMembroEquipeDialog({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="telefone">Telefone *</Label>
-                  <Input
+                  <MaskedInput
                     id="telefone"
+                    mask="telefone"
                     value={telefone}
-                    onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
-                    placeholder="(00) 00000-0000"
-                    maxLength={15}
+                    onChange={setTelefone}
                   />
                 </div>
                 <div>
                   <Label htmlFor="whatsapp">WhatsApp</Label>
-                  <Input
+                  <MaskedInput
                     id="whatsapp"
+                    mask="telefone"
                     value={whatsapp}
-                    onChange={(e) => setWhatsapp(formatarTelefone(e.target.value))}
-                    placeholder="(00) 00000-0000"
-                    maxLength={15}
+                    onChange={setWhatsapp}
                   />
                 </div>
               </div>
