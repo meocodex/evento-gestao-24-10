@@ -4,15 +4,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { FormSheet, useSheetState } from '@/components/shared/sheets';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { MaskedInput } from '@/components/ui/masked-input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Plus, Loader2 } from 'lucide-react';
 import { useClientes } from '@/hooks/clientes';
 import { clienteSchema } from '@/lib/validations/cliente';
 import { ClienteFormData } from '@/types/eventos';
-import { formatarDocumento, formatarTelefone, formatarCEP } from '@/lib/validations/cliente';
 import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
-
 export function NovoClienteSheet() {
   const { isOpen, open, close } = useSheetState({ resetOnClose: true });
   const [buscandoCEP, setBuscandoCEP] = useState(false);
@@ -135,14 +134,12 @@ export function NovoClienteSheet() {
         {/* Documento */}
         <div className="space-y-2">
           <Label htmlFor="documento" className="text-navy-700">{tipo === 'CPF' ? 'CPF' : 'CNPJ'}</Label>
-          <Input
+          <MaskedInput
             id="documento"
-            {...register('documento')}
-            placeholder={tipo === 'CPF' ? '000.000.000-00' : '00.000.000/0000-00'}
-            onChange={(e) => {
-              const formatted = formatarDocumento(e.target.value, tipo);
-              setValue('documento', formatted);
-            }}
+            mask="documento"
+            documentType={tipo}
+            value={watch('documento') || ''}
+            onChange={(value) => setValue('documento', value)}
             className="border-navy-200"
           />
           {errors.documento && <p className="text-sm text-destructive">{errors.documento.message}</p>}
@@ -159,28 +156,22 @@ export function NovoClienteSheet() {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="telefone" className="text-navy-700">Telefone</Label>
-            <Input
+            <MaskedInput
               id="telefone"
-              {...register('telefone')}
-              placeholder="(00) 0000-0000"
-              onChange={(e) => {
-                const formatted = formatarTelefone(e.target.value);
-                setValue('telefone', formatted);
-              }}
+              mask="telefone"
+              value={watch('telefone') || ''}
+              onChange={(value) => setValue('telefone', value)}
               className="border-navy-200"
             />
             {errors.telefone && <p className="text-sm text-destructive">{errors.telefone.message}</p>}
           </div>
           <div className="space-y-2">
             <Label htmlFor="whatsapp" className="text-navy-700">WhatsApp (Opcional)</Label>
-            <Input
+            <MaskedInput
               id="whatsapp"
-              {...register('whatsapp')}
-              placeholder="(00) 90000-0000"
-              onChange={(e) => {
-                const formatted = formatarTelefone(e.target.value);
-                setValue('whatsapp', formatted);
-              }}
+              mask="telefone"
+              value={watch('whatsapp') || ''}
+              onChange={(value) => setValue('whatsapp', value)}
               className="border-navy-200"
             />
           </div>
@@ -190,14 +181,11 @@ export function NovoClienteSheet() {
         <div className="space-y-2">
           <Label htmlFor="cep" className="text-navy-700">CEP</Label>
           <div className="relative">
-            <Input
+            <MaskedInput
               id="cep"
-              {...register('endereco.cep')}
-              placeholder="00000-000"
-              onChange={(e) => {
-                const formatted = formatarCEP(e.target.value);
-                setValue('endereco.cep', formatted);
-              }}
+              mask="cep"
+              value={watch('endereco.cep') || ''}
+              onChange={(value) => setValue('endereco.cep', value)}
               className={buscandoCEP ? "border-navy-200 pr-10" : "border-navy-200"}
             />
             {buscandoCEP && (
