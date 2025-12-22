@@ -89,98 +89,113 @@ export function NovoOperacionalSheet({ open, onOpenChange }: NovoOperacionalShee
       onSubmit={form.handleSubmit(onSubmit)}
       isLoading={criarOperacional.isPending}
       submitText="Cadastrar"
-      size="xl"
+      size="lg"
     >
       <Form {...form}>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-4">
+          {/* Nome */}
           <FormField
             control={form.control}
             name="nome"
             render={({ field }) => (
-              <FormItem className="col-span-2">
-                <FormLabel>Nome Completo *</FormLabel>
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-sm">Nome Completo *</FormLabel>
                 <FormControl>
-                  <Input placeholder="Nome completo" {...field} />
+                  <Input placeholder="Nome completo" className="h-9" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="cpf"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>CPF</FormLabel>
-                <FormControl>
-                  <MaskedInput
-                    mask="cpf"
-                    value={field.value || ''}
-                    onChange={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {/* CPF + Telefone + WhatsApp */}
+          <div className="grid grid-cols-12 gap-3">
+            <div className="col-span-4">
+              <FormField
+                control={form.control}
+                name="cpf"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-sm">CPF</FormLabel>
+                    <FormControl>
+                      <MaskedInput
+                        mask="cpf"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        className="h-9"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-          <FormField
-            control={form.control}
-            name="telefone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Telefone *</FormLabel>
-                <FormControl>
-                  <MaskedInput
-                    mask="telefone"
-                    value={field.value || ''}
-                    onChange={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <div className="col-span-4">
+              <FormField
+                control={form.control}
+                name="telefone"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-sm">Telefone *</FormLabel>
+                    <FormControl>
+                      <MaskedInput
+                        mask="telefone"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        className="h-9"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-          <FormField
-            control={form.control}
-            name="whatsapp"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>WhatsApp</FormLabel>
-                <FormControl>
-                  <MaskedInput
-                    mask="telefone"
-                    value={field.value || ''}
-                    onChange={field.onChange}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <div className="col-span-4">
+              <FormField
+                control={form.control}
+                name="whatsapp"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-sm">WhatsApp</FormLabel>
+                    <FormControl>
+                      <MaskedInput
+                        mask="telefone"
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        className="h-9"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
 
+          {/* Email */}
           <FormField
             control={form.control}
             name="email"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>E-mail</FormLabel>
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-sm">E-mail</FormLabel>
                 <FormControl>
-                  <Input type="email" placeholder="email@exemplo.com" {...field} />
+                  <Input type="email" placeholder="email@exemplo.com" className="h-9" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
+          {/* Função Principal */}
           <FormField
             control={form.control}
             name="funcao_principal"
             render={({ field }) => (
-              <FormItem className="col-span-2">
-                <FormLabel>Função Principal *</FormLabel>
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-sm">Função Principal *</FormLabel>
                 {!mostrarAdicionarFuncao ? (
                   <div className="flex gap-2">
                     <Select
@@ -194,7 +209,7 @@ export function NovoOperacionalSheet({ open, onOpenChange }: NovoOperacionalShee
                       }}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-9">
                           <SelectValue placeholder="Selecione a função" />
                         </SelectTrigger>
                       </FormControl>
@@ -219,9 +234,12 @@ export function NovoOperacionalSheet({ open, onOpenChange }: NovoOperacionalShee
                       value={novaFuncaoNome}
                       onChange={(e) => setNovaFuncaoNome(e.target.value)}
                       placeholder="Nome da nova função"
+                      className="h-9"
                     />
                     <Button
                       type="button"
+                      size="sm"
+                      className="h-9"
                       onClick={async () => {
                         if (novaFuncaoNome.trim()) {
                           try {
@@ -251,6 +269,8 @@ export function NovoOperacionalSheet({ open, onOpenChange }: NovoOperacionalShee
                     <Button
                       type="button"
                       variant="outline"
+                      size="sm"
+                      className="h-9"
                       onClick={() => {
                         setMostrarAdicionarFuncao(false);
                         setNovaFuncaoNome('');
@@ -265,59 +285,69 @@ export function NovoOperacionalSheet({ open, onOpenChange }: NovoOperacionalShee
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="tipo_vinculo"
-            render={({ field }) => (
-              <FormItem className="col-span-2">
-                <FormLabel>Tipo de Vínculo *</FormLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="clt">CLT</SelectItem>
-                    <SelectItem value="freelancer">Freelancer</SelectItem>
-                    <SelectItem value="pj">PJ</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
+          {/* Tipo de Vínculo + CNPJ */}
+          <div className="grid grid-cols-12 gap-3">
+            <div className={tipoVinculo === 'pj' ? 'col-span-6' : 'col-span-12'}>
+              <FormField
+                control={form.control}
+                name="tipo_vinculo"
+                render={({ field }) => (
+                  <FormItem className="space-y-1.5">
+                    <FormLabel className="text-sm">Tipo de Vínculo *</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger className="h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="clt">CLT</SelectItem>
+                        <SelectItem value="freelancer">Freelancer</SelectItem>
+                        <SelectItem value="pj">PJ</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {tipoVinculo === 'pj' && (
+              <div className="col-span-6">
+                <FormField
+                  control={form.control}
+                  name="cnpj_pj"
+                  render={({ field }) => (
+                    <FormItem className="space-y-1.5">
+                      <FormLabel className="text-sm">CNPJ *</FormLabel>
+                      <FormControl>
+                        <MaskedInput
+                          mask="cnpj"
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          className="h-9"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             )}
-          />
+          </div>
 
-          {tipoVinculo === 'pj' && (
-            <FormField
-              control={form.control}
-              name="cnpj_pj"
-              render={({ field }) => (
-                <FormItem className="col-span-2">
-                  <FormLabel>CNPJ *</FormLabel>
-                  <FormControl>
-                    <MaskedInput
-                      mask="cnpj"
-                      value={field.value || ''}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
-
+          {/* Observações */}
           <FormField
             control={form.control}
             name="observacoes"
             render={({ field }) => (
-              <FormItem className="col-span-2">
-                <FormLabel>Observações</FormLabel>
+              <FormItem className="space-y-1.5">
+                <FormLabel className="text-sm">Observações</FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Observações adicionais..."
-                    rows={4}
+                    rows={3}
+                    className="resize-none"
                     {...field}
                   />
                 </FormControl>

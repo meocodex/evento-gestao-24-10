@@ -114,188 +114,189 @@ export function NovaTransportadoraSheet({ open, onOpenChange }: NovaTransportado
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
         side={isMobile ? "bottom" : "right"}
-        className={isMobile ? "h-[90vh] rounded-t-3xl" : "w-full sm:w-[600px] lg:w-[800px] overflow-y-auto"}
+        className={isMobile ? "h-[90vh] rounded-t-3xl" : "w-full sm:w-[540px] lg:w-[600px] overflow-y-auto"}
       >
-        <SheetHeader className="border-b border-navy-100 pb-4 mb-6">
-          <SheetTitle className="text-2xl font-display text-navy-800">
+        <SheetHeader className="border-b border-navy-100 pb-4 mb-4">
+          <SheetTitle className="text-xl font-display text-navy-800">
             Nova Transportadora
           </SheetTitle>
-          <SheetDescription className="text-navy-500">
+          <SheetDescription className="text-sm text-navy-500">
             Cadastre uma nova transportadora no sistema
           </SheetDescription>
         </SheetHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="nome" className="text-navy-700">Nome Fantasia *</Label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Nome Fantasia + CNPJ */}
+          <div className="grid grid-cols-12 gap-3">
+            <div className="col-span-7 space-y-1.5">
+              <Label htmlFor="nome" className="text-sm text-navy-700">Nome Fantasia *</Label>
+              <Input
+                id="nome"
+                required
+                value={formData.nome}
+                onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
+                className="h-9 border-navy-200"
+              />
+            </div>
+            <div className="col-span-5 space-y-1.5">
+              <Label htmlFor="cnpj" className="text-sm text-navy-700">CNPJ *</Label>
+              <MaskedInput
+                id="cnpj"
+                mask="cnpj"
+                required
+                value={formData.cnpj}
+                onChange={(value) => setFormData({ ...formData, cnpj: value })}
+                className="h-9 border-navy-200"
+              />
+            </div>
+          </div>
+
+          {/* Razão Social */}
+          <div className="space-y-1.5">
+            <Label htmlFor="razaoSocial" className="text-sm text-navy-700">Razão Social *</Label>
+            <Input
+              id="razaoSocial"
+              required
+              value={formData.razaoSocial}
+              onChange={(e) => setFormData({ ...formData, razaoSocial: e.target.value })}
+              className="h-9 border-navy-200"
+            />
+          </div>
+
+          {/* Responsável + Telefone */}
+          <div className="grid grid-cols-12 gap-3">
+            <div className="col-span-7 space-y-1.5">
+              <Label htmlFor="responsavel" className="text-sm text-navy-700">Responsável</Label>
+              <Input
+                id="responsavel"
+                value={formData.responsavel}
+                onChange={(e) => setFormData({ ...formData, responsavel: e.target.value })}
+                className="h-9 border-navy-200"
+                placeholder="Nome do responsável"
+              />
+            </div>
+            <div className="col-span-5 space-y-1.5">
+              <Label htmlFor="telefone" className="text-sm text-navy-700">Telefone *</Label>
+              <MaskedInput
+                id="telefone"
+                mask="telefone"
+                required
+                value={formData.telefone}
+                onChange={(value) => setFormData({ ...formData, telefone: value })}
+                className="h-9 border-navy-200"
+              />
+            </div>
+          </div>
+
+          {/* Email */}
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-sm text-navy-700">Email *</Label>
+            <Input
+              id="email"
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="h-9 border-navy-200"
+            />
+          </div>
+
+          {/* Endereço */}
+          <div className="pt-3 border-t border-navy-100">
+            <h4 className="text-sm font-medium text-navy-800 mb-3">Endereço</h4>
+            
+            {/* CEP + Rua + Número */}
+            <div className="grid grid-cols-12 gap-3 mb-3">
+              <div className="col-span-3 space-y-1.5">
+                <Label htmlFor="cep" className="text-sm text-navy-700">CEP *</Label>
+                <div className="relative">
+                  <MaskedInput
+                    id="cep"
+                    mask="cep"
+                    required
+                    value={formData.endereco.cep}
+                    onChange={(value) => setFormData({ ...formData, endereco: { ...formData.endereco, cep: value } })}
+                    className={`h-9 ${buscandoCEP ? "border-navy-200 pr-8" : "border-navy-200"}`}
+                  />
+                  {buscandoCEP && (
+                    <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                  )}
+                </div>
+              </div>
+              <div className="col-span-7 space-y-1.5">
+                <Label htmlFor="rua" className="text-sm text-navy-700">Rua *</Label>
                 <Input
-                  id="nome"
+                  id="rua"
                   required
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  className="border-navy-200 focus:border-navy-400"
+                  value={formData.endereco.rua}
+                  onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, rua: e.target.value } })}
+                  className="h-9 border-navy-200"
                 />
               </div>
-              <div>
-                <Label htmlFor="cnpj" className="text-navy-700">CNPJ *</Label>
-                <MaskedInput
-                  id="cnpj"
-                  mask="cnpj"
+              <div className="col-span-2 space-y-1.5">
+                <Label htmlFor="numero" className="text-sm text-navy-700">Nº *</Label>
+                <Input
+                  id="numero"
                   required
-                  value={formData.cnpj}
-                  onChange={(value) => setFormData({ ...formData, cnpj: value })}
-                  className="border-navy-200 focus:border-navy-400"
+                  value={formData.endereco.numero}
+                  onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, numero: e.target.value } })}
+                  className="h-9 border-navy-200"
                 />
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="razaoSocial" className="text-navy-700">Razão Social *</Label>
+            {/* Complemento */}
+            <div className="space-y-1.5 mb-3">
+              <Label htmlFor="complemento" className="text-sm text-navy-700">Complemento</Label>
               <Input
-                id="razaoSocial"
-                required
-                value={formData.razaoSocial}
-                onChange={(e) => setFormData({ ...formData, razaoSocial: e.target.value })}
-                className="border-navy-200 focus:border-navy-400"
+                id="complemento"
+                value={formData.endereco.complemento}
+                onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, complemento: e.target.value } })}
+                className="h-9 border-navy-200"
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="responsavel" className="text-navy-700">Responsável</Label>
+            {/* Bairro + Cidade + UF */}
+            <div className="grid grid-cols-12 gap-3">
+              <div className="col-span-4 space-y-1.5">
+                <Label htmlFor="bairro" className="text-sm text-navy-700">Bairro *</Label>
                 <Input
-                  id="responsavel"
-                  value={formData.responsavel}
-                  onChange={(e) => setFormData({ ...formData, responsavel: e.target.value })}
-                  className="border-navy-200 focus:border-navy-400"
-                  placeholder="Nome do responsável (opcional)"
-                />
-              </div>
-              <div>
-                <Label htmlFor="telefone" className="text-navy-700">Telefone *</Label>
-                <MaskedInput
-                  id="telefone"
-                  mask="telefone"
+                  id="bairro"
                   required
-                  value={formData.telefone}
-                  onChange={(value) => setFormData({ ...formData, telefone: value })}
-                  className="border-navy-200 focus:border-navy-400"
+                  value={formData.endereco.bairro}
+                  onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, bairro: e.target.value } })}
+                  className="h-9 border-navy-200"
                 />
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="email" className="text-navy-700">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="border-navy-200 focus:border-navy-400"
-              />
-            </div>
-
-            <div className="pt-4 border-t border-navy-100">
-              <h3 className="text-lg font-semibold text-navy-800 mb-4">Endereço</h3>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="cep" className="text-navy-700">CEP *</Label>
-                    <div className="relative">
-                      <MaskedInput
-                        id="cep"
-                        mask="cep"
-                        required
-                        value={formData.endereco.cep}
-                        onChange={(value) => setFormData({ ...formData, endereco: { ...formData.endereco, cep: value } })}
-                        className={buscandoCEP ? "border-navy-200 pr-10" : "border-navy-200"}
-                      />
-                      {buscandoCEP && (
-                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Digite o CEP para buscar automaticamente
-                    </p>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <Label htmlFor="rua" className="text-navy-700">Rua *</Label>
-                    <Input
-                      id="rua"
-                      required
-                      value={formData.endereco.rua}
-                      onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, rua: e.target.value } })}
-                      className="border-navy-200 focus:border-navy-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="numero" className="text-navy-700">Número *</Label>
-                    <Input
-                      id="numero"
-                      required
-                      value={formData.endereco.numero}
-                      onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, numero: e.target.value } })}
-                      className="border-navy-200 focus:border-navy-400"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="complemento" className="text-navy-700">Complemento (Opcional)</Label>
-                    <Input
-                      id="complemento"
-                      value={formData.endereco.complemento}
-                      onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, complemento: e.target.value } })}
-                      className="border-navy-200 focus:border-navy-400"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="bairro" className="text-navy-700">Bairro *</Label>
-                    <Input
-                      id="bairro"
-                      required
-                      value={formData.endereco.bairro}
-                      onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, bairro: e.target.value } })}
-                      className="border-navy-200 focus:border-navy-400"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="cidade" className="text-navy-700">Cidade *</Label>
-                    <Input
-                      id="cidade"
-                      required
-                      value={formData.endereco.cidade}
-                      onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, cidade: e.target.value } })}
-                      className="border-navy-200 focus:border-navy-400"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="estado" className="text-navy-700">Estado *</Label>
-                    <Input
-                      id="estado"
-                      required
-                      value={formData.endereco.estado}
-                      onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, estado: e.target.value } })}
-                      className="border-navy-200 focus:border-navy-400"
-                    />
-                  </div>
-                </div>
+              <div className="col-span-6 space-y-1.5">
+                <Label htmlFor="cidade" className="text-sm text-navy-700">Cidade *</Label>
+                <Input
+                  id="cidade"
+                  required
+                  value={formData.endereco.cidade}
+                  onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, cidade: e.target.value } })}
+                  className="h-9 border-navy-200"
+                />
+              </div>
+              <div className="col-span-2 space-y-1.5">
+                <Label htmlFor="estado" className="text-sm text-navy-700">UF *</Label>
+                <Input
+                  id="estado"
+                  required
+                  maxLength={2}
+                  value={formData.endereco.estado}
+                  onChange={(e) => setFormData({ ...formData, endereco: { ...formData.endereco, estado: e.target.value } })}
+                  className="h-9 border-navy-200"
+                />
               </div>
             </div>
           </div>
 
-          <SheetFooter className="border-t border-navy-100 pt-6 mt-6 gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <SheetFooter className="border-t border-navy-100 pt-4 mt-4 gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="h-9">
               Cancelar
             </Button>
-            <Button type="submit">
+            <Button type="submit" className="h-9">
               Criar Transportadora
             </Button>
           </SheetFooter>

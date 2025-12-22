@@ -12,6 +12,7 @@ import { useClientes } from '@/hooks/clientes';
 import { clienteSchema } from '@/lib/validations/cliente';
 import { ClienteFormData } from '@/types/eventos';
 import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
+
 export function NovoClienteSheet() {
   const { isOpen, open, close } = useSheetState({ resetOnClose: true });
   const [buscandoCEP, setBuscandoCEP] = useState(false);
@@ -100,10 +101,10 @@ export function NovoClienteSheet() {
       submitText="Criar Cliente"
       size="lg"
     >
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Tipo de Cliente */}
-        <div className="space-y-2">
-          <Label className="text-navy-700">Tipo de Cliente</Label>
+        <div className="space-y-1.5">
+          <Label className="text-sm text-navy-700">Tipo de Cliente</Label>
           <RadioGroup
             value={tipo}
             onValueChange={(value) => setValue('tipo', value as 'CPF' | 'CNPJ')}
@@ -111,13 +112,13 @@ export function NovoClienteSheet() {
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="CPF" id="cpf" />
-              <Label htmlFor="cpf" className="cursor-pointer text-navy-700">
+              <Label htmlFor="cpf" className="cursor-pointer text-sm text-navy-700">
                 CPF (Pessoa Física)
               </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="CNPJ" id="cnpj" />
-              <Label htmlFor="cnpj" className="cursor-pointer text-navy-700">
+              <Label htmlFor="cnpj" className="cursor-pointer text-sm text-navy-700">
                 CNPJ (Pessoa Jurídica)
               </Label>
             </div>
@@ -125,115 +126,161 @@ export function NovoClienteSheet() {
         </div>
 
         {/* Nome */}
-        <div className="space-y-2">
-          <Label htmlFor="nome" className="text-navy-700">{tipo === 'CPF' ? 'Nome Completo' : 'Razão Social'}</Label>
-          <Input id="nome" {...register('nome')} placeholder={tipo === 'CPF' ? 'João da Silva' : 'Empresa Ltda'} className="border-navy-200" />
-          {errors.nome && <p className="text-sm text-destructive">{errors.nome.message}</p>}
-        </div>
-
-        {/* Documento */}
-        <div className="space-y-2">
-          <Label htmlFor="documento" className="text-navy-700">{tipo === 'CPF' ? 'CPF' : 'CNPJ'}</Label>
-          <MaskedInput
-            id="documento"
-            mask="documento"
-            documentType={tipo}
-            value={watch('documento') || ''}
-            onChange={(value) => setValue('documento', value)}
-            className="border-navy-200"
+        <div className="space-y-1.5">
+          <Label htmlFor="nome" className="text-sm text-navy-700">
+            {tipo === 'CPF' ? 'Nome Completo' : 'Razão Social'} *
+          </Label>
+          <Input 
+            id="nome" 
+            {...register('nome')} 
+            placeholder={tipo === 'CPF' ? 'João da Silva' : 'Empresa Ltda'} 
+            className="h-9 border-navy-200" 
           />
-          {errors.documento && <p className="text-sm text-destructive">{errors.documento.message}</p>}
+          {errors.nome && <p className="text-xs text-destructive">{errors.nome.message}</p>}
         </div>
 
-        {/* Email */}
-        <div className="space-y-2">
-          <Label htmlFor="email" className="text-navy-700">Email</Label>
-          <Input id="email" type="email" {...register('email')} placeholder="contato@email.com" className="border-navy-200" />
-          {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
-        </div>
-
-        {/* Telefones */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="telefone" className="text-navy-700">Telefone</Label>
+        {/* Documento + Telefone + WhatsApp */}
+        <div className="grid grid-cols-12 gap-3">
+          <div className="col-span-4 space-y-1.5">
+            <Label htmlFor="documento" className="text-sm text-navy-700">
+              {tipo === 'CPF' ? 'CPF' : 'CNPJ'} *
+            </Label>
+            <MaskedInput
+              id="documento"
+              mask="documento"
+              documentType={tipo}
+              value={watch('documento') || ''}
+              onChange={(value) => setValue('documento', value)}
+              className="h-9 border-navy-200"
+            />
+            {errors.documento && <p className="text-xs text-destructive">{errors.documento.message}</p>}
+          </div>
+          <div className="col-span-4 space-y-1.5">
+            <Label htmlFor="telefone" className="text-sm text-navy-700">Telefone *</Label>
             <MaskedInput
               id="telefone"
               mask="telefone"
               value={watch('telefone') || ''}
               onChange={(value) => setValue('telefone', value)}
-              className="border-navy-200"
+              className="h-9 border-navy-200"
             />
-            {errors.telefone && <p className="text-sm text-destructive">{errors.telefone.message}</p>}
+            {errors.telefone && <p className="text-xs text-destructive">{errors.telefone.message}</p>}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="whatsapp" className="text-navy-700">WhatsApp (Opcional)</Label>
+          <div className="col-span-4 space-y-1.5">
+            <Label htmlFor="whatsapp" className="text-sm text-navy-700">WhatsApp</Label>
             <MaskedInput
               id="whatsapp"
               mask="telefone"
               value={watch('whatsapp') || ''}
               onChange={(value) => setValue('whatsapp', value)}
-              className="border-navy-200"
+              className="h-9 border-navy-200"
             />
           </div>
         </div>
 
-        {/* CEP */}
-        <div className="space-y-2">
-          <Label htmlFor="cep" className="text-navy-700">CEP</Label>
-          <div className="relative">
-            <MaskedInput
-              id="cep"
-              mask="cep"
-              value={watch('endereco.cep') || ''}
-              onChange={(value) => setValue('endereco.cep', value)}
-              className={buscandoCEP ? "border-navy-200 pr-10" : "border-navy-200"}
-            />
-            {buscandoCEP && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-            )}
-          </div>
-          {errors.endereco?.cep && <p className="text-sm text-destructive">{errors.endereco.cep.message}</p>}
-          <p className="text-xs text-muted-foreground">
-            Digite o CEP para buscar automaticamente
-          </p>
+        {/* Email */}
+        <div className="space-y-1.5">
+          <Label htmlFor="email" className="text-sm text-navy-700">Email *</Label>
+          <Input 
+            id="email" 
+            type="email" 
+            {...register('email')} 
+            placeholder="contato@email.com" 
+            className="h-9 border-navy-200" 
+          />
+          {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
         </div>
 
         {/* Endereço */}
-        <div className="grid grid-cols-4 gap-4">
-          <div className="col-span-3 space-y-2">
-            <Label htmlFor="logradouro" className="text-navy-700">Logradouro</Label>
-            <Input id="logradouro" {...register('endereco.logradouro')} placeholder="Rua, Avenida..." className="border-navy-200" />
-            {errors.endereco?.logradouro && (
-              <p className="text-sm text-destructive">{errors.endereco.logradouro.message}</p>
-            )}
+        <div className="pt-3 border-t border-navy-100">
+          <h4 className="text-sm font-medium text-navy-800 mb-3">Endereço</h4>
+          
+          {/* CEP + Logradouro + Número */}
+          <div className="grid grid-cols-12 gap-3 mb-3">
+            <div className="col-span-3 space-y-1.5">
+              <Label htmlFor="cep" className="text-sm text-navy-700">CEP</Label>
+              <div className="relative">
+                <MaskedInput
+                  id="cep"
+                  mask="cep"
+                  value={watch('endereco.cep') || ''}
+                  onChange={(value) => setValue('endereco.cep', value)}
+                  className={`h-9 ${buscandoCEP ? "border-navy-200 pr-8" : "border-navy-200"}`}
+                />
+                {buscandoCEP && (
+                  <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+              </div>
+              {errors.endereco?.cep && <p className="text-xs text-destructive">{errors.endereco.cep.message}</p>}
+            </div>
+            <div className="col-span-7 space-y-1.5">
+              <Label htmlFor="logradouro" className="text-sm text-navy-700">Logradouro</Label>
+              <Input 
+                id="logradouro" 
+                {...register('endereco.logradouro')} 
+                placeholder="Rua, Avenida..." 
+                className="h-9 border-navy-200" 
+              />
+              {errors.endereco?.logradouro && (
+                <p className="text-xs text-destructive">{errors.endereco.logradouro.message}</p>
+              )}
+            </div>
+            <div className="col-span-2 space-y-1.5">
+              <Label htmlFor="numero" className="text-sm text-navy-700">Nº</Label>
+              <Input 
+                id="numero" 
+                {...register('endereco.numero')} 
+                placeholder="123" 
+                className="h-9 border-navy-200" 
+              />
+              {errors.endereco?.numero && <p className="text-xs text-destructive">{errors.endereco.numero.message}</p>}
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="numero" className="text-navy-700">Número</Label>
-            <Input id="numero" {...register('endereco.numero')} placeholder="123" className="border-navy-200" />
-            {errors.endereco?.numero && <p className="text-sm text-destructive">{errors.endereco.numero.message}</p>}
-          </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="complemento" className="text-navy-700">Complemento (Opcional)</Label>
-          <Input id="complemento" {...register('endereco.complemento')} placeholder="Apt, Sala, Bloco..." className="border-navy-200" />
-        </div>
+          {/* Complemento */}
+          <div className="space-y-1.5 mb-3">
+            <Label htmlFor="complemento" className="text-sm text-navy-700">Complemento</Label>
+            <Input 
+              id="complemento" 
+              {...register('endereco.complemento')} 
+              placeholder="Apt, Sala, Bloco..." 
+              className="h-9 border-navy-200" 
+            />
+          </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="bairro" className="text-navy-700">Bairro</Label>
-            <Input id="bairro" {...register('endereco.bairro')} placeholder="Centro" className="border-navy-200" />
-            {errors.endereco?.bairro && <p className="text-sm text-destructive">{errors.endereco.bairro.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="cidade" className="text-navy-700">Cidade</Label>
-            <Input id="cidade" {...register('endereco.cidade')} placeholder="Cuiabá" className="border-navy-200" />
-            {errors.endereco?.cidade && <p className="text-sm text-destructive">{errors.endereco.cidade.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="estado" className="text-navy-700">UF</Label>
-            <Input id="estado" {...register('endereco.estado')} placeholder="MT" maxLength={2} className="border-navy-200" />
-            {errors.endereco?.estado && <p className="text-sm text-destructive">{errors.endereco.estado.message}</p>}
+          {/* Bairro + Cidade + UF */}
+          <div className="grid grid-cols-12 gap-3">
+            <div className="col-span-4 space-y-1.5">
+              <Label htmlFor="bairro" className="text-sm text-navy-700">Bairro</Label>
+              <Input 
+                id="bairro" 
+                {...register('endereco.bairro')} 
+                placeholder="Centro" 
+                className="h-9 border-navy-200" 
+              />
+              {errors.endereco?.bairro && <p className="text-xs text-destructive">{errors.endereco.bairro.message}</p>}
+            </div>
+            <div className="col-span-6 space-y-1.5">
+              <Label htmlFor="cidade" className="text-sm text-navy-700">Cidade</Label>
+              <Input 
+                id="cidade" 
+                {...register('endereco.cidade')} 
+                placeholder="Cuiabá" 
+                className="h-9 border-navy-200" 
+              />
+              {errors.endereco?.cidade && <p className="text-xs text-destructive">{errors.endereco.cidade.message}</p>}
+            </div>
+            <div className="col-span-2 space-y-1.5">
+              <Label htmlFor="estado" className="text-sm text-navy-700">UF</Label>
+              <Input 
+                id="estado" 
+                {...register('endereco.estado')} 
+                placeholder="MT" 
+                maxLength={2} 
+                className="h-9 border-navy-200" 
+              />
+              {errors.endereco?.estado && <p className="text-xs text-destructive">{errors.endereco.estado.message}</p>}
+            </div>
           </div>
         </div>
       </div>
