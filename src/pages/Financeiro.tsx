@@ -125,8 +125,18 @@ export default function Financeiro() {
     const reembolsosCount = demandasReembolso
       .filter(d => d.dadosReembolso?.statusPagamento === 'aprovado').length;
 
-    const totalReceitas = receitasEventos;
-    const totalDespesas = despesasEventos + reembolsosPagos;
+    // Contas a receber já recebidas
+    const contasReceberRecebidas = contasReceber
+      .filter(c => c.status === 'recebido')
+      .reduce((sum, c) => sum + Number(c.valor), 0);
+
+    // Contas a pagar já pagas
+    const contasPagarPagas = contasPagar
+      .filter(c => c.status === 'pago')
+      .reduce((sum, c) => sum + Number(c.valor), 0);
+
+    const totalReceitas = receitasEventos + contasReceberRecebidas;
+    const totalDespesas = despesasEventos + reembolsosPagos + contasPagarPagas;
     const lucro = totalReceitas - totalDespesas;
     const margemLucro = totalReceitas > 0 ? (lucro / totalReceitas) * 100 : 0;
 
