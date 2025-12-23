@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { DollarSign, TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight, Eye, Receipt, Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Calendar, ArrowUpRight, ArrowDownRight, Eye, Receipt, Plus, Search, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -142,6 +142,7 @@ export default function Financeiro() {
 
     const contasPagarPendentes = contasPagar.filter(c => c.status === 'pendente').reduce((sum, c) => sum + Number(c.valor), 0);
     const contasPagarVencidas = contasPagar.filter(c => c.status === 'vencido').reduce((sum, c) => sum + Number(c.valor), 0);
+    const contasPagarPendentesCount = contasPagar.filter(c => c.status === 'pendente' || c.status === 'vencido').length;
     const contasReceberPendentes = contasReceber.filter(c => c.status === 'pendente').reduce((sum, c) => sum + Number(c.valor), 0);
     const contasReceberVencidas = contasReceber.filter(c => c.status === 'vencido').reduce((sum, c) => sum + Number(c.valor), 0);
 
@@ -155,6 +156,7 @@ export default function Financeiro() {
       reembolsosCount,
       contasPagarPendentes,
       contasPagarVencidas,
+      contasPagarPendentesCount,
       contasReceberPendentes,
       contasReceberVencidas,
     };
@@ -257,7 +259,7 @@ export default function Financeiro() {
     <div className="min-h-full overflow-x-hidden">
       <div className="w-full px-3 sm:px-6 py-4 sm:py-6 space-y-4 animate-fade-in bg-background">
         {/* Stats Cards - Desktop only */}
-        <div className="hidden md:grid md:grid-cols-4 gap-3 sm:gap-4">
+        <div className="hidden md:grid md:grid-cols-5 gap-3 sm:gap-4">
           <StatCard
             title="Receitas Totais"
             value={formatCurrency(stats.totalReceitas)}
@@ -284,6 +286,13 @@ export default function Financeiro() {
             value={formatCurrency(stats.reembolsosPendentes)}
             subtitle={`${stats.reembolsosCount} a serem pagos`}
             icon={DollarSign}
+            variant="warning"
+          />
+          <StatCard
+            title="A Pagar Pendentes"
+            value={formatCurrency(stats.contasPagarPendentes + stats.contasPagarVencidas)}
+            subtitle={`${stats.contasPagarPendentesCount} contas`}
+            icon={Clock}
             variant="warning"
           />
         </div>
