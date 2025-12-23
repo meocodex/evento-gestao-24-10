@@ -170,6 +170,7 @@ export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSh
               <SelectContent>
                 <SelectItem value="pendente">Pendente</SelectItem>
                 <SelectItem value="recebido">Recebido</SelectItem>
+                <SelectItem value="vencido">Vencido</SelectItem>
                 <SelectItem value="cancelado">Cancelado</SelectItem>
               </SelectContent>
             </Select>
