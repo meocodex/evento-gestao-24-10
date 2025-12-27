@@ -82,20 +82,40 @@ export function RelatorioFechamentoDialog({
       const contentWidth = pageWidth - margens.left - margens.right;
       const maxY = pageHeight - margens.bottom;
 
-      // Função para adicionar papel timbrado - detecção automática de formato
+      // Função para adicionar papel timbrado - com validação de tipo
+      let timbradoValido = true;
       const adicionarTimbrado = () => {
-        if (config?.papel_timbrado) {
+        if (config?.papel_timbrado && timbradoValido) {
+          const imageData = config.papel_timbrado;
+          
+          // Validar se é uma imagem (não PDF ou outro tipo)
+          if (!imageData.startsWith('data:image/')) {
+            console.error('[PDF] Papel timbrado não é uma imagem válida. Tipo detectado:', 
+                          imageData.substring(0, 50));
+            timbradoValido = false; // Evitar mostrar toast múltiplas vezes
+            toast({
+              title: 'Papel timbrado inválido',
+              description: 'O arquivo configurado não é uma imagem PNG/JPG. Por favor, atualize nas configurações.',
+              variant: 'destructive'
+            });
+            return;
+          }
+          
           try {
-            const imageData = config.papel_timbrado;
             console.log('[PDF] Adicionando timbrado na página', doc.getNumberOfPages());
-            console.log('[PDF] Formato detectado:', imageData.substring(0, 30) + '...');
+            console.log('[PDF] Formato:', imageData.substring(5, 20));
             
             // Deixar jsPDF detectar o formato automaticamente do data URL
-            // Não especificar formato para permitir PNG/JPEG automaticamente
             doc.addImage(imageData, 0, 0, pageWidth, pageHeight);
             console.log('[PDF] Timbrado adicionado com sucesso');
           } catch (error) {
             console.error('[PDF] Erro ao adicionar papel timbrado:', error);
+            timbradoValido = false;
+            toast({
+              title: 'Erro ao adicionar papel timbrado',
+              description: 'Verifique se a imagem está no formato correto (PNG ou JPG).',
+              variant: 'destructive'
+            });
           }
         }
       };
