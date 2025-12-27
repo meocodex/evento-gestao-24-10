@@ -5,10 +5,10 @@ import { Evento, AutoTableDocument, EmpresaConfig } from '@/types/eventos';
 import { FileDown, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { useConfiguracoes } from '@/hooks/configuracoes/useConfiguracoes';
+import papelTimbradoImg from '@/assets/papel-timbrado-novo.jpg';
 
 interface RelatorioFechamentoDialogProps {
   open: boolean;
@@ -17,6 +17,29 @@ interface RelatorioFechamentoDialogProps {
   receitasSelecionadas: string[];
   despesasSelecionadas: string[];
 }
+
+// Helper para carregar imagem e converter para base64
+const loadImageAsBase64 = (url: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas context not available'));
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+      resolve(dataUrl);
+    };
+    img.onerror = () => reject(new Error('Falha ao carregar imagem'));
+    img.src = url;
+  });
+};
 
 export function RelatorioFechamentoDialog({ 
   open, 
@@ -28,19 +51,12 @@ export function RelatorioFechamentoDialog({
   const { toast } = useToast();
   const { configuracoes } = useConfiguracoes();
 
-  // Buscar configuração de papel timbrado
-  const { data: config, isLoading } = useQuery({
-    queryKey: ['configuracao-fechamento'],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('configuracoes_fechamento')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
+  // Carregar papel timbrado do asset como base64
+  const { data: papelTimbradoBase64, isLoading } = useQuery({
+    queryKey: ['papel-timbrado-base64'],
+    queryFn: () => loadImageAsBase64(papelTimbradoImg),
     enabled: open,
+    staleTime: Infinity, // Cache permanente
   });
 
   const receitasFiltradas = evento.financeiro.receitas.filter(r => 
@@ -75,45 +91,27 @@ export function RelatorioFechamentoDialog({
       // Header: ~35mm ocupado → margem top 45mm
       // Rodapé: ~25mm ocupado → margem bottom 35mm
       // Laterais: ~15mm diagonais → margem 20mm
-      const margens = config?.papel_timbrado 
+      const margens = papelTimbradoBase64 
         ? { top: 45, bottom: 35, left: 20, right: 20 }
         : { top: 20, bottom: 20, left: 14, right: 14 };
       
       const contentWidth = pageWidth - margens.left - margens.right;
       const maxY = pageHeight - margens.bottom;
 
-      // Função para adicionar papel timbrado - com validação de tipo
+      // Função para adicionar papel timbrado
       let timbradoValido = true;
       const adicionarTimbrado = () => {
-        if (config?.papel_timbrado && timbradoValido) {
-          const imageData = config.papel_timbrado;
-          
-          // Validar se é uma imagem (não PDF ou outro tipo)
-          if (!imageData.startsWith('data:image/')) {
-            console.error('[PDF] Papel timbrado não é uma imagem válida. Tipo detectado:', 
-                          imageData.substring(0, 50));
-            timbradoValido = false; // Evitar mostrar toast múltiplas vezes
-            toast({
-              title: 'Papel timbrado inválido',
-              description: 'O arquivo configurado não é uma imagem PNG/JPG. Por favor, atualize nas configurações.',
-              variant: 'destructive'
-            });
-            return;
-          }
-          
+        if (papelTimbradoBase64 && timbradoValido) {
           try {
             console.log('[PDF] Adicionando timbrado na página', doc.getNumberOfPages());
-            console.log('[PDF] Formato:', imageData.substring(5, 20));
-            
-            // Deixar jsPDF detectar o formato automaticamente do data URL
-            doc.addImage(imageData, 0, 0, pageWidth, pageHeight);
+            doc.addImage(papelTimbradoBase64, 'JPEG', 0, 0, pageWidth, pageHeight);
             console.log('[PDF] Timbrado adicionado com sucesso');
           } catch (error) {
             console.error('[PDF] Erro ao adicionar papel timbrado:', error);
             timbradoValido = false;
             toast({
               title: 'Erro ao adicionar papel timbrado',
-              description: 'Verifique se a imagem está no formato correto (PNG ou JPG).',
+              description: 'Não foi possível adicionar o papel timbrado ao PDF.',
               variant: 'destructive'
             });
           }
@@ -469,13 +467,10 @@ export function RelatorioFechamentoDialog({
             </div>
           </div>
 
-          {!config?.papel_timbrado && (
-            <div className="rounded-lg bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-900 p-3">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                ⚠️ Nenhum papel timbrado configurado. O relatório será gerado sem marca d'água.
-              </p>
-              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                Configure um papel timbrado em Configurações → Fechamento.
+          {papelTimbradoBase64 && (
+            <div className="rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-900 p-3">
+              <p className="text-sm text-green-800 dark:text-green-200">
+                ✅ Papel timbrado da Ticket Up será aplicado no relatório.
               </p>
             </div>
           )}
