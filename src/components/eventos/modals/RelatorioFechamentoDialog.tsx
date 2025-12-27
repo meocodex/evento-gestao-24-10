@@ -71,6 +71,17 @@ export function RelatorioFechamentoDialog({
   const totalDespesas = despesasFiltradas.reduce((sum, d) => sum + d.valor, 0);
   const saldoFinal = totalReceitas - totalDespesas;
 
+  // Cores Ticket Up - Palette RGB
+  const CORES = {
+    navy: [30, 36, 51] as [number, number, number],        // #1E2433
+    dourado: [139, 126, 65] as [number, number, number],   // #8B7E41
+    douradoClaro: [166, 149, 72] as [number, number, number], // #A69548
+    branco: [255, 255, 255] as [number, number, number],
+    cinzaClaro: [248, 248, 248] as [number, number, number],
+    cinzaMedio: [100, 100, 100] as [number, number, number],
+    preto: [40, 40, 40] as [number, number, number]
+  };
+
   const handleGerarPDF = async () => {
     // Verificar se há itens selecionados
     if (receitasFiltradas.length === 0 && despesasFiltradas.length === 0) {
@@ -88,9 +99,6 @@ export function RelatorioFechamentoDialog({
       const pageHeight = doc.internal.pageSize.height;
 
       // Margens para respeitar o papel timbrado Ticket Up
-      // Header: ~35mm ocupado → margem top 45mm
-      // Rodapé: ~25mm ocupado → margem bottom 35mm
-      // Laterais: ~15mm diagonais → margem 20mm
       const margens = papelTimbradoBase64 
         ? { top: 45, bottom: 35, left: 20, right: 20 }
         : { top: 20, bottom: 20, left: 14, right: 14 };
@@ -103,17 +111,10 @@ export function RelatorioFechamentoDialog({
       const adicionarTimbrado = () => {
         if (papelTimbradoBase64 && timbradoValido) {
           try {
-            console.log('[PDF] Adicionando timbrado na página', doc.getNumberOfPages());
             doc.addImage(papelTimbradoBase64, 'JPEG', 0, 0, pageWidth, pageHeight);
-            console.log('[PDF] Timbrado adicionado com sucesso');
           } catch (error) {
             console.error('[PDF] Erro ao adicionar papel timbrado:', error);
             timbradoValido = false;
-            toast({
-              title: 'Erro ao adicionar papel timbrado',
-              description: 'Não foi possível adicionar o papel timbrado ao PDF.',
-              variant: 'destructive'
-            });
           }
         }
       };
@@ -121,7 +122,6 @@ export function RelatorioFechamentoDialog({
       // Interceptar addPage para adicionar timbrado ANTES do conteúdo
       const originalAddPage = doc.addPage.bind(doc);
       doc.addPage = function(this: jsPDF, ...args: Parameters<typeof originalAddPage>) {
-        console.log('[PDF] Nova página criada');
         const result = originalAddPage.apply(this, args);
         adicionarTimbrado();
         return result;
@@ -130,10 +130,31 @@ export function RelatorioFechamentoDialog({
       // Função para verificar quebra de página
       const verificarQuebraPagina = (yAtual: number, espacoNecessario: number): number => {
         if (yAtual + espacoNecessario > maxY) {
-          doc.addPage(); // O timbrado será adicionado automaticamente pelo interceptor
+          doc.addPage();
           return margens.top;
         }
         return yAtual;
+      };
+
+      // Função para desenhar título de seção com faixa navy
+      const desenharTituloSecao = (titulo: string, y: number): number => {
+        const alturaFaixa = 8;
+        doc.setFillColor(...CORES.navy);
+        doc.rect(margens.left, y - 5, contentWidth, alturaFaixa, 'F');
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(...CORES.branco);
+        doc.text(titulo, margens.left + 4, y);
+        doc.setTextColor(...CORES.preto);
+        return y + alturaFaixa + 3;
+      };
+
+      // Função para desenhar linha separadora dourada
+      const desenharSeparadorDourado = (y: number): number => {
+        doc.setDrawColor(...CORES.dourado);
+        doc.setLineWidth(0.5);
+        doc.line(margens.left, y, pageWidth - margens.right, y);
+        return y + 5;
       };
 
       // Adicionar papel timbrado na primeira página
@@ -141,21 +162,26 @@ export function RelatorioFechamentoDialog({
 
       let currentY = margens.top;
       
-      // Título
-      doc.setFontSize(18);
-      doc.setFont(undefined, 'bold');
-      doc.text('RELATÓRIO DE FECHAMENTO DO EVENTO', pageWidth / 2, currentY, { align: 'center' });
-      currentY += 15;
+      // ===== TÍTULO PRINCIPAL =====
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...CORES.navy);
+      doc.text('RELATÓRIO DE FECHAMENTO', pageWidth / 2, currentY, { align: 'center' });
+      currentY += 6;
       
-      // Dados do Evento
-      currentY = verificarQuebraPagina(currentY, 40);
-      doc.setFontSize(12);
-      doc.setFont(undefined, 'bold');
-      doc.text('DADOS DO EVENTO', margens.left, currentY);
-      currentY += 5;
+      // Linha decorativa dourada
+      doc.setDrawColor(...CORES.dourado);
+      doc.setLineWidth(1);
+      const tituloWidth = 80;
+      doc.line((pageWidth - tituloWidth) / 2, currentY, (pageWidth + tituloWidth) / 2, currentY);
+      currentY += 12;
+
+      // ===== DADOS DO EVENTO =====
+      currentY = verificarQuebraPagina(currentY, 45);
+      currentY = desenharTituloSecao('DADOS DO EVENTO', currentY);
       
       const dadosEvento = [
-        ['Nome do Evento:', evento.nome],
+        ['Nome:', evento.nome],
         ['Data:', `${evento.dataInicio} a ${evento.dataFim}`],
         ['Local:', `${evento.cidade}, ${evento.estado}`],
         ['Status:', evento.status.toUpperCase()]
@@ -167,19 +193,18 @@ export function RelatorioFechamentoDialog({
         tableWidth: contentWidth,
         body: dadosEvento,
         theme: 'plain',
-        styles: { fontSize: 9, textColor: [0, 0, 0] },
+        styles: { fontSize: 9, textColor: CORES.preto, cellPadding: 2 },
         columnStyles: {
-          0: { fontStyle: 'bold', cellWidth: 40 },
+          0: { fontStyle: 'bold', cellWidth: 35, textColor: CORES.navy },
           1: { cellWidth: 'auto' }
-        }
+        },
+        alternateRowStyles: { fillColor: CORES.cinzaClaro }
       });
-      currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
+      currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 8;
       
-      // Dados do Cliente
-      currentY = verificarQuebraPagina(currentY, 40);
-      doc.setFont(undefined, 'bold');
-      doc.text('DADOS DO CLIENTE', margens.left, currentY);
-      currentY += 5;
+      // ===== DADOS DO CLIENTE =====
+      currentY = verificarQuebraPagina(currentY, 45);
+      currentY = desenharTituloSecao('DADOS DO CLIENTE', currentY);
 
       const dadosCliente = [
         ['Nome:', evento.cliente?.nome || '-'],
@@ -194,19 +219,18 @@ export function RelatorioFechamentoDialog({
         tableWidth: contentWidth,
         body: dadosCliente,
         theme: 'plain',
-        styles: { fontSize: 9, textColor: [0, 0, 0] },
+        styles: { fontSize: 9, textColor: CORES.preto, cellPadding: 2 },
         columnStyles: {
-          0: { fontStyle: 'bold', cellWidth: 40 },
+          0: { fontStyle: 'bold', cellWidth: 35, textColor: CORES.navy },
           1: { cellWidth: 'auto' }
-        }
+        },
+        alternateRowStyles: { fillColor: CORES.cinzaClaro }
       });
-      currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
+      currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 8;
       
-      // Dados da Empresa
-      currentY = verificarQuebraPagina(currentY, 40);
-      doc.setFont(undefined, 'bold');
-      doc.text('DADOS DA EMPRESA', margens.left, currentY);
-      currentY += 5;
+      // ===== DADOS DA EMPRESA =====
+      currentY = verificarQuebraPagina(currentY, 45);
+      currentY = desenharTituloSecao('DADOS DA EMPRESA', currentY);
 
       const empresaConfig = configuracoes?.empresa;
       
@@ -227,7 +251,7 @@ export function RelatorioFechamentoDialog({
 
       const empresa = empresaConfig as EmpresaConfig | undefined;
       const dadosEmpresa = [
-        ['Nome:', empresa?.nome || empresa?.razaoSocial || '-'],
+        ['Razão Social:', empresa?.nome || empresa?.razaoSocial || '-'],
         ['CNPJ:', empresaConfig?.cnpj || '-'],
         ['Endereço:', formatarEnderecoEmpresa(empresaConfig?.endereco)],
         ['Telefone:', empresaConfig?.telefone || '-']
@@ -239,21 +263,23 @@ export function RelatorioFechamentoDialog({
         tableWidth: contentWidth,
         body: dadosEmpresa,
         theme: 'plain',
-        styles: { fontSize: 9, textColor: [0, 0, 0] },
+        styles: { fontSize: 9, textColor: CORES.preto, cellPadding: 2 },
         columnStyles: {
-          0: { fontStyle: 'bold', cellWidth: 40 },
+          0: { fontStyle: 'bold', cellWidth: 35, textColor: CORES.navy },
           1: { cellWidth: 'auto' }
-        }
+        },
+        alternateRowStyles: { fillColor: CORES.cinzaClaro }
       });
-      currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 15;
+      currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
 
-      // Tabela de Receitas
+      // Separador dourado antes das tabelas financeiras
+      currentY = desenharSeparadorDourado(currentY);
+      currentY += 5;
+
+      // ===== TABELA DE RECEITAS =====
       if (receitasFiltradas.length > 0) {
-        currentY = verificarQuebraPagina(currentY, 30);
-        doc.setFont(undefined, 'bold');
-        doc.setFontSize(12);
-        doc.text('RECEITAS', margens.left, currentY);
-        currentY += 7;
+        currentY = verificarQuebraPagina(currentY, 35);
+        currentY = desenharTituloSecao('RECEITAS', currentY);
         
         const receitasData = receitasFiltradas.map(receita => [
           receita.descricao,
@@ -270,33 +296,35 @@ export function RelatorioFechamentoDialog({
           body: receitasData,
           theme: 'grid',
           headStyles: { 
-            fillColor: [34, 197, 94], // green-500
-            textColor: [255, 255, 255],
-            fontSize: 10,
-            fontStyle: 'bold'
+            fillColor: CORES.navy,
+            textColor: CORES.branco,
+            fontSize: 9,
+            fontStyle: 'bold',
+            halign: 'center'
           },
           styles: { 
-            fontSize: 9,
-            cellPadding: 3
+            fontSize: 8,
+            cellPadding: 3,
+            textColor: CORES.preto
           },
           columnStyles: {
-            0: { cellWidth: 'auto' }, // Descrição - flexível
-            1: { cellWidth: 18, halign: 'center' },
-            2: { cellWidth: 32, halign: 'right' },
-            3: { cellWidth: 32, halign: 'right', fontStyle: 'bold' }
+            0: { cellWidth: 'auto' },
+            1: { cellWidth: 15, halign: 'center' },
+            2: { cellWidth: 30, halign: 'right' },
+            3: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
           },
-          showHead: 'everyPage'
+          alternateRowStyles: { fillColor: CORES.cinzaClaro },
+          showHead: 'everyPage',
+          tableLineColor: CORES.dourado,
+          tableLineWidth: 0.1
         });
-        currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
+        currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 8;
       }
 
-      // Tabela de Despesas
+      // ===== TABELA DE DESPESAS =====
       if (despesasFiltradas.length > 0) {
-        currentY = verificarQuebraPagina(currentY, 30);
-        doc.setFont(undefined, 'bold');
-        doc.setFontSize(12);
-        doc.text('DESPESAS', margens.left, currentY);
-        currentY += 7;
+        currentY = verificarQuebraPagina(currentY, 35);
+        currentY = desenharTituloSecao('DESPESAS', currentY);
         
         const despesasData = despesasFiltradas.map(despesa => [
           despesa.descricao,
@@ -312,76 +340,110 @@ export function RelatorioFechamentoDialog({
           body: despesasData,
           theme: 'grid',
           headStyles: { 
-            fillColor: [239, 68, 68], // red-500
-            textColor: [255, 255, 255],
-            fontSize: 10,
-            fontStyle: 'bold'
+            fillColor: CORES.dourado,
+            textColor: CORES.branco,
+            fontSize: 9,
+            fontStyle: 'bold',
+            halign: 'center'
           },
           styles: { 
-            fontSize: 9,
-            cellPadding: 3
+            fontSize: 8,
+            cellPadding: 3,
+            textColor: CORES.preto
           },
           columnStyles: {
-            0: { cellWidth: 'auto' }, // Descrição - flexível
-            1: { cellWidth: 38, halign: 'center' },
-            2: { cellWidth: 32, halign: 'right', fontStyle: 'bold' }
+            0: { cellWidth: 'auto' },
+            1: { cellWidth: 35, halign: 'center' },
+            2: { cellWidth: 30, halign: 'right', fontStyle: 'bold' }
           },
-          showHead: 'everyPage'
+          alternateRowStyles: { fillColor: CORES.cinzaClaro },
+          showHead: 'everyPage',
+          tableLineColor: CORES.navy,
+          tableLineWidth: 0.1
         });
-        currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
+        currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 8;
       }
 
-      // Resumo Financeiro
+      // ===== RESUMO FINANCEIRO =====
       let yPos = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
-      yPos = verificarQuebraPagina(yPos, 50);
+      yPos = verificarQuebraPagina(yPos, 55);
 
+      // Box do resumo com borda dourada
+      const boxHeight = 45;
+      const boxY = yPos - 2;
+      
+      // Fundo e borda do box
+      doc.setFillColor(...CORES.cinzaClaro);
+      doc.setDrawColor(...CORES.dourado);
+      doc.setLineWidth(1);
+      doc.roundedRect(margens.left, boxY, contentWidth, boxHeight, 3, 3, 'FD');
+      
+      // Título do resumo
+      yPos += 6;
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...CORES.navy);
+      doc.text('RESUMO FINANCEIRO', pageWidth / 2, yPos, { align: 'center' });
+      
+      // Linha decorativa
+      yPos += 3;
+      doc.setDrawColor(...CORES.dourado);
+      doc.setLineWidth(0.3);
+      doc.line(margens.left + 20, yPos, pageWidth - margens.right - 20, yPos);
+      
+      yPos += 8;
+      
+      // Total Receitas
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...CORES.preto);
+      doc.text('Total de Receitas:', margens.left + 10, yPos);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...CORES.navy);
+      doc.text(`R$ ${totalReceitas.toFixed(2)}`, pageWidth - margens.right - 10, yPos, { align: 'right' });
+      
+      yPos += 6;
+      
+      // Total Despesas
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(...CORES.preto);
+      doc.text('Total de Despesas:', margens.left + 10, yPos);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...CORES.cinzaMedio);
+      doc.text(`R$ ${totalDespesas.toFixed(2)}`, pageWidth - margens.right - 10, yPos, { align: 'right' });
+      
+      yPos += 8;
+      
+      // Linha separadora
+      doc.setDrawColor(...CORES.navy);
+      doc.setLineWidth(0.5);
+      doc.line(margens.left + 10, yPos - 2, pageWidth - margens.right - 10, yPos - 2);
+      
+      // Saldo Final (destaque)
+      const saldoLabel = saldoFinal >= 0 ? 'SALDO A RECEBER:' : 'SALDO A PAGAR:';
       doc.setFontSize(12);
-      doc.setFont(undefined, 'bold');
-      doc.text('RESUMO FINANCEIRO', margens.left, yPos);
-
-      const resumoData = [
-        ['Total de Receitas:', `R$ ${totalReceitas.toFixed(2)}`],
-        ['Total de Despesas:', `R$ ${totalDespesas.toFixed(2)}`],
-        [saldoFinal >= 0 ? 'A RECEBER:' : 'A PAGAR:', `R$ ${Math.abs(saldoFinal).toFixed(2)}`]
-      ];
-
-      autoTable(doc, {
-        startY: yPos + 5,
-        margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
-        tableWidth: contentWidth,
-        body: resumoData,
-        theme: 'plain',
-        styles: { 
-          fontSize: 11,
-          fontStyle: 'bold'
-        },
-        columnStyles: {
-          0: { cellWidth: 'auto' },
-          1: { cellWidth: 55, halign: 'right' }
-        },
-        didParseCell: (data) => {
-          if (data.row.index === 0 && data.column.index === 1) {
-            data.cell.styles.textColor = [34, 197, 94]; // green
-          }
-          if (data.row.index === 1 && data.column.index === 1) {
-            data.cell.styles.textColor = [239, 68, 68]; // red
-          }
-          if (data.row.index === 2) {
-            data.cell.styles.fontSize = 13;
-            data.cell.styles.textColor = saldoFinal >= 0 ? [34, 197, 94] : [239, 68, 68];
-          }
-        }
-      });
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...CORES.navy);
+      doc.text(saldoLabel, margens.left + 10, yPos + 4);
+      
+      // Cor do saldo: Navy para positivo, Dourado para negativo
+      if (saldoFinal >= 0) {
+        doc.setTextColor(...CORES.navy);
+      } else {
+        doc.setTextColor(...CORES.dourado);
+      }
+      doc.text(`R$ ${Math.abs(saldoFinal).toFixed(2)}`, pageWidth - margens.right - 10, yPos + 4, { align: 'right' });
 
       // Nota explicativa
-      const finalY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 5;
+      const notaY = boxY + boxHeight + 8;
       const notaExplicativa = saldoFinal >= 0 
         ? 'Valor que a empresa deve repassar ao cliente'
         : 'Valor que o cliente deve pagar à empresa';
       
-      doc.setFontSize(9);
-      doc.setTextColor(100);
-      doc.text(notaExplicativa, margens.left, finalY);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(...CORES.cinzaMedio);
+      doc.text(notaExplicativa, pageWidth / 2, notaY, { align: 'center' });
 
       // Salvar PDF
       const dataAtual = new Date().toISOString().split('T')[0].replace(/-/g, '');
