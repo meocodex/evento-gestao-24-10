@@ -440,6 +440,40 @@ export function RelatorioFechamentoDialog({
       doc.setTextColor(...CORES.cinzaMedio);
       doc.text(notaExplicativa, pageWidth / 2, notaY, { align: 'center' });
 
+      // ===== RODAPÉ EM TODAS AS PÁGINAS =====
+      const dataGeracao = new Date().toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const desenharRodape = (paginaAtual: number, totalPaginas: number) => {
+        const rodapeY = pageHeight - 12;
+        
+        // Linha separadora dourada
+        doc.setDrawColor(...CORES.dourado);
+        doc.setLineWidth(0.3);
+        doc.line(margens.left, rodapeY - 3, pageWidth - margens.right, rodapeY - 3);
+        
+        // Data de geração (esquerda)
+        doc.setFontSize(7);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(...CORES.cinzaMedio);
+        doc.text(`Gerado em: ${dataGeracao}`, margens.left, rodapeY);
+        
+        // Número da página (direita)
+        doc.text(`Página ${paginaAtual} de ${totalPaginas}`, pageWidth - margens.right, rodapeY, { align: 'right' });
+      };
+
+      // Aplicar rodapé em todas as páginas
+      const totalPaginas = (doc as unknown as { internal: { pages: unknown[] } }).internal.pages.length - 1;
+      for (let i = 1; i <= totalPaginas; i++) {
+        doc.setPage(i);
+        desenharRodape(i, totalPaginas);
+      }
+
       // Salvar PDF
       const dataAtual = new Date().toISOString().split('T')[0].replace(/-/g, '');
       const nomeArquivo = `Fechamento_${evento.nome.replace(/\s+/g, '_')}_${dataAtual}.pdf`;
