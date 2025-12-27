@@ -82,24 +82,32 @@ export function RelatorioFechamentoDialog({
       const contentWidth = pageWidth - margens.left - margens.right;
       const maxY = pageHeight - margens.bottom;
 
-      // Função para adicionar papel timbrado
+      // Função para adicionar papel timbrado - detecção automática de formato
       const adicionarTimbrado = () => {
         if (config?.papel_timbrado) {
           try {
-            doc.addImage(config.papel_timbrado, 'JPEG', 0, 0, pageWidth, pageHeight);
+            const imageData = config.papel_timbrado;
+            console.log('[PDF] Adicionando timbrado na página', doc.getNumberOfPages());
+            console.log('[PDF] Formato detectado:', imageData.substring(0, 30) + '...');
+            
+            // Deixar jsPDF detectar o formato automaticamente do data URL
+            // Não especificar formato para permitir PNG/JPEG automaticamente
+            doc.addImage(imageData, 0, 0, pageWidth, pageHeight);
+            console.log('[PDF] Timbrado adicionado com sucesso');
           } catch (error) {
-            console.warn('Erro ao adicionar papel timbrado:', error);
+            console.error('[PDF] Erro ao adicionar papel timbrado:', error);
           }
         }
       };
 
-      // CORREÇÃO: Interceptar addPage para adicionar timbrado ANTES do conteúdo
+      // Interceptar addPage para adicionar timbrado ANTES do conteúdo
       const originalAddPage = doc.addPage.bind(doc);
-      doc.addPage = function(...args: Parameters<typeof originalAddPage>) {
-        const result = originalAddPage(...args);
-        adicionarTimbrado(); // Adiciona timbrado ANTES do conteúdo ser desenhado
+      doc.addPage = function(this: jsPDF, ...args: Parameters<typeof originalAddPage>) {
+        console.log('[PDF] Nova página criada');
+        const result = originalAddPage.apply(this, args);
+        adicionarTimbrado();
         return result;
-      };
+      } as typeof doc.addPage;
 
       // Função para verificar quebra de página
       const verificarQuebraPagina = (yAtual: number, espacoNecessario: number): number => {
