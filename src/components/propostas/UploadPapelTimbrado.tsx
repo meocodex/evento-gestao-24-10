@@ -18,11 +18,12 @@ export function UploadPapelTimbrado({ value, onChange }: UploadPapelTimbradoProp
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validar tipo de arquivo
-    if (!['image/png', 'image/jpeg', 'application/pdf'].includes(file.type)) {
+    // Validar tipo de arquivo - APENAS IMAGENS (PDF não é suportado pelo jsPDF addImage)
+    const tiposPermitidos = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!tiposPermitidos.includes(file.type)) {
       toast({
         title: 'Formato inválido',
-        description: 'Por favor, envie um arquivo PNG, JPG ou PDF.',
+        description: 'Por favor, envie uma IMAGEM no formato PNG ou JPG. PDFs não são suportados.',
         variant: 'destructive',
       });
       return;
@@ -103,7 +104,7 @@ export function UploadPapelTimbrado({ value, onChange }: UploadPapelTimbradoProp
           <input
             ref={inputRef}
             type="file"
-            accept="image/png,image/jpeg,application/pdf"
+            accept="image/png,image/jpeg"
             onChange={handleFileChange}
             className="hidden"
           />
@@ -112,7 +113,7 @@ export function UploadPapelTimbrado({ value, onChange }: UploadPapelTimbradoProp
             Arraste um arquivo ou clique para selecionar
           </p>
           <p className="text-xs text-muted-foreground mb-4">
-            PNG, JPG ou PDF (máx. 5MB)
+            PNG ou JPG (máx. 5MB) - PDFs não são suportados
           </p>
           <Button 
             type="button" 
