@@ -93,11 +93,18 @@ export function RelatorioFechamentoDialog({
         }
       };
 
+      // CORREÇÃO: Interceptar addPage para adicionar timbrado ANTES do conteúdo
+      const originalAddPage = doc.addPage.bind(doc);
+      doc.addPage = function(...args: Parameters<typeof originalAddPage>) {
+        const result = originalAddPage(...args);
+        adicionarTimbrado(); // Adiciona timbrado ANTES do conteúdo ser desenhado
+        return result;
+      };
+
       // Função para verificar quebra de página
       const verificarQuebraPagina = (yAtual: number, espacoNecessario: number): number => {
         if (yAtual + espacoNecessario > maxY) {
-          doc.addPage();
-          adicionarTimbrado();
+          doc.addPage(); // O timbrado será adicionado automaticamente pelo interceptor
           return margens.top;
         }
         return yAtual;
@@ -131,17 +138,13 @@ export function RelatorioFechamentoDialog({
       autoTable(doc, {
         startY: currentY,
         margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
+        tableWidth: contentWidth,
         body: dadosEvento,
         theme: 'plain',
         styles: { fontSize: 9, textColor: [0, 0, 0] },
         columnStyles: {
-          0: { fontStyle: 'bold', cellWidth: 45 },
+          0: { fontStyle: 'bold', cellWidth: 40 },
           1: { cellWidth: 'auto' }
-        },
-        didDrawPage: (data) => {
-          if (data.pageNumber > 1) {
-            adicionarTimbrado();
-          }
         }
       });
       currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
@@ -162,17 +165,13 @@ export function RelatorioFechamentoDialog({
       autoTable(doc, {
         startY: currentY,
         margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
+        tableWidth: contentWidth,
         body: dadosCliente,
         theme: 'plain',
         styles: { fontSize: 9, textColor: [0, 0, 0] },
         columnStyles: {
-          0: { fontStyle: 'bold', cellWidth: 45 },
+          0: { fontStyle: 'bold', cellWidth: 40 },
           1: { cellWidth: 'auto' }
-        },
-        didDrawPage: (data) => {
-          if (data.pageNumber > 1) {
-            adicionarTimbrado();
-          }
         }
       });
       currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
@@ -211,17 +210,13 @@ export function RelatorioFechamentoDialog({
       autoTable(doc, {
         startY: currentY,
         margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
+        tableWidth: contentWidth,
         body: dadosEmpresa,
         theme: 'plain',
         styles: { fontSize: 9, textColor: [0, 0, 0] },
         columnStyles: {
-          0: { fontStyle: 'bold', cellWidth: 45 },
+          0: { fontStyle: 'bold', cellWidth: 40 },
           1: { cellWidth: 'auto' }
-        },
-        didDrawPage: (data) => {
-          if (data.pageNumber > 1) {
-            adicionarTimbrado();
-          }
         }
       });
       currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 15;
@@ -244,6 +239,7 @@ export function RelatorioFechamentoDialog({
         autoTable(doc, {
           startY: currentY,
           margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
+          tableWidth: contentWidth,
           head: [['Descrição', 'Qtd', 'Valor Unit.', 'Total']],
           body: receitasData,
           theme: 'grid',
@@ -258,17 +254,12 @@ export function RelatorioFechamentoDialog({
             cellPadding: 3
           },
           columnStyles: {
-            0: { cellWidth: 70 },
-            1: { cellWidth: 20, halign: 'center' },
-            2: { cellWidth: 35, halign: 'right' },
-            3: { cellWidth: 35, halign: 'right', fontStyle: 'bold' }
+            0: { cellWidth: 'auto' }, // Descrição - flexível
+            1: { cellWidth: 18, halign: 'center' },
+            2: { cellWidth: 32, halign: 'right' },
+            3: { cellWidth: 32, halign: 'right', fontStyle: 'bold' }
           },
-          showHead: 'everyPage',
-          didDrawPage: (data) => {
-            if (data.pageNumber > 1) {
-              adicionarTimbrado();
-            }
-          }
+          showHead: 'everyPage'
         });
         currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
       }
@@ -290,6 +281,7 @@ export function RelatorioFechamentoDialog({
         autoTable(doc, {
           startY: currentY,
           margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
+          tableWidth: contentWidth,
           head: [['Descrição', 'Categoria', 'Valor']],
           body: despesasData,
           theme: 'grid',
@@ -304,16 +296,11 @@ export function RelatorioFechamentoDialog({
             cellPadding: 3
           },
           columnStyles: {
-            0: { cellWidth: 85 },
-            1: { cellWidth: 40 },
-            2: { cellWidth: 35, halign: 'right', fontStyle: 'bold' }
+            0: { cellWidth: 'auto' }, // Descrição - flexível
+            1: { cellWidth: 38, halign: 'center' },
+            2: { cellWidth: 32, halign: 'right', fontStyle: 'bold' }
           },
-          showHead: 'everyPage',
-          didDrawPage: (data) => {
-            if (data.pageNumber > 1) {
-              adicionarTimbrado();
-            }
-          }
+          showHead: 'everyPage'
         });
         currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
       }
@@ -335,6 +322,7 @@ export function RelatorioFechamentoDialog({
       autoTable(doc, {
         startY: yPos + 5,
         margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
+        tableWidth: contentWidth,
         body: resumoData,
         theme: 'plain',
         styles: { 
@@ -342,8 +330,8 @@ export function RelatorioFechamentoDialog({
           fontStyle: 'bold'
         },
         columnStyles: {
-          0: { cellWidth: 100 },
-          1: { cellWidth: 60, halign: 'right' }
+          0: { cellWidth: 'auto' },
+          1: { cellWidth: 55, halign: 'right' }
         },
         didParseCell: (data) => {
           if (data.row.index === 0 && data.column.index === 1) {
@@ -355,11 +343,6 @@ export function RelatorioFechamentoDialog({
           if (data.row.index === 2) {
             data.cell.styles.fontSize = 13;
             data.cell.styles.textColor = saldoFinal >= 0 ? [34, 197, 94] : [239, 68, 68];
-          }
-        },
-        didDrawPage: (data) => {
-          if (data.pageNumber > 1) {
-            adicionarTimbrado();
           }
         }
       });
