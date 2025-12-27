@@ -71,21 +71,42 @@ export function RelatorioFechamentoDialog({
       const pageWidth = doc.internal.pageSize.width;
       const pageHeight = doc.internal.pageSize.height;
 
-      // Adicionar papel timbrado como background (se configurado)
-      if (config?.papel_timbrado) {
-        try {
-          doc.addImage(config.papel_timbrado, 'JPEG', 0, 0, pageWidth, pageHeight);
-        } catch (error) {
-          toast({
-            title: 'Aviso',
-            description: 'Não foi possível adicionar o papel timbrado, continuando sem ele.',
-          });
-        }
-      }
+      // Margens para respeitar o papel timbrado Ticket Up
+      // Header: ~35mm ocupado → margem top 45mm
+      // Rodapé: ~25mm ocupado → margem bottom 35mm
+      // Laterais: ~15mm diagonais → margem 20mm
+      const margens = config?.papel_timbrado 
+        ? { top: 45, bottom: 35, left: 20, right: 20 }
+        : { top: 20, bottom: 20, left: 14, right: 14 };
+      
+      const contentWidth = pageWidth - margens.left - margens.right;
+      const maxY = pageHeight - margens.bottom;
 
-      // Definir margens (considerar header/footer do timbrado)
-      const marginTop = config?.papel_timbrado ? 60 : 20;
-      let currentY = marginTop;
+      // Função para adicionar papel timbrado
+      const adicionarTimbrado = () => {
+        if (config?.papel_timbrado) {
+          try {
+            doc.addImage(config.papel_timbrado, 'JPEG', 0, 0, pageWidth, pageHeight);
+          } catch (error) {
+            console.warn('Erro ao adicionar papel timbrado:', error);
+          }
+        }
+      };
+
+      // Função para verificar quebra de página
+      const verificarQuebraPagina = (yAtual: number, espacoNecessario: number): number => {
+        if (yAtual + espacoNecessario > maxY) {
+          doc.addPage();
+          adicionarTimbrado();
+          return margens.top;
+        }
+        return yAtual;
+      };
+
+      // Adicionar papel timbrado na primeira página
+      adicionarTimbrado();
+
+      let currentY = margens.top;
       
       // Título
       doc.setFontSize(18);
@@ -94,9 +115,10 @@ export function RelatorioFechamentoDialog({
       currentY += 15;
       
       // Dados do Evento
+      currentY = verificarQuebraPagina(currentY, 40);
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');
-      doc.text('DADOS DO EVENTO', 14, currentY);
+      doc.text('DADOS DO EVENTO', margens.left, currentY);
       currentY += 5;
       
       const dadosEvento = [
@@ -108,19 +130,26 @@ export function RelatorioFechamentoDialog({
       
       autoTable(doc, {
         startY: currentY,
+        margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
         body: dadosEvento,
         theme: 'plain',
         styles: { fontSize: 9, textColor: [0, 0, 0] },
         columnStyles: {
           0: { fontStyle: 'bold', cellWidth: 45 },
           1: { cellWidth: 'auto' }
+        },
+        didDrawPage: (data) => {
+          if (data.pageNumber > 1) {
+            adicionarTimbrado();
+          }
         }
       });
       currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
       
       // Dados do Cliente
+      currentY = verificarQuebraPagina(currentY, 40);
       doc.setFont(undefined, 'bold');
-      doc.text('DADOS DO CLIENTE', 14, currentY);
+      doc.text('DADOS DO CLIENTE', margens.left, currentY);
       currentY += 5;
 
       const dadosCliente = [
@@ -132,19 +161,26 @@ export function RelatorioFechamentoDialog({
       
       autoTable(doc, {
         startY: currentY,
+        margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
         body: dadosCliente,
         theme: 'plain',
         styles: { fontSize: 9, textColor: [0, 0, 0] },
         columnStyles: {
           0: { fontStyle: 'bold', cellWidth: 45 },
           1: { cellWidth: 'auto' }
+        },
+        didDrawPage: (data) => {
+          if (data.pageNumber > 1) {
+            adicionarTimbrado();
+          }
         }
       });
       currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
       
       // Dados da Empresa
+      currentY = verificarQuebraPagina(currentY, 40);
       doc.setFont(undefined, 'bold');
-      doc.text('DADOS DA EMPRESA', 14, currentY);
+      doc.text('DADOS DA EMPRESA', margens.left, currentY);
       currentY += 5;
 
       const empresaConfig = configuracoes?.empresa;
@@ -174,21 +210,28 @@ export function RelatorioFechamentoDialog({
       
       autoTable(doc, {
         startY: currentY,
+        margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
         body: dadosEmpresa,
         theme: 'plain',
         styles: { fontSize: 9, textColor: [0, 0, 0] },
         columnStyles: {
           0: { fontStyle: 'bold', cellWidth: 45 },
           1: { cellWidth: 'auto' }
+        },
+        didDrawPage: (data) => {
+          if (data.pageNumber > 1) {
+            adicionarTimbrado();
+          }
         }
       });
       currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 15;
 
       // Tabela de Receitas
       if (receitasFiltradas.length > 0) {
+        currentY = verificarQuebraPagina(currentY, 30);
         doc.setFont(undefined, 'bold');
         doc.setFontSize(12);
-        doc.text('RECEITAS', 14, currentY);
+        doc.text('RECEITAS', margens.left, currentY);
         currentY += 7;
         
         const receitasData = receitasFiltradas.map(receita => [
@@ -200,6 +243,7 @@ export function RelatorioFechamentoDialog({
         
         autoTable(doc, {
           startY: currentY,
+          margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
           head: [['Descrição', 'Qtd', 'Valor Unit.', 'Total']],
           body: receitasData,
           theme: 'grid',
@@ -214,10 +258,16 @@ export function RelatorioFechamentoDialog({
             cellPadding: 3
           },
           columnStyles: {
-            0: { cellWidth: 80 },
+            0: { cellWidth: 70 },
             1: { cellWidth: 20, halign: 'center' },
             2: { cellWidth: 35, halign: 'right' },
             3: { cellWidth: 35, halign: 'right', fontStyle: 'bold' }
+          },
+          showHead: 'everyPage',
+          didDrawPage: (data) => {
+            if (data.pageNumber > 1) {
+              adicionarTimbrado();
+            }
           }
         });
         currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
@@ -225,9 +275,10 @@ export function RelatorioFechamentoDialog({
 
       // Tabela de Despesas
       if (despesasFiltradas.length > 0) {
+        currentY = verificarQuebraPagina(currentY, 30);
         doc.setFont(undefined, 'bold');
         doc.setFontSize(12);
-        doc.text('DESPESAS', 14, currentY);
+        doc.text('DESPESAS', margens.left, currentY);
         currentY += 7;
         
         const despesasData = despesasFiltradas.map(despesa => [
@@ -238,6 +289,7 @@ export function RelatorioFechamentoDialog({
         
         autoTable(doc, {
           startY: currentY,
+          margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
           head: [['Descrição', 'Categoria', 'Valor']],
           body: despesasData,
           theme: 'grid',
@@ -252,20 +304,27 @@ export function RelatorioFechamentoDialog({
             cellPadding: 3
           },
           columnStyles: {
-            0: { cellWidth: 100 },
-            1: { cellWidth: 45 },
+            0: { cellWidth: 85 },
+            1: { cellWidth: 40 },
             2: { cellWidth: 35, halign: 'right', fontStyle: 'bold' }
+          },
+          showHead: 'everyPage',
+          didDrawPage: (data) => {
+            if (data.pageNumber > 1) {
+              adicionarTimbrado();
+            }
           }
         });
         currentY = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
       }
 
       // Resumo Financeiro
-      const yPos = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
+      let yPos = (doc as unknown as AutoTableDocument).lastAutoTable.finalY + 10;
+      yPos = verificarQuebraPagina(yPos, 50);
 
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');
-      doc.text('RESUMO FINANCEIRO', 14, yPos);
+      doc.text('RESUMO FINANCEIRO', margens.left, yPos);
 
       const resumoData = [
         ['Total de Receitas:', `R$ ${totalReceitas.toFixed(2)}`],
@@ -275,6 +334,7 @@ export function RelatorioFechamentoDialog({
 
       autoTable(doc, {
         startY: yPos + 5,
+        margin: { top: margens.top, right: margens.right, bottom: margens.bottom, left: margens.left },
         body: resumoData,
         theme: 'plain',
         styles: { 
@@ -296,6 +356,11 @@ export function RelatorioFechamentoDialog({
             data.cell.styles.fontSize = 13;
             data.cell.styles.textColor = saldoFinal >= 0 ? [34, 197, 94] : [239, 68, 68];
           }
+        },
+        didDrawPage: (data) => {
+          if (data.pageNumber > 1) {
+            adicionarTimbrado();
+          }
         }
       });
 
@@ -307,7 +372,7 @@ export function RelatorioFechamentoDialog({
       
       doc.setFontSize(9);
       doc.setTextColor(100);
-      doc.text(notaExplicativa, 14, finalY);
+      doc.text(notaExplicativa, margens.left, finalY);
 
       // Salvar PDF
       const dataAtual = new Date().toISOString().split('T')[0].replace(/-/g, '');
