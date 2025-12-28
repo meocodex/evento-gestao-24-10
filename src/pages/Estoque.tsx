@@ -9,6 +9,7 @@ import { EditarMaterialSheet } from '@/components/estoque/EditarMaterialSheet';
 import { DetalhesMaterialSheet } from '@/components/estoque/DetalhesMaterialSheet';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { EstoqueVirtualList } from '@/components/estoque/EstoqueVirtualList';
+import { EstoqueSkeleton } from '@/components/skeletons';
 import { useEstoque, type MaterialEstoque } from '@/hooks/estoque';
 import {
   Package,
@@ -36,55 +37,43 @@ export default function Estoque() {
   const { materiais = [], totalCount = 0, isLoading: loading, excluirMaterial, sincronizarQuantidades } = useEstoque(page, pageSize, { busca: searchTerm });
   const { hasPermission } = usePermissions();
 
+  // Filtros simplificados (sem depender de seriais carregados)
   const materiaisFiltrados = useMemo(() => {
     return materiais.filter(material => {
       if (filtros.categoria !== 'todas' && material.categoria !== filtros.categoria) {
         return false;
       }
-
-      if (filtros.status !== 'todos') {
-        const hasMatchingStatus = material.seriais?.some(serial => {
-          if (filtros.status === 'disponivel') return serial.status === 'disponivel';
-          if (filtros.status === 'em-uso') return serial.status === 'em-uso';
-          if (filtros.status === 'manutencao') return serial.status === 'manutencao';
-          if (filtros.status === 'perdido') return serial.status === 'perdido';
-          return false;
-        });
-        if (!hasMatchingStatus) return false;
-      }
-
-      if (filtros.localizacao !== 'todas') {
-        const hasMatchingLocation = material.seriais?.some(
-          serial => serial.localizacao === filtros.localizacao
-        );
-        if (!hasMatchingLocation) return false;
-      }
-
+      // Filtros por status e localização são omitidos pois seriais não estão carregados
+      // Esses filtros serão aplicados no sheet de detalhes ou em query server-side
       return true;
     });
   }, [materiais, filtros]);
 
+  // Estatísticas baseadas em quantidades agregadas (sem precisar de seriais)
   const getEstatisticas = () => {
-    let disponiveis = 0;
-    let emUso = 0;
-    let manutencao = 0;
+    let totalItens = 0;
+    let totalDisponiveis = 0;
+    let totalEmUso = 0;
 
     materiaisFiltrados.forEach(material => {
-      (material.seriais || []).forEach(serial => {
-        if (serial.status === 'disponivel') disponiveis++;
-        else if (serial.status === 'em-uso') emUso++;
-        else if (serial.status === 'manutencao') manutencao++;
-      });
+      totalItens += material.quantidadeTotal || 0;
+      totalDisponiveis += material.quantidadeDisponivel || 0;
+      totalEmUso += Math.max(0, (material.quantidadeTotal || 0) - (material.quantidadeDisponivel || 0));
     });
 
     return {
-      totalItens: materiaisFiltrados.reduce((sum, m) => sum + m.quantidadeTotal, 0),
-      totalDisponiveis: disponiveis,
-      totalEmUso: emUso,
-      totalManutencao: manutencao,
+      totalItens,
+      totalDisponiveis,
+      totalEmUso,
+      totalManutencao: 0, // Calculado quando detalhe é aberto
       categorias: new Set(materiaisFiltrados.map(m => m.categoria)).size,
     };
   };
+
+  // Mostrar skeleton específico durante carregamento
+  if (loading) {
+    return <EstoqueSkeleton />;
+  }
 
   const [showNovoMaterial, setShowNovoMaterial] = useState(false);
   const [materialSelecionado, setMaterialSelecionado] = useState<MaterialEstoque | null>(null);
@@ -104,17 +93,11 @@ export default function Estoque() {
     return cats.sort();
   }, [materiais]);
 
+  // Localizações são carregadas sob demanda quando detalhe é aberto
   const localizacoesUnicas = useMemo(() => {
-    const locs: string[] = [];
-    materiais.forEach(material => {
-      (material.seriais || []).forEach((serial) => {
-        if (serial.localizacao && !locs.includes(serial.localizacao)) {
-          locs.push(serial.localizacao);
-        }
-      });
-    });
-    return locs.sort();
-  }, [materiais]);
+    // Retornar array vazio - localizações serão mostradas no sheet de detalhes
+    return [] as string[];
+  }, []);
 
   const handleVerDetalhes = useCallback((material: MaterialEstoque) => {
     setMaterialSelecionado(material);
