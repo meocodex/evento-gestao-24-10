@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, AlertCircle, CheckCircle, Clock, Users, Package, TrendingUp } from 'lucide-react';
 import { useDashboardStats, useComercialStats, useSuporteStats } from '@/hooks/useDashboardStats';
 import type { EventoProximo, OperacaoHoje, RastreamentoAtivo } from '@/types/eventos';
-import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
+import { DashboardSkeleton } from '@/components/skeletons';
 import { format, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -16,11 +16,7 @@ const Dashboard = () => {
   const { data: suporteStats, isLoading: loadingSuporte } = useSuporteStats();
 
   if (loadingStats || loadingComercial || loadingSuporte) {
-    return (
-      <div className="p-6">
-        <LoadingSkeleton />
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   const renderAdminDashboard = () => (

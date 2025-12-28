@@ -3,7 +3,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Edit, Trash2 } from 'lucide-react';
-import type { MaterialEstoque, SerialEstoque } from '@/types/estoque';
+import type { MaterialEstoque } from '@/types/estoque';
 import { CardSkeleton } from '@/components/shared/LoadingSkeleton';
 
 interface EstoqueVirtualListProps {
@@ -51,8 +51,10 @@ export function EstoqueVirtualList({
       >
         {virtualizer.getVirtualItems().map((virtualRow) => {
           const material = materiais[virtualRow.index];
-          const emUso = material.seriais?.filter((s: SerialEstoque) => s.status === 'em-uso').length || 0;
-          const manutencao = material.seriais?.filter((s: SerialEstoque) => s.status === 'manutencao').length || 0;
+          // Calcular em uso e manutenção com base nas quantidades agregadas
+          // emUso = total - disponivel (aproximação quando seriais não estão carregados)
+          const emUso = Math.max(0, (material.quantidadeTotal || 0) - (material.quantidadeDisponivel || 0));
+          const manutencao = 0; // Será calculado quando detalhe for aberto
 
           return (
             <div
