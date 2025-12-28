@@ -25,6 +25,7 @@ import {
 import { usePermissions } from '@/hooks/usePermissions';
 
 export default function Estoque() {
+  // Todos os useState no início do componente (regra de hooks)
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [filtros, setFiltros] = useState<EstoqueFiltersType>({
@@ -32,6 +33,12 @@ export default function Estoque() {
     status: 'todos',
     localizacao: 'todas',
   });
+  const [showNovoMaterial, setShowNovoMaterial] = useState(false);
+  const [materialSelecionado, setMaterialSelecionado] = useState<MaterialEstoque | null>(null);
+  const [showDetalhes, setShowDetalhes] = useState(false);
+  const [showEditarMaterial, setShowEditarMaterial] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [materialParaExcluir, setMaterialParaExcluir] = useState<MaterialEstoque | null>(null);
   
   const pageSize = 50;
   const { materiais = [], totalCount = 0, isLoading: loading, excluirMaterial, sincronizarQuantidades } = useEstoque(page, pageSize, { busca: searchTerm });
@@ -43,8 +50,6 @@ export default function Estoque() {
       if (filtros.categoria !== 'todas' && material.categoria !== filtros.categoria) {
         return false;
       }
-      // Filtros por status e localização são omitidos pois seriais não estão carregados
-      // Esses filtros serão aplicados no sheet de detalhes ou em query server-side
       return true;
     });
   }, [materiais, filtros]);
@@ -65,7 +70,7 @@ export default function Estoque() {
       totalItens,
       totalDisponiveis,
       totalEmUso,
-      totalManutencao: 0, // Calculado quando detalhe é aberto
+      totalManutencao: 0,
       categorias: new Set(materiaisFiltrados.map(m => m.categoria)).size,
     };
   };
@@ -74,13 +79,6 @@ export default function Estoque() {
   if (loading) {
     return <EstoqueSkeleton />;
   }
-
-  const [showNovoMaterial, setShowNovoMaterial] = useState(false);
-  const [materialSelecionado, setMaterialSelecionado] = useState<MaterialEstoque | null>(null);
-  const [showDetalhes, setShowDetalhes] = useState(false);
-  const [showEditarMaterial, setShowEditarMaterial] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [materialParaExcluir, setMaterialParaExcluir] = useState<MaterialEstoque | null>(null);
 
   const stats = getEstatisticas();
   const totalPages = Math.ceil(totalCount / pageSize);
