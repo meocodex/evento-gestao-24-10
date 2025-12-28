@@ -1,37 +1,66 @@
 import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useIsFetching } from '@tanstack/react-query';
 
 export function NavigationLoadingBar() {
   const location = useLocation();
+  const isFetching = useIsFetching();
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
   const prevLocationRef = useRef(location.pathname);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Detecta mudança de rota
   useEffect(() => {
-    // Detecta mudança de rota
     if (prevLocationRef.current !== location.pathname) {
       setVisible(true);
-      setProgress(30);
+      setProgress(20);
+      prevLocationRef.current = location.pathname;
+    }
+  }, [location.pathname]);
+  
+  // Progresso baseado em queries pendentes (REAL)
+  useEffect(() => {
+    if (!visible) return;
+    
+    if (isFetching > 0) {
+      // Queries em andamento - progresso gradual até 80%
+      setProgress(prev => {
+        if (prev < 80) {
+          return Math.min(80, prev + (80 - prev) * 0.3);
+        }
+        return prev;
+      });
+    } else {
+      // Sem queries pendentes - completar
+      setProgress(100);
       
-      const timer1 = setTimeout(() => setProgress(60), 100);
-      const timer2 = setTimeout(() => setProgress(80), 300);
-      const timer3 = setTimeout(() => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        setVisible(false);
+        setProgress(0);
+      }, 200);
+    }
+    
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [isFetching, visible]);
+  
+  // Garantir que a barra termine mesmo se não houver queries
+  useEffect(() => {
+    if (visible && isFetching === 0) {
+      const fallbackTimer = setTimeout(() => {
         setProgress(100);
         setTimeout(() => {
           setVisible(false);
           setProgress(0);
         }, 200);
-      }, 500);
+      }, 300);
       
-      prevLocationRef.current = location.pathname;
-      
-      return () => {
-        clearTimeout(timer1);
-        clearTimeout(timer2);
-        clearTimeout(timer3);
-      };
+      return () => clearTimeout(fallbackTimer);
     }
-  }, [location.pathname]);
+  }, [visible, isFetching]);
   
   if (!visible) return null;
   

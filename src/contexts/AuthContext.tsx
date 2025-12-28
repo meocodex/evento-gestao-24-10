@@ -69,14 +69,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Hydrate user profile and permissions (sistema 100% granular)
+  // Hydrate user profile and permissions (sistema 100% granular) - SEM DELAY
   useEffect(() => {
     if (!session?.user?.id) return;
     
     let isCancelled = false;
     setHydrating(true);
     
-    const timeoutId = setTimeout(async () => {
+    // Execução IMEDIATA - removido setTimeout de 50ms
+    const hydrateUser = async () => {
       try {
         const userId = session.user.id;
         const [
@@ -84,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           { data: perms },
           { data: userRoles }
         ] = await Promise.all([
-          supabase.from('profiles').select('nome, tipo').eq('id', userId).single(),
+          supabase.from('profiles').select('nome, tipo').eq('id', userId).maybeSingle(),
           supabase.from('user_permissions').select('permission_id').eq('user_id', userId),
           supabase.from('user_roles').select('role').eq('user_id', userId)
         ]);
@@ -113,11 +114,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setHydrating(false);
         }
       }
-    }, 50);
+    };
+    
+    hydrateUser();
     
     return () => {
       isCancelled = true;
-      clearTimeout(timeoutId);
     };
   }, [session?.user?.id]);
 
