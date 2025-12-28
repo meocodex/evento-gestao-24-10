@@ -34,15 +34,29 @@ export function useDashboardStats() {
     queryKey: ['dashboard-stats'],
     queryFn: async (): Promise<DashboardStats> => {
       const hoje = new Date();
-      const inicioMes = startOfMonth(hoje);
-      const fimMes = endOfMonth(hoje);
       const proximos7Dias = addDays(hoje, 7);
 
-      // ===== EVENTOS (usando view materializada) =====
-      const { data: eventosStats } = await supabase
-        .from('vw_eventos_stats')
-        .select('*');
+      // ===== QUERIES PARALELAS PARA MÁXIMA PERFORMANCE =====
+      const [
+        { data: eventosStats },
+        { data: eventos },
+        { data: demandasStats },
+        { data: materiaisAlocados },
+        { data: eventosEquipe }
+      ] = await Promise.all([
+        // Query 1: Stats de eventos (view materializada)
+        supabase.from('vw_eventos_stats').select('*'),
+        // Query 2: Eventos com checklist
+        supabase.from('eventos').select('id, data_inicio, status, nome, cliente_id, eventos_checklist(alocado, quantidade)'),
+        // Query 3: Stats de demandas (view materializada)
+        supabase.from('vw_demandas_stats').select('*'),
+        // Query 4: Materiais alocados pendentes
+        supabase.from('eventos_materiais_alocados').select('id, nome, evento_id, status_devolucao, data_devolucao').eq('status_devolucao', 'pendente'),
+        // Query 5: Eventos com equipe
+        supabase.from('eventos_equipe').select('evento_id')
+      ]);
 
+      // ===== PROCESSAR EVENTOS =====
       const eventosPorStatus = {
         orcamentoEnviado: 0,
         aprovado: 0,
@@ -64,21 +78,12 @@ export function useDashboardStats() {
         }
       });
 
-      // Buscar eventos para cálculo de próximos 7 dias
-      const { data: eventos } = await supabase
-        .from('eventos')
-        .select('id, data_inicio, status, nome, cliente_id, eventos_checklist(alocado, quantidade)');
-
       const eventosProximos = eventos?.filter(e => {
         const dataInicio = new Date(e.data_inicio);
         return isAfter(dataInicio, hoje) && isBefore(dataInicio, proximos7Dias);
       }) || [];
 
-      // ===== DEMANDAS (usando view materializada) =====
-      const { data: demandasStats } = await supabase
-        .from('vw_demandas_stats')
-        .select('*');
-
+      // ===== PROCESSAR DEMANDAS =====
       const demandasAbertas = demandasStats?.find(d => d.status === 'aberta')?.total || 0;
       const demandasEmAndamento = demandasStats?.find(d => d.status === 'em-andamento')?.total || 0;
       const demandasUrgentes = demandasStats?.find(d => d.prioridade === 'urgente')?.total || 0;
@@ -88,13 +93,7 @@ export function useDashboardStats() {
       const alertas: DashboardStats['alertas'] = [];
 
       // Materiais com retorno atrasado
-      const { data: materiaisAlocados } = await supabase
-        .from('eventos_materiais_alocados')
-        .select('id, nome, evento_id, status_devolucao, data_devolucao')
-        .eq('status_devolucao', 'pendente');
-
       const materiaisAtrasados = materiaisAlocados?.filter(m => {
-        // Verificar se o evento já terminou há mais de 7 dias
         return eventos?.some(e => {
           if (e.id === m.evento_id) {
             const dataFim = new Date(e.data_inicio);
@@ -129,10 +128,6 @@ export function useDashboardStats() {
       }
 
       // Eventos próximos sem equipe
-      const { data: eventosEquipe } = await supabase
-        .from('eventos_equipe')
-        .select('evento_id');
-
       const eventosComEquipe = new Set(eventosEquipe?.map(e => e.evento_id) || []);
       const eventosSemEquipe = eventosProximos.filter(e => !eventosComEquipe.has(e.id));
 
