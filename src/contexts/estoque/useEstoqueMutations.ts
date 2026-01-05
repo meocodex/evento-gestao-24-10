@@ -330,6 +330,8 @@ export const useEstoqueMutations = () => {
       return data as Array<{ material_id: string; valor_anterior: number; valor_novo: number }>;
     },
     onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+      
       if (data && data.length > 0) {
         const total = data.length;
         const detalhes = data.map(d => 
@@ -342,7 +344,6 @@ export const useEstoqueMutations = () => {
       } else {
         toast.success('✅ Todos os materiais já estão sincronizados');
       }
-      await queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
     },
     onError: (error: Error) => {
       toast.error('Erro ao sincronizar estoque', {
