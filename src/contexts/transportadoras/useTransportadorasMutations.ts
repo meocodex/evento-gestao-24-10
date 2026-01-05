@@ -83,8 +83,8 @@ export function useTransportadorasMutations() {
       if (error) throw error;
       return transportadora;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
       toast.success('Transportadora criada!');
     },
     onError: (error: DatabaseError) => {
@@ -102,8 +102,8 @@ export function useTransportadorasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
       toast.success('Transportadora atualizada!');
     },
     onError: (error: DatabaseError) => {
@@ -120,8 +120,8 @@ export function useTransportadorasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
       toast.success('Transportadora excluída!');
     },
     onError: (error: DatabaseError) => {
@@ -148,8 +148,8 @@ export function useTransportadorasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
       toast.success('Rota adicionada!');
     },
     onError: (error: DatabaseError) => {
@@ -176,8 +176,8 @@ export function useTransportadorasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
       toast.success('Rota atualizada!');
     },
     onError: (error: DatabaseError) => {
@@ -204,8 +204,8 @@ export function useTransportadorasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['transportadoras'] });
       toast.success('Rota removida!');
     },
     onError: (error: DatabaseError) => {
@@ -225,8 +225,8 @@ export function useTransportadorasMutations() {
       if (error) throw error;
       return envio;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
       toast.success('Envio criado!');
     },
     onError: (error: DatabaseError) => {
@@ -244,8 +244,8 @@ export function useTransportadorasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
       toast.success('Envio atualizado!');
     },
     onError: (error: DatabaseError) => {
@@ -262,8 +262,8 @@ export function useTransportadorasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
       toast.success('Status atualizado!');
     },
     onError: (error: DatabaseError) => {
@@ -280,8 +280,8 @@ export function useTransportadorasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['transportadoras-envios'] });
       toast.success('Envio excluído!');
     },
     onError: (error: DatabaseError) => {

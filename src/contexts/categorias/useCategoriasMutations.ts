@@ -20,8 +20,8 @@ export function useCategoriasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
       toast.success('Categorias atualizadas', {
         description: 'As configurações foram salvas com sucesso.',
       });
@@ -64,8 +64,8 @@ export function useCategoriasMutations() {
       
       return { tipo, categoria };
     },
-    onSuccess: (data) => {
-      // Atualização otimista sem refetch completo
+    onSuccess: async (data) => {
+      // Atualização otimista imediata (para UX)
       queryClient.setQueryData<CategoriasConfigCache[]>(['configuracoes_categorias'], (old) => {
         if (!old) return old;
         return old.map((config) => {
@@ -80,6 +80,9 @@ export function useCategoriasMutations() {
           return config;
         });
       });
+      
+      // Forçar refetch para garantir sincronização
+      await queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
       
       toast.success('Categoria adicionada', {
         description: 'A nova categoria foi criada com sucesso.',
@@ -112,8 +115,8 @@ export function useCategoriasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
       toast.success('Categoria atualizada', {
         description: 'O status da categoria foi alterado.',
       });
@@ -145,8 +148,8 @@ export function useCategoriasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
       toast.success('Categoria editada', {
         description: 'O nome da categoria foi atualizado.',
       });
@@ -182,8 +185,8 @@ export function useCategoriasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
       toast.success('Categoria excluída', {
         description: 'A categoria foi removida com sucesso.',
       });

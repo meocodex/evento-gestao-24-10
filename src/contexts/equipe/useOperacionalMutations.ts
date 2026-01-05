@@ -17,8 +17,8 @@ export function useOperacionalMutations() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
       toast.success('Membro cadastrado!', {
         description: 'Membro da equipe operacional cadastrado com sucesso.'
       });
@@ -42,8 +42,8 @@ export function useOperacionalMutations() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['equipe-operacional'] });
       toast.success('Membro atualizado!', {
         description: 'Informações atualizadas com sucesso.'
       });

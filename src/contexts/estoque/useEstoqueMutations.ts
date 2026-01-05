@@ -90,8 +90,8 @@ export const useEstoqueMutations = () => {
 
       return data;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       toast.success('Material cadastrado', {
         description: `${data.nome} foi adicionado ao estoque.`,
       });
@@ -126,8 +126,8 @@ export const useEstoqueMutations = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       toast.success('Material atualizado', {
         description: 'As alterações foram salvas com sucesso.',
       });
@@ -155,8 +155,8 @@ export const useEstoqueMutations = () => {
       if (error) throw error;
       return id;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
       toast.success('Material excluído', {
         description: 'Material removido do estoque.',
       });
@@ -209,9 +209,9 @@ export const useEstoqueMutations = () => {
         await supabase.rpc('increment_estoque_disponivel', { p_material_id: materialId });
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
-      queryClient.invalidateQueries({ queryKey: ['materiais_seriais'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+      await queryClient.invalidateQueries({ queryKey: ['materiais_seriais'] });
       toast.success('Serial adicionado', {
         description: 'Novo item adicionado ao estoque.',
       });
@@ -264,9 +264,9 @@ export const useEstoqueMutations = () => {
         }
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
-      queryClient.invalidateQueries({ queryKey: ['materiais_seriais'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+      await queryClient.invalidateQueries({ queryKey: ['materiais_seriais'] });
       toast.success('Serial atualizado', {
         description: 'As alterações foram salvas com sucesso.',
       });
@@ -306,9 +306,9 @@ export const useEstoqueMutations = () => {
       // Atualizar quantidade total
       await supabase.rpc('decrement_estoque_total', { p_material_id: materialId });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
-      queryClient.invalidateQueries({ queryKey: ['materiais_seriais'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+      await queryClient.invalidateQueries({ queryKey: ['materiais_seriais'] });
       toast.success('Serial excluído', {
         description: 'Item removido do estoque.',
       });
@@ -329,7 +329,7 @@ export const useEstoqueMutations = () => {
       if (error) throw error;
       return data as Array<{ material_id: string; valor_anterior: number; valor_novo: number }>;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       if (data && data.length > 0) {
         const total = data.length;
         const detalhes = data.map(d => 
@@ -342,7 +342,7 @@ export const useEstoqueMutations = () => {
       } else {
         toast.success('✅ Todos os materiais já estão sincronizados');
       }
-      queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
+      await queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
     },
     onError: (error: Error) => {
       toast.error('Erro ao sincronizar estoque', {

@@ -98,8 +98,8 @@ export function useUsuarios() {
 
       if (insertError) throw insertError;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usuarios'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['usuarios'] });
       toast({
         title: 'Função alterada',
         description: 'A função do usuário foi atualizada com sucesso.',
@@ -145,8 +145,8 @@ export function useUsuarios() {
 
       return result.user;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['usuarios'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['usuarios'] });
       toast({
         title: 'Operador criado com sucesso',
         description: 'O operador já pode acessar o sistema.',

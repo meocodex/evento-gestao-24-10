@@ -27,8 +27,8 @@ export function useClientesMutations() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['clientes'] });
       toast.success('Cliente criado com sucesso!');
     },
     onError: (error: DatabaseError) => {
@@ -72,8 +72,8 @@ export function useClientesMutations() {
     onSuccess: () => {
       toast.success('Cliente atualizado com sucesso!');
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['clientes'] });
     }
   });
 
@@ -112,8 +112,8 @@ export function useClientesMutations() {
     onSuccess: () => {
       toast.success('Cliente excluído com sucesso!');
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['clientes'] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['clientes'] });
     }
   });
 

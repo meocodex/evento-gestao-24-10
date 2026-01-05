@@ -76,8 +76,8 @@ export function useDemandasMutations() {
 
       return demanda;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['demandas'] });
       toast.success('Demanda criada!', { description: 'A demanda foi criada com sucesso.' });
     },
     onError: () => {
@@ -144,8 +144,8 @@ export function useDemandasMutations() {
     onSuccess: () => {
       toast.success('Demanda atualizada!', { description: 'As alterações foram salvas.' });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['demandas'] });
     },
   });
 
@@ -183,8 +183,8 @@ export function useDemandasMutations() {
     onSuccess: () => {
       toast.success('Demanda excluída!', { description: 'A demanda foi removida.' });
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
+    onSettled: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['demandas'] });
     },
   });
 
@@ -202,8 +202,8 @@ export function useDemandasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: (_, { novoStatus }) => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
+    onSuccess: async (_, { novoStatus }) => {
+      await queryClient.invalidateQueries({ queryKey: ['demandas'] });
       toast.success('Status atualizado!', { description: `Demanda marcada como ${novoStatus}.` });
     },
     onError: () => {
@@ -232,8 +232,8 @@ export function useDemandasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: (_, { responsavelNome }) => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
+    onSuccess: async (_, { responsavelNome }) => {
+      await queryClient.invalidateQueries({ queryKey: ['demandas'] });
       toast.success('Responsável atribuído!', { 
         description: `${responsavelNome} foi atribuído à demanda.` 
       });
@@ -261,8 +261,8 @@ export function useDemandasMutations() {
         tipo: 'sistema',
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['demandas'] });
       toast.success('Demanda resolvida', { description: 'A demanda foi marcada como resolvida.' });
     },
     onError: () => {
@@ -291,8 +291,8 @@ export function useDemandasMutations() {
         tipo: 'sistema',
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['demandas'] });
       toast.success('Demanda reaberta', { description: 'A demanda foi reaberta para novas interações.' });
     },
     onError: () => {
@@ -309,8 +309,8 @@ export function useDemandasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['demandas'] });
       toast.success('Demanda arquivada', { description: 'A demanda foi movida para arquivados.' });
     },
     onError: () => {
@@ -327,8 +327,8 @@ export function useDemandasMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['demandas'] });
       toast.success('Demanda desarquivada', { description: 'A demanda foi reativada.' });
     },
     onError: () => {
@@ -343,8 +343,8 @@ export function useDemandasMutations() {
         .insert(data);
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['demandas'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['demandas'] });
       toast.success('Reembolso solicitado com sucesso!', { description: 'O reembolso foi registrado.' });
     },
     onError: () => {

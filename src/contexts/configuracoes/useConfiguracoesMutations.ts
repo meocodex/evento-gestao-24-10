@@ -18,8 +18,8 @@ export function useConfiguracoesMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['configuracoes'] });
       toast.success('Configurações de notificações atualizadas');
     },
     onError: () => {
@@ -39,8 +39,8 @@ export function useConfiguracoesMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['configuracoes'] });
       toast.success('Configurações da empresa atualizadas');
     },
     onError: () => {
@@ -60,8 +60,8 @@ export function useConfiguracoesMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['configuracoes'] });
       toast.success('Configurações do sistema atualizadas');
     },
     onError: () => {

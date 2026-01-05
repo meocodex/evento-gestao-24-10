@@ -34,8 +34,8 @@ export function useConfiguracoesEmpresaMutations() {
         return data;
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes_empresa'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['configuracoes_empresa'] });
       toast.success('Configurações da empresa atualizadas com sucesso');
     },
     onError: (error: Error) => {

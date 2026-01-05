@@ -66,8 +66,8 @@ export function useEventosMutations() {
 
       return evento as Evento;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['eventos'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['eventos'] });
     },
     onError: (error: DatabaseError) => {
       toast.error('Erro ao criar evento', {
@@ -152,12 +152,12 @@ export function useEventosMutations() {
       
       return { previousEventos };
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success('Evento atualizado!', {
         description: 'As alterações foram salvas com sucesso.'
       });
       // Invalidar apenas evento-detalhes para recarregar dados completos
-      queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
+      await queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
     },
     onError: (error: DatabaseError, _variables, context) => {
       // Rollback em caso de erro
@@ -183,8 +183,8 @@ export function useEventosMutations() {
         description: 'O evento foi removido com sucesso.'
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['eventos'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['eventos'] });
     },
     onError: (error: DatabaseError) => {
       toast.error('Erro ao excluir evento', {
@@ -239,11 +239,11 @@ export function useEventosMutations() {
       
       return { previousEventos };
     },
-    onSuccess: (_, { novoStatus }) => {
+    onSuccess: async (_, { novoStatus }) => {
       toast.success('Status atualizado!', {
         description: `O status foi alterado para ${novoStatus}.`
       });
-      queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
+      await queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
     },
     onError: (error: DatabaseError, _variables, context) => {
       // Rollback em caso de erro
@@ -305,9 +305,9 @@ export function useEventosMutations() {
         usuario: user.email || 'Sistema'
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['eventos'] });
-      queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['eventos'] });
+      await queryClient.invalidateQueries({ queryKey: ['evento-detalhes'] });
       toast.success('Evento arquivado', { 
         description: 'O evento foi movido para arquivados.' 
       });
