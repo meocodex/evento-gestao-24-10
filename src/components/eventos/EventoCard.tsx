@@ -33,12 +33,13 @@ export const EventoCard = React.memo(function EventoCard({ evento, onClick, onEd
   const { canEditEvent, canDeleteEvent } = usePermissions(evento);
   const navigate = useNavigate();
 
-  const statusColors = {
-    orcamento: 'bg-amber-500',
+  const statusColors: Record<string, string> = {
+    em_negociacao: 'bg-amber-500',
     confirmado: 'bg-emerald-500',
     em_preparacao: 'bg-purple-500',
     em_execucao: 'bg-blue-600',
-    concluido: 'bg-green-600',
+    finalizado: 'bg-green-600',
+    arquivado: 'bg-gray-500',
     cancelado: 'bg-red-500',
   };
 
