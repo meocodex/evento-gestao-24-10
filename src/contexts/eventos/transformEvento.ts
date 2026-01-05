@@ -23,6 +23,35 @@ import type {
 
 type TimelineTipo = 'criacao' | 'edicao' | 'confirmacao' | 'alocacao' | 'envio' | 'entrega' | 'execucao' | 'retorno' | 'fechamento' | 'cancelamento' | 'financeiro';
 
+// Normalize legacy status values to current StatusEvento values
+function normalizeStatus(status: string | null | undefined): StatusEvento {
+  if (!status) return 'em_negociacao';
+  
+  const statusMap: Record<string, StatusEvento> = {
+    // Legacy mappings
+    orcamento: 'em_negociacao',
+    orcamento_enviado: 'em_negociacao',
+    materiais_alocados: 'em_preparacao',
+    em_andamento: 'em_execucao',
+    concluido: 'finalizado',
+    // Current valid statuses (pass through)
+    em_negociacao: 'em_negociacao',
+    confirmado: 'confirmado',
+    em_preparacao: 'em_preparacao',
+    em_execucao: 'em_execucao',
+    finalizado: 'finalizado',
+    arquivado: 'arquivado',
+    cancelado: 'cancelado',
+  };
+
+  const normalized = statusMap[status];
+  if (!normalized) {
+    console.warn(`[transformEvento] Unknown status "${status}", defaulting to "em_negociacao"`);
+    return 'em_negociacao';
+  }
+  return normalized;
+}
+
 export function transformEvento(data: RawEventoFromDB): Evento {
   return {
     id: data.id,
@@ -36,7 +65,7 @@ export function transformEvento(data: RawEventoFromDB): Evento {
     estado: data.estado,
     endereco: data.endereco,
     tipoEvento: data.tipo_evento as TipoEvento,
-    status: data.status as StatusEvento,
+    status: normalizeStatus(data.status),
     descricao: data.descricao || '',
     tags: data.tags || [],
     observacoes: data.observacoes || '',
