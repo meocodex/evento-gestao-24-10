@@ -37,8 +37,8 @@ export function useTemplatesMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contratos-templates'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contratos-templates'] });
       toast.success('Template criado', { description: 'Template de contrato criado com sucesso.' });
     },
     onError: () => {
@@ -66,8 +66,8 @@ export function useTemplatesMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contratos-templates'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contratos-templates'] });
       toast.success('Template atualizado', { description: 'Template atualizado com sucesso.' });
     },
     onError: () => {
@@ -84,8 +84,8 @@ export function useTemplatesMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contratos-templates'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contratos-templates'] });
       toast.success('Template excluído', { description: 'Template removido do sistema.' });
     },
     onError: () => {

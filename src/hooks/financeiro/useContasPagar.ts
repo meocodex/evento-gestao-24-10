@@ -37,8 +37,8 @@ export function useContasPagar() {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
       toast.success('Conta a pagar criada com sucesso!');
     },
     onError: (error: DatabaseError) => {
@@ -55,8 +55,8 @@ export function useContasPagar() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
       toast.success('Conta atualizada com sucesso!');
     },
   });
@@ -82,8 +82,8 @@ export function useContasPagar() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
       toast.success('Pagamento registrado! Próxima recorrência gerada automaticamente.');
     },
   });
@@ -97,8 +97,8 @@ export function useContasPagar() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contas-pagar'] });
       toast.success('Conta excluída com sucesso!');
     },
   });

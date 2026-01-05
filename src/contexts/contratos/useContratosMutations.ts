@@ -63,8 +63,8 @@ export function useContratosMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contratos'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contratos'] });
       toast({ title: 'Contrato criado', description: 'Contrato criado com sucesso.' });
     },
     onError: (error) => {
@@ -106,8 +106,8 @@ export function useContratosMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contratos'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contratos'] });
       toast({ title: 'Contrato atualizado', description: 'Contrato atualizado com sucesso.' });
     },
     onError: (error) => {
@@ -125,8 +125,8 @@ export function useContratosMutations() {
 
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contratos'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contratos'] });
       toast({ title: 'Contrato excluído', description: 'Contrato removido do sistema.' });
     },
     onError: (error) => {

@@ -37,8 +37,8 @@ export function useContasReceber() {
       if (error) throw error;
       return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
       toast.success('Conta a receber criada com sucesso!');
     },
     onError: (error: DatabaseError) => {
@@ -55,8 +55,8 @@ export function useContasReceber() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
       toast.success('Conta atualizada com sucesso!');
     },
   });
@@ -82,8 +82,8 @@ export function useContasReceber() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
       toast.success('Recebimento registrado! Próxima recorrência gerada automaticamente.');
     },
   });
@@ -97,8 +97,8 @@ export function useContasReceber() {
       
       if (error) throw error;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['contas-receber'] });
       toast.success('Conta excluída com sucesso!');
     },
   });
