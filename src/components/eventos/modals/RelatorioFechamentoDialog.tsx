@@ -450,12 +450,17 @@ export function RelatorioFechamentoDialog({
       });
 
       const desenharRodape = (paginaAtual: number, totalPaginas: number) => {
-        const rodapeY = pageHeight - 12;
+        // Posição Y diferente dependendo se tem papel timbrado
+        // Com papel timbrado: subir para ficar acima da área dourada do timbrado
+        const rodapeY = papelTimbradoBase64 ? pageHeight - 18 : pageHeight - 12;
         
-        // Linha separadora dourada
-        doc.setDrawColor(...CORES.dourado);
-        doc.setLineWidth(0.3);
-        doc.line(margens.left, rodapeY - 3, pageWidth - margens.right, rodapeY - 3);
+        // Linha separadora dourada apenas SEM papel timbrado
+        // (o papel timbrado já tem design próprio no rodapé)
+        if (!papelTimbradoBase64) {
+          doc.setDrawColor(...CORES.dourado);
+          doc.setLineWidth(0.3);
+          doc.line(margens.left, rodapeY - 3, pageWidth - margens.right, rodapeY - 3);
+        }
         
         // Data de geração (esquerda)
         doc.setFontSize(7);
