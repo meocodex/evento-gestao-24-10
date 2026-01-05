@@ -11,7 +11,6 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { EditarDadosEvento } from './EditarDadosEvento';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { useToast } from '@/hooks/use-toast';
 import { useEventos, useEventoStatusSync } from '@/hooks/eventos';
 import { AlterarStatusDialog } from '../modals/AlterarStatusDialog';
 import { ArquivarEventoDialog } from '../modals/ArquivarEventoDialog';
@@ -19,8 +18,8 @@ import { MateriaisPendentesBadge } from '../MateriaisPendentesBadge';
 import { useMaterialPendente } from '@/hooks/eventos/useMaterialPendente';
 import { EventoCountdown } from '../EventoCountdown';
 import { InfoGridList } from '@/components/shared/InfoGrid';
-import { Separator } from '@/components/ui/separator';
 import { UsePermissionsResult } from '@/hooks/usePermissions';
+import { ConfiguracaoIngressoCard } from './ConfiguracaoIngressoCard';
 
 interface DadosEventoProps {
   evento: Evento;
@@ -357,7 +356,18 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
               </div>
             )}
           </CardContent>
-        </Card>
+      </Card>
+      )}
+
+      {/* Configuração de Ingressos */}
+      {evento.tipoEvento !== 'bar' && evento.configuracaoIngresso && (
+        <ConfiguracaoIngressoCard 
+          configuracao={evento.configuracaoIngresso}
+          onImageClick={(url, nome) => {
+            setSelectedFile({ url, nome, tipo: 'image/jpeg' });
+            setFileViewerOpen(true);
+          }}
+        />
       )}
 
       <Card>
