@@ -1,11 +1,11 @@
 {
-  "name": "GERCAO - Gestão de Eventos",
-  "short_name": "GERCAO",
+  "name": "Ticket Up - Gestão de Eventos",
+  "short_name": "Ticket Up",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
-  "theme_color": "#4F46E5",
+  "theme_color": "#8B7E41",
   "description": "Sistema completo para gestão de eventos, controle de estoque e logística",
   "icons": [
     {
