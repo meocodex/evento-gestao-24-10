@@ -1220,10 +1220,90 @@ export default function CadastroEvento() {
                         </div>
                       </div>
 
+                      {/* Tipos de Ingresso do Setor */}
+                      {setor.tiposIngresso.length > 0 && (
+                        <div className="space-y-3 mt-4">
+                          <Label className="font-semibold">Tipos de Ingresso</Label>
+                          {setor.tiposIngresso.map((tipo, tipoIdx) => (
+                            <Card key={tipo.id} className="bg-muted/50">
+                              <CardContent className="pt-4 space-y-4">
+                                <div className="flex justify-between items-center">
+                                  <Label className="font-medium">Tipo {tipoIdx + 1}</Label>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => removerTipoIngresso(setor.id, tipo.id)}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                
+                                <Input
+                                  value={tipo.nome}
+                                  onChange={(e) => atualizarTipoIngresso(setor.id, tipo.id, 'nome', e.target.value)}
+                                  placeholder="Ex: Meia-entrada, Inteira, VIP"
+                                />
+                                
+                                {/* Lotes do Tipo de Ingresso */}
+                                <div className="space-y-3">
+                                  <Label className="text-sm font-medium">Lotes</Label>
+                                  {[1, 2, 3, 4].map((numeroLote) => {
+                                    const lote = tipo.lotes.find(l => l.numero === numeroLote);
+                                    return (
+                                      <div key={numeroLote} className="p-3 border rounded-lg bg-background space-y-2">
+                                        <Label className="text-xs font-semibold text-muted-foreground">Lote {numeroLote}</Label>
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                          <div>
+                                            <Label className="text-xs">Quantidade</Label>
+                                            <Input
+                                              type="number"
+                                              placeholder="Qtd"
+                                              value={lote?.quantidade || ''}
+                                              onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'quantidade', e.target.value)}
+                                            />
+                                          </div>
+                                          <div>
+                                            <Label className="text-xs">Preço (R$)</Label>
+                                            <Input
+                                              type="number"
+                                              step="0.01"
+                                              placeholder="0,00"
+                                              value={lote?.preco || ''}
+                                              onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'preco', e.target.value)}
+                                            />
+                                          </div>
+                                          <div>
+                                            <Label className="text-xs">Abertura Online</Label>
+                                            <Input
+                                              type="date"
+                                              value={lote?.dataAberturaOnline || ''}
+                                              onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'dataAberturaOnline', e.target.value)}
+                                            />
+                                          </div>
+                                          <div>
+                                            <Label className="text-xs">Fechamento Online</Label>
+                                            <Input
+                                              type="date"
+                                              value={lote?.dataFechamentoOnline || ''}
+                                              onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'dataFechamentoOnline', e.target.value)}
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => adicionarTipoIngresso(setor.id)}
+                        className="mt-4"
                       >
                         + Adicionar Tipo de Ingresso
                       </Button>
