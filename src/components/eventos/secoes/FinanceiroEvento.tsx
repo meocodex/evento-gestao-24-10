@@ -251,21 +251,12 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Despesas</CardTitle>
-          <div className="flex gap-2">
-            {permissions.canEditFinancial && evento.status === 'finalizado' && 
-             (despesasSelecionadas.size > 0 || receitasSelecionadas.size > 0) && (
-              <Button size="sm" variant="outline" onClick={handleGerarRelatorio}>
-                <FileText className="h-4 w-4 mr-2" />
-                Fechamento ({despesasSelecionadas.size + receitasSelecionadas.size} itens)
-              </Button>
-            )}
-            {permissions.canEditFinancial && (
-              <Button size="sm" onClick={() => setShowAddDespesa(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Despesa
-              </Button>
-            )}
-          </div>
+          {permissions.canEditFinancial && (
+            <Button size="sm" onClick={() => setShowAddDespesa(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Despesa
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {evento.financeiro.despesas.length === 0 ? (
@@ -374,6 +365,21 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
           fileName={selectedFile.nome}
           fileType={selectedFile.tipo}
         />
+      )}
+
+      {/* Botão de Fechamento Flutuante - Sempre visível quando há itens selecionados */}
+      {permissions.canEditFinancial && evento.status === 'finalizado' && 
+       (despesasSelecionadas.size > 0 || receitasSelecionadas.size > 0) && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+          <Button 
+            size="lg" 
+            onClick={handleGerarRelatorio}
+            className="shadow-lg"
+          >
+            <FileText className="h-5 w-5 mr-2" />
+            Fechamento ({despesasSelecionadas.size + receitasSelecionadas.size} itens)
+          </Button>
+        </div>
       )}
     </div>
   );
