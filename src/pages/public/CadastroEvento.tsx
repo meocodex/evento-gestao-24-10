@@ -345,10 +345,24 @@ export default function CadastroEvento() {
         dataNascimento: responsavelDataNascimento,
       } : undefined;
 
-      // Montar configuração de ingresso
+      // Montar configuração de ingresso - filtrar dados vazios
+      const setoresFiltrados = setores
+        .filter(s => s.nome && s.nome.trim() !== '')
+        .map(setor => ({
+          ...setor,
+          tiposIngresso: setor.tiposIngresso
+            .filter(tipo => tipo.nome && tipo.nome.trim() !== '')
+            .map(tipo => ({
+              ...tipo,
+              lotes: tipo.lotes.filter(lote => 
+                lote.quantidade > 0 || lote.preco > 0
+              )
+            }))
+        }));
+
       const configuracaoIngresso = (tipoEvento === 'ingresso' || tipoEvento === 'hibrido') ? {
-        setores: setores,
-        pontosVenda: pontosVenda,
+        setores: setoresFiltrados,
+        pontosVenda: pontosVenda.filter(p => p.nome && p.nome.trim() !== ''),
         mapaEvento: mapaSite || undefined,
         banners: {
           bannerSite: bannerSite || undefined,
@@ -358,9 +372,12 @@ export default function CadastroEvento() {
         },
       } : undefined;
 
-      // Montar configuração de bar
+      // Montar configuração de bar - filtrar estabelecimentos vazios
+      const estabelecimentosFiltrados = estabelecimentosBares
+        .filter(e => e.nome && e.nome.trim() !== '');
+
       const configuracaoBar = (tipoEvento === 'bar' || tipoEvento === 'hibrido') ? {
-        estabelecimentos: estabelecimentosBares,
+        estabelecimentos: estabelecimentosFiltrados,
         mapaLocal: mapaLocal || mapaLocalArquivo || undefined,
         mapaLocalArquivo: mapaLocalArquivo || undefined,
         logoEvento: logoEvento || undefined,

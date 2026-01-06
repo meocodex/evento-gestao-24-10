@@ -20,6 +20,7 @@ import { EventoCountdown } from '../EventoCountdown';
 import { InfoGridList } from '@/components/shared/InfoGrid';
 import { UsePermissionsResult } from '@/hooks/usePermissions';
 import { ConfiguracaoIngressoCard } from './ConfiguracaoIngressoCard';
+import { ConfiguracaoBarCard } from './ConfiguracaoBarCard';
 
 interface DadosEventoProps {
   evento: Evento;
@@ -365,6 +366,17 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
           configuracao={evento.configuracaoIngresso}
           onImageClick={(url, nome) => {
             setSelectedFile({ url, nome, tipo: 'image/jpeg' });
+            setFileViewerOpen(true);
+          }}
+        />
+      )}
+
+      {/* Configuração de Bar */}
+      {(evento.tipoEvento === 'bar' || evento.tipoEvento === 'hibrido') && evento.configuracaoBar && (
+        <ConfiguracaoBarCard 
+          configuracao={evento.configuracaoBar}
+          onImageClick={(url, nome) => {
+            setSelectedFile({ url, nome, tipo: url.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg' });
             setFileViewerOpen(true);
           }}
         />
