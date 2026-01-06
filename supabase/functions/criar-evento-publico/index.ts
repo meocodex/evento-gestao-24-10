@@ -177,6 +177,11 @@ Deno.serve(async (req) => {
       console.log(`Cliente existente encontrado: ${clienteExistente.nome} (${documentoLimpo})`);
       
       // Atualizar dados do cliente se houver mudanças
+      // Preparar dados bancários se fornecidos
+      const dadosBancariosUpdate = produtor.dadosBancarios ? {
+        dados_bancarios: produtor.dadosBancarios
+      } : {};
+
       const { error: updateError } = await supabase
         .from('clientes')
         .update({
@@ -192,6 +197,7 @@ Deno.serve(async (req) => {
             cidade: produtor.endereco.cidade,
             estado: produtor.endereco.estado,
           },
+          ...dadosBancariosUpdate,
           updated_at: new Date().toISOString(),
         })
         .eq('id', clienteId);
@@ -229,6 +235,11 @@ Deno.serve(async (req) => {
           cpf: produtor.responsavelLegal.cpf.replace(/\D/g, ''),
           data_nascimento: produtor.responsavelLegal.dataNascimento,
         };
+      }
+
+      // Adicionar dados bancários se fornecidos
+      if (produtor.dadosBancarios) {
+        clienteData.dados_bancarios = produtor.dadosBancarios;
       }
 
       const { data: novoCliente, error: insertError } = await supabase

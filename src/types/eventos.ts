@@ -112,6 +112,27 @@ export interface Cliente {
     estado: string;
   };
   responsavelLegal?: ResponsavelLegal;
+  dadosBancarios?: DadosBancarios;
+}
+
+// Interface para dados bancários do cliente (forward declaration)
+export type TipoChavePix = 'cpf' | 'cnpj' | 'email' | 'telefone' | 'aleatoria';
+export type TipoConta = 'corrente' | 'poupanca';
+export type TipoPagamento = 'pix' | 'conta_bancaria';
+
+export interface DadosBancarios {
+  tipoPagamento: TipoPagamento;
+  // Para PIX
+  chavePix?: string;
+  tipoChavePix?: TipoChavePix;
+  // Para Conta Bancária
+  banco?: string;
+  agencia?: string;
+  conta?: string;
+  tipoConta?: TipoConta;
+  // Comum
+  cpfCnpjTitular: string;
+  nomeTitular: string;
 }
 
 export interface Comercial {
@@ -304,10 +325,12 @@ export interface CadastroEventoPublico {
       estado: string;
     };
     responsavelLegal?: ResponsavelLegal;
+    dadosBancarios?: DadosBancarios;
   };
   configuracaoIngresso?: ConfiguracaoIngresso;
   configuracaoBar?: ConfiguracaoBar;
 }
+
 
 export interface CadastroPublico extends CadastroEventoPublico {
   id: string;
