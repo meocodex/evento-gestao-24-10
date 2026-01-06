@@ -1,6 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { transformContrato, transformTemplate } from './transformContrato';
+import { TemplateDB, ContratoDB } from '@/types/utils';
+import { Database } from '@/integrations/supabase/types';
+
+type StatusContratoDB = Database['public']['Enums']['status_contrato'];
 
 export interface FiltrosContrato {
   searchTerm?: string;
@@ -37,7 +41,7 @@ export function useContratosQueries(
       
       if (error) throw error;
       return {
-        templates: (data || []).map(transformTemplate),
+        templates: (data || []).map(item => transformTemplate(item as unknown as TemplateDB)),
         totalCount: count || 0,
       };
     },
@@ -65,7 +69,7 @@ export function useContratosQueries(
         } else if (filtrosContratos.status === 'contratos') {
           query = query.in('status', ['rascunho', 'em_revisao', 'aguardando_assinatura', 'assinado']);
         } else {
-          query = query.eq('status', filtrosContratos.status);
+          query = query.eq('status', filtrosContratos.status as StatusContratoDB);
         }
       }
 
@@ -75,7 +79,7 @@ export function useContratosQueries(
       
       if (error) throw error;
       return {
-        contratos: (data || []).map(transformContrato),
+        contratos: (data || []).map(item => transformContrato(item as unknown as ContratoDB)),
         totalCount: count || 0,
       };
     },

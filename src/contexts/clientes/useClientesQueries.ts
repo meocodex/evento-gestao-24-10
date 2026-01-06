@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Cliente } from '@/types/eventos';
 import { useDebounce } from '@/hooks/useDebounce';
 import { SearchResultRow } from '@/types/utils';
+import { transformCliente } from './transformCliente';
 
 export function useClientesQueries(page = 1, pageSize = 20, searchTerm?: string, enabled = true) {
   // Debounce do termo de busca
@@ -39,7 +39,7 @@ export function useClientesQueries(page = 1, pageSize = 20, searchTerm?: string,
         if (error) throw error;
 
         return {
-          clientes: (data || []) as Cliente[],
+          clientes: (data || []).map(transformCliente),
           totalCount: (data || []).length
         };
       }
@@ -54,7 +54,7 @@ export function useClientesQueries(page = 1, pageSize = 20, searchTerm?: string,
       if (error) throw error;
       
       return { 
-        clientes: (data || []) as Cliente[], 
+        clientes: (data || []).map(transformCliente), 
         totalCount: count || 0 
       };
     },
