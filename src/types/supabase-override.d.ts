@@ -1,7 +1,5 @@
-// Override temporário para resolver problema de tipos vazios do Supabase
-// Este arquivo força o cliente Supabase a ser tratado como 'any' até que
-// src/integrations/supabase/types.ts seja regenerado automaticamente
+// Este arquivo foi limpo - o cliente Supabase agora está corretamente tipado
+// via src/integrations/supabase/types.ts gerado automaticamente
 
-declare module '@/integrations/supabase/client' {
-  export const supabase: any;
-}
+// Mantido apenas para referência histórica - pode ser removido em versões futuras
+export {};

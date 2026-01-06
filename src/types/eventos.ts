@@ -407,8 +407,9 @@ export interface MaterialAlocadoUI {
   nome: string;
   serial?: string;
   item_id?: string;
+  evento_id?: string;
   tipo_envio: 'antecipado' | 'com_tecnicos';
-  status: StatusMaterial;
+  status: string; // StatusMaterial mais flexível para compatibilidade
   status_devolucao?: string;
   statusDevolucao?: string;
   devolvido?: boolean;
@@ -418,6 +419,43 @@ export interface MaterialAlocadoUI {
   envio_id?: string;
   responsavel?: string;
   quantidade_alocada?: number;
+  // Campos adicionais do banco
+  data_devolucao?: string;
+  responsavel_devolucao?: string;
+  observacoes_devolucao?: string;
+  fotos_devolucao?: string[];
+  termo_retirada_url?: string;
+  declaracao_transporte_url?: string;
+  retirado_por_nome?: string;
+  retirado_por_documento?: string;
+  retirado_por_telefone?: string;
+  data_retirada?: string;
+  valor_declarado?: number;
+  remetente_tipo?: string;
+  remetente_membro_id?: string;
+  observacoes_transporte?: string;
+  rastreamento?: string;
+  data_envio?: string;
+  // Campos camelCase transformados
+  itemId?: string;
+  eventoId?: string;
+  tipoEnvio?: string;
+  quantidadeAlocada?: number;
+  dataDevolucao?: string;
+  responsavelDevolucao?: string;
+  observacoesDevolucao?: string;
+  fotosDevolucao?: string[];
+  retiradoPorNome?: string;
+  retiradoPorDocumento?: string;
+  retiradoPorTelefone?: string;
+  dataRetirada?: string;
+  envioId?: string;
+  valorDeclarado?: number;
+  remetenteTipo?: string;
+  remetenteMembroId?: string;
+  remetenteDados?: unknown;
+  dadosDestinatario?: unknown;
+  observacoesTransporte?: string;
 }
 
 export interface MaterialParaFrete {
