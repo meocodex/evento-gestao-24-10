@@ -63,19 +63,22 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
     observacoes: string | null;
   }
 
-  // Interface para material na declaração de transporte
+  // Interface para material na declaração de transporte (formato esperado pelos dialogs)
   interface MaterialParaDeclaracao {
     id: string;
+    eventoId: string;
+    itemId: string;
     nome: string;
-    item_id: string;
-    evento_id: string;
-    serial?: string | null;
-    quantidade_alocada?: number | null;
-    tipo_envio: string;
-    transportadora?: string | null;
-    declaracao_transporte_url?: string | null;
-    status: string;
-    status_devolucao?: string | null;
+    serial?: string;
+    tipoEnvio: 'antecipado' | 'com_tecnicos';
+    transportadora?: string;
+    responsavel?: string;
+    quantidadeAlocada: number;
+    quantidadeDevolvida: number;
+    statusDevolucao: 'pendente' | 'devolvido_ok' | 'devolvido_danificado' | 'perdido' | 'consumido';
+    declaracaoTransporteUrl?: string;
+    termoRetiradaUrl?: string;
+    valorDeclarado?: number;
   }
 
   // Estados para o fluxo de geração de declaração
@@ -150,7 +153,8 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
           const dataEntregaPrevista = addDays(dataEvento, -rota.prazoEntrega);
           
           // ORIGEM: Endereço da empresa (configurações) ou cidade da transportadora
-          const novaOrigem = enderecoEmpresa || `${transportadora.endereco.cidade} - ${transportadora.endereco.estado}`;
+          const endereco = transportadora.endereco as { cidade?: string; estado?: string } | null;
+          const novaOrigem = enderecoEmpresa || `${endereco?.cidade || ''} - ${endereco?.estado || ''}`;
           
           // DESTINO: Endereço completo do cliente (se disponível) ou endereço do evento
           let novoDestino = '';
@@ -482,35 +486,72 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
         <SelecionarMaterialParaDocumentoDialog
           open={showSelecionarMateriais}
           onOpenChange={setShowSelecionarMateriais}
-          materiais={materiaisAlocados.filter(m => 
-            m.tipo_envio === 'antecipado' && 
-            m.transportadora &&
-            !m.declaracao_transporte_url
-          )}
+          materiais={materiaisAlocados
+            .filter(m => 
+              m.tipo_envio === 'antecipado' && 
+              m.transportadora &&
+              !m.declaracao_transporte_url
+            )
+            .map(m => ({
+              id: m.id,
+              eventoId: m.evento_id || m.eventoId || '',
+              itemId: m.item_id || m.itemId || '',
+              nome: m.nome,
+              serial: m.serial,
+              tipoEnvio: (m.tipo_envio || 'antecipado') as 'antecipado' | 'com_tecnicos',
+              transportadora: m.transportadora,
+              responsavel: m.responsavel,
+              quantidadeAlocada: m.quantidade_alocada || m.quantidadeAlocada || 1,
+              quantidadeDevolvida: 0,
+              statusDevolucao: 'pendente' as const,
+              declaracaoTransporteUrl: m.declaracao_transporte_url || m.declaracaoTransporteUrl,
+              termoRetiradaUrl: m.termo_retirada_url || m.termoRetiradaUrl,
+            }))
+          }
           titulo="Selecionar Materiais para Declaração"
-          onConfirmar={async (materiaisSelecionadosIds) => {
-            const { data: materiaisCompletos } = await supabase
-              .from('eventos_materiais_alocados')
-              .select('*')
-              .in('id', materiaisSelecionadosIds);
-            
-            if (materiaisCompletos) {
-              setMateriaisParaDeclaracao(materiaisCompletos);
-              setShowSelecionarMateriais(false);
-              setShowGerarDeclaracaoFinal(true);
-            }
+          onConfirmar={(materiaisSelecionados) => {
+            setMateriaisParaDeclaracao(materiaisSelecionados);
+            setShowSelecionarMateriais(false);
+            setShowGerarDeclaracaoFinal(true);
           }}
         />
       )}
 
       {/* Dialog: Gerar Declaração Final */}
-      {showGerarDeclaracaoFinal && envioRecemCriado && (
+      {showGerarDeclaracaoFinal && envioRecemCriado && (() => {
+        const transportadoraDB = transportadoras.find(t => t.id === formData.transportadoraId);
+        const transportadoraFormatted = transportadoraDB ? {
+          id: transportadoraDB.id,
+          nome: transportadoraDB.nome,
+          cnpj: transportadoraDB.cnpj,
+          razaoSocial: transportadoraDB.razao_social,
+          telefone: transportadoraDB.telefone,
+          email: transportadoraDB.email,
+          responsavel: transportadoraDB.responsavel,
+          status: (transportadoraDB.status === 'ativa' || transportadoraDB.status === 'inativa' 
+            ? transportadoraDB.status 
+            : 'ativa') as 'ativa' | 'inativa',
+          endereco: transportadoraDB.endereco as {
+            cep: string;
+            rua: string;
+            numero: string;
+            complemento?: string;
+            bairro: string;
+            cidade: string;
+            estado: string;
+          },
+          rotasAtendidas: transportadoraDB.rotasAtendidas,
+          criadoEm: transportadoraDB.created_at,
+          atualizadoEm: transportadoraDB.updated_at,
+        } : undefined;
+        
+        return (
         <GerarDeclaracaoTransporteDialog
           open={showGerarDeclaracaoFinal}
           onOpenChange={setShowGerarDeclaracaoFinal}
           materiais={materiaisParaDeclaracao}
           cliente={eventos.find(e => e.id === eventoSelecionado)?.cliente}
-          transportadora={transportadoras.find(t => t.id === formData.transportadoraId)}
+          transportadora={transportadoraFormatted}
           onConfirmar={async (dados) => {
             try {
               // Garantir que todos os campos obrigatórios estão presentes
@@ -540,7 +581,8 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
             }
           }}
         />
-      )}
+        );
+      })()}
     </Sheet>
   );
 }

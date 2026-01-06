@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { ContratoTemplate } from '@/types/contratos';
+import { Json } from '@/integrations/supabase/types';
 
 // Interface para dados de atualização de template (snake_case para o banco)
 interface TemplateUpdateData {
@@ -13,7 +14,7 @@ interface TemplateUpdateData {
   status?: string;
   versao?: number;
   papel_timbrado?: string;
-  margens?: unknown;
+  margens?: Json;
 }
 
 export function useTemplatesMutations() {

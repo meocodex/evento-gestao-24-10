@@ -17,7 +17,7 @@ export function useContratosWorkflow() {
 
       if (fetchError) throw fetchError;
 
-      const assinaturas = (contrato.assinaturas || []) as AssinaturaContrato[];
+      const assinaturas = (contrato.assinaturas || []) as unknown as AssinaturaContrato[];
       
       // Atualizar assinatura
       const assinaturasAtualizadas = assinaturas.map((a: AssinaturaContrato) =>
@@ -59,7 +59,7 @@ export function useContratosWorkflow() {
 
       if (fetchError) throw fetchError;
 
-      const historico = (contrato.aprovacoes_historico || []) as AcaoHistoricoContrato[];
+      const historico = (contrato.aprovacoes_historico || []) as unknown as AcaoHistoricoContrato[];
       
       const novoHistorico: AcaoHistoricoContrato[] = [
         ...historico,
@@ -108,7 +108,7 @@ export function useContratosWorkflow() {
 
       if (fetchError) throw fetchError;
 
-      const historico = (contrato.aprovacoes_historico || []) as AcaoHistoricoContrato[];
+      const historico = (contrato.aprovacoes_historico || []) as unknown as AcaoHistoricoContrato[];
       
       const novoHistorico: AcaoHistoricoContrato[] = [
         ...historico,

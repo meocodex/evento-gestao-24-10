@@ -196,7 +196,7 @@ export function VincularFreteDialog({
                       <div className="flex items-start justify-between">
                         <div>
                           <p className="font-medium">{t.nome}</p>
-                          <p className="text-sm text-muted-foreground">{t.razaoSocial}</p>
+                          <p className="text-sm text-muted-foreground">{t.razao_social}</p>
                           <div className="flex items-center gap-2 mt-2">
                             <Badge variant="outline" className="text-xs">
                               <Clock className="h-3 w-3 mr-1" />

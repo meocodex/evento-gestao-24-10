@@ -2,6 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Contrato } from '@/types/contratos';
+import { Json, Database } from '@/integrations/supabase/types';
+
+type StatusContrato = Database['public']['Enums']['status_contrato'];
 
 // Interface para dados de atualização de contrato (snake_case para o banco)
 interface ContratoUpdateData {
@@ -9,7 +12,7 @@ interface ContratoUpdateData {
   numero?: string;
   titulo?: string;
   tipo?: string;
-  status?: string;
+  status?: StatusContrato;
   cliente_id?: string;
   evento_id?: string;
   valor?: number;
@@ -17,16 +20,16 @@ interface ContratoUpdateData {
   data_inicio?: string;
   data_fim?: string;
   validade?: string;
-  itens?: unknown;
+  itens?: Json;
   condicoes_pagamento?: string;
   prazo_execucao?: string;
   garantia?: string;
   observacoes?: string;
   observacoes_comerciais?: string;
-  assinaturas?: unknown;
+  assinaturas?: Json;
   anexos?: string[];
-  dados_evento?: unknown;
-  aprovacoes_historico?: unknown;
+  dados_evento?: Json;
+  aprovacoes_historico?: Json;
 }
 
 export function useContratosMutations() {
@@ -80,7 +83,7 @@ export function useContratosMutations() {
       if (data.numero !== undefined) updateData.numero = data.numero;
       if (data.titulo !== undefined) updateData.titulo = data.titulo;
       if (data.tipo !== undefined) updateData.tipo = data.tipo;
-      if (data.status !== undefined) updateData.status = data.status;
+      if (data.status !== undefined) updateData.status = data.status as StatusContrato;
       if (data.clienteId !== undefined) updateData.cliente_id = data.clienteId;
       if (data.eventoId !== undefined) updateData.evento_id = data.eventoId;
       if (data.valor !== undefined) updateData.valor = data.valor;

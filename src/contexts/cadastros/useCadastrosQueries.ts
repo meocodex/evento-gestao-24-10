@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { transformCadastro } from './transformCadastro';
+import { CadastroPublicoDB } from '@/types/utils';
 
 export function useCadastrosQueries() {
   const { data: cadastros, isLoading, error, refetch } = useQuery({
@@ -13,7 +14,7 @@ export function useCadastrosQueries() {
       
       if (error) throw error;
       
-      return (data || []).map(transformCadastro);
+      return (data || []).map(item => transformCadastro(item as unknown as CadastroPublicoDB));
     },
     staleTime: 1000 * 60 * 2, // 2 minutos (cadastros pendentes mudam frequentemente)
   });
