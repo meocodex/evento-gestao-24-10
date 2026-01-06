@@ -9,7 +9,15 @@ interface ConfiguracaoIngressoCardProps {
 }
 
 export function ConfiguracaoIngressoCard({ configuracao, onImageClick }: ConfiguracaoIngressoCardProps) {
-  const { setores, banners } = configuracao;
+  const { setores: setoresOriginal, banners } = configuracao;
+
+  // Filtrar setores e tipos de ingresso vazios (dados antigos podem ter registros incompletos)
+  const setores = setoresOriginal
+    ?.filter(s => s.nome && s.nome.trim() !== '')
+    .map(setor => ({
+      ...setor,
+      tiposIngresso: setor.tiposIngresso?.filter(t => t.nome && t.nome.trim() !== '') || []
+    })) || [];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
