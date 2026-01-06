@@ -47,12 +47,43 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
     observacoes: '',
   });
 
+  // Interface para envio retornado do banco (snake_case)
+  interface EnvioFromDB {
+    id: string;
+    status: string;
+    transportadora_id: string | null;
+    evento_id: string | null;
+    tipo: string;
+    origem: string;
+    destino: string;
+    data_entrega_prevista: string;
+    valor: number | null;
+    forma_pagamento: string;
+    comprovante_pagamento: string | null;
+    observacoes: string | null;
+  }
+
+  // Interface para material na declaração de transporte
+  interface MaterialParaDeclaracao {
+    id: string;
+    nome: string;
+    item_id: string;
+    evento_id: string;
+    serial?: string | null;
+    quantidade_alocada?: number | null;
+    tipo_envio: string;
+    transportadora?: string | null;
+    declaracao_transporte_url?: string | null;
+    status: string;
+    status_devolucao?: string | null;
+  }
+
   // Estados para o fluxo de geração de declaração
   const [showGerarDeclaracao, setShowGerarDeclaracao] = useState(false);
   const [showSelecionarMateriais, setShowSelecionarMateriais] = useState(false);
   const [showGerarDeclaracaoFinal, setShowGerarDeclaracaoFinal] = useState(false);
-  const [envioRecemCriado, setEnvioRecemCriado] = useState<any>(null);
-  const [materiaisParaDeclaracao, setMateriaisParaDeclaracao] = useState<any[]>([]);
+  const [envioRecemCriado, setEnvioRecemCriado] = useState<EnvioFromDB | null>(null);
+  const [materiaisParaDeclaracao, setMateriaisParaDeclaracao] = useState<MaterialParaDeclaracao[]>([]);
   
   // Buscar materiais do evento selecionado
   const { materiaisAlocados } = useEventosMateriaisAlocados(eventoSelecionado);

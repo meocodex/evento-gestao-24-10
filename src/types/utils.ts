@@ -172,7 +172,7 @@ export interface RawMaterialAlocadoFromDB {
   nome: string;
   serial?: string | null;
   status: string;
-  tipo_envio: string;
+  tipo_envio: 'antecipado' | 'com_tecnicos';
   quantidade_alocada?: number | null;
   status_devolucao?: string | null;
   data_devolucao?: string | null;

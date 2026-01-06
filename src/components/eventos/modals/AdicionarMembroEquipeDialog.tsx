@@ -12,6 +12,7 @@ import { useCategorias } from '@/hooks/categorias';
 import { useEquipe } from '@/hooks/equipe';
 import { useConflitosEquipe } from '@/hooks/equipe';
 import { MembroEquipe } from '@/types/eventos';
+import { ConflitoDatas } from '@/types/equipe';
 import { AlertTriangle, User, UserPlus } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -49,7 +50,7 @@ export function AdicionarMembroEquipeDialog({
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
   const [observacoes, setObservacoes] = useState('');
-  const [conflitos, setConflitos] = useState<any[]>([]);
+  const [conflitos, setConflitos] = useState<ConflitoDatas[]>([]);
   const [verificandoConflitos, setVerificandoConflitos] = useState(false);
 
   // Preencher dados ao selecionar operacional
