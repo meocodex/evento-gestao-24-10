@@ -1,13 +1,15 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CheckCircle, Clock, XCircle, AlertCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle, Clock, XCircle, AlertCircle, ArrowLeft, Landmark, QrCode, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { useCadastros } from '@/hooks/cadastros';
+import { BANCOS_BRASILEIROS, TIPOS_CHAVE_PIX, TIPOS_CONTA } from '@/lib/constants/bancos';
+import type { DadosBancarios } from '@/types/eventos';
 
 export default function AcompanharCadastro() {
   const { protocolo } = useParams<{ protocolo: string }>();
@@ -177,6 +179,70 @@ export default function AcompanharCadastro() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Dados Bancários */}
+        {cadastro.produtor.dadosBancarios && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Landmark className="h-5 w-5" />
+                Dados para Pagamento
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {(cadastro.produtor.dadosBancarios as DadosBancarios).tipoPagamento === 'pix' && (
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Tipo de Chave PIX</Label>
+                    <p className="mt-1 flex items-center gap-2">
+                      <QrCode className="h-4 w-4 text-muted-foreground" />
+                      {TIPOS_CHAVE_PIX.find(t => t.value === (cadastro.produtor.dadosBancarios as DadosBancarios).tipoChavePix)?.label || (cadastro.produtor.dadosBancarios as DadosBancarios).tipoChavePix}
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Chave PIX</Label>
+                    <p className="mt-1 font-medium">{(cadastro.produtor.dadosBancarios as DadosBancarios).chavePix}</p>
+                  </div>
+                </div>
+              )}
+
+              {(cadastro.produtor.dadosBancarios as DadosBancarios).tipoPagamento === 'conta_bancaria' && (
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Banco</Label>
+                    <p className="mt-1 flex items-center gap-2">
+                      <Building className="h-4 w-4 text-muted-foreground" />
+                      {BANCOS_BRASILEIROS.find(b => b.codigo === (cadastro.produtor.dadosBancarios as DadosBancarios).banco)?.nome || (cadastro.produtor.dadosBancarios as DadosBancarios).banco}
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Agência</Label>
+                    <p className="mt-1">{(cadastro.produtor.dadosBancarios as DadosBancarios).agencia}</p>
+                  </div>
+                  <div>
+                    <Label>Conta</Label>
+                    <p className="mt-1">{(cadastro.produtor.dadosBancarios as DadosBancarios).conta}</p>
+                  </div>
+                  <div>
+                    <Label>Tipo de Conta</Label>
+                    <p className="mt-1">{TIPOS_CONTA.find(t => t.value === (cadastro.produtor.dadosBancarios as DadosBancarios).tipoConta)?.label || (cadastro.produtor.dadosBancarios as DadosBancarios).tipoConta}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid md:grid-cols-2 gap-4 pt-2 border-t">
+                <div>
+                  <Label>Nome do Titular</Label>
+                  <p className="mt-1 font-medium">{(cadastro.produtor.dadosBancarios as DadosBancarios).nomeTitular}</p>
+                </div>
+                <div>
+                  <Label>CPF/CNPJ do Titular</Label>
+                  <p className="mt-1">{(cadastro.produtor.dadosBancarios as DadosBancarios).cpfCnpjTitular}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

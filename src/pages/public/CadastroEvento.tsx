@@ -1902,6 +1902,45 @@ export default function CadastroEvento() {
               </div>
             )}
 
+            {/* Dados para Pagamento */}
+            <div>
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <Landmark className="h-4 w-4" />
+                Dados para Pagamento
+              </h3>
+              <dl className="grid grid-cols-2 gap-2 text-sm">
+                <dt className="text-muted-foreground">Forma de Pagamento:</dt>
+                <dd className="font-medium">{tipoPagamento === 'pix' ? 'PIX' : 'Conta Bancária'}</dd>
+                
+                {tipoPagamento === 'pix' && (
+                  <>
+                    <dt className="text-muted-foreground">Tipo de Chave:</dt>
+                    <dd className="font-medium">{TIPOS_CHAVE_PIX.find(t => t.value === tipoChavePix)?.label || tipoChavePix}</dd>
+                    <dt className="text-muted-foreground">Chave PIX:</dt>
+                    <dd className="font-medium">{chavePix}</dd>
+                  </>
+                )}
+                
+                {tipoPagamento === 'conta_bancaria' && (
+                  <>
+                    <dt className="text-muted-foreground">Banco:</dt>
+                    <dd className="font-medium">{BANCOS_BRASILEIROS.find(b => b.codigo === banco)?.nome || banco}</dd>
+                    <dt className="text-muted-foreground">Agência:</dt>
+                    <dd className="font-medium">{agencia}</dd>
+                    <dt className="text-muted-foreground">Conta:</dt>
+                    <dd className="font-medium">{conta}</dd>
+                    <dt className="text-muted-foreground">Tipo de Conta:</dt>
+                    <dd className="font-medium">{TIPOS_CONTA.find(t => t.value === tipoConta)?.label || tipoConta}</dd>
+                  </>
+                )}
+                
+                <dt className="text-muted-foreground">Titular:</dt>
+                <dd className="font-medium">{nomeTitular}</dd>
+                <dt className="text-muted-foreground">CPF/CNPJ:</dt>
+                <dd className="font-medium">{cpfCnpjTitular}</dd>
+              </dl>
+            </div>
+
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
