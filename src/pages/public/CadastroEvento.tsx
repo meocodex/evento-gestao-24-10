@@ -1275,51 +1275,90 @@ export default function CadastroEvento() {
                                 {/* Lotes do Tipo de Ingresso */}
                                 <div className="space-y-3">
                                   <Label className="text-sm font-medium">Lotes</Label>
-                                  {[1, 2, 3, 4].map((numeroLote) => {
-                                    const lote = tipo.lotes.find(l => l.numero === numeroLote);
-                                    return (
-                                      <div key={numeroLote} className="p-3 border rounded-lg bg-background space-y-2">
-                                        <Label className="text-xs font-semibold text-muted-foreground">Lote {numeroLote}</Label>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                          <div>
-                                            <Label className="text-xs">Quantidade</Label>
-                                            <Input
-                                              type="number"
-                                              placeholder="Qtd"
-                                              value={lote?.quantidade || ''}
-                                              onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'quantidade', e.target.value)}
-                                            />
-                                          </div>
-                                          <div>
-                                            <Label className="text-xs">Preço (R$)</Label>
-                                            <Input
-                                              type="number"
-                                              step="0.01"
-                                              placeholder="0,00"
-                                              value={lote?.preco || ''}
-                                              onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'preco', e.target.value)}
-                                            />
-                                          </div>
-                                          <div>
-                                            <Label className="text-xs">Abertura Online</Label>
-                                            <Input
-                                              type="date"
-                                              value={lote?.dataAberturaOnline || ''}
-                                              onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'dataAberturaOnline', e.target.value)}
-                                            />
-                                          </div>
-                                          <div>
-                                            <Label className="text-xs">Fechamento Online</Label>
-                                            <Input
-                                              type="date"
-                                              value={lote?.dataFechamentoOnline || ''}
-                                              onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'dataFechamentoOnline', e.target.value)}
-                                            />
-                                          </div>
-                                        </div>
-                                      </div>
+                                  {(() => {
+                                    // Calcular quais lotes exibir dinamicamente
+                                    const lotesComDados = tipo.lotes.filter(l => 
+                                      (l.quantidade && l.quantidade > 0) || (l.preco && l.preco > 0)
                                     );
-                                  })}
+                                    const ultimoLoteComDados = Math.max(...lotesComDados.map(l => l.numero), 0);
+                                    const proximoLote = Math.min(ultimoLoteComDados + 1, 4);
+                                    
+                                    const lotesVisiveis = [1, 2, 3, 4].filter(n => {
+                                      if (n === 1) return true; // Lote 1 sempre visível
+                                      const temDados = tipo.lotes.some(l => 
+                                        l.numero === n && ((l.quantidade && l.quantidade > 0) || (l.preco && l.preco > 0))
+                                      );
+                                      if (temDados) return true;
+                                      return n === proximoLote; // Próximo lote disponível
+                                    });
+                                    
+                                    return (
+                                      <>
+                                        {lotesVisiveis.map((numeroLote) => {
+                                          const lote = tipo.lotes.find(l => l.numero === numeroLote);
+                                          return (
+                                            <div key={numeroLote} className="p-3 border rounded-lg bg-background space-y-2">
+                                              <Label className="text-xs font-semibold text-muted-foreground">Lote {numeroLote}</Label>
+                                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                                <div>
+                                                  <Label className="text-xs">Quantidade</Label>
+                                                  <Input
+                                                    type="number"
+                                                    placeholder="Qtd"
+                                                    value={lote?.quantidade || ''}
+                                                    onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'quantidade', e.target.value)}
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <Label className="text-xs">Preço (R$)</Label>
+                                                  <Input
+                                                    type="number"
+                                                    step="0.01"
+                                                    placeholder="0,00"
+                                                    value={lote?.preco || ''}
+                                                    onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'preco', e.target.value)}
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <Label className="text-xs">Abertura Online</Label>
+                                                  <Input
+                                                    type="date"
+                                                    value={lote?.dataAberturaOnline || ''}
+                                                    onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'dataAberturaOnline', e.target.value)}
+                                                  />
+                                                </div>
+                                                <div>
+                                                  <Label className="text-xs">Fechamento Online</Label>
+                                                  <Input
+                                                    type="date"
+                                                    value={lote?.dataFechamentoOnline || ''}
+                                                    onChange={(e) => atualizarLote(setor.id, tipo.id, numeroLote as 1|2|3|4, 'dataFechamentoOnline', e.target.value)}
+                                                  />
+                                                </div>
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                        {lotesVisiveis.length < 4 && (
+                                          <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            type="button"
+                                            onClick={() => {
+                                              const proximoNumero = Math.max(...lotesVisiveis) + 1;
+                                              if (proximoNumero <= 4) {
+                                                atualizarLote(setor.id, tipo.id, proximoNumero as 1|2|3|4, 'quantidade', '0');
+                                              }
+                                            }}
+                                            className="text-xs text-muted-foreground hover:text-foreground"
+                                          >
+                                            <Plus className="h-3 w-3 mr-1" />
+                                            Adicionar Lote {Math.max(...lotesVisiveis) + 1}
+                                          </Button>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
                                 </div>
                               </CardContent>
                             </Card>
