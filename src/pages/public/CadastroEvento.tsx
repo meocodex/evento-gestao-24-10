@@ -1216,14 +1216,18 @@ export default function CadastroEvento() {
                     <CardContent className="space-y-4">
                       <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                          <Label>Nome do Setor</Label>
+                          <Label>Nome do Setor *</Label>
                           <Input
                             value={setor.nome}
                             onChange={(e) => setSetores(setores.map(s => 
                               s.id === setor.id ? { ...s, nome: e.target.value } : s
                             ))}
                             placeholder="Ex: Pista, Camarote"
+                            className={!setor.nome.trim() ? 'border-orange-400 focus-visible:ring-orange-400' : ''}
                           />
+                          {!setor.nome.trim() && (
+                            <span className="text-xs text-orange-500">Nome obrigatório</span>
+                          )}
                         </div>
                         <div>
                           <Label>Capacidade</Label>
@@ -1255,11 +1259,18 @@ export default function CadastroEvento() {
                                   </Button>
                                 </div>
                                 
-                                <Input
-                                  value={tipo.nome}
-                                  onChange={(e) => atualizarTipoIngresso(setor.id, tipo.id, 'nome', e.target.value)}
-                                  placeholder="Ex: Meia-entrada, Inteira, VIP"
-                                />
+                                <div>
+                                  <Label className="text-xs">Nome *</Label>
+                                  <Input
+                                    value={tipo.nome}
+                                    onChange={(e) => atualizarTipoIngresso(setor.id, tipo.id, 'nome', e.target.value)}
+                                    placeholder="Ex: Meia-entrada, Inteira, VIP"
+                                    className={!tipo.nome.trim() ? 'border-orange-400 focus-visible:ring-orange-400' : ''}
+                                  />
+                                  {!tipo.nome.trim() && (
+                                    <span className="text-xs text-orange-500">Nome obrigatório</span>
+                                  )}
+                                </div>
                                 
                                 {/* Lotes do Tipo de Ingresso */}
                                 <div className="space-y-3">
@@ -1485,12 +1496,27 @@ export default function CadastroEvento() {
             </Card>
           )}
 
+          {/* Alerta de validação para ingressos */}
+          {(tipoEvento === 'ingresso' || tipoEvento === 'hibrido') && 
+           setores.some(s => !s.nome.trim() || s.tiposIngresso.some(t => !t.nome.trim())) && (
+            <Alert className="border-orange-400 bg-orange-50 dark:bg-orange-950/20">
+              <AlertCircle className="h-4 w-4 text-orange-500" />
+              <AlertDescription className="text-orange-700 dark:text-orange-400">
+                Preencha o nome de todos os setores e tipos de ingresso para continuar.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="flex justify-between">
             <Button variant="outline" onClick={() => setStep(3)}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
-            <Button onClick={() => setStep(5)}>
+            <Button 
+              onClick={() => setStep(5)}
+              disabled={(tipoEvento === 'ingresso' || tipoEvento === 'hibrido') && 
+                setores.some(s => !s.nome.trim() || s.tiposIngresso.some(t => !t.nome.trim()))}
+            >
               Próximo
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
