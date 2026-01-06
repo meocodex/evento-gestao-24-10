@@ -1,22 +1,23 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ticket, Beer, Zap, Info, CheckCircle, AlertCircle, ArrowLeft, ArrowRight, Loader2, Plus, Trash2, Upload, Image } from 'lucide-react';
+import { Ticket, Beer, Zap, Info, CheckCircle, AlertCircle, ArrowLeft, ArrowRight, Loader2, Plus, Trash2, Upload, Image, Landmark, QrCode, Building } from 'lucide-react';
 import { CadastroEventoLayout, ImageUploadField } from '@/components/cadastro';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { MaskedInput, formatarTelefoneProgressivo, formatarCEPProgressivo, formatarCPFProgressivo } from '@/components/ui/masked-input';
+import { MaskedInput, formatarTelefoneProgressivo, formatarCEPProgressivo, formatarCPFProgressivo, formatarCNPJProgressivo } from '@/components/ui/masked-input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useCadastros } from '@/hooks/cadastros';
-import { TipoEvento, SetorEvento, PontoVenda, EstabelecimentoBar, TipoIngresso, SetorCampo, TipoIngressoCampo, LoteCampo, PDVCampo, PDVEnderecoCampo, EstabelecimentoCampo } from '@/types/eventos';
+import { TipoEvento, SetorEvento, PontoVenda, EstabelecimentoBar, TipoIngresso, SetorCampo, TipoIngressoCampo, LoteCampo, PDVCampo, PDVEnderecoCampo, EstabelecimentoCampo, TipoPagamento, TipoChavePix, TipoConta, DadosBancarios } from '@/types/eventos';
 import { estados, validarCPF, validarCNPJ } from '@/lib/validations/cliente';
 import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
 import { toast } from '@/hooks/use-toast';
 import { X } from 'lucide-react';
+import { BANCOS_BRASILEIROS, TIPOS_CHAVE_PIX, TIPOS_CONTA } from '@/lib/constants/bancos';
 
 export default function CadastroEvento() {
   const navigate = useNavigate();
@@ -82,6 +83,17 @@ export default function CadastroEvento() {
   
   // Observações
   const [observacoes, setObservacoes] = useState('');
+  
+  // Dados Bancários para Pagamento
+  const [tipoPagamento, setTipoPagamento] = useState<TipoPagamento>('pix');
+  const [chavePix, setChavePix] = useState('');
+  const [tipoChavePix, setTipoChavePix] = useState<TipoChavePix>('cpf');
+  const [banco, setBanco] = useState('');
+  const [agencia, setAgencia] = useState('');
+  const [conta, setConta] = useState('');
+  const [tipoConta, setTipoConta] = useState<TipoConta>('corrente');
+  const [cpfCnpjTitular, setCpfCnpjTitular] = useState('');
+  const [nomeTitular, setNomeTitular] = useState('');
   
   // Pontos de Venda (Ingresso)
   const [pontosVenda, setPontosVenda] = useState<PontoVenda[]>([]);
@@ -412,6 +424,20 @@ export default function CadastroEvento() {
             estado: produtorEstado,
           },
           responsavelLegal,
+          dadosBancarios: {
+            tipoPagamento,
+            ...(tipoPagamento === 'pix' ? {
+              chavePix,
+              tipoChavePix,
+            } : {
+              banco,
+              agencia,
+              conta,
+              tipoConta,
+            }),
+            cpfCnpjTitular: cpfCnpjTitular.replace(/\D/g, ''),
+            nomeTitular,
+          },
         },
         configuracaoIngresso,
         configuracaoBar,
@@ -1565,15 +1591,171 @@ export default function CadastroEvento() {
     );
   }
 
-  // Passo 5: Observações adicionais
+  // Passo 5: Dados bancários e observações
   if (step === 5) {
     return (
-      <CadastroEventoLayout currentStep={5} subtitle="Informações adicionais">
+      <CadastroEventoLayout currentStep={5} subtitle="Dados para recebimento e observações">
         <div className="space-y-6">
+          {/* Dados Bancários */}
+          <Card className="border-border/50 shadow-2xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Landmark className="h-5 w-5" />
+                Dados para Pagamento
+              </CardTitle>
+              <CardDescription>
+                Informe os dados bancários para recebimento dos valores (essencial para contratos)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  Estas informações serão utilizadas para gerar contratos e realizar pagamentos
+                </AlertDescription>
+              </Alert>
+
+              <div>
+                <Label>Forma de Recebimento *</Label>
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  <Button
+                    type="button"
+                    variant={tipoPagamento === 'pix' ? 'default' : 'outline'}
+                    className="h-20 flex flex-col gap-2"
+                    onClick={() => setTipoPagamento('pix')}
+                  >
+                    <QrCode className="h-6 w-6" />
+                    <span>PIX</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={tipoPagamento === 'conta_bancaria' ? 'default' : 'outline'}
+                    className="h-20 flex flex-col gap-2"
+                    onClick={() => setTipoPagamento('conta_bancaria')}
+                  >
+                    <Building className="h-6 w-6" />
+                    <span>Conta Bancária</span>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Campos de PIX */}
+              {tipoPagamento === 'pix' && (
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                  <div>
+                    <Label>Tipo de Chave PIX *</Label>
+                    <Select value={tipoChavePix} onValueChange={(v) => setTipoChavePix(v as TipoChavePix)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TIPOS_CHAVE_PIX.map((tipo) => (
+                          <SelectItem key={tipo.value} value={tipo.value}>{tipo.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Chave PIX *</Label>
+                    <Input
+                      value={chavePix}
+                      onChange={(e) => setChavePix(e.target.value)}
+                      placeholder={
+                        tipoChavePix === 'cpf' ? '000.000.000-00' :
+                        tipoChavePix === 'cnpj' ? '00.000.000/0000-00' :
+                        tipoChavePix === 'email' ? 'email@exemplo.com' :
+                        tipoChavePix === 'telefone' ? '(00) 00000-0000' :
+                        'Chave aleatória'
+                      }
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Campos de Conta Bancária */}
+              {tipoPagamento === 'conta_bancaria' && (
+                <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                  <div>
+                    <Label>Banco *</Label>
+                    <Select value={banco} onValueChange={setBanco}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o banco" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {BANCOS_BRASILEIROS.map((b) => (
+                          <SelectItem key={b.codigo} value={b.codigo}>
+                            {b.codigo} - {b.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Agência *</Label>
+                      <Input
+                        value={agencia}
+                        onChange={(e) => setAgencia(e.target.value)}
+                        placeholder="0000"
+                        maxLength={10}
+                      />
+                    </div>
+                    <div>
+                      <Label>Conta *</Label>
+                      <Input
+                        value={conta}
+                        onChange={(e) => setConta(e.target.value)}
+                        placeholder="00000-0"
+                        maxLength={15}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label>Tipo de Conta *</Label>
+                    <Select value={tipoConta} onValueChange={(v) => setTipoConta(v as TipoConta)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {TIPOS_CONTA.map((tipo) => (
+                          <SelectItem key={tipo.value} value={tipo.value}>{tipo.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
+
+              {/* Dados do Titular (comum) */}
+              <div className="space-y-4 p-4 border rounded-lg">
+                <h4 className="font-medium text-sm text-muted-foreground">Dados do Titular</h4>
+                <div>
+                  <Label>Nome do Titular *</Label>
+                  <Input
+                    value={nomeTitular}
+                    onChange={(e) => setNomeTitular(e.target.value)}
+                    placeholder="Nome completo do titular da conta"
+                  />
+                </div>
+                <div>
+                  <Label>CPF/CNPJ do Titular *</Label>
+                  <MaskedInput
+                    mask="documento"
+                    documentType={cpfCnpjTitular.replace(/\D/g, '').length > 11 ? 'CNPJ' : 'CPF'}
+                    value={cpfCnpjTitular}
+                    onChange={setCpfCnpjTitular}
+                    placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Observações */}
           <Card className="border-border/50 shadow-2xl">
             <CardHeader>
               <CardTitle>Informações Adicionais</CardTitle>
-              <CardDescription>Observações importantes sobre o evento</CardDescription>
+              <CardDescription>Observações importantes sobre o evento (opcional)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -1582,7 +1764,7 @@ export default function CadastroEvento() {
                   value={observacoes}
                   onChange={(e) => setObservacoes(e.target.value)}
                   placeholder="Descreva detalhes importantes sobre o evento..."
-                  rows={6}
+                  rows={4}
                 />
               </div>
             </CardContent>
@@ -1593,7 +1775,15 @@ export default function CadastroEvento() {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
-            <Button onClick={() => setStep(6)}>
+            <Button 
+              onClick={() => setStep(6)}
+              disabled={
+                !nomeTitular || 
+                !cpfCnpjTitular ||
+                (tipoPagamento === 'pix' && !chavePix) ||
+                (tipoPagamento === 'conta_bancaria' && (!banco || !agencia || !conta))
+              }
+            >
               Revisar
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>

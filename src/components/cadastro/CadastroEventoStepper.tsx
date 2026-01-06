@@ -17,7 +17,7 @@ const defaultSteps: Step[] = [
   { number: 2, label: 'Dados' },
   { number: 3, label: 'Produtor' },
   { number: 4, label: 'Config' },
-  { number: 5, label: 'Obs' },
+  { number: 5, label: 'Pagamento' },
   { number: 6, label: 'Resumo' },
 ];
 

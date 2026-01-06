@@ -189,6 +189,7 @@ export type Database = {
         Row: {
           created_at: string | null
           created_by: string | null
+          dados_bancarios: Json | null
           documento: string
           email: string
           endereco: Json
@@ -204,6 +205,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           created_by?: string | null
+          dados_bancarios?: Json | null
           documento: string
           email: string
           endereco?: Json
@@ -219,6 +221,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           created_by?: string | null
+          dados_bancarios?: Json | null
           documento?: string
           email?: string
           endereco?: Json

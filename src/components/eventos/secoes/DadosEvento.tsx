@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Evento, StatusEvento } from '@/types/eventos';
+import { Evento, StatusEvento, ConfiguracaoIngresso, ConfiguracaoBar } from '@/types/eventos';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EventoTimeline } from '@/components/shared/EventoTimeline';
-import { Calendar, MapPin, User, Building2, Mail, Phone, Edit, Trash2, RefreshCw, FileText, Archive, CreditCard } from 'lucide-react';
+import { Calendar, MapPin, User, Building2, Mail, Phone, Edit, Trash2, RefreshCw, FileText, Archive, CreditCard, Landmark, QrCode } from 'lucide-react';
 import { FileViewer } from '@/components/shared/FileViewer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -21,6 +21,10 @@ import { InfoGridList } from '@/components/shared/InfoGrid';
 import { UsePermissionsResult } from '@/hooks/usePermissions';
 import { ConfiguracaoIngressoCard } from './ConfiguracaoIngressoCard';
 import { ConfiguracaoBarCard } from './ConfiguracaoBarCard';
+import { EditarConfiguracaoIngresso } from './EditarConfiguracaoIngresso';
+import { EditarConfiguracaoBar } from './EditarConfiguracaoBar';
+import { BANCOS_BRASILEIROS } from '@/lib/constants/bancos';
+import { toast } from '@/hooks/use-toast';
 
 interface DadosEventoProps {
   evento: Evento;
@@ -35,6 +39,8 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
   useEventoStatusSync(evento);
   
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingIngresso, setIsEditingIngresso] = useState(false);
+  const [isEditingBar, setIsEditingBar] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [showArquivarDialog, setShowArquivarDialog] = useState(false);
@@ -58,6 +64,24 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
   const handleArquivar = async () => {
     await arquivarEvento.mutateAsync(evento.id);
     setShowArquivarDialog(false);
+  };
+
+  const handleSaveConfiguracaoIngresso = async (config: ConfiguracaoIngresso) => {
+    await editarEvento.mutateAsync({ 
+      id: evento.id, 
+      data: { configuracaoIngresso: config } 
+    });
+    setIsEditingIngresso(false);
+    toast({ title: 'Configuração de ingressos atualizada' });
+  };
+
+  const handleSaveConfiguracaoBar = async (config: ConfiguracaoBar) => {
+    await editarEvento.mutateAsync({ 
+      id: evento.id, 
+      data: { configuracaoBar: config } 
+    });
+    setIsEditingBar(false);
+    toast({ title: 'Configuração de bar atualizada' });
   };
 
   if (isEditing) {
@@ -270,6 +294,38 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
                     <p><strong>Data de Nascimento:</strong> {evento.cliente.responsavelLegal.dataNascimento}</p>
                   </div>
                 ),
+                separator: !!evento.cliente.dadosBancarios,
+              }] : []),
+              ...(evento.cliente.dadosBancarios ? [{
+                icon: evento.cliente.dadosBancarios.tipoPagamento === 'pix' ? QrCode : Landmark,
+                label: 'Dados Bancários',
+                value: (
+                  <div className="space-y-1">
+                    {evento.cliente.dadosBancarios.tipoPagamento === 'pix' ? (
+                      <>
+                        <p><strong>Tipo:</strong> PIX</p>
+                        <p><strong>Chave:</strong> {evento.cliente.dadosBancarios.chavePix}</p>
+                        <p className="text-xs text-muted-foreground capitalize">
+                          Tipo de chave: {evento.cliente.dadosBancarios.tipoChavePix}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p><strong>Tipo:</strong> Conta Bancária</p>
+                        <p><strong>Banco:</strong> {
+                          BANCOS_BRASILEIROS.find(b => b.codigo === evento.cliente.dadosBancarios?.banco)?.nome || 
+                          evento.cliente.dadosBancarios.banco
+                        }</p>
+                        <p><strong>Agência:</strong> {evento.cliente.dadosBancarios.agencia}</p>
+                        <p><strong>Conta:</strong> {evento.cliente.dadosBancarios.conta} ({evento.cliente.dadosBancarios.tipoConta})</p>
+                      </>
+                    )}
+                    <div className="mt-2 pt-2 border-t">
+                      <p><strong>Titular:</strong> {evento.cliente.dadosBancarios.nomeTitular}</p>
+                      <p><strong>CPF/CNPJ:</strong> {evento.cliente.dadosBancarios.cpfCnpjTitular}</p>
+                    </div>
+                  </div>
+                ),
                 separator: false,
               }] : []),
             ]}
@@ -362,24 +418,68 @@ export function DadosEvento({ evento, permissions }: DadosEventoProps) {
 
       {/* Configuração de Ingressos */}
       {evento.tipoEvento !== 'bar' && evento.configuracaoIngresso && (
-        <ConfiguracaoIngressoCard 
-          configuracao={evento.configuracaoIngresso}
-          onImageClick={(url, nome) => {
-            setSelectedFile({ url, nome, tipo: 'image/jpeg' });
-            setFileViewerOpen(true);
-          }}
-        />
+        isEditingIngresso ? (
+          <EditarConfiguracaoIngresso
+            configuracao={evento.configuracaoIngresso}
+            onSave={handleSaveConfiguracaoIngresso}
+            onCancel={() => setIsEditingIngresso(false)}
+            isLoading={editarEvento.isPending}
+          />
+        ) : (
+          <div className="relative group">
+            <ConfiguracaoIngressoCard 
+              configuracao={evento.configuracaoIngresso}
+              onImageClick={(url, nome) => {
+                setSelectedFile({ url, nome, tipo: 'image/jpeg' });
+                setFileViewerOpen(true);
+              }}
+            />
+            {permissions.canEditEvent(evento) && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => setIsEditingIngresso(true)}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
+            )}
+          </div>
+        )
       )}
 
       {/* Configuração de Bar */}
       {(evento.tipoEvento === 'bar' || evento.tipoEvento === 'hibrido') && evento.configuracaoBar && (
-        <ConfiguracaoBarCard 
-          configuracao={evento.configuracaoBar}
-          onImageClick={(url, nome) => {
-            setSelectedFile({ url, nome, tipo: url.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg' });
-            setFileViewerOpen(true);
-          }}
-        />
+        isEditingBar ? (
+          <EditarConfiguracaoBar
+            configuracao={evento.configuracaoBar}
+            onSave={handleSaveConfiguracaoBar}
+            onCancel={() => setIsEditingBar(false)}
+            isLoading={editarEvento.isPending}
+          />
+        ) : (
+          <div className="relative group">
+            <ConfiguracaoBarCard 
+              configuracao={evento.configuracaoBar}
+              onImageClick={(url, nome) => {
+                setSelectedFile({ url, nome, tipo: url.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg' });
+                setFileViewerOpen(true);
+              }}
+            />
+            {permissions.canEditEvent(evento) && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => setIsEditingBar(true)}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Editar
+              </Button>
+            )}
+          </div>
+        )
       )}
 
       <Card>
