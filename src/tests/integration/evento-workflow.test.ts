@@ -137,7 +137,19 @@ describe('Workflow de Eventos - Integração E2E', () => {
       // Criar evento
       const { data: eventoCriado } = await supabase
         .from('eventos')
-        .insert([mockEvento])
+        .insert([{
+          nome: mockEvento.nome,
+          tipo_evento: mockEvento.tipoEvento as 'bar',
+          data_inicio: mockEvento.dataInicio,
+          data_fim: mockEvento.dataFim,
+          hora_inicio: mockEvento.horaInicio,
+          hora_fim: mockEvento.horaFim,
+          local: mockEvento.local,
+          endereco: mockEvento.endereco,
+          cidade: mockEvento.cidade,
+          estado: mockEvento.estado,
+          status: 'em_negociacao' as const,
+        }])
         .select()
         .single();
 
@@ -179,19 +191,27 @@ describe('Workflow de Eventos - Integração E2E', () => {
       // Alocar material
       const { data: alocacao } = await supabase
         .from('eventos_materiais_alocados')
-        .insert([mockAlocacao]);
+        .insert([{
+          evento_id: mockAlocacao.evento_id,
+          item_id: mockAlocacao.item_id,
+          nome: mockAlocacao.nome,
+          serial: mockAlocacao.serial,
+          quantidade_alocada: mockAlocacao.quantidade_alocada,
+          status: 'reservado' as const,
+          tipo_envio: 'antecipado' as const,
+        }]);
 
       expect(alocacao).toBeDefined();
-      expect(alocacao[0].status).toBe('reservado');
+      expect((alocacao as Record<string, unknown>[])?.[0]?.status).toBe('reservado');
 
       // Verificar que serial foi atualizado para 'em_uso'
       await supabase
         .from('materiais_seriais')
-        .update({ status: 'em_uso' })
+        .update({ status: 'em-uso' as const })
         .eq('numero', mockSerial.numero);
 
       // ===== PASSO 3: ALTERAR STATUS DO EVENTO =====
-      const statusSequence = ['confirmado', 'em_andamento', 'concluido'];
+      const statusSequence: Array<'confirmado' | 'em_execucao' | 'finalizado'> = ['confirmado', 'em_execucao', 'finalizado'];
 
       for (const novoStatus of statusSequence) {
         (supabase.from as any) = vi.fn().mockImplementation((table) => {
@@ -217,7 +237,7 @@ describe('Workflow de Eventos - Integração E2E', () => {
         // Atualizar status
         await supabase
           .from('eventos')
-          .update({ status: novoStatus })
+          .update({ status: novoStatus as 'confirmado' })
           .eq('id', eventoId);
 
         // Criar entrada na timeline
@@ -317,7 +337,7 @@ describe('Workflow de Eventos - Integração E2E', () => {
       // Verificar materiais pendentes
       (supabase.from('eventos_materiais_alocados').select as any) = vi.fn().mockReturnThis();
       (supabase.from('eventos_materiais_alocados').select().eq as any) = vi.fn().mockReturnThis();
-      (supabase.from('eventos_materiais_alocados').select().eq().eq as any) = vi.fn()
+      (supabase.from('eventos_materiais_alocados').select().eq('evento_id', eventoId).eq as any) = vi.fn()
         .mockResolvedValue({ data: [], count: 0 });
 
       const { count: pendentes } = await supabase
@@ -366,7 +386,7 @@ describe('Workflow de Eventos - Integração E2E', () => {
 
       (supabase.from('eventos_materiais_alocados').select as any) = vi.fn().mockReturnThis();
       (supabase.from('eventos_materiais_alocados').select().eq as any) = vi.fn().mockReturnThis();
-      (supabase.from('eventos_materiais_alocados').select().eq().eq as any) = vi.fn()
+      (supabase.from('eventos_materiais_alocados').select().eq('evento_id', eventoId).eq as any) = vi.fn()
         .mockResolvedValue({ data: [mockAlocacaoPendente], count: 1 });
 
       // Verificar materiais pendentes
@@ -439,11 +459,11 @@ describe('Workflow de Eventos - Integração E2E', () => {
       });
 
       // Simular workflow
-      const etapas = [
+      const etapas: Array<{ tipo: 'criacao' | 'alocacao' | 'edicao' | 'retorno' | 'arquivamento'; descricao: string }> = [
         { tipo: 'criacao', descricao: 'Evento criado' },
-        { tipo: 'material', descricao: 'Material alocado: Mesa Redonda' },
+        { tipo: 'alocacao', descricao: 'Material alocado: Mesa Redonda' },
         { tipo: 'edicao', descricao: 'Status alterado para: confirmado' },
-        { tipo: 'material', descricao: 'Material devolvido: Mesa Redonda' },
+        { tipo: 'retorno', descricao: 'Material devolvido: Mesa Redonda' },
         { tipo: 'arquivamento', descricao: 'Evento arquivado' },
       ];
 
@@ -573,12 +593,12 @@ describe('Workflow de Eventos - Integração E2E', () => {
         .select()
         .eq('numero', serialUnico);
 
-      expect(serial.status).toBe('em_uso');
+      expect((serial as Record<string, unknown>[])?.[0]?.status).toBe('em-uso');
 
       // Não deve permitir segunda alocação
       const error = new Error('Serial já está em uso');
       expect(() => {
-        if (serial.status === 'em_uso') throw error;
+        if ((serial as Record<string, unknown>[])?.[0]?.status === 'em-uso') throw error;
       }).toThrow('Serial já está em uso');
     });
 
@@ -645,9 +665,9 @@ describe('Workflow de Eventos - Integração E2E', () => {
   describe('Performance e Otimização', () => {
     it('deve executar operações em batch quando possível', async () => {
       const materiaisParaAlocar = [
-        { id: 'MAT1', quantidade: 5 },
-        { id: 'MAT2', quantidade: 10 },
-        { id: 'MAT3', quantidade: 3 },
+        { evento_id: eventoId, item_id: 'MAT1', nome: 'Material 1', tipo_envio: 'antecipado' as const, quantidade_alocada: 5 },
+        { evento_id: eventoId, item_id: 'MAT2', nome: 'Material 2', tipo_envio: 'antecipado' as const, quantidade_alocada: 10 },
+        { evento_id: eventoId, item_id: 'MAT3', nome: 'Material 3', tipo_envio: 'antecipado' as const, quantidade_alocada: 3 },
       ];
 
       (supabase.from as any) = vi.fn().mockImplementation((table) => {

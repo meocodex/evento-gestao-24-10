@@ -105,8 +105,9 @@ export async function testEventosFlow(): Promise<TestResult[]> {
           evento_id: eventoId,
           item_id: material.id,
           nome: material.nome,
-          quantidade: 1,
-          status: 'reservado'
+          quantidade_alocada: 1,
+          status: 'reservado' as const,
+          tipo_envio: 'antecipado' as const,
         });
 
         const duration = performance.now() - start;

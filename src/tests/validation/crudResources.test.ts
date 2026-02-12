@@ -83,6 +83,7 @@ export async function testCrudResources(): Promise<TestResult[]> {
     const { data: created, error: createError } = await supabase
       .from('materiais_estoque')
       .insert({
+        id: `TESTE-${Date.now()}`,
         nome: '[TESTE] Material Validação',
         categoria: 'iluminacao',
         quantidade_total: 10,
@@ -143,9 +144,10 @@ export async function testCrudResources(): Promise<TestResult[]> {
       .insert({
         titulo: '[TESTE] Demanda Validação',
         descricao: 'Descrição da demanda de teste para validação',
-        categoria: 'tecnica',
-        prioridade: 'media',
-        status: 'aberta'
+        categoria: 'tecnica' as const,
+        prioridade: 'media' as const,
+        status: 'aberta' as const,
+        solicitante: 'Sistema de Teste',
       })
       .select()
       .single();
