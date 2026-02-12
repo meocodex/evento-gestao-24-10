@@ -86,8 +86,8 @@ describe('Alocação de Estoque - Integração E2E', () => {
         .select()
         .eq('id', mockMaterialQuantidade.id);
 
-      expect(material.quantidade_disponivel).toBe(100);
-      expect(material.quantidade_disponivel >= quantidadeAlocada).toBe(true);
+      expect((material as Record<string, unknown>[])?.[0]?.quantidade_disponivel).toBe(100);
+      expect(((material as Record<string, unknown>[])?.[0]?.quantidade_disponivel as number) >= quantidadeAlocada).toBe(true);
 
       // ===== PASSO 2: ALOCAR MATERIAL (RESERVAR) =====
       quantidadeDisponivel -= quantidadeAlocada;
@@ -123,16 +123,17 @@ describe('Alocação de Estoque - Integração E2E', () => {
       // Alocar material
       const { data: alocacao } = await supabase
         .from('eventos_materiais_alocados')
-        .insert([{
+      .insert([{
           evento_id: mockEvento.id,
           item_id: mockMaterialQuantidade.id,
           nome: mockMaterialQuantidade.nome,
           quantidade_alocada: quantidadeAlocada,
-          status: 'reservado',
+          status: 'reservado' as const,
+          tipo_envio: 'antecipado' as const,
         }]);
 
-      expect(alocacao[0].status).toBe('reservado');
-      expect(alocacao[0].quantidade_alocada).toBe(20);
+      expect((alocacao as Record<string, unknown>[])?.[0]?.status).toBe('reservado');
+      expect((alocacao as Record<string, unknown>[])?.[0]?.quantidade_alocada).toBe(20);
 
       // Atualizar estoque (trigger automático)
       await supabase
@@ -274,7 +275,7 @@ describe('Alocação de Estoque - Integração E2E', () => {
         .select()
         .eq('id', mockMaterialQuantidade.id);
 
-      const podeSerAlocado = material.quantidade_disponivel >= quantidadeSolicitada;
+      const podeSerAlocado = ((material as Record<string, unknown>[])?.[0]?.quantidade_disponivel as number) >= quantidadeSolicitada;
 
       expect(podeSerAlocado).toBe(false);
 
@@ -355,12 +356,13 @@ describe('Alocação de Estoque - Integração E2E', () => {
       // Criar alocação
       await supabase
         .from('eventos_materiais_alocados')
-        .insert([{
+      .insert([{
           evento_id: mockEvento.id,
           item_id: mockMaterialSerial.id,
           nome: mockMaterialSerial.nome,
           serial: serialNumero,
-          status: 'reservado',
+          status: 'reservado' as const,
+          tipo_envio: 'antecipado' as const,
         }]);
 
       // Trigger atualiza serial para 'em-uso'
@@ -569,11 +571,11 @@ describe('Alocação de Estoque - Integração E2E', () => {
         .select()
         .eq('numero', serialNumero);
 
-      expect(serial.status).toBe('em-uso');
+      expect((serial as Record<string, unknown>[])?.[0]?.status).toBe('em-uso');
 
       const error = new Error('Este serial já está em uso em outro evento');
       expect(() => {
-        if (serial.status !== 'disponivel') throw error;
+        if ((serial as Record<string, unknown>[])?.[0]?.status !== 'disponivel') throw error;
       }).toThrow('Este serial já está em uso em outro evento');
     });
   });
@@ -919,9 +921,9 @@ describe('Alocação de Estoque - Integração E2E', () => {
         .select()
         .eq('numero', serialNumero);
 
-      expect(serial.status).toBe('manutencao');
+      expect((serial as Record<string, unknown>[])?.[0]?.status).toBe('manutencao');
 
-      const podeSerAlocado = serial.status === 'disponivel';
+      const podeSerAlocado = (serial as Record<string, unknown>[])?.[0]?.status === 'disponivel';
       expect(podeSerAlocado).toBe(false);
     });
 

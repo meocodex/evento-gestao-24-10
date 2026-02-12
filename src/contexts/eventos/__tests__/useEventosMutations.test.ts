@@ -497,7 +497,7 @@ describe('useEventosMutations', () => {
 
       (supabase.from('eventos_materiais_alocados').select as any) = vi.fn().mockReturnThis();
       (supabase.from('eventos_materiais_alocados').select().eq as any) = vi.fn().mockReturnThis();
-      (supabase.from('eventos_materiais_alocados').select().eq().eq as any) = vi.fn()
+      (supabase.from('eventos_materiais_alocados').select().eq('evento_id', 'evt-123').eq as any) = vi.fn()
         .mockResolvedValue({ data: [], count: 0 });
 
       const { result } = renderHook(() => useEventosMutations(), {
@@ -525,7 +525,7 @@ describe('useEventosMutations', () => {
 
       (supabase.from('eventos_materiais_alocados').select as any) = vi.fn().mockReturnThis();
       (supabase.from('eventos_materiais_alocados').select().eq as any) = vi.fn().mockReturnThis();
-      (supabase.from('eventos_materiais_alocados').select().eq().eq as any) = vi.fn()
+      (supabase.from('eventos_materiais_alocados').select().eq('evento_id', 'evt-123').eq as any) = vi.fn()
         .mockResolvedValue({ 
           data: [{ id: 'mat-1' }], 
           count: 1 

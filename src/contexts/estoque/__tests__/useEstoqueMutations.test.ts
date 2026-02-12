@@ -595,7 +595,7 @@ describe('useEstoqueMutations', () => {
 
       (supabase.from('materiais_seriais').delete as any) = vi.fn().mockReturnThis();
       (supabase.from('materiais_seriais').delete().eq as any) = vi.fn().mockReturnThis();
-      (supabase.from('materiais_seriais').delete().eq().eq as any) = vi.fn()
+      (supabase.from('materiais_seriais').delete().eq('material_id', 'MAT1').eq as any) = vi.fn()
         .mockResolvedValue({ error: null });
 
       (supabase.rpc as any) = mockRpc;
