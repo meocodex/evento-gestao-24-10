@@ -253,7 +253,7 @@ export default function Estoque() {
             <div className="w-32 text-right">Ações</div>
           </div>
           <EstoqueVirtualList
-            materiais={materiaisFiltrados}
+            materiais={materiaisFiltrados as MaterialEstoque[]}
             loading={loading}
             onVerDetalhes={handleVerDetalhes}
             onEditar={handleEditarMaterial}

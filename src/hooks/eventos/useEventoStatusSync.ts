@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Evento, StatusEvento } from '@/types/eventos';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
@@ -53,13 +54,13 @@ export function useEventoStatusSync(evento: Evento | null | undefined) {
           // Registrar na timeline
           const { error: timelineError } = await supabase
             .from('eventos_timeline')
-            .insert({
+            .insert([{
               evento_id: evento.id,
-              tipo: tipoTimeline,
+              tipo: tipoTimeline as Database['public']['Enums']['tipo_timeline'],
               descricao,
               usuario: 'Sistema (Automático)',
               data: new Date().toISOString()
-            });
+            }]);
 
           if (timelineError) throw timelineError;
 

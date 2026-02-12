@@ -18,7 +18,7 @@ export function useContasPagar() {
         .order('data_vencimento', { ascending: true });
       
       if (error) throw error;
-      return data as ContaPagar[];
+      return data as unknown as ContaPagar[];
     },
   });
   
@@ -27,10 +27,10 @@ export function useContasPagar() {
       const { data: { user } } = await supabase.auth.getUser();
       const { data: result, error } = await supabase
         .from('contas_pagar')
-        .insert({
+        .insert([{
           ...data,
           created_by: user?.id
-        })
+        } as any])
         .select()
         .single();
       
@@ -50,7 +50,7 @@ export function useContasPagar() {
     mutationFn: async ({ id, ...data }: Partial<ContaPagar> & { id: string }) => {
       const { error } = await supabase
         .from('contas_pagar')
-        .update(data)
+        .update(data as any)
         .eq('id', id);
       
       if (error) throw error;
@@ -113,7 +113,7 @@ export function useContasPagar() {
         .order('data_vencimento', { ascending: false });
       
       if (error) throw error;
-      return data as ContaPagar[];
+      return data as unknown as ContaPagar[];
     },
   });
   

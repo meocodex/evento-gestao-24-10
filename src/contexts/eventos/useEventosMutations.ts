@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { EventoFormData, Evento, StatusEvento } from '@/types/eventos';
 import { DatabaseError, getErrorMessage, EventosQueryCache, EventoUpdateData, toJson } from '@/types/utils';
+import type { Database } from '@/integrations/supabase/types';
 
 export function useEventosMutations() {
   const queryClient = useQueryClient();
@@ -64,7 +65,7 @@ export function useEventosMutations() {
         description: `${data.nome} foi criado com sucesso.`
       });
 
-      return evento as Evento;
+      return evento as unknown as Evento;
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['eventos'] });
@@ -117,7 +118,7 @@ export function useEventosMutations() {
 
       const { error } = await supabase
         .from('eventos')
-        .update(updateData)
+        .update(updateData as Database['public']['Tables']['eventos']['Update'])
         .eq('id', id);
 
       if (error) throw error;

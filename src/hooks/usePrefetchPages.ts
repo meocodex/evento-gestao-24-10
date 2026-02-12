@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { transformEvento } from '@/contexts/eventos/transformEvento';
 import { transformDemanda } from '@/contexts/demandas/transformDemanda';
+import type { RawDemandaFromDB } from '@/types/utils';
 
 /**
  * Hook para prefetch inteligente de dados baseado na rota atual
@@ -94,7 +95,7 @@ export function usePrefetchPages() {
           
           if (error) throw error;
           return {
-            demandas: (data || []).map(transformDemanda),
+            demandas: (data || []).map(d => transformDemanda(d as unknown as RawDemandaFromDB)),
             totalCount: count || 0
           };
         } catch (error) {

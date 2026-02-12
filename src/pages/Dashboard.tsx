@@ -233,8 +233,8 @@ const Dashboard = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {comercialStats?.eventosProximos && comercialStats.eventosProximos.length > 0 ? (
-            comercialStats.eventosProximos.slice(0, 3).map((evento: EventoProximo, index: number) => {
-              const dataEvento = new Date(evento.data_inicio);
+            comercialStats.eventosProximos.slice(0, 3).map((evento: any, index: number) => {
+              const dataEvento = new Date(evento.data_inicio as string);
               const diasFaltam = differenceInDays(dataEvento, new Date());
               const statusLabels: Record<string, string> = {
                 'orcamento_enviado': 'Orçamento Enviado',
@@ -246,18 +246,18 @@ const Dashboard = () => {
               
               return (
                 <div 
-                  key={evento.id} 
+                  key={String(evento.id)} 
                   className="flex items-center justify-between p-4 bg-muted/30 rounded-xl hover:bg-muted/50 transition-all duration-300 animate-fade-in"
                   style={{ animationDelay: `${index * 75}ms` }}
                 >
                   <div>
-                    <p className="font-semibold">Evento #{evento.id.slice(0, 8)}</p>
+                    <p className="font-semibold">Evento #{String(evento.id).slice(0, 8)}</p>
                     <p className="text-sm text-muted-foreground mt-1">
                       {format(dataEvento, "dd/MM", { locale: ptBR })} - Faltam {diasFaltam} dias
                     </p>
                   </div>
-                  <Badge className={evento.status === 'confirmado' ? 'bg-success' : 'bg-primary'}>
-                    {statusLabels[evento.status] || evento.status}
+                  <Badge className={String(evento.status) === 'confirmado' ? 'bg-success' : 'bg-primary'}>
+                    {statusLabels[String(evento.status)] || String(evento.status)}
                   </Badge>
                 </div>
               );

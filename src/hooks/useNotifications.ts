@@ -20,7 +20,7 @@ export function useNotifications() {
       if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
       
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
+      const subscription = await (registration as unknown as { pushManager: PushManager }).pushManager.getSubscription();
       setIsSubscribed(!!subscription);
     } catch (error) {
       console.error('Error checking subscription:', error);
@@ -49,7 +49,7 @@ export function useNotifications() {
 
       // Registrar subscription
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await (registration as unknown as { pushManager: PushManager }).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
@@ -60,10 +60,10 @@ export function useNotifications() {
 
       const { error } = await supabase
         .from('push_subscriptions')
-        .upsert({
+        .upsert([{
           user_id: user.user.id,
-          subscription: subscription.toJSON()
-        });
+          subscription: subscription.toJSON() as unknown as Json
+        }]);
 
       if (error) throw error;
 
@@ -81,7 +81,7 @@ export function useNotifications() {
   const unsubscribe = async () => {
     try {
       const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
+      const subscription = await (registration as unknown as { pushManager: PushManager }).pushManager.getSubscription();
       
       if (subscription) {
         await subscription.unsubscribe();

@@ -69,12 +69,13 @@ export function useDashboardStats() {
       eventosStats?.forEach(row => {
         const total = row.total || 0;
         totalEventosMes += total;
-        switch(row.status) {
-          case 'orcamento_enviado': eventosPorStatus.orcamentoEnviado = total; break;
+        const status = row.status as string;
+        switch(status) {
+          case 'orcamento_enviado': case 'orcamento': eventosPorStatus.orcamentoEnviado = total; break;
           case 'confirmado': eventosPorStatus.aprovado = total; break;
-          case 'materiais_alocados': eventosPorStatus.materiaisAlocados = total; break;
-          case 'em_andamento': eventosPorStatus.emAndamento = total; break;
-          case 'finalizado': eventosPorStatus.concluido = total; break;
+          case 'materiais_alocados': case 'em_preparacao': eventosPorStatus.materiaisAlocados = total; break;
+          case 'em_andamento': case 'em_execucao': eventosPorStatus.emAndamento = total; break;
+          case 'finalizado': case 'concluido': eventosPorStatus.concluido = total; break;
         }
       });
 
@@ -219,7 +220,7 @@ export function useComercialStats(userId: string) {
 
       return {
         meusEventos: eventosMes.length,
-        orcamentosEmAnalise: eventos?.filter(e => e.status === 'orcamento_enviado').length || 0,
+        orcamentosEmAnalise: eventos?.filter(e => (e.status as string) === 'orcamento_enviado' || e.status === 'orcamento').length || 0,
         contratosFechados,
         eventosProximos,
         demandasCriadas,

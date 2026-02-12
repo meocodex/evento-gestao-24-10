@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { MaterialEstoque, SerialEstoque } from '@/types/estoque';
 import { uiToDbStatus, dbToUiStatus } from '@/lib/estoqueStatus';
+import type { Database } from '@/integrations/supabase/types';
 
 export const useEstoqueMutations = () => {
   const queryClient = useQueryClient();
@@ -142,7 +143,7 @@ export const useEstoqueMutations = () => {
         .select('status')
         .eq('material_id', id);
 
-      const seriaisEmUso = (seriais || []).filter(s => s.status === 'em_uso');
+      const seriaisEmUso = (seriais || []).filter(s => s.status === 'em-uso');
       if (seriaisEmUso.length > 0) {
         throw new Error(`Este material possui ${seriaisEmUso.length} unidade(s) em uso.`);
       }
@@ -188,16 +189,16 @@ export const useEstoqueMutations = () => {
       // Inserir o serial com status convertido
       const { error } = await supabase
         .from('materiais_seriais')
-        .insert({
+        .insert([{
           material_id: materialId,
           numero: dados.numero,
-          status: statusDb,
+          status: statusDb as Database['public']['Enums']['status_serial'],
           localizacao: dados.localizacao,
           tags: dados.tags || [],
           data_aquisicao: dados.dataAquisicao,
           ultima_manutencao: dados.ultimaManutencao,
           observacoes: dados.observacoes,
-        });
+        }]);
 
       if (error) throw error;
 
@@ -240,7 +241,7 @@ export const useEstoqueMutations = () => {
       const { error } = await supabase
         .from('materiais_seriais')
         .update({
-          status: newStatusDb,
+          status: newStatusDb as Database['public']['Enums']['status_serial'],
           localizacao: dados.localizacao,
           tags: dados.tags,
           data_aquisicao: dados.dataAquisicao,
@@ -286,7 +287,7 @@ export const useEstoqueMutations = () => {
         .eq('numero', numeroSerial)
         .single();
 
-      if (serial?.status === 'em_uso') {
+      if (serial?.status === 'em-uso') {
         throw new Error('Este serial está em uso.');
       }
 
@@ -327,7 +328,11 @@ export const useEstoqueMutations = () => {
       });
 
       if (error) throw error;
-      return data as Array<{ material_id: string; valor_anterior: number; valor_novo: number }>;
+      return (data as unknown as Array<{ material_id: string; quantidade_anterior: number; quantidade_nova: number }>).map(d => ({
+        material_id: d.material_id,
+        valor_anterior: d.quantidade_anterior,
+        valor_novo: d.quantidade_nova,
+      }));
     },
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });

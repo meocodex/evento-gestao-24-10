@@ -16,7 +16,7 @@ export const useEstoqueSeriais = (materialId?: string) => {
         .from('materiais_seriais')
         .select(`
           *,
-          eventos:evento_id (
+          eventos!materiais_seriais_evento_id_fkey (
             id,
             nome
           )

@@ -10,6 +10,8 @@ import type {
   AlocarMaterialData,
   DevolucaoUpdateData 
 } from '@/types/utils';
+import { toJson } from '@/types/utils';
+import type { Database } from '@/integrations/supabase/types';
 
 // Função auxiliar para formatar endereço de objeto para string
 const formatarEndereco = (endereco: EnderecoObject | string | null | undefined): string => {
@@ -79,7 +81,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     mutationFn: async (data: AlocarMaterialData) => {
       const { error } = await supabase
         .from('eventos_materiais_alocados')
-        .insert({ ...data, evento_id: eventoId });
+        .insert([{ ...data, evento_id: eventoId } as Database['public']['Tables']['eventos_materiais_alocados']['Insert']]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -98,8 +100,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
     mutationFn: async (dados: AlocarMaterialData[]) => {
       const inserts = dados.map(data => ({
         ...data,
-        evento_id: eventoId
-      }));
+        evento_id: eventoId,
+      })) as Database['public']['Tables']['eventos_materiais_alocados']['Insert'][];
       
       const { error } = await supabase
         .from('eventos_materiais_alocados')
@@ -483,8 +485,8 @@ export function useEventosMateriaisAlocados(eventoId: string) {
             valor_declarado: dados.valoresDeclarados[id] || 0,
             remetente_tipo: dados.remetenteTipo,
             remetente_membro_id: dados.remetenteMembroId,
-            remetente_dados: remetenteDados,
-            dados_destinatario: cliente,
+            remetente_dados: toJson(remetenteDados),
+            dados_destinatario: toJson(cliente),
             observacoes_transporte: dados.observacoes,
           })
           .eq('id', id);
@@ -592,7 +594,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
       } else {
         // Gerar Declaração de Transporte
         const { data: membroData } = await supabase
-          .from('operacionais')
+          .from('equipe_operacional')
           .select('*')
           .eq('id', materialData.remetente_membro_id || '')
           .single();
@@ -607,7 +609,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
         const membro = membroData as MembroOperacional | null;
 
         const dadosDeclaracao = {
-          remetenteTipo: materialData.remetente_tipo || 'empresa',
+          remetenteTipo: (materialData.remetente_tipo || 'empresa') as 'empresa' | 'membro_equipe',
           remetenteNome: materialData.remetente_tipo === 'membro' && membro
             ? membro.nome
             : dadosEmpresa.nome,
