@@ -12,6 +12,7 @@ import { DetalhesTransportadoraSheet } from '@/components/transportadoras/Detalh
 import { GerenciarRotasSheet } from '@/components/transportadoras/GerenciarRotasSheet';
 import { NovoEnvioSheet } from '@/components/transportadoras/NovoEnvioSheet';
 import { Transportadora } from '@/types/transportadoras';
+import type { Envio } from '@/types/transportadoras';
 import { TransportadorasVirtualGrid } from '@/components/transportadoras/TransportadorasVirtualGrid';
 import { EnviosVirtualList } from '@/components/transportadoras/EnviosVirtualList';
 
@@ -123,7 +124,7 @@ export default function Transportadoras() {
         {/* Content */}
         {activeTab === 'transportadoras' && (
           <TransportadorasVirtualGrid
-            transportadoras={transportadoras}
+            transportadoras={transportadoras as unknown as Transportadora[]}
             loading={loading}
             onDetalhes={setDetalhesTransportadora}
             onRotas={setGerenciarRotasTransportadora}
@@ -138,13 +139,13 @@ export default function Transportadoras() {
         {activeTab === 'envios' && (
           <div className="space-y-4">
             <EnviosVirtualList
-              envios={enviosAtivos}
+              envios={enviosAtivos as unknown as Envio[]}
               loading={loading}
               title="Envios Ativos"
               emptyMessage="Nenhum envio ativo no momento"
             />
             <EnviosVirtualList
-              envios={enviosFinalizados}
+              envios={enviosFinalizados as unknown as Envio[]}
               loading={loading}
               title="Envios Finalizados"
               emptyMessage="Nenhum envio finalizado"

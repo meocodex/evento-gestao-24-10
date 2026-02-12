@@ -133,17 +133,17 @@ export function useTransportadorasMutations() {
     mutationFn: async ({ transportadoraId, rota }: { transportadoraId: string; rota: RotaAtendidaUI }) => {
       const { data: transportadora } = await supabase
         .from('transportadoras')
-        .select('rotas')
+        .select('*')
         .eq('id', transportadoraId)
         .single();
 
-      const rotasAtuais = (transportadora?.rotas || []) as Array<Record<string, unknown>>;
+      const rotasAtuais = ((transportadora as Record<string, unknown>)?.rotas || []) as Array<Record<string, unknown>>;
       const novaRotaDB = rotaToSnakeCase(rota);
       const novasRotas = [...rotasAtuais, novaRotaDB];
 
       const { error } = await supabase
         .from('transportadoras')
-        .update({ rotas: novasRotas })
+        .update({ rotas: novasRotas } as Record<string, unknown>)
         .eq('id', transportadoraId);
 
       if (error) throw error;
@@ -161,17 +161,17 @@ export function useTransportadorasMutations() {
     mutationFn: async ({ transportadoraId, rotaIndex, rota }: { transportadoraId: string; rotaIndex: number; rota: RotaAtendidaUI }) => {
       const { data: transportadora } = await supabase
         .from('transportadoras')
-        .select('rotas')
+        .select('*')
         .eq('id', transportadoraId)
         .single();
 
-      const rotasAtuais = (transportadora?.rotas || []) as Array<Record<string, unknown>>;
+      const rotasAtuais = ((transportadora as Record<string, unknown>)?.rotas || []) as Array<Record<string, unknown>>;
       const rotas = [...rotasAtuais];
       rotas[rotaIndex] = rotaToSnakeCase(rota);
 
       const { error } = await supabase
         .from('transportadoras')
-        .update({ rotas })
+        .update({ rotas } as Record<string, unknown>)
         .eq('id', transportadoraId);
 
       if (error) throw error;
@@ -189,17 +189,17 @@ export function useTransportadorasMutations() {
     mutationFn: async ({ transportadoraId, rotaIndex }: { transportadoraId: string; rotaIndex: number }) => {
       const { data: transportadora } = await supabase
         .from('transportadoras')
-        .select('rotas')
+        .select('*')
         .eq('id', transportadoraId)
         .single();
 
-      const rotasAtuais = (transportadora?.rotas || []) as Array<Record<string, unknown>>;
+      const rotasAtuais = ((transportadora as Record<string, unknown>)?.rotas || []) as Array<Record<string, unknown>>;
       const rotas = [...rotasAtuais];
       rotas.splice(rotaIndex, 1);
 
       const { error } = await supabase
         .from('transportadoras')
-        .update({ rotas })
+        .update({ rotas } as Record<string, unknown>)
         .eq('id', transportadoraId);
 
       if (error) throw error;

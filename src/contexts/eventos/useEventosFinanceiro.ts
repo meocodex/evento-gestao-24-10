@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { DatabaseError, getErrorMessage, ReceitaCreateData, DespesaCreateData } from '@/types/utils';
+import type { Database } from '@/integrations/supabase/types';
 
 export function useEventosFinanceiro(eventoId?: string) {
   const queryClient = useQueryClient();
@@ -40,7 +41,7 @@ export function useEventosFinanceiro(eventoId?: string) {
       if (!eventoId) throw new Error('Evento ID não fornecido');
       const { error } = await supabase
         .from('eventos_receitas')
-        .insert({ ...data, evento_id: eventoId });
+        .insert([{ ...data, evento_id: eventoId } as Database['public']['Tables']['eventos_receitas']['Insert']]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -59,7 +60,7 @@ export function useEventosFinanceiro(eventoId?: string) {
       if (!eventoId) throw new Error('Evento ID não fornecido');
       const { error } = await supabase
         .from('eventos_despesas')
-        .insert({ ...data, evento_id: eventoId });
+        .insert([{ ...data, evento_id: eventoId } as Database['public']['Tables']['eventos_despesas']['Insert']]);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -123,13 +124,13 @@ export function useEventosFinanceiro(eventoId?: string) {
       // Criar receita com taxas
       const { data: receitaData, error: receitaError } = await supabase
         .from('eventos_receitas')
-        .insert({
+        .insert([{
           ...receita,
           evento_id: eventoId,
           valor: valorTotal,
           tem_taxas: true,
           formas_pagamento: formasPagamento,
-        })
+        } as Database['public']['Tables']['eventos_receitas']['Insert']])
         .select()
         .single();
       
@@ -141,18 +142,18 @@ export function useEventosFinanceiro(eventoId?: string) {
         .map(fp => ({
           evento_id: eventoId,
           descricao: `Taxa de ${fp.forma} - ${receita.tipo_servico || receita.descricao}`,
-          categoria: 'taxas',
+          categoria: 'taxas' as Database['public']['Enums']['categoria_financeira'],
           valor: fp.valor * fp.taxa_percentual / 100,
           valor_unitario: fp.valor * fp.taxa_percentual / 100,
           quantidade: 1,
           data: receita.data,
-          status: 'pendente',
+          status: 'pendente' as Database['public']['Enums']['status_financeiro'],
         }));
       
       if (despesasTaxas.length > 0) {
         const { data: despesasData, error: despesasError } = await supabase
           .from('eventos_despesas')
-          .insert(despesasTaxas)
+          .insert(despesasTaxas as Database['public']['Tables']['eventos_despesas']['Insert'][])
           .select();
         
         if (despesasError) throw despesasError;

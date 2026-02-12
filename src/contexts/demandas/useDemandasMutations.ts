@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { DemandaFormData, StatusDemanda } from '@/types/demandas';
 import { DemandasQueryCache, DemandaUpdateData } from '@/types/utils';
 import { format } from 'date-fns';
+import type { Database } from '@/integrations/supabase/types';
 
 export function useDemandasMutations() {
   const queryClient = useQueryClient();
@@ -113,7 +114,7 @@ export function useDemandasMutations() {
 
       const { error } = await supabase
         .from('demandas')
-        .update(updateData)
+        .update(updateData as Database['public']['Tables']['demandas']['Update'])
         .eq('id', id);
 
       if (error) throw error;
@@ -197,7 +198,7 @@ export function useDemandasMutations() {
 
       const { error } = await supabase
         .from('demandas')
-        .update(updateData)
+        .update(updateData as Database['public']['Tables']['demandas']['Update'])
         .eq('id', id);
 
       if (error) throw error;
@@ -338,9 +339,19 @@ export function useDemandasMutations() {
 
   const adicionarDemandaReembolso = useMutation({
     mutationFn: async (data: { demanda_id: string; valor: number; descricao: string; comprovantes?: string[]; status?: string }) => {
+      // Store reembolso data in demandas.dados_reembolso JSONB field
       const { error } = await supabase
-        .from('demandas_reembolsos')
-        .insert(data);
+        .from('demandas')
+        .update({
+          dados_reembolso: {
+            valor: data.valor,
+            descricao: data.descricao,
+            comprovantes: data.comprovantes || [],
+            status: data.status || 'pendente',
+            data_solicitacao: new Date().toISOString(),
+          } as unknown as Database['public']['Tables']['demandas']['Update']['dados_reembolso'],
+        })
+        .eq('id', data.demanda_id);
       if (error) throw error;
     },
     onSuccess: async () => {

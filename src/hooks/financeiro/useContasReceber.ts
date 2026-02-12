@@ -18,7 +18,7 @@ export function useContasReceber() {
         .order('data_vencimento', { ascending: true });
       
       if (error) throw error;
-      return data as ContaReceber[];
+      return data as unknown as ContaReceber[];
     },
   });
   
@@ -27,10 +27,10 @@ export function useContasReceber() {
       const { data: { user } } = await supabase.auth.getUser();
       const { data: result, error } = await supabase
         .from('contas_receber')
-        .insert({
+        .insert([{
           ...data,
           created_by: user?.id
-        })
+        } as any])
         .select()
         .single();
       
@@ -50,7 +50,7 @@ export function useContasReceber() {
     mutationFn: async ({ id, ...data }: Partial<ContaReceber> & { id: string }) => {
       const { error } = await supabase
         .from('contas_receber')
-        .update(data)
+        .update(data as any)
         .eq('id', id);
       
       if (error) throw error;
@@ -113,7 +113,7 @@ export function useContasReceber() {
         .order('data_vencimento', { ascending: false });
       
       if (error) throw error;
-      return data as ContaReceber[];
+      return data as unknown as ContaReceber[];
     },
   });
   

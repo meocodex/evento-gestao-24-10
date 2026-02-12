@@ -70,14 +70,14 @@ export default function Configuracoes() {
   // Atualizar empresaData quando configuracoesEmpresa mudar
   useEffect(() => {
     if (configuracoesEmpresa) {
-      const endereco = configuracoesEmpresa.endereco || {};
+      const endereco = (configuracoesEmpresa.endereco || {}) as Record<string, string>;
       setEmpresaData({
         nome: configuracoesEmpresa.nome || '',
         razao_social: configuracoesEmpresa.razao_social || '',
         cnpj: configuracoesEmpresa.cnpj || '',
         email: configuracoesEmpresa.email || '',
         telefone: configuracoesEmpresa.telefone || '',
-        endereco: typeof endereco === 'object' ? {
+        endereco: typeof endereco === 'object' && !Array.isArray(endereco) ? {
           cep: endereco.cep || '',
           logradouro: endereco.logradouro || '',
           numero: endereco.numero || '',

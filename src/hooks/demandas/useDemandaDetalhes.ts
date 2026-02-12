@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect } from 'react';
 import { transformDemanda } from '@/contexts/demandas/transformDemanda';
+import type { RawDemandaFromDB } from '@/types/utils';
 
 export function useDemandaDetalhes(demandaId: string | null) {
   const queryClient = useQueryClient();
@@ -19,7 +20,7 @@ export function useDemandaDetalhes(demandaId: string | null) {
         .single();
 
       if (error) throw error;
-      return data ? transformDemanda(data) : null;
+      return data ? transformDemanda(data as unknown as RawDemandaFromDB) : null;
     },
     staleTime: 1000 * 60, // 1 minuto (com real-time específico não precisa ser 0)
   });

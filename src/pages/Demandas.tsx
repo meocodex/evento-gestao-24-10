@@ -32,7 +32,7 @@ export default function Demandas() {
     return demandas.filter(demanda => {
       if (filtros.status.length > 0 && !filtros.status.includes(demanda.status)) return false;
       if (filtros.prioridade.length > 0 && !filtros.prioridade.includes(demanda.prioridade)) return false;
-      if (filtros.responsavel && demanda.responsavel_id !== filtros.responsavel) return false;
+      if (filtros.responsavel && demanda.responsavelId !== filtros.responsavel) return false;
       if (filtros.prazoVencido && demanda.prazo && new Date(demanda.prazo) >= new Date()) return false;
       if (filtros.prazoProximo) {
         const prazo = demanda.prazo ? new Date(demanda.prazo) : null;

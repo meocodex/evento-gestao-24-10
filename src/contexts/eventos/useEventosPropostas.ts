@@ -62,7 +62,7 @@ export function useEventosPropostas() {
           tipo_evento: eventoData.tipoEvento,
           observacoes: eventoData.observacoes,
           tags: eventoData.tags,
-          status: 'orcamento_enviado'
+          status: 'orcamento' as const
         }])
         .select()
         .single();
@@ -107,7 +107,7 @@ export function useEventosPropostas() {
       const receitas = itens.map(item => ({
         evento_id: eventoId,
         descricao: item.descricao || item.nome,
-        tipo: 'fixo' as const,
+        tipo: 'servico' as const,
         valor: item.valor || item.valorTotal,
         valor_unitario: item.valorUnitario || item.valor,
         quantidade: item.quantidade || 1,
