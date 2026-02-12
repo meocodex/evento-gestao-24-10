@@ -1,111 +1,103 @@
 
-## Plano de Correção de Erros de Build - Prioridade Crítica
 
-### Problema Central
-Existem **20+ erros de build** impedindo a compilação. Os principais causadores são:
+## Plano de Correção - 30 Erros de Build Residuais
 
-1. **Type mismatches entre tipos Supabase gerados (Json) e tipos da aplicação**
-2. **Casting inadequado de strings para tipos union específicos**
-3. **Inserção de campos não permitidos pelo Supabase**
-4. **RPC return types incorretos**
+### Análise dos Erros
 
-### Erros Agrupados por Causa
+Os erros podem ser categorizados em 5 grupos principais:
 
-#### 1️⃣ **Categoria/Status como `string` vs Union Types** (5 erros)
-- `useDemandasMutations.ts:116` - `categoria: string` não é `"administrativa" | "comercial" | ...`
-- `useEventosFinanceiro.ts:155` - `categoria: string` não é `"alimentacao" | "insumos" | ...`
-- `useEstoqueMutations.ts:145` - `s.status === 'em_uso'` vs `"consumido" | "disponivel" | "em-uso"` (underscore!)
-- `useEstoqueMutations.ts:243` - Mesmo problema
-- `useEstoqueMutations.ts:289` - Mesmo problema
+#### **Grupo 1: Mock Functions sem Argumentos (3 erros)**
+- `useEstoqueMutations.test.ts:598` - `.eq()` chamado sem argumentos
+- `useEventosMutations.test.ts:500` - `.eq()` chamado sem argumentos  
+- `useEventosMutations.test.ts:528` - `.eq()` chamado sem argumentos
 
-**Solução:** Usar type casting explícito: `categoria as CategoriaFinanceira`
+**Causa:** Os mocks de Supabase foram corrigidos para exigir argumentos, mas alguns testes continuam chamando `.eq()` sem passar os parâmetros necessários.
+
+**Solução:** Adicionar argumentos dummy aos `.eq()` nos mocks dos testes (ex: `.eq('id', 'test-id')`).
 
 ---
 
-#### 2️⃣ **Campo `evento_id` não existente em tipos Supabase** (4 erros)
-- `useEventosFinanceiro.ts:43` - Insert sem `evento_id` no tipo gerado
-- `useEventosFinanceiro.ts:62` - Mesmo
-- `useEventosFinanceiro.ts:128` - Mesmo
-- `useEventosMateriaisAlocados.ts:82` - Mesmo
+#### **Grupo 2: Import Faltando `Json` Type (1 erro)**
+- `useNotifications.ts:65` - Tipo `Json` não importado mas é usado
 
-**Causa:** Supabase gerou tipos que não incluem `evento_id` como field opcional
+**Causa:** Na linha 65, há um cast `as unknown as Json` mas o tipo `Json` não foi importado de `@/integrations/supabase/types`.
 
-**Solução:** Fazer cast `as unknown as` ou construir objeto com tipos expandidos
+**Solução:** Adicionar import: `import { Json } from '@/integrations/supabase/types';`
 
 ---
 
-#### 3️⃣ **Material_id vs Fields no Insert** (2 erros)
-- `useEstoqueMutations.ts:192` - Field `material_id` não permitido
-- `useEventosMateriaisAlocados.ts:106` - Mesmo
+#### **Grupo 3: Propriedades Faltando em Tipos de Query (12 erros)**
+- `estoque-alocacao.test.ts:89, 90, 277` - Property `quantidade_disponivel` não existe
+- `estoque-alocacao.test.ts:572, 576, 922, 924` - Property `status` não existe em seriais
+- `evento-workflow.test.ts:576, 581` - Mesmo problema com seriais
 
-**Solução:** Remover `material_id` da inserção (já é a PK/constraint)
+**Causa:** Os tipos gerados pelo Supabase para `.select()` sem campos explícitos não incluem todas as colunas esperadas pelo código de teste.
 
----
-
-#### 4️⃣ **RPC Return Type Mismatch** (2 erros)
-- `useEstoqueMutations.ts:330` - RPC retorna `{quantidade_anterior, quantidade_nova}` mas código espera `{valor_anterior, valor_novo}`
-- `useDemandasMutations.ts:342-343` - Insert em `demandas_reembolsos` (table não reconhecida)
-
-**Solução:** Corrigir o tipo esperado do RPC
+**Solução:** Modificar as queries `.select()` para especificar explicitamente os campos necessários, ou adicionar type guard/null coalescing nos acessos.
 
 ---
 
-#### 5️⃣ **Json Type Incompatibility** (2 erros)
-- `useEventosMateriaisAlocados.ts:487` - `{ nome, documento, telefone, endereco }` não é `Json`
-- Vários em `useEventosMateriaisAlocados` com arrays
+#### **Grupo 4: Missing Required Fields em Inserts (6 erros)**
+- `estoque-alocacao.test.ts:126` - Falta `tipo_envio` no insert
+- `estoque-alocacao.test.ts:358` - Falta `tipo_envio` no insert
+- `evento-workflow.test.ts:140` - Falta campos obrigatórios do Evento
+- `evento-workflow.test.ts:182` - Falta campos obrigatórios
+- `evento-workflow.test.ts:668` - Array incompleto para insert
+- `crudResources.test.ts:86` - Field `nome` não existe
 
-**Solução:** Converter para formato `Json` ou usar cast `as Json`
+**Causa:** As definições de insert dos testes não incluem todos os campos obrigatórios do schema Supabase.
 
----
-
-#### 6️⃣ **Test Files** (2 erros)
-- `useEventosMutations.test.ts` - `useRealtimeHub` chamado sem argumentos
-- `useEstoqueMutations.test.ts` - Mesmo
-
-**Solução:** Adicionar argumentos nos mocks
-
----
-
-### Plano de Implementação (em ordem de prioridade)
-
-#### **Fase 1: Fix Critical Type Casts** (30 min)
-1. **`useDemandasMutations.ts`** - Cast `categoria` como `CategoriaFinanceira`
-2. **`useEventosFinanceiro.ts`** - Cast `categoria` e arrumar inserts com `evento_id`
-3. **`useEstoqueMutations.ts`** - Corrigir comparação de status (`'em-uso'` vs `'em_uso'`)
-
-#### **Fase 2: Fix Insert Data Issues** (20 min)
-1. **`useEstoqueMutations.ts:192`** - Remover `material_id` do insert
-2. **`useEventosMateriaisAlocados.ts:106`** - Remover `evento_id` do insert array (ou adicionar cast)
-3. **`useEventosMateriaisAlocados.ts:487`** - Converter objeto para `Json`
-
-#### **Fase 3: Fix RPC/Query Issues** (15 min)
-1. **`useEstoqueMutations.ts:330`** - Corrigir tipo retornado do RPC `sincronizar_quantidade_disponivel`
-2. **`useDemandasMutations.ts:342`** - Verificar se `demandas_reembolsos` existe ou usar tabela correta
-3. **`useEstoqueSeriais.ts:53`** - Resolver ambiguidade de relacionamento
-
-#### **Fase 4: Fix Test Files** (10 min)
-1. **`useEventosMutations.test.ts`** - Adicionar mock args para `useRealtimeHub`
-2. **`useEstoqueMutations.test.ts`** - Mesmo
+**Solução:** 
+1. Para `eventos_materiais_alocados`: Adicionar `tipo_envio: 'antecipado'` ou `'com_tecnicos'`
+2. Para `eventos`: Adicionar campos obrigatórios (`data_inicio`, `data_fim`, `hora_inicio`, `hora_fim`, `tipo_evento`)
+3. Para materiais: Usar os nomes de campo corretos conforme schema
 
 ---
 
-### Arquivos a Modificar
+#### **Grupo 5: Type Cast e Status Invalidos (4 erros)**
+- `evento-workflow.test.ts:190` - Status `'em_uso'` vs `'em-uso'` (underscore vs hífen)
+- `evento-workflow.test.ts:220` - String não é `StatusEvento` válido
+- `evento-workflow.test.ts:453` - String não é tipo timeline válido
+- `crudResources.test.ts:144` - Field `titulo` não existe em demandas
 
-```
-Crítica (Build bloqueante):
-✓ src/contexts/demandas/useDemandasMutations.ts (3 erros)
-✓ src/contexts/estoque/useEstoqueMutations.ts (6 erros)
-✓ src/contexts/eventos/useEventosFinanceiro.ts (4 erros)
-✓ src/contexts/eventos/useEventosMateriaisAlocados.ts (3 erros)
-✓ src/contexts/estoque/useEstoqueSeriais.ts (1 erro)
-✓ src/contexts/eventos/__tests__/useEventosMutations.test.ts (2 erros)
-✓ src/contexts/estoque/__tests__/useEstoqueMutations.test.ts (1 erro)
+**Causa:** Mistura de convenções snake_case (banco) vs camelCase/hífen (UI), e tipos enum restritos.
 
-Total: 7 arquivos, ~20 erros
-```
+**Solução:**
+1. Usar `'em-uso'` em vez de `'em_uso'` para status de materiais
+2. Validar que todos os status de evento/timeline são valores do enum correto
+3. Usar nomes de campo corretos conforme schema
 
 ---
 
-### Próximos Passos
-Após aprovação deste plano, os erros serão corrigidos **antes** de prosseguirmos com a simplificação do módulo de contratos e a implementação da feature de anexação de contratos assinados.
+#### **Grupo 6: Null Safety (2 erros)**
+- `estoque-alocacao.test.ts:134, 135` - `alocacao` possivelmente null
+- `evento-workflow.test.ts:185` - Mesmo
+
+**Causa:** Queries retornam dados que podem ser nulos mas o código trata como não-nulos.
+
+**Solução:** Adicionar verificação `if (alocacao)` ou usar `?.` optional chaining.
+
+---
+
+### Estratégia de Correção (por arquivo)
+
+| Arquivo | Tipo | Ações |
+|---------|------|-------|
+| `useEstoqueMutations.test.ts` | Test | 1. Adicionar args a `.eq()` na linha 598 |
+| `useEventosMutations.test.ts` | Test | 1. Adicionar args a `.eq()` nas linhas 500, 528 |
+| `useNotifications.ts` | Hook | 1. Importar `Json` de `@/integrations/supabase/types` |
+| `estoque-alocacao.test.ts` | Test | 1. Especificar campos explícitos em `.select()` 2. Adicionar `tipo_envio` em inserts 3. Adicionar null checks para alocacao |
+| `evento-workflow.test.ts` | Test | 1. Corrigir status de materiais (`'em-uso'`) 2. Adicionar campos obrigatórios em evento insert 3. Validar tipos de status/timeline 4. Adicionar null checks |
+| `crudResources.test.ts` | Test | 1. Usar nomes de campo corretos conforme schema 2. Adicionar todos campos obrigatórios |
+| `eventosFlow.test.ts` | Test | 1. Adicionar campos obrigatórios em insert |
+
+---
+
+### Resumo de Mudanças
+
+- **1 hook a corrigir** - Importar tipo `Json`
+- **5 arquivos de teste a corrigir** - Adicionar campos obrigatórios, arrumar status, adicionar null checks
+- **Total de mudanças:** ~30 pequenos ajustes espalhados em 6 arquivos
+
+Esta é a última etapa de correção de build antes de poder prosseguir com a simplificação do módulo de contratos.
 
