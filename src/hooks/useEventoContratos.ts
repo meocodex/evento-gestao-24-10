@@ -1,123 +1,100 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { ContratoEvento, StatusContratoEvento, TipoContratoEvento } from '@/types/evento-contratos';
+import { DocumentoEvento } from '@/types/evento-contratos';
 import { toast } from 'sonner';
 
 type EventoContratoDB = {
   id: string;
   evento_id: string;
-  tipo: string;
   titulo: string;
-  conteudo: string;
-  status: string;
   arquivo_assinado_url: string | null;
   arquivo_assinado_nome: string | null;
   created_at: string;
-  updated_at: string;
 };
 
-function transformContrato(raw: EventoContratoDB): ContratoEvento {
+function transformDocumento(raw: EventoContratoDB): DocumentoEvento {
   return {
     id: raw.id,
     eventoId: raw.evento_id,
-    tipo: raw.tipo as TipoContratoEvento,
     titulo: raw.titulo,
-    conteudo: raw.conteudo,
-    status: raw.status as StatusContratoEvento,
-    arquivoAssinadoUrl: raw.arquivo_assinado_url,
-    arquivoAssinadoNome: raw.arquivo_assinado_nome,
+    arquivoUrl: raw.arquivo_assinado_url,
+    arquivoNome: raw.arquivo_assinado_nome,
     criadoEm: raw.created_at,
-    atualizadoEm: raw.updated_at,
   };
 }
 
-// Tipo auxiliar para contornar a ausência de eventos_contratos nos tipos gerados
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const supabaseAny = supabase as any;
 
-export function useEventoContratos(eventoId: string) {
+export function useEventoDocumentos(eventoId: string) {
   const queryClient = useQueryClient();
   const queryKey = ['eventos-contratos', eventoId];
 
-  const { data: contratos = [], isLoading } = useQuery({
+  const { data: documentos = [], isLoading } = useQuery({
     queryKey,
-    queryFn: async (): Promise<ContratoEvento[]> => {
+    queryFn: async (): Promise<DocumentoEvento[]> => {
       const { data, error } = await supabaseAny
         .from('eventos_contratos')
-        .select('*')
+        .select('id, evento_id, titulo, arquivo_assinado_url, arquivo_assinado_nome, created_at')
         .eq('evento_id', eventoId)
+        .not('arquivo_assinado_url', 'is', null)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return ((data || []) as EventoContratoDB[]).map(transformContrato);
+      return ((data || []) as EventoContratoDB[]).map(transformDocumento);
     },
     enabled: !!eventoId,
     staleTime: 1000 * 60 * 5,
   });
 
-  const criarContrato = useMutation({
-    mutationFn: async (dados: { tipo: TipoContratoEvento; titulo: string; conteudo: string }) => {
-      const { data, error } = await supabaseAny
+  const adicionarDocumento = useMutation({
+    mutationFn: async ({ titulo, arquivo }: { titulo: string; arquivo: File }) => {
+      const timestamp = Date.now();
+      const nomeArquivo = arquivo.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const path = `${eventoId}/${timestamp}-${nomeArquivo}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('contratos')
+        .upload(path, arquivo, { upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      // Gerar signed URL de 1 ano para uso persistente
+      const { data: signedData, error: signedError } = await supabase.storage
+        .from('contratos')
+        .createSignedUrl(path, 60 * 60 * 24 * 365);
+
+      if (signedError) throw signedError;
+
+      const { error: insertError } = await supabaseAny
         .from('eventos_contratos')
         .insert({
           evento_id: eventoId,
-          tipo: dados.tipo,
-          titulo: dados.titulo,
-          conteudo: dados.conteudo,
-          status: 'rascunho',
-        })
-        .select()
-        .single();
+          titulo,
+          tipo: 'documento',
+          conteudo: '',
+          status: 'finalizado',
+          arquivo_assinado_url: path, // armazenar o path para gerar URLs assinadas
+          arquivo_assinado_nome: arquivo.name,
+        });
 
-      if (error) throw error;
-      return transformContrato(data as EventoContratoDB);
+      if (insertError) throw insertError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
-      toast.success('Contrato criado com sucesso');
+      toast.success('Documento adicionado com sucesso');
     },
     onError: (err: Error) => {
-      toast.error('Erro ao criar contrato: ' + err.message);
+      toast.error('Erro ao adicionar documento: ' + err.message);
     },
   });
 
-  const editarContrato = useMutation({
-    mutationFn: async (dados: { id: string; conteudo: string }) => {
-      const { error } = await supabaseAny
-        .from('eventos_contratos')
-        .update({ conteudo: dados.conteudo })
-        .eq('id', dados.id);
+  const removerDocumento = useMutation({
+    mutationFn: async ({ id, storagePath }: { id: string; storagePath: string }) => {
+      // Remover do storage
+      await supabase.storage.from('contratos').remove([storagePath]);
 
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
-    },
-    onError: (err: Error) => {
-      toast.error('Erro ao salvar: ' + err.message);
-    },
-  });
-
-  const finalizarContrato = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabaseAny
-        .from('eventos_contratos')
-        .update({ status: 'finalizado' })
-        .eq('id', id);
-
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
-      toast.success('Contrato finalizado');
-    },
-    onError: (err: Error) => {
-      toast.error('Erro ao finalizar: ' + err.message);
-    },
-  });
-
-  const excluirContrato = useMutation({
-    mutationFn: async (id: string) => {
+      // Remover da tabela
       const { error } = await supabaseAny
         .from('eventos_contratos')
         .delete()
@@ -127,54 +104,30 @@ export function useEventoContratos(eventoId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
-      toast.success('Contrato excluído');
+      toast.success('Documento removido');
     },
     onError: (err: Error) => {
-      toast.error('Erro ao excluir: ' + err.message);
+      toast.error('Erro ao remover documento: ' + err.message);
     },
   });
 
-  const uploadArquivoAssinado = useMutation({
-    mutationFn: async ({ id, arquivo }: { id: string; arquivo: File }) => {
-      const ext = arquivo.name.split('.').pop() ?? 'pdf';
-      const path = `${eventoId}/${id}.${ext}`;
+  const getSignedUrl = async (storagePath: string): Promise<string> => {
+    const { data, error } = await supabase.storage
+      .from('contratos')
+      .createSignedUrl(storagePath, 3600);
 
-      const { error: uploadError } = await supabase.storage
-        .from('contratos')
-        .upload(path, arquivo, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from('contratos')
-        .getPublicUrl(path);
-
-      const { error: updateError } = await supabaseAny
-        .from('eventos_contratos')
-        .update({
-          arquivo_assinado_url: urlData.publicUrl,
-          arquivo_assinado_nome: arquivo.name,
-        })
-        .eq('id', id);
-
-      if (updateError) throw updateError;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey });
-      toast.success('Arquivo anexado com sucesso');
-    },
-    onError: (err: Error) => {
-      toast.error('Erro ao anexar arquivo: ' + err.message);
-    },
-  });
+    if (error) throw error;
+    return data.signedUrl;
+  };
 
   return {
-    contratos,
+    documentos,
     isLoading,
-    criarContrato,
-    editarContrato,
-    finalizarContrato,
-    excluirContrato,
-    uploadArquivoAssinado,
+    adicionarDocumento,
+    removerDocumento,
+    getSignedUrl,
   };
 }
+
+// Alias para retrocompatibilidade
+export const useEventoContratos = useEventoDocumentos;

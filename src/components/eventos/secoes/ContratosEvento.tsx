@@ -1,86 +1,100 @@
 import { useState, useRef } from 'react';
 import { Evento } from '@/types/eventos';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useEventoContratos } from '@/hooks/useEventoContratos';
-import { gerarContratoFromModelo } from '@/lib/modelos-contrato';
-import { TipoContratoEvento, TIPO_CONTRATO_LABELS, ContratoEvento } from '@/types/evento-contratos';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { useEventoDocumentos } from '@/hooks/useEventoContratos';
 import {
   FileText,
   Plus,
-  ChevronDown,
-  CheckCircle2,
-  Clock,
-  Pencil,
+  Download,
   Trash2,
   Paperclip,
-  ExternalLink,
+  FileImage,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { EditarContratoEventoSheet } from './EditarContratoEventoSheet';
+import { toast } from 'sonner';
 
 interface ContratosEventoProps {
   evento: Evento;
 }
 
-const TIPOS: TipoContratoEvento[] = ['bar', 'ingresso', 'bar_ingresso', 'credenciamento'];
+function getFileIcon(nome: string | null) {
+  if (!nome) return <FileText className="h-5 w-5 text-muted-foreground shrink-0" />;
+  const ext = nome.split('.').pop()?.toLowerCase() ?? '';
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext))
+    return <FileImage className="h-5 w-5 text-primary shrink-0" />;
+  if (['xls', 'xlsx', 'csv'].includes(ext))
+    return <FileSpreadsheet className="h-5 w-5 text-accent-foreground shrink-0" />;
+  return <FileText className="h-5 w-5 text-muted-foreground shrink-0" />;
+}
 
 export function ContratosEvento({ evento }: ContratosEventoProps) {
-  const { contratos, isLoading, criarContrato, excluirContrato, uploadArquivoAssinado } =
-    useEventoContratos(evento.id);
-  const [contratoEditando, setContratoEditando] = useState<ContratoEvento | null>(null);
+  const { documentos, isLoading, adicionarDocumento, removerDocumento, getSignedUrl } =
+    useEventoDocumentos(evento.id);
+
+  const [dialogAberto, setDialogAberto] = useState(false);
+  const [titulo, setTitulo] = useState('');
+  const [arquivo, setArquivo] = useState<File | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [baixandoId, setBaixandoId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadingId, setUploadingId] = useState<string | null>(null);
 
-  const handleGerarContrato = async (tipo: TipoContratoEvento) => {
-    const conteudo = gerarContratoFromModelo(tipo, {
-      evento: {
-        nome: evento.nome,
-        dataInicio: evento.dataInicio,
-        dataFim: evento.dataFim,
-        local: evento.local,
-        cidade: evento.cidade,
-        estado: evento.estado,
-      },
-      cliente: evento.cliente
-        ? {
-            nome: evento.cliente.nome,
-            documento: evento.cliente.documento,
-            email: evento.cliente.email,
-            telefone: evento.cliente.telefone,
-          }
-        : null,
-    });
+  const handleSubmit = async () => {
+    if (!titulo.trim()) {
+      toast.error('Informe um nome para o documento');
+      return;
+    }
+    if (!arquivo) {
+      toast.error('Selecione um arquivo');
+      return;
+    }
 
-    const contrato = await criarContrato.mutateAsync({
-      tipo,
-      titulo: TIPO_CONTRATO_LABELS[tipo],
-      conteudo,
-    });
-
-    setContratoEditando(contrato);
+    setEnviando(true);
+    try {
+      await adicionarDocumento.mutateAsync({ titulo: titulo.trim(), arquivo });
+      setDialogAberto(false);
+      setTitulo('');
+      setArquivo(null);
+    } finally {
+      setEnviando(false);
+    }
   };
 
-  const handleUploadClick = (contratoId: string) => {
-    setUploadingId(contratoId);
-    fileInputRef.current?.click();
+  const handleDownload = async (storagePath: string, nomeArquivo: string | null, docId: string) => {
+    setBaixandoId(docId);
+    try {
+      const url = await getSignedUrl(storagePath);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Erro ao baixar arquivo');
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = nomeArquivo ?? 'documento';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      toast.error('Erro ao baixar o arquivo');
+    } finally {
+      setBaixandoId(null);
+    }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !uploadingId) return;
-
-    await uploadArquivoAssinado.mutateAsync({ id: uploadingId, arquivo: file });
-    setUploadingId(null);
-    e.target.value = '';
+  const handleRemover = (id: string, storagePath: string) => {
+    removerDocumento.mutate({ id, storagePath });
   };
 
   if (isLoading) {
@@ -96,117 +110,64 @@ export function ContratosEvento({ evento }: ContratosEventoProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {contratos.length === 0
-            ? 'Nenhum contrato gerado'
-            : `${contratos.length} contrato${contratos.length > 1 ? 's' : ''}`}
+          {documentos.length === 0
+            ? 'Nenhum documento adicionado'
+            : `${documentos.length} documento${documentos.length > 1 ? 's' : ''}`}
         </p>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm" disabled={criarContrato.isPending}>
-              <Plus className="h-4 w-4 mr-2" />
-              Gerar Contrato
-              <ChevronDown className="h-4 w-4 ml-1" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {TIPOS.map((tipo) => (
-              <DropdownMenuItem key={tipo} onClick={() => handleGerarContrato(tipo)}>
-                <FileText className="h-4 w-4 mr-2" />
-                {TIPO_CONTRATO_LABELS[tipo]}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button size="sm" onClick={() => setDialogAberto(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Adicionar Arquivo
+        </Button>
       </div>
 
-      {/* Lista de contratos */}
-      {contratos.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">Nenhum contrato gerado para este evento</p>
+      {/* Lista de documentos */}
+      {documentos.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center border-2 border-dashed border-border rounded-lg">
+          <Paperclip className="h-12 w-12 text-muted-foreground mb-4" />
+          <p className="text-muted-foreground font-medium">Nenhum documento adicionado</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Use o botão "Gerar Contrato" para criar a partir de um modelo
+            Adicione propostas, contratos assinados, riders técnicos e outros arquivos do evento
           </p>
         </div>
       ) : (
         <div className="grid gap-3">
-          {contratos.map((contrato) => (
-            <Card key={contrato.id}>
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    <CardTitle className="text-base truncate">{contrato.titulo}</CardTitle>
+          {documentos.map((doc) => (
+            <Card key={doc.id}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  {getFileIcon(doc.arquivoNome)}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{doc.titulo}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {doc.arquivoNome && (
+                        <span className="mr-2">{doc.arquivoNome}</span>
+                      )}
+                      {format(new Date(doc.criadoEm), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
+                    </p>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className={
-                      contrato.status === 'finalizado'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shrink-0'
-                        : 'bg-amber-50 text-amber-700 border-amber-200 shrink-0'
-                    }
-                  >
-                    {contrato.status === 'finalizado' ? (
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                    ) : (
-                      <Clock className="h-3 w-3 mr-1" />
-                    )}
-                    {contrato.status === 'finalizado' ? 'Finalizado' : 'Rascunho'}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Criado em{' '}
-                  {format(new Date(contrato.criadoEm), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
-                </p>
-              </CardHeader>
-
-              <CardContent className="pt-0 space-y-3">
-                {/* Arquivo assinado */}
-                {contrato.arquivoAssinadoUrl ? (
-                  <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
-                    <Paperclip className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="text-sm truncate flex-1">{contrato.arquivoAssinadoNome}</span>
-                    <a
-                      href={contrato.arquivoAssinadoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        doc.arquivoUrl &&
+                        handleDownload(doc.arquivoUrl, doc.arquivoNome, doc.id)
+                      }
+                      disabled={!doc.arquivoUrl || baixandoId === doc.id}
                     >
-                      <Button variant="ghost" size="icon" className="h-7 w-7">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                      </Button>
-                    </a>
+                      <Download className="h-3.5 w-3.5 mr-1.5" />
+                      {baixandoId === doc.id ? 'Baixando...' : 'Baixar'}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive h-8 w-8"
+                      onClick={() => doc.arquivoUrl && handleRemover(doc.id, doc.arquivoUrl)}
+                      disabled={removerDocumento.isPending}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
                   </div>
-                ) : (
-                  <button
-                    onClick={() => handleUploadClick(contrato.id)}
-                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full p-2 rounded-md hover:bg-muted/50 border border-dashed border-border"
-                  >
-                    <Paperclip className="h-4 w-4" />
-                    Anexar contrato assinado (PDF)
-                  </button>
-                )}
-
-                {/* Ações */}
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setContratoEditando(contrato)}
-                    className="flex-1"
-                  >
-                    <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                    Editar
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => excluirContrato.mutate(contrato.id)}
-                    disabled={excluirContrato.isPending}
-                    className="text-destructive hover:text-destructive"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -214,26 +175,64 @@ export function ContratosEvento({ evento }: ContratosEventoProps) {
         </div>
       )}
 
-      {/* Input oculto para upload */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".pdf,.png,.jpg,.jpeg"
-        className="hidden"
-        onChange={handleFileChange}
-      />
-
-      {/* Sheet de edição */}
-      {contratoEditando && (
-        <EditarContratoEventoSheet
-          contrato={contratoEditando}
-          open={!!contratoEditando}
-          onOpenChange={(open) => {
-            if (!open) setContratoEditando(null);
-          }}
-          eventoId={evento.id}
-        />
-      )}
+      {/* Diálogo de adição */}
+      <Dialog open={dialogAberto} onOpenChange={(open) => {
+        if (!open) { setTitulo(''); setArquivo(null); }
+        setDialogAberto(open);
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Adicionar Documento</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="titulo">Nome do documento *</Label>
+              <Input
+                id="titulo"
+                placeholder="ex: Proposta Comercial, Contrato Assinado..."
+                value={titulo}
+                onChange={(e) => setTitulo(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Arquivo *</Label>
+              <div
+                className="border-2 border-dashed border-border rounded-md p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {arquivo ? (
+                  <div className="flex items-center justify-center gap-2 text-sm">
+                    <Paperclip className="h-4 w-4 text-primary" />
+                    <span className="font-medium truncate max-w-[250px]">{arquivo.name}</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                    <Paperclip className="h-6 w-6" />
+                    <span className="text-sm">Clique para selecionar</span>
+                    <span className="text-xs">PDF, DOC, DOCX, XLS, JPG, PNG</span>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
+                className="hidden"
+                onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogAberto(false)} disabled={enviando}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmit} disabled={enviando}>
+              {enviando ? 'Enviando...' : 'Enviar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
