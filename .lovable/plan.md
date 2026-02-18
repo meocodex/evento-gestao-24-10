@@ -1,103 +1,178 @@
 
+## Diagnóstico: Por que /contratos ainda existe
 
-## Plano de Correção - 30 Erros de Build Residuais
+O plano de simplificação foi **aprovado mas nunca executado**. As sessões anteriores focaram apenas em corrigir erros de TypeScript. Todo o módulo antigo permanece intacto.
 
-### Análise dos Erros
+### O que ainda existe (e deve ser removido/substituído)
 
-Os erros podem ser categorizados em 5 grupos principais:
-
-#### **Grupo 1: Mock Functions sem Argumentos (3 erros)**
-- `useEstoqueMutations.test.ts:598` - `.eq()` chamado sem argumentos
-- `useEventosMutations.test.ts:500` - `.eq()` chamado sem argumentos  
-- `useEventosMutations.test.ts:528` - `.eq()` chamado sem argumentos
-
-**Causa:** Os mocks de Supabase foram corrigidos para exigir argumentos, mas alguns testes continuam chamando `.eq()` sem passar os parâmetros necessários.
-
-**Solução:** Adicionar argumentos dummy aos `.eq()` nos mocks dos testes (ex: `.eq('id', 'test-id')`).
-
----
-
-#### **Grupo 2: Import Faltando `Json` Type (1 erro)**
-- `useNotifications.ts:65` - Tipo `Json` não importado mas é usado
-
-**Causa:** Na linha 65, há um cast `as unknown as Json` mas o tipo `Json` não foi importado de `@/integrations/supabase/types`.
-
-**Solução:** Adicionar import: `import { Json } from '@/integrations/supabase/types';`
+| Arquivo/Local | Situação |
+|---|---|
+| `src/pages/Contratos.tsx` | Ainda existe - página antiga completa |
+| `src/components/contratos/*` | 9 arquivos ainda presentes |
+| `src/components/propostas/*` | 4 arquivos ainda presentes |
+| `src/contexts/contratos/*` | 5 arquivos ainda presentes |
+| `src/hooks/contratos/index.ts` | Barrel export ainda presente |
+| `src/types/contratos.ts` | Tipos antigos ainda presentes |
+| `App.tsx` linha 22 | `import Contratos` ainda existe |
+| `App.tsx` linha 112 | Rota `/contratos` ainda existe |
+| `AppSidebar.tsx` linha 44 | Item "Contratos" no array `menuItems` |
+| `AppSidebar.tsx` linhas 98-99 | Case "Contratos" no switch de permissões |
 
 ---
 
-#### **Grupo 3: Propriedades Faltando em Tipos de Query (12 erros)**
-- `estoque-alocacao.test.ts:89, 90, 277` - Property `quantidade_disponivel` não existe
-- `estoque-alocacao.test.ts:572, 576, 922, 924` - Property `status` não existe em seriais
-- `evento-workflow.test.ts:576, 581` - Mesmo problema com seriais
+### Plano de Execução Completo
 
-**Causa:** Os tipos gerados pelo Supabase para `.select()` sem campos explícitos não incluem todas as colunas esperadas pelo código de teste.
+#### Fase 1 - Banco de dados: Criar tabela `eventos_contratos`
 
-**Solução:** Modificar as queries `.select()` para especificar explicitamente os campos necessários, ou adicionar type guard/null coalescing nos acessos.
+```sql
+CREATE TABLE eventos_contratos (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  evento_id uuid NOT NULL REFERENCES eventos(id) ON DELETE CASCADE,
+  tipo text NOT NULL CHECK (tipo IN ('bar', 'ingresso', 'bar_ingresso', 'credenciamento')),
+  titulo text NOT NULL,
+  conteudo text NOT NULL DEFAULT '',
+  status text NOT NULL DEFAULT 'rascunho' CHECK (status IN ('rascunho', 'finalizado')),
+  arquivo_assinado_url text DEFAULT NULL,
+  arquivo_assinado_nome text DEFAULT NULL,
+  created_at timestamptz DEFAULT now() NOT NULL,
+  updated_at timestamptz DEFAULT now() NOT NULL
+);
 
----
+ALTER TABLE eventos_contratos ENABLE ROW LEVEL SECURITY;
 
-#### **Grupo 4: Missing Required Fields em Inserts (6 erros)**
-- `estoque-alocacao.test.ts:126` - Falta `tipo_envio` no insert
-- `estoque-alocacao.test.ts:358` - Falta `tipo_envio` no insert
-- `evento-workflow.test.ts:140` - Falta campos obrigatórios do Evento
-- `evento-workflow.test.ts:182` - Falta campos obrigatórios
-- `evento-workflow.test.ts:668` - Array incompleto para insert
-- `crudResources.test.ts:86` - Field `nome` não existe
+-- Policy: usuários autenticados podem ver/gerenciar contratos dos eventos que têm acesso
+CREATE POLICY "Authenticated users can manage eventos_contratos"
+  ON eventos_contratos FOR ALL TO authenticated
+  USING (true) WITH CHECK (true);
 
-**Causa:** As definições de insert dos testes não incluem todos os campos obrigatórios do schema Supabase.
+-- Trigger para updated_at automático
+CREATE TRIGGER update_eventos_contratos_updated_at
+  BEFORE UPDATE ON eventos_contratos
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-**Solução:** 
-1. Para `eventos_materiais_alocados`: Adicionar `tipo_envio: 'antecipado'` ou `'com_tecnicos'`
-2. Para `eventos`: Adicionar campos obrigatórios (`data_inicio`, `data_fim`, `hora_inicio`, `hora_fim`, `tipo_evento`)
-3. Para materiais: Usar os nomes de campo corretos conforme schema
+-- Índice em evento_id
+CREATE INDEX idx_eventos_contratos_evento_id ON eventos_contratos(evento_id);
+```
 
----
-
-#### **Grupo 5: Type Cast e Status Invalidos (4 erros)**
-- `evento-workflow.test.ts:190` - Status `'em_uso'` vs `'em-uso'` (underscore vs hífen)
-- `evento-workflow.test.ts:220` - String não é `StatusEvento` válido
-- `evento-workflow.test.ts:453` - String não é tipo timeline válido
-- `crudResources.test.ts:144` - Field `titulo` não existe em demandas
-
-**Causa:** Mistura de convenções snake_case (banco) vs camelCase/hífen (UI), e tipos enum restritos.
-
-**Solução:**
-1. Usar `'em-uso'` em vez de `'em_uso'` para status de materiais
-2. Validar que todos os status de evento/timeline são valores do enum correto
-3. Usar nomes de campo corretos conforme schema
+Storage bucket para contratos assinados (PDF upload).
 
 ---
 
-#### **Grupo 6: Null Safety (2 erros)**
-- `estoque-alocacao.test.ts:134, 135` - `alocacao` possivelmente null
-- `evento-workflow.test.ts:185` - Mesmo
+#### Fase 2 - Remover módulo antigo
 
-**Causa:** Queries retornam dados que podem ser nulos mas o código trata como não-nulos.
+Deletar os seguintes arquivos:
+- `src/pages/Contratos.tsx`
+- `src/components/contratos/` (9 arquivos)
+- `src/components/propostas/` (4 arquivos)
+- `src/contexts/contratos/` (5 arquivos)
+- `src/hooks/contratos/index.ts`
+- `src/types/contratos.ts`
 
-**Solução:** Adicionar verificação `if (alocacao)` ou usar `?.` optional chaining.
-
----
-
-### Estratégia de Correção (por arquivo)
-
-| Arquivo | Tipo | Ações |
-|---------|------|-------|
-| `useEstoqueMutations.test.ts` | Test | 1. Adicionar args a `.eq()` na linha 598 |
-| `useEventosMutations.test.ts` | Test | 1. Adicionar args a `.eq()` nas linhas 500, 528 |
-| `useNotifications.ts` | Hook | 1. Importar `Json` de `@/integrations/supabase/types` |
-| `estoque-alocacao.test.ts` | Test | 1. Especificar campos explícitos em `.select()` 2. Adicionar `tipo_envio` em inserts 3. Adicionar null checks para alocacao |
-| `evento-workflow.test.ts` | Test | 1. Corrigir status de materiais (`'em-uso'`) 2. Adicionar campos obrigatórios em evento insert 3. Validar tipos de status/timeline 4. Adicionar null checks |
-| `crudResources.test.ts` | Test | 1. Usar nomes de campo corretos conforme schema 2. Adicionar todos campos obrigatórios |
-| `eventosFlow.test.ts` | Test | 1. Adicionar campos obrigatórios em insert |
+Editar:
+- `src/App.tsx` — remover import `Contratos` e rota `contratos`
+- `src/components/layout/AppSidebar.tsx` — remover item "Contratos" do menu e do switch
+- `src/hooks/usePrefetchPages.ts` — remover prefetch de contratos se existir
 
 ---
 
-### Resumo de Mudanças
+#### Fase 3 - Criar novos tipos e modelos
 
-- **1 hook a corrigir** - Importar tipo `Json`
-- **5 arquivos de teste a corrigir** - Adicionar campos obrigatórios, arrumar status, adicionar null checks
-- **Total de mudanças:** ~30 pequenos ajustes espalhados em 6 arquivos
+**`src/types/evento-contratos.ts`**
+```typescript
+export type TipoContratoEvento = 'bar' | 'ingresso' | 'bar_ingresso' | 'credenciamento';
+export type StatusContratoEvento = 'rascunho' | 'finalizado';
 
-Esta é a última etapa de correção de build antes de poder prosseguir com a simplificação do módulo de contratos.
+export interface ContratoEvento {
+  id: string;
+  eventoId: string;
+  tipo: TipoContratoEvento;
+  titulo: string;
+  conteudo: string;
+  status: StatusContratoEvento;
+  arquivoAssinadoUrl: string | null;
+  arquivoAssinadoNome: string | null;
+  criadoEm: string;
+  atualizadoEm: string;
+}
+```
 
+**`src/lib/modelos-contrato.ts`** — 4 modelos de texto com variáveis:
+- `{{CLIENTE_NOME}}`, `{{CLIENTE_DOCUMENTO}}`, `{{CLIENTE_EMAIL}}`, `{{CLIENTE_TELEFONE}}`
+- `{{EVENTO_NOME}}`, `{{EVENTO_DATA_INICIO}}`, `{{EVENTO_DATA_FIM}}`, `{{EVENTO_LOCAL}}`, `{{EVENTO_CIDADE}}`, `{{EVENTO_ESTADO}}`
+- `{{EMPRESA_NOME}}`, `{{DATA_HOJE}}`
+- Função `gerarContratoFromModelo(tipo, evento, cliente)` que substitui as variáveis
+
+---
+
+#### Fase 4 - Criar hook de contratos do evento
+
+**`src/hooks/useEventoContratos.ts`**
+- Query: `useQuery` para listar contratos de um evento
+- Mutation: criar contrato a partir de modelo
+- Mutation: salvar edição do conteúdo
+- Mutation: alterar status (rascunho → finalizado)
+- Mutation: excluir contrato
+- Mutation: upload de contrato assinado (arquivo PDF/imagem) para storage
+
+---
+
+#### Fase 5 - Reescrever aba Contratos no Evento
+
+**`src/components/eventos/secoes/ContratosEvento.tsx`** (reescrito)
+
+Interface:
+```
+┌─────────────────────────────────────────────────┐
+│  Contratos do Evento           [Gerar Contrato ▼] │
+│                                                   │
+│  ┌─────────────────────────────────────────────┐  │
+│  │ 📄 Contrato de Bar          [Rascunho]       │  │
+│  │ Criado em 15/02/2026        [Editar] [PDF]   │  │
+│  │ 📎 contrato_assinado.pdf    [Ver arquivo]    │  │
+│  └─────────────────────────────────────────────┘  │
+│                                                   │
+│  ┌─────────────────────────────────────────────┐  │
+│  │ 📄 Credenciamento           [Finalizado ✓]   │  │
+│  │ Criado em 10/02/2026        [Editar] [PDF]   │  │
+│  │ 📎 Sem arquivo assinado     [Anexar PDF]     │  │
+│  └─────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────┘
+```
+
+Dropdown "Gerar Contrato" com 4 opções:
+1. Contrato de Bar
+2. Contrato de Ingresso
+3. Contrato de Bar e Ingresso
+4. Credenciamento
+
+**`src/components/eventos/secoes/EditarContratoEventoSheet.tsx`** (novo)
+- Sheet lateral com textarea grande para editar o texto do contrato
+- Botão "Salvar Rascunho" e botão "Finalizar Contrato"
+- Upload de arquivo assinado (botão "Anexar Contrato Assinado") com drag & drop
+- Exibição do arquivo já anexado com link para download
+
+---
+
+#### Fase 6 - Limpeza de referências
+
+- `src/hooks/usePrefetchPages.ts` — remover `contratos` do prefetch
+- `src/hooks/useDashboardStats.ts` — verificar e remover contagem de contratos antigos
+- `queryKeys.ts` — remover chaves antigas de contratos/templates/propostas
+- Verificar `EventoDetalhes.tsx` e `EventoDetailsSheet.tsx` para garantir que usam o novo `ContratosEvento`
+
+---
+
+### Resumo de Impacto
+
+| Ação | Quantidade |
+|---|---|
+| Arquivos removidos | ~20 |
+| Arquivos criados | 5 |
+| Arquivos editados | ~6 |
+| Migração de banco | 1 (tabela `eventos_contratos` + storage bucket) |
+| Rota removida | `/contratos` |
+| Item removido do menu | "Contratos" |
+
+### Resultado Final
+
+O usuário acessa contratos **dentro do evento**, gera um dos 4 modelos, edita online, e quando o cliente devolver assinado, faz upload do PDF diretamente no evento. Simples, direto, sem módulo separado.
