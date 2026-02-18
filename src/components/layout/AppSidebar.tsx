@@ -41,7 +41,7 @@ const menuItems = [
   { title: 'Clientes', url: '/clientes', icon: Users },
   { title: 'Demandas', url: '/demandas', icon: ClipboardList },
   { title: 'Equipe', url: '/equipe', icon: UserCog },
-  { title: 'Contratos', url: '/contratos', icon: FileText },
+  
   { title: 'Estoque', url: '/estoque', icon: Package },
   { title: 'Transportadoras', url: '/transportadoras', icon: Truck },
   { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
@@ -94,9 +94,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       
       case 'Equipe':
         return hasAnyPermission(['equipe.visualizar', 'equipe.editar']);
-      
-      case 'Contratos':
-        return hasAnyPermission(['contratos.visualizar', 'contratos.editar']);
       
       case 'Estoque':
         return hasAnyPermission(['estoque.visualizar', 'estoque.editar', 'estoque.alocar']);

@@ -19,7 +19,7 @@ const Estoque = lazy(() => import("./pages/Estoque"));
 const Demandas = lazy(() => import("./pages/Demandas"));
 const Transportadoras = lazy(() => import("./pages/Transportadoras"));
 const Financeiro = lazy(() => import("./pages/Financeiro"));
-const Contratos = lazy(() => import("./pages/Contratos"));
+
 const Relatorios = lazy(() => import("./pages/Relatorios"));
 const Configuracoes = lazy(() => import("./pages/Configuracoes"));
 const Equipe = lazy(() => import("./pages/Equipe"));
@@ -109,7 +109,7 @@ function ProtectedRoutes() {
         <Route path="clientes" element={<Clientes />} />
         <Route path="demandas" element={<Demandas />} />
         <Route path="estoque" element={<Estoque />} />
-        <Route path="contratos" element={<Contratos />} />
+        
         <Route path="transportadoras" element={<Transportadoras />} />
         <Route path="financeiro" element={<Financeiro />} />
         <Route path="relatorios" element={<Relatorios />} />
