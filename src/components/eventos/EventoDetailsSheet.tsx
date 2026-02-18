@@ -48,7 +48,7 @@ export function EventoDetailsSheet({ evento, open, onOpenChange }: EventoDetails
     },
     {
       value: 'contratos',
-      label: 'Contratos',
+      label: 'Documentos',
       content: <ContratosEvento evento={evento} />
     }
   ];

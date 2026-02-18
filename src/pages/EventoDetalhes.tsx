@@ -106,7 +106,7 @@ export default function EventoDetalhes() {
               Financeiro
             </TabsTrigger>
             <TabsTrigger value="contratos">
-              Contratos
+              Documentos
             </TabsTrigger>
           </TabsList>
           
