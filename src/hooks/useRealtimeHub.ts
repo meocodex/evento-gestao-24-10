@@ -19,8 +19,7 @@ type TableName =
   | 'equipe_operacional'
   | 'contas_pagar'
   | 'contas_receber'
-  | 'contratos'
-  | 'contratos_templates'
+  | 'eventos_contratos'
   | 'envios'
   | 'transportadoras'
   | 'transportadoras_rotas'
@@ -57,9 +56,8 @@ const TABLE_QUERY_MAP: Record<TableName, string[][]> = {
   contas_pagar: [['contas-pagar']],
   contas_receber: [['contas-receber']],
   
-  // Contratos
-  contratos: [['contratos']],
-  contratos_templates: [['contratos-templates']],
+  // Contratos por evento
+  eventos_contratos: [['eventos-contratos']],
   
   // Transportadoras
   envios: [['envios']],

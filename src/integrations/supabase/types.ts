@@ -1290,6 +1290,60 @@ export type Database = {
           },
         ]
       }
+      eventos_contratos: {
+        Row: {
+          arquivo_assinado_nome: string | null
+          arquivo_assinado_url: string | null
+          conteudo: string
+          created_at: string
+          evento_id: string
+          id: string
+          status: string
+          tipo: string
+          titulo: string
+          updated_at: string
+        }
+        Insert: {
+          arquivo_assinado_nome?: string | null
+          arquivo_assinado_url?: string | null
+          conteudo?: string
+          created_at?: string
+          evento_id: string
+          id?: string
+          status?: string
+          tipo: string
+          titulo: string
+          updated_at?: string
+        }
+        Update: {
+          arquivo_assinado_nome?: string | null
+          arquivo_assinado_url?: string | null
+          conteudo?: string
+          created_at?: string
+          evento_id?: string
+          id?: string
+          status?: string
+          tipo?: string
+          titulo?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eventos_contratos_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "eventos_contratos_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_financeiro_eventos"
+            referencedColumns: ["evento_id"]
+          },
+        ]
+      }
       eventos_despesas: {
         Row: {
           categoria: Database["public"]["Enums"]["categoria_financeira"]
