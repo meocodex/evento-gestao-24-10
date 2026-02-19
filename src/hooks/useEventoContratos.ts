@@ -59,13 +59,6 @@ export function useEventoDocumentos(eventoId: string) {
 
       if (uploadError) throw uploadError;
 
-      // Gerar signed URL de 1 ano para uso persistente
-      const { data: signedData, error: signedError } = await supabase.storage
-        .from('contratos')
-        .createSignedUrl(path, 60 * 60 * 24 * 365);
-
-      if (signedError) throw signedError;
-
       const { error: insertError } = await supabaseAny
         .from('eventos_contratos')
         .insert({
