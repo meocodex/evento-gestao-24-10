@@ -1,47 +1,102 @@
 
 
-## Correções e Melhorias na Aba Documentos
+## Reorganizar Sidebar com Sub-menus
 
-### 1. Bug Critico: Check Constraint bloqueia upload
+### Situacao Atual
 
-O upload falha com o erro `violates check constraint "eventos_contratos_tipo_check"` porque o insert usa `tipo: 'documento'`, mas a constraint so permite `'bar', 'ingresso', 'bar_ingresso', 'credenciamento'`.
+O sidebar tem 11 itens em uma lista plana sob um unico grupo "Menu Principal". Com tantos itens, fica dificil localizar rapidamente o que se precisa, especialmente em telas menores.
 
-**Correcao:** Migração SQL para adicionar `'documento'` ao check constraint.
+### Nova Estrutura Proposta
 
-```sql
-ALTER TABLE eventos_contratos DROP CONSTRAINT eventos_contratos_tipo_check;
-ALTER TABLE eventos_contratos ADD CONSTRAINT eventos_contratos_tipo_check 
-  CHECK (tipo = ANY (ARRAY['bar','ingresso','bar_ingresso','credenciamento','documento']));
+Organizar os itens em 4 grupos logicos usando componentes Collapsible (ja disponivel no projeto):
+
+```text
++-----------------------------------+
+|  [T] Ticket Up                    |
+|      Nome do usuario              |
++-----------------------------------+
+|                                   |
+|  GERAL                            |
+|    > Dashboard                    |
+|    > Eventos                      |
+|                                   |
+|  PESSOAS                          |
+|    > Clientes                     |
+|    > Equipe                       |
+|    > Demandas                     |
+|                                   |
+|  OPERACIONAL                      |
+|    > Estoque                      |
+|    > Transportadoras              |
+|                                   |
+|  GESTAO                           |
+|    > Financeiro                   |
+|    > Relatorios                   |
+|    > Performance      (admin)     |
+|    > Configuracoes    (admin)     |
+|                                   |
++-----------------------------------+
+|  Perfil: Admin                    |
+|  [Sair]                           |
++-----------------------------------+
 ```
 
-### 2. Exibir tamanho do arquivo na listagem
+### Detalhes Tecnicos
 
-- Adicionar coluna `arquivo_tamanho` (integer, nullable) na tabela `eventos_contratos` via migração
-- Salvar `arquivo.size` no insert do hook
-- Exibir formatado (KB/MB) na listagem do componente
-- Atualizar o tipo `DocumentoEvento` com campo `arquivoTamanho`
+**Arquivo alterado:** `src/components/layout/AppSidebar.tsx`
 
-### 3. Upload de multiplos arquivos
+1. **Reestruturar dados do menu** - Substituir o array plano `menuItems` por um array de grupos, cada um com label e array de itens:
 
-- Alterar o input de arquivo para aceitar `multiple`
-- Adaptar o estado para `arquivos: File[]` ao inves de `arquivo: File | null`
-- Ao submeter, enviar todos os arquivos sequencialmente com o mesmo titulo (ou titulo + indice)
-- Mostrar quantidade de arquivos selecionados na area de upload
+```typescript
+const menuGroups = [
+  {
+    label: 'Geral',
+    items: [
+      { title: 'Dashboard', url: '/dashboard', icon: Home },
+      { title: 'Eventos', url: '/eventos', icon: Calendar },
+    ],
+  },
+  {
+    label: 'Pessoas',
+    items: [
+      { title: 'Clientes', url: '/clientes', icon: Users },
+      { title: 'Equipe', url: '/equipe', icon: UserCog },
+      { title: 'Demandas', url: '/demandas', icon: ClipboardList },
+    ],
+  },
+  {
+    label: 'Operacional',
+    items: [
+      { title: 'Estoque', url: '/estoque', icon: Package },
+      { title: 'Transportadoras', url: '/transportadoras', icon: Truck },
+    ],
+  },
+  {
+    label: 'Gestao',
+    items: [
+      { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
+      { title: 'Relatorios', url: '/relatorios', icon: BarChart3 },
+      { title: 'Performance', url: '/performance', icon: Activity },
+      { title: 'Configuracoes', url: '/configuracoes', icon: Settings },
+    ],
+  },
+];
+```
 
-### 4. Confirmação antes de excluir
+2. **Usar multiplos `SidebarGroup`** - Cada grupo renderiza um `SidebarGroup` com seu `SidebarGroupLabel`, mantendo os grupos sempre expandidos (sem collapse de grupo, apenas separacao visual). Isso mantem a navegacao rapida enquanto organiza visualmente.
 
-- Usar o `ConfirmDialog` existente em `src/components/shared/ConfirmDialog.tsx`
-- Adicionar estado para controlar o dialog de confirmação e armazenar qual documento sera removido
-- Ao clicar no botao de excluir, abrir o dialog; ao confirmar, executar a remocao
+3. **Manter logica de permissoes** - A filtragem por permissoes continua identica, aplicada dentro de cada grupo. Grupos que ficam vazios apos filtragem sao ocultados automaticamente.
 
----
+4. **Sidebar colapsado** - Quando em modo colapsado (icones apenas), os labels dos grupos desaparecem e so os icones ficam visiveis com tooltips, comportamento ja nativo do componente.
 
-### Resumo de Mudanças
+5. **Sem mudancas em outros arquivos** - Nenhuma alteracao no `MainLayout.tsx`, rotas, ou componente `sidebar.tsx`.
 
-| Arquivo | Acao |
+### Resumo
+
+| Acao | Detalhe |
 |---|---|
-| Migração SQL | Alterar check constraint + adicionar coluna `arquivo_tamanho` |
-| `src/types/evento-contratos.ts` | Adicionar campo `arquivoTamanho` |
-| `src/hooks/useEventoContratos.ts` | Salvar tamanho no insert, selecionar coluna nova |
-| `src/components/eventos/secoes/ContratosEvento.tsx` | Multiplos arquivos, exibir tamanho, dialog de confirmação |
+| Alterar `AppSidebar.tsx` | Reorganizar de lista plana para 4 grupos tematicos |
+| Sem novas dependencias | Usa apenas componentes Sidebar ja existentes |
+| Sem mudanca de rotas | URLs e permissoes permanecem identicas |
+| Sem migracoes SQL | Nenhuma alteracao no banco |
 
