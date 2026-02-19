@@ -1,126 +1,109 @@
 
-## Simplificação: Aba "Contratos" → "Documentos"
+## Revisão: Aba Documentos do Evento
 
-### Objetivo
+### Diagnóstico dos Problemas
 
-Substituir o fluxo atual de geração de contratos por modelos por uma solução simples e direta: uma aba chamada **"Documentos"** onde o usuário pode fazer upload de qualquer arquivo relevante ao evento (proposta comercial, contrato assinado, rider técnico, etc.), informando apenas um nome descritivo.
+#### Problema 1 — Storage sem RLS policies (bloqueio de upload/download)
 
----
+O bucket `contratos` existe e é privado, mas não possui políticas de acesso configuradas em `storage.objects`. Isso significa que usuários autenticados **não conseguem fazer upload nem gerar URLs assinadas**, pois o storage bloqueia as operações por falta de permissão.
 
-### Situação Atual (problema)
+Erro esperado ao tentar fazer upload: `new row violates row-level security policy` ou `Unauthorized`.
 
-A aba "Contratos" atual exige:
-1. Escolher um tipo de modelo (Bar, Ingresso, etc.)
-2. Gerar o contrato com preenchimento automático
-3. Editar o texto num textarea
-4. Finalizar o contrato
-5. Depois ainda fazer upload do arquivo assinado
+#### Problema 2 — Chamada desnecessária ao `createSignedUrl` no upload
 
-Isso é complexo demais para o caso de uso real: o usuário já tem os documentos prontos (PDF, Word, imagem) e quer apenas anexá-los ao evento.
+No hook `adicionarDocumento`, após o upload, o código gera uma signed URL de 1 ano (`createSignedUrl`) mas não usa o resultado — o banco armazena apenas o `path` do arquivo. Essa chamada extra falha se as policies não estiverem aplicadas e não agrega valor algum ao fluxo atual.
 
----
+Trecho problemático (linha 63-67 do hook):
+```typescript
+// Esta chamada não é utilizada — o resultado signedData é descartado
+const { data: signedData, error: signedError } = await supabase.storage
+  .from('contratos')
+  .createSignedUrl(path, 60 * 60 * 24 * 365);
+if (signedError) throw signedError;
+// signedData.signedUrl nunca é usado
+```
 
-### Nova Solução
+#### Problema 3 — Registro legado no banco
 
-Uma aba simples de upload de documentos, com:
-
-- **Botão "Adicionar Documento"** que abre um pequeno diálogo com:
-  - Campo de nome livre (ex: "Proposta Comercial", "Contrato Assinado", "Rider Técnico")
-  - Seletor de arquivo (qualquer formato: PDF, DOC, DOCX, JPG, PNG)
-- **Lista de documentos** exibindo: nome, data de upload, tipo de arquivo, botão de download e botão de excluir
-- **Download direto** (fetch + blob, conforme preferência do usuário registrada na memória)
+Existe 1 registro antigo com `arquivo_assinado_url = null` (Contrato de Bar gerado pelo sistema anterior). A query já o filtra corretamente com `.not('arquivo_assinado_url', 'is', null)`, então não aparece na lista. Nenhuma ação necessária no código, mas o registro permanece no banco.
 
 ---
 
-### Impacto nas Tabelas
+### Correções a Aplicar
 
-A tabela `eventos_contratos` já existe mas será usada de forma diferente:
-- **Remover**: campos `tipo`, `conteudo`, `status` do uso (manter no banco por compatibilidade)
-- **Usar**: apenas `evento_id`, `titulo` (nome do documento), `arquivo_assinado_url`, `arquivo_assinado_nome`, `created_at`
+#### Fase 1 — Migração: Adicionar RLS policies ao bucket `contratos`
 
-Não é necessária migração de banco - a tabela já comporta esse uso simples.
+Criar policies em `storage.objects` para o bucket `contratos` que permitem usuários autenticados fazer upload, download, leitura e remoção:
+
+```sql
+-- Policy: usuários autenticados podem fazer upload
+CREATE POLICY "Authenticated users can upload contratos"
+ON storage.objects FOR INSERT TO authenticated
+WITH CHECK (bucket_id = 'contratos');
+
+-- Policy: usuários autenticados podem ver arquivos
+CREATE POLICY "Authenticated users can view contratos"
+ON storage.objects FOR SELECT TO authenticated
+USING (bucket_id = 'contratos');
+
+-- Policy: usuários autenticados podem deletar arquivos
+CREATE POLICY "Authenticated users can delete contratos"
+ON storage.objects FOR DELETE TO authenticated
+USING (bucket_id = 'contratos');
+
+-- Policy: usuários autenticados podem atualizar metadados
+CREATE POLICY "Authenticated users can update contratos"
+ON storage.objects FOR UPDATE TO authenticated
+USING (bucket_id = 'contratos');
+```
+
+#### Fase 2 — Remover chamada desnecessária ao `createSignedUrl` no upload
+
+No `useEventoContratos.ts`, remover as linhas 63-67 que geram uma signed URL descartada após o upload. O path do arquivo já é salvo corretamente e o `getSignedUrl` é chamado sob demanda no momento do download.
+
+Antes:
+```typescript
+const { error: uploadError } = await supabase.storage
+  .from('contratos')
+  .upload(path, arquivo, { upsert: false });
+
+if (uploadError) throw uploadError;
+
+// Remover estas linhas desnecessárias:
+const { data: signedData, error: signedError } = await supabase.storage
+  .from('contratos')
+  .createSignedUrl(path, 60 * 60 * 24 * 365);
+
+if (signedError) throw signedError;
+
+const { error: insertError } = await supabaseAny ...
+```
+
+Depois:
+```typescript
+const { error: uploadError } = await supabase.storage
+  .from('contratos')
+  .upload(path, arquivo, { upsert: false });
+
+if (uploadError) throw uploadError;
+
+const { error: insertError } = await supabaseAny ...
+```
 
 ---
 
-### Arquivos a Modificar
+### Resumo das Mudanças
 
-| Arquivo | Ação |
+| Ação | Detalhe |
 |---|---|
-| `src/components/eventos/secoes/ContratosEvento.tsx` | Reescrever completamente — virar `DocumentosEvento` |
-| `src/pages/EventoDetalhes.tsx` | Renomear tab "Contratos" → "Documentos" |
-| `src/components/eventos/EventoDetailsSheet.tsx` | Renomear tab "Contratos" → "Documentos" |
-| `src/hooks/useEventoContratos.ts` | Simplificar — remover criarContrato por modelo, editarContrato, finalizarContrato; adicionar `adicionarDocumento` (titulo + arquivo) |
-| `src/components/eventos/secoes/EditarContratoEventoSheet.tsx` | Deletar — não é mais necessário |
-| `src/types/evento-contratos.ts` | Simplificar tipos |
-| `src/lib/modelos-contrato.ts` | Pode ser deletado (não será mais usado) |
+| Migração SQL | 4 policies de storage no bucket `contratos` |
+| Edição de código | Remover 5 linhas desnecessárias do hook |
+| Sem alterações de UI | A interface `ContratosEvento.tsx` está correta |
+| Sem migração de tabela | Estrutura do banco já está OK |
 
----
+### Estado após a correção
 
-### Nova Interface (DocumentosEvento)
-
-```text
-┌─────────────────────────────────────────────────────────┐
-│  Documentos do Evento              [+ Adicionar Arquivo] │
-│                                                          │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ 📄 Proposta Comercial.pdf        05/02/2026       │   │
-│  │                              [⬇ Baixar] [🗑 Excl] │   │
-│  └──────────────────────────────────────────────────┘   │
-│                                                          │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ 📄 Contrato Assinado.pdf         10/02/2026       │   │
-│  │                              [⬇ Baixar] [🗑 Excl] │   │
-│  └──────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
-```
-
-Ao clicar em **"+ Adicionar Arquivo"**, abre um diálogo compacto:
-
-```text
-┌────────────────────────────────────────┐
-│  Adicionar Documento                   │
-│                                        │
-│  Nome do documento *                   │
-│  ┌──────────────────────────────────┐  │
-│  │ ex: Proposta Comercial           │  │
-│  └──────────────────────────────────┘  │
-│                                        │
-│  Arquivo *                             │
-│  ┌──────────────────────────────────┐  │
-│  │  📎 Clique para selecionar       │  │
-│  └──────────────────────────────────┘  │
-│                                        │
-│           [Cancelar]  [Enviar]         │
-└────────────────────────────────────────┘
-```
-
----
-
-### Detalhes Técnicos
-
-**Hook simplificado `useEventoDocumentos`:**
-- `documentos` — lista de documentos do evento
-- `adicionarDocumento(titulo, arquivo)` — faz upload no bucket `contratos` e salva referência na tabela
-- `removerDocumento(id, url)` — remove do storage e da tabela
-
-**Download de arquivos:**
-- Usar `fetch` + `blob URL` para disparar download no disco (padrão já estabelecido no projeto para evitar bloqueio do Chrome)
-
-**Storage:**
-- Bucket: `contratos` (já existe, privado)
-- Path: `{eventoId}/{timestamp}-{nome_arquivo}`
-- URL: usar `createSignedUrl` (1 hora) para exibir/baixar, mantendo o bucket privado e seguro
-
-**Renomeação da aba:**
-- `value="contratos"` mantido internamente para não quebrar URL/routing
-- Label exibido muda de "Contratos" para "Documentos"
-
----
-
-### Resumo de Mudanças
-
-- **3 arquivos editados**: `ContratosEvento.tsx`, `EventoDetalhes.tsx`, `EventoDetailsSheet.tsx`
-- **1 hook refatorado**: `useEventoContratos.ts` → simplificado
-- **1 arquivo deletado**: `EditarContratoEventoSheet.tsx`
-- **1 arquivo deletado**: `src/lib/modelos-contrato.ts`
-- **Sem migração de banco necessária**
+- Upload de arquivos funcionará para usuários autenticados
+- Download via signed URL (1 hora) funcionará corretamente
+- Remoção de arquivos do storage funcionará
+- A chamada extra ao storage no momento do upload é eliminada, tornando o fluxo mais limpo e rápido
