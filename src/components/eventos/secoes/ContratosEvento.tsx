@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useEventoDocumentos } from '@/hooks/useEventoContratos';
 import {
   FileText,
@@ -39,33 +40,47 @@ function getFileIcon(nome: string | null) {
   return <FileText className="h-5 w-5 text-muted-foreground shrink-0" />;
 }
 
+function formatFileSize(bytes: number | null): string {
+  if (!bytes) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export function ContratosEvento({ evento }: ContratosEventoProps) {
   const { documentos, isLoading, adicionarDocumento, removerDocumento, getSignedUrl } =
     useEventoDocumentos(evento.id);
 
   const [dialogAberto, setDialogAberto] = useState(false);
   const [titulo, setTitulo] = useState('');
-  const [arquivo, setArquivo] = useState<File | null>(null);
+  const [arquivos, setArquivos] = useState<File[]>([]);
   const [enviando, setEnviando] = useState(false);
   const [baixandoId, setBaixandoId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Estado para confirmação de exclusão
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [docParaRemover, setDocParaRemover] = useState<{ id: string; storagePath: string } | null>(null);
 
   const handleSubmit = async () => {
     if (!titulo.trim()) {
       toast.error('Informe um nome para o documento');
       return;
     }
-    if (!arquivo) {
-      toast.error('Selecione um arquivo');
+    if (arquivos.length === 0) {
+      toast.error('Selecione pelo menos um arquivo');
       return;
     }
 
     setEnviando(true);
     try {
-      await adicionarDocumento.mutateAsync({ titulo: titulo.trim(), arquivo });
+      for (let i = 0; i < arquivos.length; i++) {
+        const tituloFinal = arquivos.length > 1 ? `${titulo.trim()} (${i + 1})` : titulo.trim();
+        await adicionarDocumento.mutateAsync({ titulo: tituloFinal, arquivo: arquivos[i] });
+      }
       setDialogAberto(false);
       setTitulo('');
-      setArquivo(null);
+      setArquivos([]);
     } finally {
       setEnviando(false);
     }
@@ -93,8 +108,16 @@ export function ContratosEvento({ evento }: ContratosEventoProps) {
     }
   };
 
-  const handleRemover = (id: string, storagePath: string) => {
-    removerDocumento.mutate({ id, storagePath });
+  const handleRemoverClick = (id: string, storagePath: string) => {
+    setDocParaRemover({ id, storagePath });
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmRemover = () => {
+    if (docParaRemover) {
+      removerDocumento.mutate(docParaRemover);
+      setDocParaRemover(null);
+    }
   };
 
   if (isLoading) {
@@ -142,6 +165,9 @@ export function ContratosEvento({ evento }: ContratosEventoProps) {
                       {doc.arquivoNome && (
                         <span className="mr-2">{doc.arquivoNome}</span>
                       )}
+                      {doc.arquivoTamanho && (
+                        <span className="mr-2">• {formatFileSize(doc.arquivoTamanho)}</span>
+                      )}
                       {format(new Date(doc.criadoEm), "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
                     </p>
                   </div>
@@ -162,7 +188,7 @@ export function ContratosEvento({ evento }: ContratosEventoProps) {
                       variant="ghost"
                       size="icon"
                       className="text-destructive hover:text-destructive h-8 w-8"
-                      onClick={() => doc.arquivoUrl && handleRemover(doc.id, doc.arquivoUrl)}
+                      onClick={() => doc.arquivoUrl && handleRemoverClick(doc.id, doc.arquivoUrl)}
                       disabled={removerDocumento.isPending}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -177,7 +203,7 @@ export function ContratosEvento({ evento }: ContratosEventoProps) {
 
       {/* Diálogo de adição */}
       <Dialog open={dialogAberto} onOpenChange={(open) => {
-        if (!open) { setTitulo(''); setArquivo(null); }
+        if (!open) { setTitulo(''); setArquivos([]); }
         setDialogAberto(open);
       }}>
         <DialogContent className="sm:max-w-md">
@@ -196,30 +222,38 @@ export function ContratosEvento({ evento }: ContratosEventoProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label>Arquivo *</Label>
+              <Label>Arquivo(s) *</Label>
               <div
                 className="border-2 border-dashed border-border rounded-md p-6 text-center cursor-pointer hover:border-primary/50 hover:bg-muted/30 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >
-                {arquivo ? (
-                  <div className="flex items-center justify-center gap-2 text-sm">
+                {arquivos.length > 0 ? (
+                  <div className="flex flex-col items-center gap-1 text-sm">
                     <Paperclip className="h-4 w-4 text-primary" />
-                    <span className="font-medium truncate max-w-[250px]">{arquivo.name}</span>
+                    <span className="font-medium">
+                      {arquivos.length === 1
+                        ? arquivos[0].name
+                        : `${arquivos.length} arquivos selecionados`}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatFileSize(arquivos.reduce((acc, f) => acc + f.size, 0))}
+                    </span>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <Paperclip className="h-6 w-6" />
                     <span className="text-sm">Clique para selecionar</span>
-                    <span className="text-xs">PDF, DOC, DOCX, XLS, JPG, PNG</span>
+                    <span className="text-xs">PDF, DOC, DOCX, XLS, JPG, PNG (múltiplos permitidos)</span>
                   </div>
                 )}
               </div>
               <input
                 ref={fileInputRef}
                 type="file"
+                multiple
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
                 className="hidden"
-                onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
+                onChange={(e) => setArquivos(e.target.files ? Array.from(e.target.files) : [])}
               />
             </div>
           </div>
@@ -233,6 +267,18 @@ export function ContratosEvento({ evento }: ContratosEventoProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Confirmação de exclusão */}
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Excluir documento"
+        description="Tem certeza que deseja excluir este documento? Esta ação não pode ser desfeita."
+        onConfirm={handleConfirmRemover}
+        variant="danger"
+        confirmText="Excluir"
+        cancelText="Cancelar"
+      />
     </div>
   );
 }

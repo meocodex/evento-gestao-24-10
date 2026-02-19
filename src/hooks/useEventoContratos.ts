@@ -9,6 +9,7 @@ type EventoContratoDB = {
   titulo: string;
   arquivo_assinado_url: string | null;
   arquivo_assinado_nome: string | null;
+  arquivo_tamanho: number | null;
   created_at: string;
 };
 
@@ -19,6 +20,7 @@ function transformDocumento(raw: EventoContratoDB): DocumentoEvento {
     titulo: raw.titulo,
     arquivoUrl: raw.arquivo_assinado_url,
     arquivoNome: raw.arquivo_assinado_nome,
+    arquivoTamanho: raw.arquivo_tamanho,
     criadoEm: raw.created_at,
   };
 }
@@ -35,7 +37,7 @@ export function useEventoDocumentos(eventoId: string) {
     queryFn: async (): Promise<DocumentoEvento[]> => {
       const { data, error } = await supabaseAny
         .from('eventos_contratos')
-        .select('id, evento_id, titulo, arquivo_assinado_url, arquivo_assinado_nome, created_at')
+        .select('id, evento_id, titulo, arquivo_assinado_url, arquivo_assinado_nome, arquivo_tamanho, created_at')
         .eq('evento_id', eventoId)
         .not('arquivo_assinado_url', 'is', null)
         .order('created_at', { ascending: false });
@@ -67,8 +69,9 @@ export function useEventoDocumentos(eventoId: string) {
           tipo: 'documento',
           conteudo: '',
           status: 'finalizado',
-          arquivo_assinado_url: path, // armazenar o path para gerar URLs assinadas
+          arquivo_assinado_url: path,
           arquivo_assinado_nome: arquivo.name,
+          arquivo_tamanho: arquivo.size,
         });
 
       if (insertError) throw insertError;
@@ -84,10 +87,8 @@ export function useEventoDocumentos(eventoId: string) {
 
   const removerDocumento = useMutation({
     mutationFn: async ({ id, storagePath }: { id: string; storagePath: string }) => {
-      // Remover do storage
       await supabase.storage.from('contratos').remove([storagePath]);
 
-      // Remover da tabela
       const { error } = await supabaseAny
         .from('eventos_contratos')
         .delete()

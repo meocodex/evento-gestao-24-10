@@ -4,5 +4,6 @@ export interface DocumentoEvento {
   titulo: string;
   arquivoUrl: string | null;
   arquivoNome: string | null;
+  arquivoTamanho: number | null;
   criadoEm: string;
 }
