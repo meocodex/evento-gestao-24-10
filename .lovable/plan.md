@@ -2,13 +2,9 @@
 
 ## Reorganizar Sidebar com Sub-menus
 
-### Situacao Atual
+### Estrutura Proposta
 
-O sidebar tem 11 itens em uma lista plana sob um unico grupo "Menu Principal". Com tantos itens, fica dificil localizar rapidamente o que se precisa, especialmente em telas menores.
-
-### Nova Estrutura Proposta
-
-Organizar os itens em 4 grupos logicos usando componentes Collapsible (ja disponivel no projeto):
+Dashboard e Eventos permanecem no grupo "Menu Principal" (sem mudanca). Os demais itens sao distribuidos em 3 novos grupos tematicos:
 
 ```text
 +-----------------------------------+
@@ -16,7 +12,7 @@ Organizar os itens em 4 grupos logicos usando componentes Collapsible (ja dispon
 |      Nome do usuario              |
 +-----------------------------------+
 |                                   |
-|  GERAL                            |
+|  MENU PRINCIPAL                   |
 |    > Dashboard                    |
 |    > Eventos                      |
 |                                   |
@@ -45,12 +41,12 @@ Organizar os itens em 4 grupos logicos usando componentes Collapsible (ja dispon
 
 **Arquivo alterado:** `src/components/layout/AppSidebar.tsx`
 
-1. **Reestruturar dados do menu** - Substituir o array plano `menuItems` por um array de grupos, cada um com label e array de itens:
+1. **Reestruturar dados do menu** - Substituir o array plano `menuItems` por um array de grupos:
 
 ```typescript
 const menuGroups = [
   {
-    label: 'Geral',
+    label: 'Menu Principal',
     items: [
       { title: 'Dashboard', url: '/dashboard', icon: Home },
       { title: 'Eventos', url: '/eventos', icon: Calendar },
@@ -83,20 +79,18 @@ const menuGroups = [
 ];
 ```
 
-2. **Usar multiplos `SidebarGroup`** - Cada grupo renderiza um `SidebarGroup` com seu `SidebarGroupLabel`, mantendo os grupos sempre expandidos (sem collapse de grupo, apenas separacao visual). Isso mantem a navegacao rapida enquanto organiza visualmente.
+2. **Renderizar multiplos SidebarGroup** - Cada grupo vira um `SidebarGroup` com seu `SidebarGroupLabel`. Todos ficam sempre expandidos (separacao visual, sem collapse).
 
-3. **Manter logica de permissoes** - A filtragem por permissoes continua identica, aplicada dentro de cada grupo. Grupos que ficam vazios apos filtragem sao ocultados automaticamente.
+3. **Manter logica de permissoes** - A filtragem por permissoes continua identica, aplicada por item dentro de cada grupo. Grupos que ficam vazios apos filtragem sao ocultados automaticamente.
 
-4. **Sidebar colapsado** - Quando em modo colapsado (icones apenas), os labels dos grupos desaparecem e so os icones ficam visiveis com tooltips, comportamento ja nativo do componente.
-
-5. **Sem mudancas em outros arquivos** - Nenhuma alteracao no `MainLayout.tsx`, rotas, ou componente `sidebar.tsx`.
+4. **Sidebar colapsado** - Labels de grupo desaparecem, apenas icones com tooltips. Comportamento nativo do componente.
 
 ### Resumo
 
 | Acao | Detalhe |
 |---|---|
-| Alterar `AppSidebar.tsx` | Reorganizar de lista plana para 4 grupos tematicos |
-| Sem novas dependencias | Usa apenas componentes Sidebar ja existentes |
-| Sem mudanca de rotas | URLs e permissoes permanecem identicas |
+| Alterar `AppSidebar.tsx` | Reorganizar de lista plana para 4 grupos (Menu Principal + 3 tematicos) |
+| Sem novas dependencias | Usa componentes Sidebar ja existentes |
+| Sem mudanca de rotas | URLs e permissoes identicas |
 | Sem migracoes SQL | Nenhuma alteracao no banco |
 
