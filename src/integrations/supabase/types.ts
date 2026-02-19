@@ -1294,6 +1294,7 @@ export type Database = {
         Row: {
           arquivo_assinado_nome: string | null
           arquivo_assinado_url: string | null
+          arquivo_tamanho: number | null
           conteudo: string
           created_at: string
           evento_id: string
@@ -1306,6 +1307,7 @@ export type Database = {
         Insert: {
           arquivo_assinado_nome?: string | null
           arquivo_assinado_url?: string | null
+          arquivo_tamanho?: number | null
           conteudo?: string
           created_at?: string
           evento_id: string
@@ -1318,6 +1320,7 @@ export type Database = {
         Update: {
           arquivo_assinado_nome?: string | null
           arquivo_assinado_url?: string | null
+          arquivo_tamanho?: number | null
           conteudo?: string
           created_at?: string
           evento_id?: string
