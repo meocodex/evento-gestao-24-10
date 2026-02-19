@@ -35,19 +35,41 @@ import { cn } from '@/lib/utils';
 import { useSidebar } from '@/components/ui/sidebar';
 import { supabase } from '@/integrations/supabase/client';
 
-const menuItems = [
-  { title: 'Dashboard', url: '/dashboard', icon: Home },
-  { title: 'Eventos', url: '/eventos', icon: Calendar },
-  { title: 'Clientes', url: '/clientes', icon: Users },
-  { title: 'Demandas', url: '/demandas', icon: ClipboardList },
-  { title: 'Equipe', url: '/equipe', icon: UserCog },
-  
-  { title: 'Estoque', url: '/estoque', icon: Package },
-  { title: 'Transportadoras', url: '/transportadoras', icon: Truck },
-  { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
-  { title: 'Relatórios', url: '/relatorios', icon: BarChart3 },
-  { title: 'Performance', url: '/performance', icon: Activity },
-  { title: 'Configurações', url: '/configuracoes', icon: Settings },
+type MenuItem = { title: string; url: string; icon: React.ComponentType<{ className?: string }> };
+type MenuGroup = { label: string; items: MenuItem[] };
+
+const menuGroups: MenuGroup[] = [
+  {
+    label: 'Menu Principal',
+    items: [
+      { title: 'Dashboard', url: '/dashboard', icon: Home },
+      { title: 'Eventos', url: '/eventos', icon: Calendar },
+    ],
+  },
+  {
+    label: 'Pessoas',
+    items: [
+      { title: 'Clientes', url: '/clientes', icon: Users },
+      { title: 'Equipe', url: '/equipe', icon: UserCog },
+      { title: 'Demandas', url: '/demandas', icon: ClipboardList },
+    ],
+  },
+  {
+    label: 'Operacional',
+    items: [
+      { title: 'Estoque', url: '/estoque', icon: Package },
+      { title: 'Transportadoras', url: '/transportadoras', icon: Truck },
+    ],
+  },
+  {
+    label: 'Gestão',
+    items: [
+      { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
+      { title: 'Relatórios', url: '/relatorios', icon: BarChart3 },
+      { title: 'Performance', url: '/performance', icon: Activity },
+      { title: 'Configurações', url: '/configuracoes', icon: Settings },
+    ],
+  },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -58,71 +80,41 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const isAdmin = user?.isAdmin === true;
 
-  const filteredItems = menuItems.filter(item => {
-    // Admin vê tudo
+  const canSeeItem = (title: string): boolean => {
     if (isAdmin) return true;
-    
-    // Verificações específicas por item
-    switch (item.title) {
+    switch (title) {
       case 'Dashboard':
-        return true; // Dashboard é público para usuários autenticados
-      
+        return true;
       case 'Eventos':
-        return hasAnyPermission([
-          'eventos.visualizar',
-          'eventos.visualizar_proprios',
-          'eventos.visualizar_todos',
-          'eventos.criar',
-          'eventos.editar_proprios',
-          'eventos.editar_todos'
-        ]);
-      
+        return hasAnyPermission(['eventos.visualizar', 'eventos.visualizar_proprios', 'eventos.visualizar_todos', 'eventos.criar', 'eventos.editar_proprios', 'eventos.editar_todos']);
       case 'Clientes':
-        return hasAnyPermission([
-          'clientes.visualizar',
-          'clientes.criar',
-          'clientes.editar'
-        ]);
-      
+        return hasAnyPermission(['clientes.visualizar', 'clientes.criar', 'clientes.editar']);
       case 'Demandas':
-        return hasAnyPermission([
-          'demandas.visualizar',
-          'demandas.criar',
-          'demandas.editar',
-          'demandas.atribuir'
-        ]);
-      
+        return hasAnyPermission(['demandas.visualizar', 'demandas.criar', 'demandas.editar', 'demandas.atribuir']);
       case 'Equipe':
         return hasAnyPermission(['equipe.visualizar', 'equipe.editar']);
-      
       case 'Estoque':
         return hasAnyPermission(['estoque.visualizar', 'estoque.editar', 'estoque.alocar']);
-      
       case 'Transportadoras':
         return hasAnyPermission(['transportadoras.visualizar', 'transportadoras.editar']);
-      
       case 'Financeiro':
-        return hasAnyPermission([
-          'financeiro.visualizar',
-          'financeiro.visualizar_proprios',
-          'financeiro.editar'
-        ]);
-      
+        return hasAnyPermission(['financeiro.visualizar', 'financeiro.visualizar_proprios', 'financeiro.editar']);
       case 'Relatórios':
-        return hasAnyPermission([
-          'relatorios.visualizar',
-          'relatorios.gerar',
-          'relatorios.exportar'
-        ]);
-      
+        return hasAnyPermission(['relatorios.visualizar', 'relatorios.gerar', 'relatorios.exportar']);
       case 'Performance':
       case 'Configurações':
-        return false; // Apenas admin
-      
+        return false;
       default:
-        return false; // Por segurança, ocultar itens desconhecidos
+        return false;
     }
-  });
+  };
+
+  const filteredGroups = menuGroups
+    .map(group => ({
+      ...group,
+      items: group.items.filter(item => canSeeItem(item.title)),
+    }))
+    .filter(group => group.items.length > 0);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -148,36 +140,38 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60 px-4">
-            Menu Principal
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-1 px-2">
-              {filteredItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton 
-                    asChild 
-                    isActive={isActive(item.url)}
-                    className={cn(
-                      "mx-2 min-h-[44px] transition-all duration-200",
-                      isActive(item.url) && "border-l-4 border-accent shadow-md"
-                    )}
-                    tooltip={state === 'collapsed' ? item.title : undefined}
-                  >
-                    <Link to={item.url}>
-                      <item.icon className="h-5 w-5" />
-                      <span className="font-medium">{item.title}</span>
-                      {isActive(item.url) && (
-                        <div className="ml-auto w-2 h-2 rounded-full bg-accent animate-pulse" />
+        {filteredGroups.map((group) => (
+          <SidebarGroup key={group.label}>
+            <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60 px-4">
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="space-y-1 px-2">
+                {group.items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive(item.url)}
+                      className={cn(
+                        "mx-2 min-h-[44px] transition-all duration-200",
+                        isActive(item.url) && "border-l-4 border-accent shadow-md"
                       )}
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                      tooltip={state === 'collapsed' ? item.title : undefined}
+                    >
+                      <Link to={item.url}>
+                        <item.icon className="h-5 w-5" />
+                        <span className="font-medium">{item.title}</span>
+                        {isActive(item.url) && (
+                          <div className="ml-auto w-2 h-2 rounded-full bg-accent animate-pulse" />
+                        )}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border/30 p-3 md:p-4">
