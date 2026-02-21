@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Upload, X, FileText, Image as ImageIcon } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import type { AnexoFinanceiro } from '@/types/financeiro';
 import { useUploadAnexos } from '@/hooks/financeiro';
@@ -44,6 +45,12 @@ export function AnexosUpload({
   const removerAnexo = async (anexo: AnexoFinanceiro) => {
     await deletarAnexo(anexo.url);
     onAnexosChange(anexosAtuais.filter(a => a.url !== anexo.url));
+  };
+
+  const atualizarDescricao = (index: number, descricao: string) => {
+    const novos = [...anexosAtuais];
+    novos[index] = { ...novos[index], descricao };
+    onAnexosChange(novos);
   };
 
   const formatBytes = (bytes: number) => {
@@ -90,20 +97,26 @@ export function AnexosUpload({
       )}
 
       {anexosAtuais.length > 0 && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-3">
           {anexosAtuais.map((anexo, index) => (
             <div
               key={index}
-              className="flex items-center gap-2 p-3 border rounded-lg bg-card"
+              className="flex items-start gap-2 p-3 border rounded-lg bg-card"
             >
               {anexo.tipo.startsWith('image/') ? (
-                <ImageIcon className="h-8 w-8 text-primary flex-shrink-0" />
+                <ImageIcon className="h-8 w-8 text-primary flex-shrink-0 mt-1" />
               ) : (
-                <FileText className="h-8 w-8 text-destructive flex-shrink-0" />
+                <FileText className="h-8 w-8 text-destructive flex-shrink-0 mt-1" />
               )}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 space-y-1">
                 <p className="text-sm font-medium truncate">{anexo.nome}</p>
                 <p className="text-xs text-muted-foreground">{formatBytes(anexo.tamanho)}</p>
+                <Input
+                  placeholder="Ex: Comprovante, Nota Fiscal..."
+                  value={anexo.descricao || ''}
+                  onChange={(e) => atualizarDescricao(index, e.target.value)}
+                  className="h-8 text-xs"
+                />
               </div>
               <Button
                 variant="ghost"

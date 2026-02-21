@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Eye, Pencil, Trash2, CheckCircle, Repeat, FileText, FileSpreadsheet, FileX2 } from 'lucide-react';
+import { Eye, Pencil, Trash2, Repeat, FileText, FileSpreadsheet, FileX2, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -21,7 +21,7 @@ export function TabelaContasPagar({ contas, onDetalhes, onEditar, onMarcarPago, 
     const variants: Record<string, StatusBadgeConfig> = {
       pendente: { variant: 'outline', label: 'Pendente' },
       pago: { variant: 'default', label: 'Pago' },
-      vencido: { variant: 'destructive', label: 'Vencido' },
+      vencido: { variant: 'destructive', label: 'Em Atraso' },
       cancelado: { variant: 'secondary', label: 'Cancelado' },
     };
     const { variant, label } = variants[status] || variants.pendente;
@@ -82,7 +82,12 @@ export function TabelaContasPagar({ contas, onDetalhes, onEditar, onMarcarPago, 
           </TableHeader>
           <TableBody>
             {contas.map((conta) => (
-              <TableRow key={conta.id} className="h-12 transition-colors duration-200">
+              <TableRow 
+                key={conta.id} 
+                className={`h-12 transition-colors duration-200 ${
+                  conta.status === 'vencido' ? 'bg-destructive/5' : ''
+                }`}
+              >
                 <TableCell className="py-2.5">
                   {format(new Date(conta.data_vencimento), 'dd/MM/yyyy', { locale: ptBR })}
                 </TableCell>
@@ -104,7 +109,7 @@ export function TabelaContasPagar({ contas, onDetalhes, onEditar, onMarcarPago, 
                 </TableCell>
                 <TableCell className="py-2.5">{getStatusBadge(conta.status)}</TableCell>
                 <TableCell className="text-right py-2.5">
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-1.5">
                     <Button
                       variant="ghost"
                       size="icon"
@@ -113,14 +118,14 @@ export function TabelaContasPagar({ contas, onDetalhes, onEditar, onMarcarPago, 
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    {conta.status === 'pendente' && (
+                    {(conta.status === 'pendente' || conta.status === 'vencido') && (
                       <Button
-                        variant="ghost"
-                        size="icon"
+                        size="sm"
                         onClick={() => onMarcarPago(conta)}
-                        aria-label="Marcar como pago"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1"
                       >
-                        <CheckCircle className="h-4 w-4" />
+                        <DollarSign className="h-3.5 w-3.5" />
+                        Pagar
                       </Button>
                     )}
                     <Button

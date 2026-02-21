@@ -30,7 +30,7 @@ export function useContasReceber() {
         .insert([{
           ...data,
           created_by: user?.id
-        } as any])
+        } as never])
         .select()
         .single();
       
@@ -50,7 +50,7 @@ export function useContasReceber() {
     mutationFn: async ({ id, ...data }: Partial<ContaReceber> & { id: string }) => {
       const { error } = await supabase
         .from('contas_receber')
-        .update(data as any)
+        .update(data as never)
         .eq('id', id);
       
       if (error) throw error;
@@ -65,19 +65,25 @@ export function useContasReceber() {
     mutationFn: async ({ 
       id, 
       data_recebimento, 
-      forma_recebimento 
+      forma_recebimento,
+      observacoes_pagamento,
+      comprovante_pagamento,
     }: { 
       id: string; 
       data_recebimento: string; 
       forma_recebimento: string;
+      observacoes_pagamento?: string;
+      comprovante_pagamento?: string;
     }) => {
       const { error } = await supabase
         .from('contas_receber')
         .update({ 
           status: 'recebido', 
           data_recebimento,
-          forma_recebimento
-        })
+          forma_recebimento,
+          observacoes_pagamento: observacoes_pagamento ?? null,
+          comprovante_pagamento: comprovante_pagamento ?? null,
+        } as never)
         .eq('id', id);
       
       if (error) throw error;

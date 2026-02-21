@@ -381,6 +381,7 @@ export type Database = {
         Row: {
           anexos: Json | null
           categoria: string
+          comprovante_pagamento: string | null
           created_at: string | null
           created_by: string | null
           data_pagamento: string | null
@@ -390,6 +391,7 @@ export type Database = {
           fornecedor: string | null
           id: string
           observacoes: string | null
+          observacoes_pagamento: string | null
           proxima_data_geracao: string | null
           quantidade: number
           recorrencia: string
@@ -403,6 +405,7 @@ export type Database = {
         Insert: {
           anexos?: Json | null
           categoria: string
+          comprovante_pagamento?: string | null
           created_at?: string | null
           created_by?: string | null
           data_pagamento?: string | null
@@ -412,6 +415,7 @@ export type Database = {
           fornecedor?: string | null
           id?: string
           observacoes?: string | null
+          observacoes_pagamento?: string | null
           proxima_data_geracao?: string | null
           quantidade?: number
           recorrencia: string
@@ -425,6 +429,7 @@ export type Database = {
         Update: {
           anexos?: Json | null
           categoria?: string
+          comprovante_pagamento?: string | null
           created_at?: string | null
           created_by?: string | null
           data_pagamento?: string | null
@@ -434,6 +439,7 @@ export type Database = {
           fornecedor?: string | null
           id?: string
           observacoes?: string | null
+          observacoes_pagamento?: string | null
           proxima_data_geracao?: string | null
           quantidade?: number
           recorrencia?: string
@@ -458,6 +464,7 @@ export type Database = {
         Row: {
           anexos: Json | null
           cliente: string | null
+          comprovante_pagamento: string | null
           created_at: string | null
           created_by: string | null
           data_recebimento: string | null
@@ -466,6 +473,7 @@ export type Database = {
           forma_recebimento: string | null
           id: string
           observacoes: string | null
+          observacoes_pagamento: string | null
           proxima_data_geracao: string | null
           quantidade: number
           recorrencia: string
@@ -480,6 +488,7 @@ export type Database = {
         Insert: {
           anexos?: Json | null
           cliente?: string | null
+          comprovante_pagamento?: string | null
           created_at?: string | null
           created_by?: string | null
           data_recebimento?: string | null
@@ -488,6 +497,7 @@ export type Database = {
           forma_recebimento?: string | null
           id?: string
           observacoes?: string | null
+          observacoes_pagamento?: string | null
           proxima_data_geracao?: string | null
           quantidade?: number
           recorrencia: string
@@ -502,6 +512,7 @@ export type Database = {
         Update: {
           anexos?: Json | null
           cliente?: string | null
+          comprovante_pagamento?: string | null
           created_at?: string | null
           created_by?: string | null
           data_recebimento?: string | null
@@ -510,6 +521,7 @@ export type Database = {
           forma_recebimento?: string | null
           id?: string
           observacoes?: string | null
+          observacoes_pagamento?: string | null
           proxima_data_geracao?: string | null
           quantidade?: number
           recorrencia?: string

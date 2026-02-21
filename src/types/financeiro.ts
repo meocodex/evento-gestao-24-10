@@ -18,6 +18,7 @@ export interface AnexoFinanceiro {
   tipo: string;
   tamanho: number;
   uploadEm: string;
+  descricao?: string;
 }
 
 export interface ContaPagar {
@@ -35,6 +36,8 @@ export interface ContaPagar {
   fornecedor?: string;
   responsavel?: string;
   observacoes?: string;
+  observacoes_pagamento?: string;
+  comprovante_pagamento?: string;
   anexos: AnexoFinanceiro[];
   recorrencia_origem_id?: string;
   proxima_data_geracao?: string;
@@ -58,6 +61,8 @@ export interface ContaReceber {
   cliente?: string;
   responsavel?: string;
   observacoes?: string;
+  observacoes_pagamento?: string;
+  comprovante_pagamento?: string;
   anexos: AnexoFinanceiro[];
   recorrencia_origem_id?: string;
   proxima_data_geracao?: string;
