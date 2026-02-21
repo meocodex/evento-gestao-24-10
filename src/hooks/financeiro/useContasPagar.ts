@@ -30,7 +30,7 @@ export function useContasPagar() {
         .insert([{
           ...data,
           created_by: user?.id
-        } as any])
+        } as never])
         .select()
         .single();
       
@@ -50,7 +50,7 @@ export function useContasPagar() {
     mutationFn: async ({ id, ...data }: Partial<ContaPagar> & { id: string }) => {
       const { error } = await supabase
         .from('contas_pagar')
-        .update(data as any)
+        .update(data as never)
         .eq('id', id);
       
       if (error) throw error;
@@ -65,19 +65,25 @@ export function useContasPagar() {
     mutationFn: async ({ 
       id, 
       data_pagamento, 
-      forma_pagamento 
+      forma_pagamento,
+      observacoes_pagamento,
+      comprovante_pagamento,
     }: { 
       id: string; 
       data_pagamento: string; 
       forma_pagamento: string;
+      observacoes_pagamento?: string;
+      comprovante_pagamento?: string;
     }) => {
       const { error } = await supabase
         .from('contas_pagar')
         .update({ 
           status: 'pago', 
           data_pagamento,
-          forma_pagamento
-        })
+          forma_pagamento,
+          observacoes_pagamento: observacoes_pagamento ?? null,
+          comprovante_pagamento: comprovante_pagamento ?? null,
+        } as never)
         .eq('id', id);
       
       if (error) throw error;

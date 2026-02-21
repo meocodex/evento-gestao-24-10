@@ -3,19 +3,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { ContaReceber, FormaPagamento } from '@/types/financeiro';
+import { AnexosUpload } from '@/components/financeiro/AnexosUpload';
+import type { ContaReceber, FormaPagamento, AnexoFinanceiro } from '@/types/financeiro';
 
 interface MarcarRecebidoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   conta: ContaReceber | null;
-  onConfirm: (data: { id: string; data_recebimento: string; forma_recebimento: string }) => void;
+  onConfirm: (data: { 
+    id: string; 
+    data_recebimento: string; 
+    forma_recebimento: string;
+    observacoes_pagamento?: string;
+    comprovante_pagamento?: string;
+  }) => void;
 }
 
 export function MarcarRecebidoDialog({ open, onOpenChange, conta, onConfirm }: MarcarRecebidoDialogProps) {
   const [dataRecebimento, setDataRecebimento] = useState(new Date().toISOString().split('T')[0]);
   const [formaRecebimento, setFormaRecebimento] = useState<FormaPagamento>('PIX');
+  const [observacoes, setObservacoes] = useState('');
+  const [anexos, setAnexos] = useState<AnexoFinanceiro[]>([]);
 
   const handleConfirm = () => {
     if (!conta) return;
@@ -23,13 +33,17 @@ export function MarcarRecebidoDialog({ open, onOpenChange, conta, onConfirm }: M
       id: conta.id,
       data_recebimento: dataRecebimento,
       forma_recebimento: formaRecebimento,
+      observacoes_pagamento: observacoes || undefined,
+      comprovante_pagamento: anexos.length > 0 ? anexos[0].url : undefined,
     });
+    setObservacoes('');
+    setAnexos([]);
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Marcar como Recebido</DialogTitle>
         </DialogHeader>
@@ -67,6 +81,24 @@ export function MarcarRecebidoDialog({ open, onOpenChange, conta, onConfirm }: M
                 <SelectItem value="Dinheiro">Dinheiro</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <Label htmlFor="observacoes_recebimento">Observações do Recebimento</Label>
+            <Textarea
+              id="observacoes_recebimento"
+              placeholder="Nota sobre o recebimento..."
+              value={observacoes}
+              onChange={(e) => setObservacoes(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <div>
+            <Label>Comprovante de Recebimento</Label>
+            <AnexosUpload
+              onAnexosChange={setAnexos}
+              anexosAtuais={anexos}
+              maxFiles={5}
+            />
           </div>
         </div>
         <DialogFooter>
