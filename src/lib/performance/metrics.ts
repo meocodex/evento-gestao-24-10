@@ -55,8 +55,8 @@ class PerformanceMonitor {
       this.metrics.shift();
     }
     
-    // Alert para queries lentas
-    if (duration > this.slowQueryThreshold) {
+    // Alert para queries lentas (apenas em dev)
+    if (import.meta.env.DEV && duration > this.slowQueryThreshold) {
       console.warn(
         `⚠️ Slow query detected: ${key} (${duration}ms)`,
         { success, error }

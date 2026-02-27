@@ -3,8 +3,6 @@ import {
   convertToWebP,
   generateBlurDataURL,
   optimizeImage,
-  generateSrcSet,
-  generateSizes,
   isImageFile,
   validateFileSize,
 } from '@/lib/imageOptimization';
@@ -165,60 +163,6 @@ describe('imageOptimization', () => {
       const result = await optimizeImage(file);
 
       expect(result.optimizedFile.name).toBe('photo.webp');
-    });
-  });
-
-  describe('generateSrcSet', () => {
-    it('deve gerar srcset com larguras padrão', () => {
-      const srcset = generateSrcSet('https://example.com/image.jpg');
-
-      expect(srcset).toContain('640w');
-      expect(srcset).toContain('750w');
-      expect(srcset).toContain('1920w');
-    });
-
-    it('deve gerar srcset com larguras customizadas', () => {
-      const srcset = generateSrcSet('https://example.com/image.jpg', [400, 800, 1200]);
-
-      expect(srcset).toContain('400w');
-      expect(srcset).toContain('800w');
-      expect(srcset).toContain('1200w');
-      expect(srcset).not.toContain('640w');
-    });
-
-    it('deve formatar URLs corretamente', () => {
-      const srcset = generateSrcSet('https://example.com/image.jpg', [640]);
-
-      expect(srcset).toBe('https://example.com/image.jpg?w=640 640w');
-    });
-  });
-
-  describe('generateSizes', () => {
-    it('deve gerar sizes com breakpoints padrão', () => {
-      const sizes = generateSizes();
-
-      expect(sizes).toContain('(max-width: 640px) 100vw');
-      expect(sizes).toContain('(max-width: 768px) 50vw');
-      expect(sizes).toContain('25vw');
-    });
-
-    it('deve gerar sizes com breakpoints customizados', () => {
-      const customBreakpoints = [
-        { maxWidth: '480px', size: '100vw' },
-        { maxWidth: '1024px', size: '40vw' },
-      ];
-
-      const sizes = generateSizes(customBreakpoints);
-
-      expect(sizes).toContain('(max-width: 480px) 100vw');
-      expect(sizes).toContain('(max-width: 1024px) 40vw');
-      expect(sizes).toContain('25vw');
-    });
-
-    it('deve sempre incluir fallback de 25vw', () => {
-      const sizes = generateSizes([]);
-
-      expect(sizes).toBe('25vw');
     });
   });
 });

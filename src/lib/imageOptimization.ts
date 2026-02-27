@@ -111,26 +111,6 @@ export async function optimizeImage(file: File): Promise<{
   return { optimizedFile, blurDataURL };
 }
 
-/**
- * Gera URLs responsivas (srcset) para uma imagem
- */
-export function generateSrcSet(baseUrl: string, widths: number[] = [640, 750, 828, 1080, 1200, 1920]): string {
-  return widths
-    .map(w => `${baseUrl}?w=${w} ${w}w`)
-    .join(', ');
-}
-
-/**
- * Gera sizes attribute para responsive images
- */
-export function generateSizes(breakpoints: { maxWidth: string; size: string }[] = [
-  { maxWidth: '640px', size: '100vw' },
-  { maxWidth: '768px', size: '50vw' },
-  { maxWidth: '1024px', size: '33vw' },
-]): string {
-  const sizeStrings = breakpoints.map(bp => `(max-width: ${bp.maxWidth}) ${bp.size}`);
-  return [...sizeStrings, '25vw'].join(', ');
-}
 
 /**
  * Valida se o arquivo é uma imagem suportada
