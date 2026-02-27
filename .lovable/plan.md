@@ -1,86 +1,85 @@
 
-# Adicionar Realtime em Todo o Sistema
+# Limpeza de Codigo Morto e Melhorias de Performance
 
-## Problema Atual
-O sistema tem um hub centralizado de realtime (`useRealtimeHub.ts`) que monitora 25 tabelas, mas:
-1. **Varias tabelas importantes nao estao na publicacao realtime** do banco de dados, entao o hub nao recebe eventos delas
-2. **Canais duplicados** existem em 3 arquivos (`useProfilesQueries`, `useEstoqueSeriais`, `useNotificacoes`), desperdicando conexoes WebSocket
-3. **Tabelas faltando no hub**: `notificacoes`, `base_conhecimento_artigos`, `cadastros_publicos`, `eventos_cobrancas`, `contratos`, `contratos_templates`, `user_roles`, `configuracoes_empresa`, `configuracoes_taxas_pagamento`, `configuracoes_fechamento`, `materiais_historico_movimentacao`
+## Resumo
+Analise completa do codebase identificou **10 itens de codigo morto** e **3 melhorias de performance** que podem ser aplicados.
 
-## Solucao
+---
 
-### 1. Migracao SQL - Habilitar Realtime nas Tabelas Faltantes
+## 1. Arquivos Mortos para Remover
 
-Adicionar todas as tabelas que o sistema usa a publicacao `supabase_realtime`:
+### 1.1 `src/lib/optimizations/iconImports.ts`
+- Re-exporta icones do lucide-react mas **nenhum arquivo importa dele**
+- Lucide-react ja faz tree-shaking nativamente via imports diretos
+- **Acao**: Remover arquivo e diretorio `src/lib/optimizations/`
 
-```text
-ALTER PUBLICATION supabase_realtime ADD TABLE public.eventos;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.demandas;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.demandas_comentarios;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.demandas_anexos;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.clientes;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.equipe_operacional;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.contas_pagar;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.contas_receber;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.eventos_contratos;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.eventos_despesas;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.eventos_receitas;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.eventos_equipe;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.eventos_timeline;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.eventos_cobrancas;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.transportadoras;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.transportadoras_rotas;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.profiles;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.base_conhecimento_artigos;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.cadastros_publicos;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.contratos;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.contratos_templates;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.configuracoes_empresa;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.configuracoes_taxas_pagamento;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.configuracoes_fechamento;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.envios;
-```
+### 1.2 `src/hooks/useEventoPermissions.ts` + teste
+- Marcado como **DEPRECATED** com documentacao extensa
+- **Nenhum componente ou pagina importa este hook** (apenas seu proprio teste)
+- Substituido por `usePermissions` em todo o sistema
+- **Acao**: Remover `src/hooks/useEventoPermissions.ts` e `src/hooks/__tests__/useEventoPermissions.test.ts`
 
-### 2. Atualizar useRealtimeHub.ts - Adicionar Tabelas Faltantes
+### 1.3 `src/hooks/useEstoqueValidation.ts`
+- Hook completo com 237 linhas
+- **Nenhum arquivo importa este hook** em nenhum lugar do projeto
+- **Acao**: Remover arquivo
 
-Adicionar ao `TableName` e ao `TABLE_QUERY_MAP`:
+### 1.4 `src/components/shared/OptimizedImage.tsx`
+- Componente de imagem otimizada com lazy loading
+- **Nenhum componente importa ele** em nenhum lugar do projeto
+- **Acao**: Remover arquivo
 
-| Tabela | Query Keys Invalidadas |
-|--------|----------------------|
-| `notificacoes` | `['notificacoes']` |
-| `base_conhecimento_artigos` | `['base-conhecimento-artigos']`, `['base-conhecimento-categorias']` |
-| `cadastros_publicos` | `['cadastros-publicos']` |
-| `eventos_cobrancas` | `['eventos-cobrancas']` |
-| `contratos` | `['contratos']`, `['dashboard-stats']` |
-| `contratos_templates` | `['contratos-templates']` |
-| `user_roles` | `['profiles-equipe']`, `['usuarios']` |
-| `configuracoes_empresa` | `['configuracoes_empresa']` |
-| `configuracoes_taxas_pagamento` | `['configuracoes-taxas-pagamento']` |
-| `configuracoes_fechamento` | `['configuracoes_fechamento']` |
-| `materiais_historico_movimentacao` | `['materiais-historico']` |
+### 1.5 `src/components/shared/InfoGrid.md`
+- Documentacao markdown dentro do diretorio de componentes
+- Nao e importado nem referenciado por nenhum arquivo
+- **Acao**: Remover (a documentacao do componente esta nos JSDoc do proprio InfoGrid.tsx)
 
-### 3. Remover Canais Duplicados
+### 1.6 `src/components/shared/sheets/__examples__/` (diretorio inteiro)
+- `FormSheetWithZodExamples.tsx` - exemplos de uso com console.logs
+- `TESTING_GUIDE.md` - guia de testes
+- **Nenhum arquivo importa nada deste diretorio**
+- **Acao**: Remover diretorio `__examples__/`
 
-Remover os `useEffect` com `supabase.channel()` duplicados de:
+### 1.7 `src/lib/imageOptimization.ts` - funcoes nao utilizadas
+- `generateSrcSet()` e `generateSizes()` - **nunca importadas** por nenhum componente (o OptimizedImage tem sua propria implementacao interna, e ele proprio sera removido)
+- `convertToWebP()` e `generateBlurDataURL()` - usadas indiretamente via `optimizeImage()` que e importada em `useEventosArquivos.ts`
+- **Acao**: Remover `generateSrcSet` e `generateSizes` do arquivo (manter `optimizeImage`, `isImageFile`, `validateFileSize`)
 
-- **`src/contexts/equipe/useProfilesQueries.ts`** - Remove canal `profiles-equipe-changes` (profiles, user_roles e user_permissions ja estao no hub)
-- **`src/contexts/estoque/useEstoqueSeriais.ts`** - Remove canal `materiais-seriais-{id}` (materiais_seriais ja esta no hub)
-- **`src/hooks/useNotificacoes.ts`** - Remove canal `notificacoes-realtime` (sera adicionado ao hub)
+## 2. Import Morto para Limpar
 
-### Detalhes Tecnicos
+### 2.1 `src/contexts/equipe/useProfilesQueries.ts`
+- Importa `useEffect` do React mas **nao o utiliza** (o canal realtime duplicado foi removido mas o import ficou)
+- **Acao**: Remover `import { useEffect } from 'react';` da linha 3
 
-**Arquivos a criar:**
-- Migracao SQL para habilitar realtime
+## 3. Melhorias de Performance
 
-**Arquivos a modificar:**
-- `src/hooks/useRealtimeHub.ts` - Adicionar 11 novas tabelas ao TypeName e TABLE_QUERY_MAP
-- `src/contexts/equipe/useProfilesQueries.ts` - Remover useEffect com canal duplicado
-- `src/contexts/estoque/useEstoqueSeriais.ts` - Remover useEffect com canal duplicado
-- `src/hooks/useNotificacoes.ts` - Remover useEffect com canal duplicado
+### 3.1 Remover `performanceMonitor` do QueryCache em producao
+- O `performanceMonitor` em `AppProviders.tsx` roda em **cada query e mutation** (onSuccess/onError), criando objetos e armazenando ate 1000 metricas em memoria
+- So e util na pagina `/performance` (ferramenta de dev)
+- **Acao**: Envolver os callbacks do QueryCache/MutationCache com checagem `process.env.NODE_ENV === 'development'` para evitar overhead em producao
 
-**Sequencia:**
-1. Criar migracao SQL
-2. Atualizar hub com todas as tabelas faltantes
-3. Remover canais duplicados dos 3 arquivos
+### 3.2 Remover `console.warn` de queries lentas em producao
+- `src/lib/performance/metrics.ts` linha 60 faz `console.warn` para queries > 1s
+- **Acao**: Proteger com checagem de ambiente de desenvolvimento
 
-**Nota sobre notificacoes:** O canal de notificacoes atual usa filtro `user_id=eq.{id}` para receber apenas as do usuario logado. No hub centralizado, ele recebera eventos de todos os usuarios, mas a query ja filtra por `user_id` no `queryFn`, entao o resultado final sera o mesmo - apenas com uma invalidacao a mais que e compensada pela reducao de conexoes WebSocket.
+---
+
+## Arquivos a Modificar
+| Arquivo | Acao |
+|---------|------|
+| `src/lib/optimizations/iconImports.ts` | Remover |
+| `src/hooks/useEventoPermissions.ts` | Remover |
+| `src/hooks/__tests__/useEventoPermissions.test.ts` | Remover |
+| `src/hooks/useEstoqueValidation.ts` | Remover |
+| `src/components/shared/OptimizedImage.tsx` | Remover |
+| `src/components/shared/InfoGrid.md` | Remover |
+| `src/components/shared/sheets/__examples__/` | Remover diretorio |
+| `src/lib/imageOptimization.ts` | Remover funcoes nao usadas |
+| `src/contexts/equipe/useProfilesQueries.ts` | Remover import morto |
+| `src/providers/AppProviders.tsx` | Otimizar performance monitor |
+| `src/lib/performance/metrics.ts` | Proteger console.warn |
+
+## Impacto Estimado
+- **~600 linhas de codigo morto removidas**
+- **Reducao de overhead em producao** (performance monitor nao roda desnecessariamente)
+- **Bundle menor** (tree-shaking mais eficiente sem re-exports inuteis)
