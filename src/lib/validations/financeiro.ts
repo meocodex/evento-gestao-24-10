@@ -12,6 +12,7 @@ export const contaPagarSchema = z.object({
     .positive('Valor unitário deve ser maior que zero'),
   recorrencia: z.enum(['unico', 'semanal', 'quinzenal', 'mensal', 'anual']),
   data_vencimento: z.string()
+    .min(1, 'Data de vencimento é obrigatória')
     .refine(val => !isNaN(Date.parse(val)), 'Data inválida'),
   status: z.enum(['pendente', 'pago', 'vencido', 'cancelado']),
   data_pagamento: z.string().optional(),
@@ -51,6 +52,7 @@ export const contaReceberSchema = z.object({
     .positive('Valor unitário deve ser maior que zero'),
   recorrencia: z.enum(['unico', 'semanal', 'quinzenal', 'mensal', 'anual']),
   data_vencimento: z.string()
+    .min(1, 'Data de vencimento é obrigatória')
     .refine(val => !isNaN(Date.parse(val)), 'Data inválida'),
   status: z.enum(['pendente', 'recebido', 'vencido', 'cancelado']),
   data_recebimento: z.string().optional(),
