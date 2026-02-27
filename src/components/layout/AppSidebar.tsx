@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import logoTicketUp from '@/assets/logo-ticket-up.png';
 import {
   Calendar,
   Users,
@@ -122,9 +123,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar className="border-r-0 bg-sidebar" {...props}>
       <SidebarHeader className="border-b border-sidebar-border/30 p-4 md:p-6">
         <div className="flex items-center gap-3 md:gap-4">
-          <div className="h-8 w-8 md:h-10 md:w-10 rounded-lg bg-gradient-to-br from-[#8B7E41] via-[#A69548] to-[#1E2433] flex items-center justify-center shadow-md shadow-primary/20 ring-1 ring-primary/30">
-            <span className="text-white font-display font-bold text-sm md:text-base drop-shadow-sm">T</span>
-          </div>
+          <img src={logoTicketUp} alt="Ticket Up" className="h-8 w-8 md:h-10 md:w-10 rounded-lg object-contain" />
           
           {state !== 'collapsed' && (
             <div>
