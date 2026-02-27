@@ -23,37 +23,41 @@ import { ThemeProvider } from "next-themes";
  * - Identifica queries lentas automaticamente
  */
 // Exportar queryClient para uso em outros lugares (ex: AuthContext)
+const isDev = import.meta.env.DEV;
+
 export const queryClient = new QueryClient({
-  queryCache: new QueryCache({
-    onSuccess: (data, query) => {
-      const duration = Date.now() - (query.state.dataUpdatedAt || Date.now());
-      performanceMonitor.trackQuery(query.queryKey, duration || 0, true);
-    },
-    onError: (error, query) => {
-      performanceMonitor.trackQuery(
-        query.queryKey,
-        0,
-        false,
-        error instanceof Error ? error.message : String(error)
-      );
-    },
-  }),
-  mutationCache: new MutationCache({
-    onSuccess: (data, variables, context, mutation) => {
-      performanceMonitor.trackQuery(
-        ['mutation', ...(mutation.options.mutationKey || [])],
-        0,
-        true
-      );
-    },
-    onError: (error, variables, context, mutation) => {
-      performanceMonitor.trackQuery(
-        ['mutation', ...(mutation.options.mutationKey || [])],
-        0,
-        false,
-        error instanceof Error ? error.message : String(error)
-      );
-    },
+  ...(isDev && {
+    queryCache: new QueryCache({
+      onSuccess: (data, query) => {
+        const duration = Date.now() - (query.state.dataUpdatedAt || Date.now());
+        performanceMonitor.trackQuery(query.queryKey, duration || 0, true);
+      },
+      onError: (error, query) => {
+        performanceMonitor.trackQuery(
+          query.queryKey,
+          0,
+          false,
+          error instanceof Error ? error.message : String(error)
+        );
+      },
+    }),
+    mutationCache: new MutationCache({
+      onSuccess: (data, variables, context, mutation) => {
+        performanceMonitor.trackQuery(
+          ['mutation', ...(mutation.options.mutationKey || [])],
+          0,
+          true
+        );
+      },
+      onError: (error, variables, context, mutation) => {
+        performanceMonitor.trackQuery(
+          ['mutation', ...(mutation.options.mutationKey || [])],
+          0,
+          false,
+          error instanceof Error ? error.message : String(error)
+        );
+      },
+    }),
   }),
   defaultOptions: {
     queries: {
