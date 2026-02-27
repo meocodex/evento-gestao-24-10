@@ -208,6 +208,16 @@ All colors MUST be HSL.
     @apply transition-[background-color,border-color,color] duration-200 ease-in-out;
   }
   
+  /* Tiptap Editor */
+  .tiptap {
+    @apply focus:outline-none;
+  }
+
+  .tiptap p.is-editor-empty:first-child::before {
+    @apply text-muted-foreground pointer-events-none float-left h-0;
+    content: attr(data-placeholder);
+  }
+
   /* Glassmorphism com transição suave */
   .glass-card {
     @apply bg-card/60 backdrop-blur-xl border border-border/40 transition-all duration-300;
