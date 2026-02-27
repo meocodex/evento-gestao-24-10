@@ -24,7 +24,7 @@ export function EventosStats({ eventos }: EventosStatsProps) {
       <div className="animate-slide-up" style={{ animationDelay: '0ms' }}>
         <StatCard
           title="Total de Eventos"
-          value={stats.total.toString()}
+          value={String(stats.total ?? 0)}
           subtitle="Mês atual"
           icon={Calendar}
           variant="primary"
@@ -33,7 +33,7 @@ export function EventosStats({ eventos }: EventosStatsProps) {
       <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
         <StatCard
           title="Confirmados"
-          value={stats.confirmados.toString()}
+          value={String(stats.confirmados ?? 0)}
           subtitle="Aguardando"
           icon={CheckCircle}
           variant="success"
@@ -42,7 +42,7 @@ export function EventosStats({ eventos }: EventosStatsProps) {
       <div className="animate-slide-up" style={{ animationDelay: '200ms' }}>
         <StatCard
           title="Em Execução"
-          value={stats.emExecucao.toString()}
+          value={String(stats.emExecucao ?? 0)}
           subtitle="Acontecendo agora"
           icon={Clock}
           variant="default"

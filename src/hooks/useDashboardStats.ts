@@ -66,8 +66,8 @@ export function useDashboardStats() {
       };
 
       let totalEventosMes = 0;
-      eventosStats?.forEach(row => {
-        const total = row.total || 0;
+      (Array.isArray(eventosStats) ? eventosStats : []).forEach(row => {
+        const total = Number(row?.total) || 0;
         totalEventosMes += total;
         const status = row.status as string;
         switch(status) {
@@ -85,10 +85,11 @@ export function useDashboardStats() {
       }) || [];
 
       // ===== PROCESSAR DEMANDAS =====
-      const demandasAbertas = demandasStats?.find(d => d.status === 'aberta')?.total || 0;
-      const demandasEmAndamento = demandasStats?.find(d => d.status === 'em-andamento')?.total || 0;
-      const demandasUrgentes = demandasStats?.find(d => d.prioridade === 'urgente')?.total || 0;
-      const demandasAtrasadas = demandasStats?.reduce((sum, d) => sum + (d.atrasadas || 0), 0) || 0;
+      const safeDemandas = Array.isArray(demandasStats) ? demandasStats : [];
+      const demandasAbertas = Number(safeDemandas.find(d => d.status === 'aberta')?.total) || 0;
+      const demandasEmAndamento = Number(safeDemandas.find(d => d.status === 'em-andamento')?.total) || 0;
+      const demandasUrgentes = Number(safeDemandas.find(d => d.prioridade === 'urgente')?.total) || 0;
+      const demandasAtrasadas = safeDemandas.reduce((sum, d) => sum + (Number(d.atrasadas) || 0), 0);
 
       // ===== ALERTAS OPERACIONAIS =====
       const alertas: DashboardStats['alertas'] = [];
