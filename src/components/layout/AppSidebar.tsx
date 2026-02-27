@@ -123,7 +123,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar className="border-r-0 bg-sidebar" {...props}>
       <SidebarHeader className="border-b border-sidebar-border/30 p-4 md:p-6">
         <div className="flex items-center justify-center">
-          <img src={logoTicketUp} alt="Ticket Up" className="h-10 w-10 md:h-12 md:w-12 rounded-lg object-contain" />
+          <div className="relative p-3 rounded-2xl bg-[radial-gradient(circle,hsl(48_38%_40%/0.15)_0%,transparent_70%)] shadow-[0_0_24px_4px_hsl(48_38%_40%/0.12)]">
+            <img src={logoTicketUp} alt="Ticket Up" className="h-10 w-10 md:h-12 md:w-12 rounded-lg object-contain drop-shadow-[0_0_6px_hsl(48_38%_40%/0.4)]" />
+          </div>
         </div>
       </SidebarHeader>
 
