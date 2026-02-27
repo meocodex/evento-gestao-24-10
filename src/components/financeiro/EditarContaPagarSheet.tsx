@@ -27,8 +27,6 @@ interface EditarContaPagarSheetProps {
 export function EditarContaPagarSheet({ conta, open, onOpenChange }: EditarContaPagarSheetProps) {
   const { atualizar } = useContasPagar();
   const [anexos, setAnexos] = useState<AnexoFinanceiro[]>(conta.anexos || []);
-  const [quantidade, setQuantidade] = useState(conta.quantidade);
-  const [valorUnitario, setValorUnitario] = useState(conta.valor_unitario);
 
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<ContaPagarFormData>({
     resolver: zodResolver(contaPagarSchema),
@@ -64,8 +62,6 @@ export function EditarContaPagarSheet({ conta, open, onOpenChange }: EditarConta
       forma_pagamento: conta.forma_pagamento || undefined,
     });
     setAnexos(conta.anexos || []);
-    setQuantidade(conta.quantidade);
-    setValorUnitario(conta.valor_unitario);
   }, [conta, reset]);
 
   const status = watch('status');
@@ -73,8 +69,10 @@ export function EditarContaPagarSheet({ conta, open, onOpenChange }: EditarConta
   const categoria = watch('categoria');
   const fornecedor = watch('fornecedor');
   const responsavel = watch('responsavel');
+  const watchedQuantidade = watch('quantidade') || 0;
+  const watchedValorUnitario = watch('valor_unitario') || 0;
 
-  const valorTotal = quantidade * valorUnitario;
+  const valorTotal = watchedQuantidade * watchedValorUnitario;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,7 +135,6 @@ export function EditarContaPagarSheet({ conta, open, onOpenChange }: EditarConta
               id="quantidade"
               type="number"
               {...register('quantidade', { valueAsNumber: true })}
-              onChange={(e) => setQuantidade(Number(e.target.value))}
             />
             {errors.quantidade && <p className="text-sm text-destructive">{errors.quantidade.message}</p>}
           </div>
@@ -149,7 +146,6 @@ export function EditarContaPagarSheet({ conta, open, onOpenChange }: EditarConta
               type="number"
               step="0.01"
               {...register('valor_unitario', { valueAsNumber: true })}
-              onChange={(e) => setValorUnitario(Number(e.target.value))}
             />
             {errors.valor_unitario && <p className="text-sm text-destructive">{errors.valor_unitario.message}</p>}
           </div>
