@@ -148,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
         () => {
           // Invalidar cache de categorias quando permissões mudam
-          queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'] });
+          queryClient.invalidateQueries({ queryKey: ['configuracoes_categorias'], exact: false });
           
           // Re-hidratar usuário
           setHydrating(true);
