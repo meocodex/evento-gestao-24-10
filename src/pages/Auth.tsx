@@ -195,7 +195,7 @@ export default function Auth() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <img src={logoTicketUp} alt="Ticket Up" className="h-16 w-16 rounded-xl object-contain mx-auto" />
+            <img src={logoTicketUp} alt="Ticket Up" className="h-32 w-auto max-w-[200px] rounded-xl object-contain mx-auto" />
           </div>
 
           <Card className="border-border/50 shadow-2xl">
@@ -342,7 +342,7 @@ export default function Auth() {
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <img src={logoTicketUp} alt="Ticket Up" className="h-16 w-16 rounded-xl object-contain mx-auto" />
+          <img src={logoTicketUp} alt="Ticket Up" className="h-32 w-auto max-w-[200px] rounded-xl object-contain mx-auto" />
         </div>
 
         <Card className="border-border/50 shadow-2xl">
