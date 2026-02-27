@@ -1,130 +1,111 @@
 
 
-# Corrigir Categorias Compartilhadas Entre Usuarios
+# Base de Conhecimento - Area Informativa
 
-## Problema
+## Objetivo
+Criar um modulo completo de Base de Conhecimento onde administradores podem publicar tutoriais, guias e artigos informativos para os membros da equipe. O conteudo sera organizado por categorias e tags, com suporte a texto rico, links/videos, e anexos de arquivos.
 
-As categorias do sistema sao configuracoes globais (despesas, estoque, demandas, funcoes_equipe) que deveriam ser compartilhadas entre todos os usuarios com permissao. Porem, o codigo frontend filtra por `user_id`, fazendo com que cada usuario so veja as categorias que ele mesmo criou.
+## Estrutura do Banco de Dados
 
-Exemplo: stevan cria a categoria "Marketing" em despesas. O usuario financeiro nunca a ve porque o frontend busca apenas categorias com `user_id = financeiro_id`.
+### Tabela: `base_conhecimento_categorias`
+Armazena as categorias para organizar artigos (ex: Estoque, Eventos, Financeiro, Geral).
 
-## Causa Raiz
+| Coluna | Tipo | Descricao |
+|--------|------|-----------|
+| id | uuid PK | Identificador unico |
+| nome | text NOT NULL | Nome da categoria |
+| descricao | text | Descricao opcional |
+| icone | text | Emoji ou nome de icone |
+| ordem | integer DEFAULT 0 | Ordem de exibicao |
+| ativa | boolean DEFAULT true | Se esta ativa |
+| created_at | timestamptz | Data de criacao |
+| updated_at | timestamptz | Data de atualizacao |
 
-1. **useCategoriasQueries.ts (linha 17):** `.eq('user_id', userId)` - filtra categorias pelo usuario logado
-2. **useCategoriasMutations.ts:** Todas as mutations salvam com `user_id` do usuario logado, criando registros isolados por usuario
-3. **Tabela configuracoes_categorias:** Tem constraint UNIQUE em (user_id, tipo), forcando isolamento
+### Tabela: `base_conhecimento_artigos`
+Armazena os artigos/tutoriais publicados.
 
-## Solucao
+| Coluna | Tipo | Descricao |
+|--------|------|-----------|
+| id | uuid PK | Identificador unico |
+| titulo | text NOT NULL | Titulo do artigo |
+| conteudo | text NOT NULL | Conteudo em texto rico (HTML) |
+| resumo | text | Resumo curto do artigo |
+| categoria_id | uuid FK | Referencia a categoria |
+| tags | text[] | Tags para busca |
+| anexos | jsonb DEFAULT '[]' | Lista de arquivos anexados |
+| links_externos | jsonb DEFAULT '[]' | Links e videos embutidos |
+| publicado | boolean DEFAULT false | Se esta publicado |
+| autor_id | uuid NOT NULL | Quem criou o artigo |
+| autor_nome | text NOT NULL | Nome do autor |
+| visualizacoes | integer DEFAULT 0 | Contador de visualizacoes |
+| ordem | integer DEFAULT 0 | Ordem na categoria |
+| created_at | timestamptz | Data de criacao |
+| updated_at | timestamptz | Data de atualizacao |
 
-Tornar as categorias verdadeiramente compartilhadas. Todos os usuarios com permissao de visualizar um modulo verao as mesmas categorias. Somente usuarios com permissao de `configuracoes.categorias` ou `admin.full_access` poderao gerenciar.
+### Politicas RLS
 
-### Mudanca 1: useCategoriasQueries.ts
+- **SELECT**: Todos os usuarios autenticados podem visualizar artigos publicados
+- **INSERT/UPDATE/DELETE**: Apenas usuarios com `admin.full_access`
+- Categorias seguem o mesmo padrao
 
-Remover o filtro `.eq('user_id', userId)`. As categorias serao buscadas por tipo, sem filtrar por usuario. A RLS ja garante que so usuarios com permissao de modulo vejam os dados.
+### Storage Bucket
+- Bucket `base-conhecimento` (privado) para upload de PDFs, imagens e documentos anexados aos artigos
 
-Para evitar duplicatas (caso existam registros de multiplos usuarios), o codigo deve agregar todas as categorias unicas de todos os registros do mesmo tipo.
+## Frontend - Componentes
 
-```text
-ANTES:
-  .select('*')
-  .eq('user_id', userId);
+### 1. Pagina principal: `src/pages/BaseConhecimento.tsx`
+- Barra de busca para filtrar artigos por titulo, conteudo ou tags
+- Grid de categorias com contagem de artigos
+- Lista de artigos recentes
+- Filtro por categoria e tags
 
-DEPOIS:
-  .select('*');
-  // + logica para agregar categorias de todos os registros por tipo
-```
+### 2. Pagina de artigo: `src/pages/ArtigoDetalhes.tsx`
+- Titulo e metadados (autor, data, categoria, tags)
+- Conteudo renderizado com formatacao
+- Secao de links/videos embutidos (iframe do YouTube)
+- Lista de anexos com download
+- Navegacao entre artigos da mesma categoria
 
-A query key tambem deve mudar de `['configuracoes_categorias', userId]` para `['configuracoes_categorias']` para que o cache seja compartilhado.
+### 3. Componentes de gestao (admin):
+- `NovoArtigoSheet.tsx` - Formulario para criar artigo com editor de texto rico, upload de anexos, adicao de links/videos
+- `EditarArtigoSheet.tsx` - Edicao do artigo existente
+- `GerenciarCategoriasSheet.tsx` - CRUD de categorias
 
-### Mudanca 2: useCategoriasMutations.ts
+### 4. Hooks e Queries:
+- `src/contexts/baseConhecimento/useBaseConhecimentoQueries.ts` - Queries para listar artigos e categorias
+- `src/contexts/baseConhecimento/useBaseConhecimentoMutations.ts` - Mutations para CRUD
 
-As mutations precisam buscar e atualizar o registro correto. Ao adicionar/editar/excluir uma categoria:
-1. Buscar TODOS os registros do tipo (sem filtro de user_id)
-2. Se existir um registro, atualizar ele
-3. Se nao existir, criar um novo com o user_id do usuario atual
+## Navegacao
 
-Para evitar conflitos quando multiplos registros existem para o mesmo tipo (de usuarios diferentes), o codigo deve escolher um unico registro como "fonte de verdade" e atualizar apenas esse.
-
-### Mudanca 3: Migrar dados existentes (SQL)
-
-Criar uma migracao que:
-1. Para cada tipo de categoria, mescle todas as categorias de todos os usuarios em um unico registro
-2. Remova registros duplicados, mantendo apenas um por tipo
-3. Altere a constraint UNIQUE de (user_id, tipo) para apenas (tipo) - ou torne user_id nullable
+- Novo item no sidebar: **"Base de Conhecimento"** no grupo **"Gestao"**, com icone `BookOpen`
+- Acessivel para todos os usuarios autenticados (visualizacao)
+- Rota: `/base-conhecimento` e `/base-conhecimento/:id`
 
 ## Detalhes Tecnicos
 
-### useCategoriasQueries.ts
-
+### Query Keys
+Adicionar ao `queryKeys.ts`:
 ```text
-// Remover dependencia de userId na query
-const { data: configuracoes, isLoading } = useQuery({
-  queryKey: ['configuracoes_categorias'],
-  queryFn: async () => {
-    const { data, error } = await supabase
-      .from('configuracoes_categorias')
-      .select('*');
-    if (error) throw error;
-    return data || [];
-  },
-  staleTime: 1000 * 60 * 5,
-  gcTime: 1000 * 60 * 10,
-});
-
-// getCategorias deve agregar categorias de todos os registros do mesmo tipo
-const getCategorias = (tipo: TipoCategoria): Categoria[] => {
-  const configs = configuracoes?.filter(c => c.tipo === tipo) || [];
-  const allCategorias: Categoria[] = [];
-  const seen = new Set<string>();
-  for (const config of configs) {
-    const cats = (config.categorias as unknown as Categoria[]) || [];
-    for (const cat of cats) {
-      if (!seen.has(cat.value)) {
-        seen.add(cat.value);
-        allCategorias.push(cat);
-      }
-    }
-  }
-  return allCategorias;
-};
+baseConhecimento: {
+  categorias: ['base-conhecimento-categorias'],
+  artigos: ['base-conhecimento-artigos'],
+  artigo: (id: string) => ['base-conhecimento-artigo', id],
+}
 ```
 
-### useCategoriasMutations.ts
+### Permissoes no Sidebar
+- Todos os usuarios autenticados podem ver o menu (como Dashboard)
+- Gestao de conteudo restrita a admins no frontend via `usePermissions`
 
-Em cada mutation, buscar o primeiro registro do tipo (sem filtro de user_id) para atualizar. Exemplo para `adicionarCategoria`:
-
-```text
-// Buscar primeiro registro do tipo (qualquer user_id)
-const { data: config } = await supabase
-  .from('configuracoes_categorias')
-  .select('id, categorias, user_id')
-  .eq('tipo', tipo)
-  .limit(1)
-  .maybeSingle();
-
-// Se existe, atualizar esse registro
-// Se nao existe, criar novo com user_id do usuario logado
-```
-
-### Migracao SQL
-
-```text
--- Para cada tipo, mesclar categorias em um unico registro e remover duplicatas
--- Alterar constraint UNIQUE para permitir compartilhamento
-```
+### Editor de Texto
+Utilizar `textarea` com suporte a Markdown simples ou HTML basico, sem dependencia extra de bibliotecas de rich text editor para manter o bundle leve.
 
 ## Sequencia de Implementacao
 
-1. Criar migracao SQL para consolidar registros duplicados por tipo
-2. Atualizar useCategoriasQueries.ts para buscar sem filtro de user_id
-3. Atualizar useCategoriasMutations.ts para operar no registro compartilhado
-4. Atualizar query keys em todos os componentes que referenciam userId
-
-## Arquivos Afetados
-
-| Arquivo | Mudanca |
-|---------|---------|
-| src/contexts/categorias/useCategoriasQueries.ts | Remover filtro user_id, agregar por tipo |
-| src/contexts/categorias/useCategoriasMutations.ts | Buscar/atualizar registro compartilhado |
-| Migracao SQL | Consolidar registros e ajustar constraint |
-
+1. Criar migracao SQL (tabelas, RLS, bucket de storage)
+2. Adicionar query keys e tipos TypeScript
+3. Criar hooks de queries e mutations
+4. Criar pagina principal da Base de Conhecimento
+5. Criar pagina de detalhes do artigo
+6. Criar componentes de gestao (sheets para CRUD)
+7. Adicionar rota e item no sidebar
