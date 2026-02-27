@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useEffect } from 'react';
 
@@ -20,33 +20,7 @@ export interface ProfileMembro {
 }
 
 export function useProfilesQueries(enabled = true) {
-  const queryClient = useQueryClient();
-
-  // Real-time listeners
-  useEffect(() => {
-    const channel = supabase
-      .channel('profiles-equipe-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles' },
-        () => queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'user_roles' },
-        () => queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] })
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'user_permissions' },
-        () => queryClient.invalidateQueries({ queryKey: ['profiles-equipe'] })
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
+  // Realtime gerenciado pelo useRealtimeHub centralizado
 
   return useQuery({
     queryKey: ['profiles-equipe'],

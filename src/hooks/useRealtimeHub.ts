@@ -26,7 +26,18 @@ type TableName =
   | 'user_permissions'
   | 'profiles'
   | 'configuracoes_categorias'
-  | 'base_conhecimento_categorias';
+  | 'base_conhecimento_categorias'
+  | 'notificacoes'
+  | 'base_conhecimento_artigos'
+  | 'cadastros_publicos'
+  | 'eventos_cobrancas'
+  | 'contratos'
+  | 'contratos_templates'
+  | 'user_roles'
+  | 'configuracoes_empresa'
+  | 'configuracoes_taxas_pagamento'
+  | 'configuracoes_fechamento'
+  | 'materiais_historico_movimentacao';
 
 // Mapeamento de tabelas para query keys que precisam ser invalidadas
 const TABLE_QUERY_MAP: Record<TableName, string[][]> = {
@@ -73,6 +84,19 @@ const TABLE_QUERY_MAP: Record<TableName, string[][]> = {
   // Categorias
   configuracoes_categorias: [['configuracoes_categorias']],
   base_conhecimento_categorias: [['base-conhecimento-categorias']],
+
+  // Novas tabelas centralizadas
+  notificacoes: [['notificacoes']],
+  base_conhecimento_artigos: [['base-conhecimento-artigos'], ['base-conhecimento-categorias']],
+  cadastros_publicos: [['cadastros-publicos']],
+  eventos_cobrancas: [['eventos-cobrancas'], ['evento-detalhes']],
+  contratos: [['contratos'], ['dashboard-stats']],
+  contratos_templates: [['contratos-templates']],
+  user_roles: [['profiles-equipe'], ['usuarios']],
+  configuracoes_empresa: [['configuracoes_empresa']],
+  configuracoes_taxas_pagamento: [['configuracoes-taxas-pagamento']],
+  configuracoes_fechamento: [['configuracoes_fechamento']],
+  materiais_historico_movimentacao: [['materiais-historico']],
 };
 
 // Singleton para garantir único canal em toda a aplicação
