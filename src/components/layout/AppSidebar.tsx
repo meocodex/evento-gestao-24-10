@@ -122,19 +122,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar className="border-r-0 bg-sidebar" {...props}>
       <SidebarHeader className="border-b border-sidebar-border/30 p-4 md:p-6">
-        <div className="flex items-center gap-3 md:gap-4">
-          <img src={logoTicketUp} alt="Ticket Up" className="h-8 w-8 md:h-10 md:w-10 rounded-lg object-contain" />
-          
-          {state !== 'collapsed' && (
-            <div>
-              <p className="text-sm md:text-base font-display font-bold text-sidebar-foreground">
-                Ticket Up
-              </p>
-              <p className="text-xs text-sidebar-foreground/70 truncate max-w-[150px]">
-                {user?.name}
-              </p>
-            </div>
-          )}
+        <div className="flex items-center justify-center">
+          <img src={logoTicketUp} alt="Ticket Up" className="h-10 w-10 md:h-12 md:w-12 rounded-lg object-contain" />
         </div>
       </SidebarHeader>
 

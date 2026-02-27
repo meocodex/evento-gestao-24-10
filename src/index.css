@@ -48,14 +48,14 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* Sidebar - Navy escuro elegante */
-    --sidebar-background: 220 29% 16%;
+    /* Sidebar - Navy profundo premium */
+    --sidebar-background: 225 25% 12%;
     --sidebar-foreground: 40 20% 98%;
     --sidebar-primary: 48 38% 45%;
     --sidebar-primary-foreground: 220 29% 12%;
-    --sidebar-accent: 220 29% 22%;
+    --sidebar-accent: 225 25% 18%;
     --sidebar-accent-foreground: 40 20% 98%;
-    --sidebar-border: 220 29% 22%;
+    --sidebar-border: 225 25% 20%;
     --sidebar-ring: 48 38% 50%;
 
     /* Logo Icon - Dourado */
@@ -113,13 +113,13 @@ All colors MUST be HSL.
     --ring: 48 45% 55%;
 
     /* Sidebar - Navy profundo premium */
-    --sidebar-background: 220 35% 8%;
+    --sidebar-background: 228 30% 7%;
     --sidebar-foreground: 40 15% 95%;
     --sidebar-primary: 48 50% 55%;
     --sidebar-primary-foreground: 220 29% 10%;
-    --sidebar-accent: 220 30% 16%;
+    --sidebar-accent: 228 28% 14%;
     --sidebar-accent-foreground: 40 15% 95%;
-    --sidebar-border: 220 30% 14%;
+    --sidebar-border: 228 28% 12%;
     --sidebar-ring: 48 50% 55%;
 
     /* Logo Icon - Dourado brilhante */
