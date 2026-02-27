@@ -1,26 +1,32 @@
 
 
-# Fix: Duplicate permission constraint error in criar-operador
+# Fix: Permissao negada nas Materialized Views (403)
 
-## Problem
+## Problema
 
-When creating a new user with the 'admin' role, the database trigger `grant_all_permissions_to_admin` automatically inserts all permissions for the user. Then the edge function also tries to insert the same permissions, causing a `duplicate key` violation on `user_permissions_user_id_permission_id_key`.
+As 4 materialized views do projeto (`vw_eventos_stats`, `vw_demandas_stats`, `vw_estoque_popular`, `vw_financeiro_eventos`) nao possuem permissao SELECT para o role `authenticated`. Isso causa erros 403 em todas as consultas a essas views, incluindo no Dashboard e na pagina de Eventos.
 
-## Solution
+O erro "ao tentar criar um evento" provavelmente ocorre porque, apos a criacao do evento, o frontend tenta recarregar as stats e recebe 403, exibindo erro ao usuario mesmo que o evento tenha sido criado com sucesso.
 
-Update the `criar-operador` edge function to use **upsert** (`ON CONFLICT DO NOTHING` equivalent) when inserting permissions. This is done by passing `{ onConflict: 'user_id,permission_id' }` to the Supabase `.upsert()` call instead of `.insert()` for the `user_permissions` table.
+## Solucao
 
-This applies to both code paths:
-1. **Existing user** update flow (around line 131)
-2. **New user** creation flow (around line 207)
+Uma unica migracao SQL para conceder SELECT nas 4 materialized views:
 
-## File changed
+```sql
+GRANT SELECT ON public.vw_eventos_stats TO authenticated;
+GRANT SELECT ON public.vw_demandas_stats TO authenticated;
+GRANT SELECT ON public.vw_estoque_popular TO authenticated;
+GRANT SELECT ON public.vw_financeiro_eventos TO authenticated;
+```
 
-- `supabase/functions/criar-operador/index.ts` -- Change `.insert(userPermissions)` to `.upsert(userPermissions, { onConflict: 'user_id,permission_id', ignoreDuplicates: true })` in both locations where permissions are inserted.
+## Detalhes tecnicos
 
-## Why this is safe
+- Materialized views nao herdam RLS policies -- o controle de acesso e feito via GRANT/REVOKE
+- As funcoes que populam essas views (como `get_eventos_stats`) ja possuem verificacao de permissao via `has_permission()`, entao os dados ja sao filtrados adequadamente
+- Nenhum arquivo de codigo precisa ser alterado
+- Apos a migracao, os erros 403 desaparecem e a criacao de eventos volta a funcionar sem erros visuais
 
-- `upsert` with `ignoreDuplicates` silently skips rows that already exist, which is the correct behavior since the trigger already granted the permissions
-- The post-insertion count validation still works because it counts total permissions regardless of how they were inserted
-- No database migration needed
+## Arquivos alterados
+
+Apenas uma migracao SQL (nenhum arquivo de codigo modificado).
 
