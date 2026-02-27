@@ -49,7 +49,7 @@ export function NovaDemandaSheet() {
     tags: [] as string[],
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!user) return;
@@ -68,7 +68,7 @@ export function NovaDemandaSheet() {
       });
 
       const usuarioAtual = (usuarios || []).find(u => u.id === user.id);
-      criarDemanda.mutateAsync({
+      await criarDemanda.mutateAsync({
         data: {
           titulo: validatedData.titulo,
           descricao: validatedData.descricao,

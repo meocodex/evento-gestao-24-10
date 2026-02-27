@@ -125,7 +125,7 @@ export function NovoMaterialSheet({ open, onOpenChange }: NovoMaterialSheetProps
             </SelectTrigger>
             <SelectContent>
               {categoriasEstoque.map((cat) => (
-                <SelectItem key={cat.value} value={cat.label}>
+                <SelectItem key={cat.value} value={cat.value}>
                   {cat.label}
                 </SelectItem>
               ))}

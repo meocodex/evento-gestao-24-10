@@ -403,7 +403,7 @@ export function useEventosMateriaisAlocados(eventoId: string) {
           .from('configuracoes_usuario')
           .select('empresa')
           .eq('user_id', user.user?.id)
-          .single();
+          .maybeSingle();
         
         const empresaConfig = config?.empresa as { nome?: string; cnpj?: string; telefone?: string; endereco?: EnderecoObject } | null;
         

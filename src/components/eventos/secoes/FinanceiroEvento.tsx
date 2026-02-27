@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useEventosFinanceiro } from '@/hooks/eventos';
-import { useDemandas } from '@/hooks/demandas';
+import { useDemandasReembolso } from '@/hooks/demandas/useDemandasReembolso';
 import { Evento } from '@/types/eventos';
-import { Demanda } from '@/types/demandas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -24,8 +23,7 @@ interface FinanceiroEventoProps {
 export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps) {
   const { toast } = useToast();
   const financeiro = useEventosFinanceiro(evento.id);
-  const { demandas } = useDemandas(1, 1000);
-  const getDemandasReembolsoPorEvento = (id: string) => demandas.filter((d: Demanda) => d.eventoRelacionado === id && d.categoria === 'reembolso');
+  const { data: demandasReembolso = [] } = useDemandasReembolso();
   const [showAddReceita, setShowAddReceita] = useState(false);
   const [showAddDespesa, setShowAddDespesa] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -35,7 +33,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<{ url: string; nome: string; tipo: string } | null>(null);
 
-  const reembolsosEvento = getDemandasReembolsoPorEvento(evento.id);
+  const reembolsosEvento = demandasReembolso.filter(d => d.eventoRelacionado === evento.id);
   const reembolsosPagos = reembolsosEvento.filter(d => d.dadosReembolso?.statusPagamento === 'pago');
   const totalReembolsosPendentes = reembolsosEvento
     .filter(d => d.dadosReembolso?.statusPagamento === 'pendente' || d.dadosReembolso?.statusPagamento === 'aprovado')

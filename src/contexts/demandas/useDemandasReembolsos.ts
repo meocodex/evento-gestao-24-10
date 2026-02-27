@@ -57,7 +57,6 @@ export function useDemandasReembolsos() {
       });
     },
     onError: (error) => {
-      console.error('Erro ao criar reembolso:', error);
       toast({ title: 'Erro ao criar reembolso', variant: 'destructive' });
     },
   });
@@ -107,7 +106,6 @@ export function useDemandasReembolsos() {
       toast({ title: 'Reembolso aprovado!', description: 'Aguardando confirmação de pagamento.' });
     },
     onError: (error) => {
-      console.error('Erro ao aprovar reembolso:', error);
       toast({ title: 'Erro ao aprovar reembolso', variant: 'destructive' });
     },
   });
@@ -161,7 +159,6 @@ export function useDemandasReembolsos() {
       toast({ title: 'Pagamento confirmado!', description: 'O reembolso foi marcado como pago.' });
     },
     onError: (error) => {
-      console.error('Erro ao marcar como pago:', error);
       toast({ title: 'Erro ao marcar como pago', variant: 'destructive' });
     },
   });
@@ -203,7 +200,6 @@ export function useDemandasReembolsos() {
       toast({ title: 'Reembolso recusado', description: 'O solicitante será notificado.' });
     },
     onError: (error) => {
-      console.error('Erro ao recusar reembolso:', error);
       toast({ title: 'Erro ao recusar reembolso', variant: 'destructive' });
     },
   });
