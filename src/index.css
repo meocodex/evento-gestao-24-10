@@ -49,7 +49,7 @@ All colors MUST be HSL.
     --radius: 0.75rem;
 
     /* Sidebar - Navy profundo premium */
-    --sidebar-background: 225 25% 12%;
+    --sidebar-background: 225 25% 15%;
     --sidebar-foreground: 40 20% 98%;
     --sidebar-primary: 48 38% 45%;
     --sidebar-primary-foreground: 220 29% 12%;
@@ -113,7 +113,7 @@ All colors MUST be HSL.
     --ring: 48 45% 55%;
 
     /* Sidebar - Navy profundo premium */
-    --sidebar-background: 228 30% 7%;
+    --sidebar-background: 228 30% 10%;
     --sidebar-foreground: 40 15% 95%;
     --sidebar-primary: 48 50% 55%;
     --sidebar-primary-foreground: 220 29% 10%;
