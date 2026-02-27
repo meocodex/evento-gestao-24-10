@@ -84,7 +84,7 @@ export function AppProviders({ children }: AppProvidersProps) {
   return (
     <PersistQueryClientProvider 
       client={queryClient} 
-      persistOptions={{ persister }}
+      persistOptions={{ persister, buster: 'v2' }}
     >
       <BrowserRouter>
         <ThemeProvider
