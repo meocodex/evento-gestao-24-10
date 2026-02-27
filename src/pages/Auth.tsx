@@ -195,15 +195,7 @@ export default function Auth() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-accent/5 p-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-3 mb-2">
-              <img src={logoTicketUp} alt="Ticket Up" className="h-12 w-12 rounded-xl object-contain" />
-              <h1 className="text-4xl font-display font-bold bg-gradient-to-r from-primary via-[#A69548] to-accent bg-clip-text text-transparent">
-                Ticket Up
-              </h1>
-            </div>
-            <p className="text-muted-foreground">
-              Sistema de Gestão de Eventos
-            </p>
+            <img src={logoTicketUp} alt="Ticket Up" className="h-16 w-16 rounded-xl object-contain mx-auto" />
           </div>
 
           <Card className="border-border/50 shadow-2xl">
@@ -350,15 +342,7 @@ export default function Auth() {
       <div className="w-full max-w-md">
         {/* Logo/Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-3 mb-2">
-            <img src={logoTicketUp} alt="Ticket Up" className="h-12 w-12 rounded-xl object-contain" />
-            <h1 className="text-4xl font-display font-bold bg-gradient-to-r from-primary via-[#A69548] to-accent bg-clip-text text-transparent">
-              Ticket Up
-            </h1>
-          </div>
-          <p className="text-muted-foreground">
-            Sistema de Gestão de Eventos
-          </p>
+          <img src={logoTicketUp} alt="Ticket Up" className="h-16 w-16 rounded-xl object-contain mx-auto" />
         </div>
 
         <Card className="border-border/50 shadow-2xl">
