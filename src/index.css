@@ -130,10 +130,6 @@ All colors MUST be HSL.
 @layer base {
   * {
     @apply border-border;
-    /* Transições suaves para mudanças de tema */
-    transition-property: background-color, border-color, color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 300ms;
   }
   
   html, body, #root {
@@ -168,19 +164,6 @@ All colors MUST be HSL.
     display: none;
   }
   
-  /* Transições suaves específicas para elementos interativos */
-  button, a, input, select, textarea {
-    transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 200ms;
-  }
-  
-  /* Transições suaves para cards e containers */
-  [class*="card"], [class*="bg-"], [class*="border"] {
-    transition-property: background-color, border-color, box-shadow;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 300ms;
-  }
   
   /* Fix para inputs em iOS */
   input, select, textarea {
