@@ -24,7 +24,9 @@ type TableName =
   | 'transportadoras'
   | 'transportadoras_rotas'
   | 'user_permissions'
-  | 'profiles';
+  | 'profiles'
+  | 'configuracoes_categorias'
+  | 'base_conhecimento_categorias';
 
 // Mapeamento de tabelas para query keys que precisam ser invalidadas
 const TABLE_QUERY_MAP: Record<TableName, string[][]> = {
@@ -67,6 +69,10 @@ const TABLE_QUERY_MAP: Record<TableName, string[][]> = {
   // Usuários
   user_permissions: [['user-permissions'], ['usuarios']],
   profiles: [['profiles'], ['usuarios']],
+  
+  // Categorias
+  configuracoes_categorias: [['configuracoes_categorias']],
+  base_conhecimento_categorias: [['base-conhecimento-categorias']],
 };
 
 // Singleton para garantir único canal em toda a aplicação

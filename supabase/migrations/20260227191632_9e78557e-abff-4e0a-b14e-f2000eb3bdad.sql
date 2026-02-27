@@ -1,0 +1,2 @@
+ALTER PUBLICATION supabase_realtime ADD TABLE public.configuracoes_categorias;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.base_conhecimento_categorias;
