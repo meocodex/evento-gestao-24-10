@@ -10,7 +10,8 @@ const corsHeaders = {
 const OperadorSchema = z.object({
   nome: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres').max(200, 'Nome muito longo'),
   email: z.string().email('Email inválido').max(255, 'Email muito longo'),
-  cpf: z.string().regex(/^\d{11}$/, 'CPF deve ter 11 dígitos').optional(),
+  cpf: z.string().regex(/^\d{11}$/, 'CPF deve ter 11 dígitos').optional()
+    .or(z.literal('').transform(() => undefined)),
   telefone: z.string().regex(/^\d{10,11}$/, 'Telefone inválido').optional(),
   senha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres').max(100, 'Senha muito longa'),
   roles: z.array(z.enum(['admin', 'comercial', 'suporte', 'operacional', 'financeiro']))

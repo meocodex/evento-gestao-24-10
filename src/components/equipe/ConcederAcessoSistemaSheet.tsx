@@ -128,7 +128,7 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
         body: {
           nome: membro.nome,
           email: email,
-          cpf: limparFormatacao(membro.cpf),
+          cpf: limparFormatacao(membro.cpf) || undefined,
           telefone: limparFormatacao(membro.telefone),
           senha: senha,
           roles: rolesSelecionadas,
