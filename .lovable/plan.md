@@ -1,32 +1,47 @@
 
 
-# Fix: Permissao negada nas Materialized Views (403)
+# Fix: React Error #310 on /eventos page
 
-## Problema
+## Root Cause Analysis
 
-As 4 materialized views do projeto (`vw_eventos_stats`, `vw_demandas_stats`, `vw_estoque_popular`, `vw_financeiro_eventos`) nao possuem permissao SELECT para o role `authenticated`. Isso causa erros 403 em todas as consultas a essas views, incluindo no Dashboard e na pagina de Eventos.
+React error #310 means "Objects are not valid as a React child." After investigation, the most probable causes are:
 
-O erro "ao tentar criar um evento" provavelmente ocorre porque, apos a criacao do evento, o frontend tenta recarregar as stats e recebe 403, exibindo erro ao usuario mesmo que o evento tenha sido criado com sucesso.
+1. **Stale persisted cache**: The app uses `PersistQueryClientProvider` with localStorage (`gercao-cache` key). Previously corrupted or stale data from before the 403 fixes may be restored and rendered as objects instead of strings.
 
-## Solucao
+2. **Missing data guards**: Some components render query data without null-safe checks that could result in objects being passed where strings are expected (e.g., Supabase error objects or raw DB objects).
 
-Uma unica migracao SQL para conceder SELECT nas 4 materialized views:
+## Changes
 
-```sql
-GRANT SELECT ON public.vw_eventos_stats TO authenticated;
-GRANT SELECT ON public.vw_demandas_stats TO authenticated;
-GRANT SELECT ON public.vw_estoque_popular TO authenticated;
-GRANT SELECT ON public.vw_financeiro_eventos TO authenticated;
-```
+### 1. Add cache version bust in AppProviders
 
-## Detalhes tecnicos
+Add a `buster` option to the persister configuration so old cache data from before the fixes is automatically discarded. This ensures stale/corrupt data doesn't cause render errors.
 
-- Materialized views nao herdam RLS policies -- o controle de acesso e feito via GRANT/REVOKE
-- As funcoes que populam essas views (como `get_eventos_stats`) ja possuem verificacao de permissao via `has_permission()`, entao os dados ja sao filtrados adequadamente
-- Nenhum arquivo de codigo precisa ser alterado
-- Apos a migracao, os erros 403 desaparecem e a criacao de eventos volta a funcionar sem erros visuais
+**File:** `src/providers/AppProviders.tsx`
+- Add `buster: 'v2'` to `persistOptions` so old cached data is invalidated
 
-## Arquivos alterados
+### 2. Add defensive rendering in EventosStats
 
-Apenas uma migracao SQL (nenhum arquivo de codigo modificado).
+Add guards so that if `eventos` contains unexpected shapes from cache, the component won't crash.
+
+**File:** `src/components/eventos/EventosStats.tsx`
+- Wrap stat values with `String()` to ensure they're always renderable
+
+### 3. Add defensive rendering in Dashboard stats
+
+The Dashboard queries `vw_eventos_stats` and `vw_demandas_stats`. If these return unexpected data shapes from cache, rendering could fail.
+
+**File:** `src/pages/Dashboard.tsx`
+- Ensure all stat values passed to `StatCard` are explicitly converted to strings
+
+### 4. Add error handling for vw stats queries in useDashboardStats
+
+**File:** `src/hooks/useDashboardStats.ts`
+- Add null checks when processing `eventosStats` and `demandasStats` arrays
+- Default to safe values (0) if data is missing or malformed
+
+## Why this should fix it
+
+- Busting the cache version forces a fresh fetch with the new GRANT permissions
+- Defensive string conversions prevent objects from being passed as React children
+- The underlying 403 issue is already fixed by the previous migration
 
