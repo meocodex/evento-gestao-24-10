@@ -26,8 +26,6 @@ interface NovaContaPagarSheetProps {
 export function NovaContaPagarSheet({ open, onOpenChange }: NovaContaPagarSheetProps) {
   const { criar } = useContasPagar();
   const [anexos, setAnexos] = useState<AnexoFinanceiro[]>([]);
-  const [quantidade, setQuantidade] = useState(1);
-  const [valorUnitario, setValorUnitario] = useState(0);
 
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<ContaPagarFormData>({
     resolver: zodResolver(contaPagarSchema),
@@ -43,8 +41,10 @@ export function NovaContaPagarSheet({ open, onOpenChange }: NovaContaPagarSheetP
   const categoria = watch('categoria');
   const fornecedor = watch('fornecedor');
   const responsavel = watch('responsavel');
+  const watchedQuantidade = watch('quantidade') || 0;
+  const watchedValorUnitario = watch('valor_unitario') || 0;
 
-  const valorTotal = quantidade * valorUnitario;
+  const valorTotal = watchedQuantidade * watchedValorUnitario;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,7 +108,6 @@ export function NovaContaPagarSheet({ open, onOpenChange }: NovaContaPagarSheetP
               id="quantidade"
               type="number"
               {...register('quantidade', { valueAsNumber: true })}
-              onChange={(e) => setQuantidade(Number(e.target.value))}
             />
             {errors.quantidade && <p className="text-sm text-destructive">{errors.quantidade.message}</p>}
           </div>
@@ -120,7 +119,6 @@ export function NovaContaPagarSheet({ open, onOpenChange }: NovaContaPagarSheetP
               type="number"
               step="0.01"
               {...register('valor_unitario', { valueAsNumber: true })}
-              onChange={(e) => setValorUnitario(Number(e.target.value))}
             />
             {errors.valor_unitario && <p className="text-sm text-destructive">{errors.valor_unitario.message}</p>}
           </div>
