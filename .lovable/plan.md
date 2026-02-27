@@ -1,41 +1,26 @@
 
 
-# Fix: Erro ao criar novo usuario - constraint duplicada em configuracoes_categorias
+# Fix: Duplicate permission constraint error in criar-operador
 
-## Problema
+## Problem
 
-O erro "Database error creating new user" ocorre porque:
+When creating a new user with the 'admin' role, the database trigger `grant_all_permissions_to_admin` automatically inserts all permissions for the user. Then the edge function also tries to insert the same permissions, causing a `duplicate key` violation on `user_permissions_user_id_permission_id_key`.
 
-1. A edge function `criar-operador` chama `auth.admin.createUser()`
-2. Isso dispara o trigger `handle_new_user()` que cria um profile
-3. O profile criado dispara o trigger `criar_categorias_padrao()` que tenta inserir categorias com tipos 'demandas', 'estoque', 'despesas', 'funcoes_equipe'
-4. A tabela `configuracoes_categorias` tem uma constraint `UNIQUE (tipo)` -- ou seja, apenas UMA linha por tipo no sistema inteiro
-5. Como ja existem categorias do primeiro usuario, a insercao falha com "duplicate key value violates unique constraint"
+## Solution
 
-## Solucao
+Update the `criar-operador` edge function to use **upsert** (`ON CONFLICT DO NOTHING` equivalent) when inserting permissions. This is done by passing `{ onConflict: 'user_id,permission_id' }` to the Supabase `.upsert()` call instead of `.insert()` for the `user_permissions` table.
 
-A constraint unica deveria ser `UNIQUE (user_id, tipo)` em vez de `UNIQUE (tipo)`, pois cada usuario precisa ter seu proprio conjunto de categorias.
+This applies to both code paths:
+1. **Existing user** update flow (around line 131)
+2. **New user** creation flow (around line 207)
 
-### Migracao SQL
+## File changed
 
-1. Remover a constraint existente `configuracoes_categorias_tipo_key`
-2. Criar nova constraint `UNIQUE (user_id, tipo)`
+- `supabase/functions/criar-operador/index.ts` -- Change `.insert(userPermissions)` to `.upsert(userPermissions, { onConflict: 'user_id,permission_id', ignoreDuplicates: true })` in both locations where permissions are inserted.
 
-```sql
-ALTER TABLE configuracoes_categorias 
-  DROP CONSTRAINT configuracoes_categorias_tipo_key;
+## Why this is safe
 
-ALTER TABLE configuracoes_categorias 
-  ADD CONSTRAINT configuracoes_categorias_user_tipo_key UNIQUE (user_id, tipo);
-```
-
-## Detalhes tecnicos
-
-- Nenhum arquivo de codigo precisa ser alterado
-- A edge function `criar-operador` ja funciona corretamente; o erro vem exclusivamente da constraint no banco
-- Apos a migracao, novos usuarios poderao ser criados normalmente, cada um com suas proprias categorias
-
-## Arquivos alterados
-
-Apenas uma migracao SQL (nenhum arquivo de codigo modificado).
+- `upsert` with `ignoreDuplicates` silently skips rows that already exist, which is the correct behavior since the trigger already granted the permissions
+- The post-insertion count validation still works because it counts total permissions regardless of how they were inserted
+- No database migration needed
 
