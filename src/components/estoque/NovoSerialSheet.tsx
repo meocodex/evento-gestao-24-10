@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { FormSheet } from '@/components/shared/sheets';
@@ -36,6 +37,19 @@ export function NovoSerialSheet({
       status: 'disponivel',
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        materialId,
+        serial: '',
+        localizacao: 'Empresa',
+        tags: [],
+        observacoes: '',
+        status: 'disponivel',
+      });
+    }
+  }, [materialId, open, form]);
 
   const onSubmit = async (data: SerialEstoqueInput) => {
     try {
