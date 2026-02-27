@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useEffect } from 'react';
 
 export interface Notificacao {
   id: string;
@@ -38,35 +37,7 @@ export function useNotificacoes() {
     refetchOnWindowFocus: true, // Refetch quando volta para aba
   });
 
-  // Configurar Realtime para notificações
-  useEffect(() => {
-    const setupRealtime = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      const channel = supabase
-        .channel('notificacoes-realtime')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'notificacoes',
-            filter: `user_id=eq.${user.id}`
-          },
-          () => {
-            queryClient.invalidateQueries({ queryKey: ['notificacoes'] });
-          }
-        )
-        .subscribe();
-      
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    };
-
-    setupRealtime();
-  }, [queryClient]);
+  // Realtime gerenciado pelo useRealtimeHub centralizado
 
   // Contar não lidas
   const naoLidas = notificacoes.filter(n => !n.lida).length;

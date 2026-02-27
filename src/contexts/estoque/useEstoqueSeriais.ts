@@ -1,10 +1,9 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { dbToUiStatus, StatusSerialDB } from '@/lib/estoqueStatus';
 
 export const useEstoqueSeriais = (materialId?: string) => {
-  const queryClient = useQueryClient();
+  // Realtime gerenciado pelo useRealtimeHub centralizado
 
   const query = useQuery({
     queryKey: ['materiais_seriais', materialId],
@@ -60,32 +59,6 @@ export const useEstoqueSeriais = (materialId?: string) => {
     enabled: !!materialId,
     staleTime: 1000 * 30, // 30 segundos (com real-time não precisa ser 0)
   });
-
-  // Listener realtime para materiais_seriais
-  useEffect(() => {
-    if (!materialId) return;
-
-    const channel = supabase
-      .channel(`materiais-seriais-${materialId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'materiais_seriais',
-          filter: `material_id=eq.${materialId}`
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ['materiais_seriais', materialId] });
-          queryClient.invalidateQueries({ queryKey: ['materiais_estoque'] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [materialId, queryClient]);
 
   return query;
 };
