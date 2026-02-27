@@ -1,39 +1,42 @@
 
-# Remover texto "Ticket Up" e ajustar cor do Sidebar
 
-## 1. Remover texto do header da Sidebar
+# Melhorar Contraste entre Sidebar e Logo
 
-No arquivo `src/components/layout/AppSidebar.tsx`, linhas 124-139:
-- Remover o texto "Ticket Up" e o nome do usuario do header
-- Manter apenas a logo centralizada
-- Aumentar levemente o tamanho da logo para preencher melhor o espaco (de 40px para 48px)
-- Mover o nome do usuario para o bloco "Perfil" no footer (que ja existe)
+## Problema
 
-## 2. Alterar cor do Sidebar para contraste com a logo dourada
+O sidebar atual tem fundo navy muito escuro (HSL 225 25% 12%) e a logo dourada sobre fundo transparente se perde visualmente por falta de contraste. Ambos sao escuros/opacos.
 
-A logo tem tons dourados sobre fundo transparente. O sidebar navy escuro atual funciona, mas podemos melhorar com um tom mais profundo e levemente mais quente para criar contraste premium.
+## Solucao
 
-No arquivo `src/index.css`, alterar as variaveis do sidebar:
+Duas mudancas complementares para destacar a logo:
+
+### 1. Adicionar glow dourado sutil atras da logo
+
+No `src/components/layout/AppSidebar.tsx`, envolver a imagem da logo com um container que tenha um brilho radial dourado sutil, criando um "halo" que destaca a logo sem parecer artificial.
+
+```text
+Antes:  [logo sem fundo] sobre [navy escuro]  -> baixo contraste
+Depois: [logo] sobre [glow dourado sutil] sobre [navy escuro]  -> logo se destaca
+```
+
+Implementacao: adicionar um `div` wrapper com `bg-gradient-radial` ou `shadow` dourado ao redor da imagem.
+
+### 2. Aumentar levemente a luminosidade do sidebar (opcional)
+
+No `src/index.css`, subir a luminosidade do sidebar de 12% para 15% no modo claro e de 7% para 10% no modo escuro. Isso cria mais espaco tonal entre o fundo e os elementos dourados.
 
 **Modo Claro:**
-- `--sidebar-background`: de `220 29% 16%` para `225 25% 12%` (navy mais profundo)
-- `--sidebar-accent`: de `220 29% 22%` para `225 25% 18%`
-- `--sidebar-border`: de `220 29% 22%` para `225 25% 20%`
+- `--sidebar-background`: de `225 25% 12%` para `225 25% 15%`
 
 **Modo Escuro:**
-- `--sidebar-background`: de `220 35% 8%` para `228 30% 7%` (quase preto azulado)
-- `--sidebar-accent`: de `220 30% 16%` para `228 28% 14%`
-- `--sidebar-border`: de `220 30% 14%` para `228 28% 12%`
-
-Isso cria um fundo mais escuro e neutro que faz o dourado da logo "brilhar" por contraste.
+- `--sidebar-background`: de `228 30% 7%` para `228 30% 10%`
 
 ## Arquivos alterados
 
-1. **`src/components/layout/AppSidebar.tsx`** - Remover texto, centralizar logo, aumentar tamanho
-2. **`src/index.css`** - Ajustar variaveis de cor do sidebar (6 variaveis)
+1. `src/components/layout/AppSidebar.tsx` - Adicionar glow/halo dourado atras da logo
+2. `src/index.css` - Ajustar luminosidade do sidebar background
 
 ## Resultado esperado
 
-- Header do sidebar: apenas a logo centralizada, sem texto
-- Nome do usuario aparece apenas no bloco "Perfil" no footer
-- Sidebar com fundo mais escuro/profundo que destaca o dourado da logo
+A logo dourada tera um brilho sutil ao redor, criando separacao visual clara do fundo navy. O efeito sera elegante e premium, sem parecer exagerado.
+
