@@ -1,75 +1,112 @@
 
+# Plano: Adicionar Logo + Analise de Performance Frontend
 
-# Limpeza Completa do Sistema
+## 1. Adicionar a Logo ao Sistema
 
-## O que sera feito
+A imagem `base_logo_transparent_background2.png` sera copiada para `src/assets/logo-ticket-up.png` e utilizada em todos os locais que atualmente usam o icone gradiente com a letra "T".
 
-Apagar **todos os dados** de todas as tabelas do banco de dados, incluindo usuarios e autenticacao. Apos a limpeza, o sistema estara completamente vazio e sera necessario executar a funcao `setup-first-admin` para criar o primeiro administrador novamente.
+### Locais a atualizar (4 arquivos):
 
-## Ordem de execucao
+**a) `src/components/layout/AppSidebar.tsx` (linha 125-127)**
+- Substituir o `<div>` gradiente com "T" por um `<img>` importado do asset
+- Sidebar colapsada: logo menor (32-40px)
+- Sidebar aberta: logo com texto ao lado
 
-A limpeza deve respeitar as dependencias entre tabelas (foreign keys). A ordem sera:
+**b) `src/pages/Auth.tsx` (linhas 190-193 e 347-350)**
+- Tela de login: substituir icone "T" pela logo real
+- Tela de setup inicial: mesma substituicao
+- Manter o texto "Ticket Up" ao lado
 
-### Fase 1 - Dados dependentes (tabelas filhas)
-1. `eventos_materiais_alocados`
-2. `eventos_equipe`
-3. `eventos_receitas`
-4. `eventos_despesas`
-5. `eventos_cobrancas`
-6. `eventos_checklist`
-7. `eventos_timeline`
-8. `eventos_configuracao_historico`
-9. `eventos_contratos`
-10. `demandas_anexos`
-11. `demandas_comentarios`
-12. `materiais_historico_movimentacao` (se existir)
-13. `materiais_seriais`
-14. `envios`
+**c) `src/components/cadastro/CadastroEventoHeader.tsx` (linhas 8-11)**
+- Substituir icone "T" pela logo real na pagina publica de cadastro
 
-### Fase 2 - Dados principais
-15. `demandas`
-16. `eventos`
-17. `materiais_estoque`
-18. `clientes`
-19. `equipe_operacional`
-20. `contratos`
-21. `contratos_templates`
-22. `contas_pagar`
-23. `contas_receber`
-24. `cadastros_publicos`
-25. `transportadoras` (se existir)
+**d) `public/favicon.svg`**
+- Nao sera alterado (favicon continua com "T" estilizado pois a logo complexa nao funciona bem em 32x32)
 
-### Fase 3 - Configuracoes e sistema
-26. `notificacoes`
-27. `configuracoes_categorias`
-28. `configuracoes_usuario`
-29. `configuracoes_empresa`
-30. `configuracoes_fechamento`
-31. `configuracoes_taxas_pagamento`
-32. `audit_logs`
-33. `auth_rate_limit`
-34. `cadastro_rate_limit`
+---
 
-### Fase 4 - Usuarios e permissoes
-35. `user_permissions`
-36. `user_roles`
-37. `profiles`
-38. Deletar todos os usuarios de `auth.users` (via funcao administrativa)
+## 2. Analise de Performance e Transicoes do Frontend
 
-## Implementacao tecnica
+### O que ja esta BEM implementado:
 
-- Sera criada uma **edge function** chamada `limpar-sistema` que executa todas as operacoes usando `service_role` (necessario para deletar auth.users)
-- A funcao sera protegida por verificacao de admin
-- Apos execucao, o sistema ficara limpo e pronto para setup inicial via `setup-first-admin`
+1. **Code Splitting** - Todas as 15+ paginas usam `React.lazy()` com `Suspense`
+2. **Bundle Chunking** - `vite.config.ts` com `manualChunks` separando vendor, ui, data, charts, pdf, forms, dates, dnd
+3. **Compressao** - Brotli + Gzip em producao
+4. **Cache** - `staleTime: 5min`, `gcTime: 30min`, persistencia em localStorage
+5. **Virtualizacao** - Listas longas usam `@tanstack/react-virtual`
+6. **Animacoes** - Keyframes usando apenas `opacity` e `transform` (GPU-accelerated)
+7. **Prefetch inteligente** - `usePrefetchPages` com delay
+8. **Skeleton loaders** - `LoadingSkeleton` com shimmer effect
+9. **Navigation loading bar** - Barra de progresso baseada em queries reais
 
-## Apos a limpeza
+### Problemas identificados e correcoes:
 
-1. Chamar a edge function `setup-first-admin` para criar o primeiro administrador
-2. Fazer login com as credenciais do novo admin
-3. Comecar a cadastrar dados novamente
+**Problema 1: Transicao global em TODOS os elementos (CRITICO)**
+```css
+/* index.css linha 131-137 - Aplica transicao a TODOS os elementos */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 300ms;
+}
+```
+Isso causa **jank** em scroll e interacoes rapidas porque o navegador calcula transicoes para centenas de elementos simultaneamente. Deve ser removido e aplicado apenas onde necessario (tema toggle).
 
-## Riscos
+**Problema 2: Transicao duplicada em cards/borders**
+```css
+/* index.css linha 179-183 - Seletor muito amplo */
+[class*="card"], [class*="bg-"], [class*="border"] { ... }
+```
+Este seletor captura praticamente todos os elementos da pagina. Deve ser removido.
 
-- **Acao irreversivel** - todos os dados serao permanentemente excluidos
-- Arquivos no storage (avatars, documentos, etc.) tambem podem ser limpos opcionalmente
-- O usuario precisara confirmar antes da execucao
+**Problema 3: `NavigationLoadingBar` duplicada**
+- Renderizada em `App.tsx` (linha 153) E em `MainLayout.tsx` (linha 29)
+- Causa duas barras de loading simultaneas
+- Remover a instancia de `App.tsx`
+
+**Problema 4: `PageTransition` nao utilizado**
+- O componente `PageTransition.tsx` existe mas nao e usado em nenhum lugar
+- O `MainLayout` usa apenas `animate-page-enter` diretamente
+- Pode ser removido para reduzir bundle
+
+**Problema 5: Performance monitor tracking impreciso**
+- Em `AppProviders.tsx` linha 29: `Date.now() - query.state.dataUpdatedAt` nao mede duracao real da query, mede tempo desde ultima atualizacao
+- Nao impacta o usuario mas gera metricas incorretas
+
+### Correcoes a implementar:
+
+| Correcao | Impacto |
+|----------|---------|
+| Remover `transition` do seletor `*` | Alto - elimina jank em scroll |
+| Remover seletor `[class*="bg-"]` | Alto - reduz recalculos de estilo |
+| Remover `NavigationLoadingBar` duplicada | Medio - evita renders duplicados |
+| Remover `PageTransition.tsx` nao usado | Baixo - reduz bundle |
+| Adicionar `will-change: transform` em animacoes de pagina | Baixo - hint para GPU |
+
+---
+
+## Resumo de alteracoes
+
+### Arquivos a modificar:
+1. **Copiar logo** para `src/assets/logo-ticket-up.png`
+2. **`src/components/layout/AppSidebar.tsx`** - usar logo real
+3. **`src/pages/Auth.tsx`** - usar logo real (2 locais)
+4. **`src/components/cadastro/CadastroEventoHeader.tsx`** - usar logo real
+5. **`src/index.css`** - remover transicoes globais pesadas
+6. **`src/App.tsx`** - remover `NavigationLoadingBar` duplicada
+
+### Arquivo a deletar:
+7. **`src/components/shared/PageTransition.tsx`** - componente nao utilizado
+
+### Secao tecnica - CSS otimizado
+
+O seletor `*` com transicoes sera substituido por transicoes direcionadas apenas no toggle de tema:
+
+```css
+/* Antes (RUIM) - aplica a TODOS os elementos */
+* { transition: background-color 300ms, border-color 300ms, color 300ms; }
+
+/* Depois (BOM) - apenas no toggle de tema */
+html.transitioning * { transition: background-color 200ms, color 200ms; }
+```
+
+E o seletor `[class*="bg-"]` sera removido completamente, pois o Tailwind ja gera classes utilitarias com transicoes quando necessario via `transition-colors`.
