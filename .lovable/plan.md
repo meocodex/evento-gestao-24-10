@@ -1,86 +1,94 @@
 
-# Analise de Bugs e Erros no Sistema
 
-## Bugs Encontrados
+# Novos Bugs e Erros Encontrados no Sistema
 
-### BUG 1 (CRITICO): NovaContaReceberSheet - onChange sobrescreve react-hook-form
-**Arquivo:** `src/components/financeiro/NovaContaReceberSheet.tsx` (linhas 116, 128)
+## BUG 1 (CRITICO): NovoMaterialSheet - Categoria salva o label ao inves do value
+**Arquivo:** `src/components/estoque/NovoMaterialSheet.tsx` (linha 128)
 
-O mesmo bug que foi corrigido em `NovaContaPagarSheet` ainda existe aqui. Os inputs de `quantidade` e `valor_unitario` usam `{...register(...)}` junto com um `onChange` customizado que sobrescreve o onChange do react-hook-form. Resultado: o valor digitado nunca chega ao form state, fazendo a validacao Zod falhar silenciosamente (valor_unitario fica 0, rejeitado pelo `.positive()`).
+O `SelectItem` para categoria usa `value={cat.label}` ao inves de `value={cat.value}`. Isso significa que o banco armazena o texto de exibicao (ex: "Iluminacao") ao inves do identificador normalizado (ex: "iluminacao"). Se alguem editar o nome de uma categoria, todos os materiais que usavam aquele nome perdem a associacao.
 
-**Correcao:** Remover os estados locais `quantidade` e `valorUnitario`, remover os `onChange` customizados, e usar `watch()` para calcular o valor total (identico ao fix aplicado em NovaContaPagarSheet).
-
----
-
-### BUG 2 (CRITICO): EditarContaPagarSheet - Mesmo bug de onChange
-**Arquivo:** `src/components/financeiro/EditarContaPagarSheet.tsx` (linhas 140, 152)
-
-Identico ao bug anterior. Os inputs de `quantidade` e `valor_unitario` usam `onChange` customizado que sobrescreve o `register()`. Ao editar uma conta, o valor que o usuario digita nao chega ao react-hook-form, causando falha na validacao ou envio de valores errados.
-
-**Correcao:** Remover estados locais, remover onChange customizados, usar `watch()` para calcular valorTotal. Manter o `useEffect` de reset mas sem atualizar estados locais.
+**Correcao:** Trocar `value={cat.label}` por `value={cat.value}` na linha 128.
 
 ---
 
-### BUG 3 (CRITICO): EditarContaReceberSheet - Mesmo bug de onChange
-**Arquivo:** `src/components/financeiro/EditarContaReceberSheet.tsx` (linhas 144, 156)
+## BUG 2 (MEDIO): NovaDemandaSheet - mutateAsync sem await
+**Arquivo:** `src/components/demandas/NovaDemandaSheet.tsx` (linha 71)
 
-Identico ao anterior. Mesmo padrao de `onChange` sobrescrevendo o `register()`.
+O `criarDemanda.mutateAsync({...})` e chamado **sem** `await`. O toast de sucesso (linha 86) e o reset do formulario (linha 91) executam imediatamente, antes da mutation completar. Se a mutation falhar, o catch nunca captura o erro porque a Promise nao e awaited. Resultado: o formulario fecha e mostra "sucesso" mesmo quando a criacao falha.
 
-**Correcao:** Identica as demais - remover estados locais, usar `watch()`.
-
----
-
-### BUG 4 (MEDIO): Categorias - `.single()` em toggleCategoria, editarCategoria, excluirCategoria
-**Arquivo:** `src/contexts/categorias/useCategoriasMutations.ts` (linhas 111, 147, 183)
-
-As mutations `toggleCategoria`, `editarCategoria` e `excluirCategoria` usam `.single()` na query de SELECT. Se a linha nao existir (ex: usuario nunca criou categorias daquele tipo), o `.single()` lanca um erro ao inves de retornar null. Deveria usar `.maybeSingle()` com tratamento para quando nao encontra dados.
-
-**Correcao:** Trocar `.single()` por `.maybeSingle()` e adicionar verificacao de nulidade antes de prosseguir.
+**Correcao:** Adicionar `await` antes de `criarDemanda.mutateAsync(...)` e mover o toast/reset para dentro do `.then()` ou apos o await.
 
 ---
 
-## Resumo das Correcoes
+## BUG 3 (MEDIO): FinanceiroEvento carrega TODAS as demandas desnecessariamente
+**Arquivo:** `src/components/eventos/secoes/FinanceiroEvento.tsx` (linha 27)
+
+O componente usa `useDemandas(1, 1000)` para buscar ate 1000 demandas, apenas para filtrar reembolsos de um evento especifico. Ja existe o hook `useDemandasReembolso` (`src/hooks/demandas/useDemandasReembolso.ts`) que busca apenas demandas de reembolso de forma eficiente. Alem do problema de performance, se houver mais de 1000 demandas no sistema, os reembolsos podem nao aparecer (limite do Supabase).
+
+**Correcao:** Substituir `useDemandas(1, 1000)` por `useDemandasReembolso()` e filtrar por `eventoRelacionado === evento.id`.
+
+---
+
+## BUG 4 (MEDIO): useEventosMateriaisAlocados - .single() em configuracoes_usuario
+**Arquivo:** `src/contexts/eventos/useEventosMateriaisAlocados.ts` (linhas 402-406)
+
+Na geracao de declaracao de transporte, o codigo usa `.single()` para buscar `configuracoes_usuario`. Se o usuario nao tiver configuracoes salvas, o `.single()` lanca erro e a geracao de documento falha completamente.
+
+**Correcao:** Trocar `.single()` por `.maybeSingle()` e usar valores default quando config for null.
+
+---
+
+## BUG 5 (BAIXO): console.error em codigo de producao
+**Arquivos:**
+- `src/contexts/demandas/useDemandasReembolsos.ts` (linhas 60, 110, 164, 206)
+- `src/components/transportadoras/NovoEnvioSheet.tsx` (linha 207)
+- `src/components/equipe/ConcederAcessoSistemaSheet.tsx` (linha 189)
+
+Conforme regras do projeto, `console.error` nao deve existir em codigo de producao. Estes logs expoe detalhes internos no console do navegador.
+
+**Correcao:** Remover todos os `console.error` destes arquivos.
+
+---
+
+## Resumo
 
 | # | Arquivo | Bug | Severidade |
 |---|---------|-----|------------|
-| 1 | NovaContaReceberSheet.tsx | onChange sobrescreve register() | Critico |
-| 2 | EditarContaPagarSheet.tsx | onChange sobrescreve register() | Critico |
-| 3 | EditarContaReceberSheet.tsx | onChange sobrescreve register() | Critico |
-| 4 | useCategoriasMutations.ts | .single() pode falhar sem dados | Medio |
+| 1 | NovoMaterialSheet.tsx | cat.label ao inves de cat.value no Select | Critico |
+| 2 | NovaDemandaSheet.tsx | mutateAsync sem await | Medio |
+| 3 | FinanceiroEvento.tsx | useDemandas(1, 1000) ineficiente | Medio |
+| 4 | useEventosMateriaisAlocados.ts | .single() em configuracoes_usuario | Medio |
+| 5 | Varios arquivos | console.error em producao | Baixo |
 
 ## Detalhes Tecnicos
 
-### Para bugs 1-3 (formularios financeiros):
-
-Padrao de correcao (aplicar em cada arquivo):
-
+### Bug 1 (NovoMaterialSheet):
 ```text
-REMOVER:
-  const [quantidade, setQuantidade] = useState(...);
-  const [valorUnitario, setValorUnitario] = useState(...);
-  
-  onChange={(e) => setQuantidade(...)}
-  onChange={(e) => setValorUnitario(...)}
-
-ADICIONAR:
-  const watchedQuantidade = watch('quantidade') || 0;
-  const watchedValorUnitario = watch('valor_unitario') || 0;
-  const valorTotal = watchedQuantidade * watchedValorUnitario;
+ANTES: <SelectItem key={cat.value} value={cat.label}>
+DEPOIS: <SelectItem key={cat.value} value={cat.value}>
 ```
 
-Para `EditarContaPagarSheet` e `EditarContaReceberSheet`, tambem remover `setQuantidade(...)` e `setValorUnitario(...)` do `useEffect`.
+### Bug 2 (NovaDemandaSheet):
+Reestruturar o handleSubmit para usar async/await corretamente, movendo toast e reset para apos o await.
 
-### Para bug 4 (categorias):
-
-Trocar `.single()` por `.maybeSingle()` nas linhas 111, 147 e 183, e adicionar guard clause:
-
+### Bug 3 (FinanceiroEvento):
 ```text
-if (!config) throw new Error('Configuracao de categorias nao encontrada');
+ANTES: const { demandas } = useDemandas(1, 1000);
+DEPOIS: const { data: demandas = [] } = useDemandasReembolso();
 ```
+E filtrar: `demandas.filter(d => d.eventoRelacionado === evento.id)`
+
+### Bug 4 (useEventosMateriaisAlocados):
+Trocar `.single()` por `.maybeSingle()` na linha 406 e adicionar fallback para valores default da empresa.
+
+### Bug 5 (console.error):
+Remover todas as chamadas `console.error(...)` dos arquivos listados.
 
 ## Sequencia de Implementacao
 
-1. Corrigir NovaContaReceberSheet.tsx (bug 1)
-2. Corrigir EditarContaPagarSheet.tsx (bug 2)
-3. Corrigir EditarContaReceberSheet.tsx (bug 3)
-4. Corrigir useCategoriasMutations.ts (bug 4)
+1. Corrigir NovoMaterialSheet.tsx (bug 1 - mais critico, dados corrompidos)
+2. Corrigir NovaDemandaSheet.tsx (bug 2 - UX enganosa)
+3. Corrigir FinanceiroEvento.tsx (bug 3 - performance)
+4. Corrigir useEventosMateriaisAlocados.ts (bug 4 - crash potencial)
+5. Remover console.error (bug 5 - higiene de codigo)
+
