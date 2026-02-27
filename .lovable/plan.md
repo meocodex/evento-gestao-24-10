@@ -1,42 +1,41 @@
 
 
-# Fix: CPF validation error when granting system access
+# Fix: Erro ao criar novo usuario - constraint duplicada em configuracoes_categorias
 
-## Problem
+## Problema
 
-When granting system access to an operational team member who has no CPF registered, the `criar-operador` edge function returns a 400 error because:
+O erro "Database error creating new user" ocorre porque:
 
-1. The frontend's `limparFormatacao` converts `undefined`/empty CPF to `''` (empty string)
-2. The edge function's Zod schema requires CPF to match `/^\d{11}$/` -- an empty string fails this validation
-3. CPF is optional for operational members, so the function should accept missing CPF gracefully
+1. A edge function `criar-operador` chama `auth.admin.createUser()`
+2. Isso dispara o trigger `handle_new_user()` que cria um profile
+3. O profile criado dispara o trigger `criar_categorias_padrao()` que tenta inserir categorias com tipos 'demandas', 'estoque', 'despesas', 'funcoes_equipe'
+4. A tabela `configuracoes_categorias` tem uma constraint `UNIQUE (tipo)` -- ou seja, apenas UMA linha por tipo no sistema inteiro
+5. Como ja existem categorias do primeiro usuario, a insercao falha com "duplicate key value violates unique constraint"
 
-## Solution
+## Solucao
 
-Two changes:
+A constraint unica deveria ser `UNIQUE (user_id, tipo)` em vez de `UNIQUE (tipo)`, pois cada usuario precisa ter seu proprio conjunto de categorias.
 
-### 1. Edge Function (`supabase/functions/criar-operador/index.ts`)
+### Migracao SQL
 
-Change the `cpf` field in the Zod schema from:
-```
-cpf: z.string().regex(/^\d{11}$/, 'CPF deve ter 11 dígitos').optional()
-```
-to also allow empty strings and transform them to `undefined`:
-```
-cpf: z.string().regex(/^\d{11}$/, 'CPF deve ter 11 dígitos').optional()
-    .or(z.literal('').transform(() => undefined))
-```
+1. Remover a constraint existente `configuracoes_categorias_tipo_key`
+2. Criar nova constraint `UNIQUE (user_id, tipo)`
 
-### 2. Frontend (`src/components/equipe/ConcederAcessoSistemaSheet.tsx`)
+```sql
+ALTER TABLE configuracoes_categorias 
+  DROP CONSTRAINT configuracoes_categorias_tipo_key;
 
-Change the body sent to the edge function so that CPF is only included when it actually has a value:
-
-```
-cpf: limparFormatacao(membro.cpf) || undefined
+ALTER TABLE configuracoes_categorias 
+  ADD CONSTRAINT configuracoes_categorias_user_tipo_key UNIQUE (user_id, tipo);
 ```
 
-This ensures empty strings are never sent as CPF, making the fix robust on both sides.
+## Detalhes tecnicos
 
-## Files to modify
-- `supabase/functions/criar-operador/index.ts` (line 12 -- Zod schema for cpf)
-- `src/components/equipe/ConcederAcessoSistemaSheet.tsx` (line 131 -- body payload)
+- Nenhum arquivo de codigo precisa ser alterado
+- A edge function `criar-operador` ja funciona corretamente; o erro vem exclusivamente da constraint no banco
+- Apos a migracao, novos usuarios poderao ser criados normalmente, cada um com suas proprias categorias
+
+## Arquivos alterados
+
+Apenas uma migracao SQL (nenhum arquivo de codigo modificado).
 
