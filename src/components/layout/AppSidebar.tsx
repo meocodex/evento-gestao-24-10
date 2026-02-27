@@ -15,6 +15,7 @@ import {
   Activity,
   ClipboardList,
   RefreshCw,
+  BookOpen,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -67,6 +68,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
       { title: 'Relatórios', url: '/relatorios', icon: BarChart3 },
+      { title: 'Base de Conhecimento', url: '/base-conhecimento', icon: BookOpen },
       { title: 'Performance', url: '/performance', icon: Activity },
       { title: 'Configurações', url: '/configuracoes', icon: Settings },
     ],
@@ -102,6 +104,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         return hasAnyPermission(['financeiro.visualizar', 'financeiro.visualizar_proprios', 'financeiro.editar']);
       case 'Relatórios':
         return hasAnyPermission(['relatorios.visualizar', 'relatorios.gerar', 'relatorios.exportar']);
+      case 'Base de Conhecimento':
+        return true; // Todos autenticados podem ver
       case 'Performance':
       case 'Configurações':
         return false;

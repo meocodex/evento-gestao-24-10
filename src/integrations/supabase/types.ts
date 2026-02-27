@@ -83,6 +83,101 @@ export type Database = {
         }
         Relationships: []
       }
+      base_conhecimento_artigos: {
+        Row: {
+          anexos: Json
+          autor_id: string
+          autor_nome: string
+          categoria_id: string | null
+          conteudo: string
+          created_at: string
+          id: string
+          links_externos: Json
+          ordem: number
+          publicado: boolean
+          resumo: string | null
+          tags: string[] | null
+          titulo: string
+          updated_at: string
+          visualizacoes: number
+        }
+        Insert: {
+          anexos?: Json
+          autor_id: string
+          autor_nome: string
+          categoria_id?: string | null
+          conteudo?: string
+          created_at?: string
+          id?: string
+          links_externos?: Json
+          ordem?: number
+          publicado?: boolean
+          resumo?: string | null
+          tags?: string[] | null
+          titulo: string
+          updated_at?: string
+          visualizacoes?: number
+        }
+        Update: {
+          anexos?: Json
+          autor_id?: string
+          autor_nome?: string
+          categoria_id?: string | null
+          conteudo?: string
+          created_at?: string
+          id?: string
+          links_externos?: Json
+          ordem?: number
+          publicado?: boolean
+          resumo?: string | null
+          tags?: string[] | null
+          titulo?: string
+          updated_at?: string
+          visualizacoes?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "base_conhecimento_artigos_categoria_id_fkey"
+            columns: ["categoria_id"]
+            isOneToOne: false
+            referencedRelation: "base_conhecimento_categorias"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      base_conhecimento_categorias: {
+        Row: {
+          ativa: boolean
+          created_at: string
+          descricao: string | null
+          icone: string | null
+          id: string
+          nome: string
+          ordem: number
+          updated_at: string
+        }
+        Insert: {
+          ativa?: boolean
+          created_at?: string
+          descricao?: string | null
+          icone?: string | null
+          id?: string
+          nome: string
+          ordem?: number
+          updated_at?: string
+        }
+        Update: {
+          ativa?: boolean
+          created_at?: string
+          descricao?: string | null
+          icone?: string | null
+          id?: string
+          nome?: string
+          ordem?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cadastro_rate_limit: {
         Row: {
           ip_hash: string
