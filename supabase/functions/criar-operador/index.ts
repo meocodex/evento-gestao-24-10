@@ -168,7 +168,7 @@ Deno.serve(async (req) => {
 
       const { error: permError } = await supabaseAdmin
         .from('user_permissions')
-        .insert(userPermissions);
+        .upsert(userPermissions, { onConflict: 'user_id,permission_id', ignoreDuplicates: true });
 
       if (permError) {
         console.error('❌ Erro ao inserir permissões:', permError);
@@ -181,8 +181,8 @@ Deno.serve(async (req) => {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', existingUser.id);
 
-      if (count !== permissions.length) {
-        console.error(`⚠️ Esperado ${permissions.length} permissões, inserido ${count}`);
+      if ((count ?? 0) < permissions.length) {
+        console.error(`⚠️ Esperado ao menos ${permissions.length} permissões, encontrado ${count}`);
         throw new Error(`Falha ao inserir todas as permissões (${count}/${permissions.length})`);
       }
 
@@ -280,7 +280,7 @@ Deno.serve(async (req) => {
 
       const { error: permError } = await supabaseAdmin
         .from('user_permissions')
-        .insert(userPermissions);
+        .upsert(userPermissions, { onConflict: 'user_id,permission_id', ignoreDuplicates: true });
 
       if (permError) {
         console.error('❌ Erro ao inserir permissões:', permError);
@@ -293,8 +293,8 @@ Deno.serve(async (req) => {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', authData.user!.id);
 
-      if (count !== permissions.length) {
-        console.error(`⚠️ Esperado ${permissions.length} permissões, inserido ${count}`);
+      if ((count ?? 0) < permissions.length) {
+        console.error(`⚠️ Esperado ao menos ${permissions.length} permissões, encontrado ${count}`);
         throw new Error(`Falha ao inserir todas as permissões (${count}/${permissions.length})`);
       }
 
