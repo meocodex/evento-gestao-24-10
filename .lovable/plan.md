@@ -1,49 +1,54 @@
 
 
-# Reorganizacao do Sidebar - Lista Plana com Configuracoes Expansivel
+# Editor WYSIWYG em Tempo Real para Base de Conhecimento
 
 ## Objetivo
-Remover os agrupamentos (Menu Principal, Pessoas, Operacional, Gestao) e criar uma lista plana de itens. O item "Configuracoes" tera sub-itens expansiveis: Geral, Equipe e Performance.
+Substituir o editor atual (textarea com tags HTML + aba de preview separada) por um editor WYSIWYG verdadeiro, onde o usuario edita visualmente o conteudo formatado em tempo real, sem precisar alternar entre abas.
+
+## Abordagem
+Usar `contentEditable` nativo com `document.execCommand` para formatacao. Sem dependencias externas -- mantendo o bundle leve conforme o padrao do projeto.
 
 ## Mudancas
 
-### 1. Reestruturar `AppSidebar.tsx`
+### 1. Reescrever `src/components/baseConhecimento/RichTextEditor.tsx`
 
-**Remover**: Sistema de grupos (`MenuGroup[]`, `SidebarGroupLabel`)
+**Remover**:
+- Sistema de Tabs (Editar/Visualizar)
+- Textarea com manipulacao de selectionStart/selectionEnd
+- Funcoes `wrapSelection`, `insertAtCursor`, array `FORMAT_ACTIONS`
 
-**Nova estrutura de menu** - lista plana na ordem solicitada:
-1. Dashboard (`/dashboard`) - Home
-2. Eventos (`/eventos`) - Calendar
-3. Clientes (`/clientes`) - Users
-4. Financeiro (`/financeiro`) - DollarSign
-5. Demandas (`/demandas`) - ClipboardList
-6. Base de Conhecimento (`/base-conhecimento`) - BookOpen
-7. Estoque (`/estoque`) - Package
-8. Transportadoras (`/transportadoras`) - Truck
-9. Relatorios (`/relatorios`) - BarChart3
-10. Configuracoes (expansivel com Collapsible) - Settings
-    - Geral (`/configuracoes`) - Settings
-    - Equipe (`/equipe`) - UserCog
-    - Performance (`/performance`) - Activity
+**Novo componente**:
+- Um `div` com `contentEditable={true}` estilizado com as classes `prose` do Tailwind
+- Barra de ferramentas acima com os mesmos botoes (Negrito, Italico, H2, H3, Lista, Lista Ordenada, Link, Separador)
+- Cada botao executa `document.execCommand()` (ex: `bold`, `italic`, `insertOrderedList`, etc.)
+- Para links: um prompt simples pedindo a URL
+- O `onInput` do div captura `innerHTML` e chama `onChange(html)`
+- Sincronizacao bidirecional: quando `value` muda externamente, atualiza `innerHTML` do div (com protecao contra loop infinito)
+- Indicador visual de formatacao ativa nos botoes (verifica `document.queryCommandState`)
 
-**Implementacao tecnica**:
-- Usar `Collapsible` do Radix para o sub-menu de Configuracoes
-- O Collapsible abre automaticamente quando a rota ativa e `/configuracoes`, `/equipe` ou `/performance`
-- Manter toda a logica de permissoes (`canSeeItem`) existente
-- Configuracoes visivel apenas para admin (ja e assim)
-- Equipe continua com checagem `equipe.visualizar` / `equipe.editar`
-- Performance continua restrito a admin
+**Interface mantida identica**:
+```typescript
+interface RichTextEditorProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+}
+```
 
-### 2. Atualizar permissoes no `canSeeItem`
+### 2. Nenhuma mudanca nos consumidores
 
-- Adicionar caso `'Configurações'` retornando `true` se o usuario pode ver pelo menos um dos sub-itens (Geral para admin, Equipe para quem tem permissao, Performance para admin)
-- Manter a logica existente para cada sub-item
+Os componentes `NovoArtigoSheet`, `EditarArtigoSheet` e `ArtigoDetalhes` continuam funcionando sem alteracao, pois o editor continua produzindo/consumindo HTML como string.
 
-### 3. Arquivos modificados
+## Detalhes Tecnicos
 
-| Arquivo | Mudanca |
-|---------|---------|
-| `src/components/layout/AppSidebar.tsx` | Reestruturar menu: lista plana + Collapsible para Configuracoes |
+- `document.execCommand` e deprecated pela spec mas funciona em todos os browsers modernos e e a abordagem padrao para WYSIWYG leve sem bibliotecas
+- Placeholder implementado via CSS `[contenteditable]:empty:before` com pseudo-elemento
+- Estado dos botoes (ativo/inativo) atualizado via `onSelectionChange` no document, usando `document.queryCommandState('bold')` etc.
+- Protecao XSS ja existe no fluxo atual (`dangerouslySetInnerHTML` no ArtigoDetalhes) -- o conteudo e criado apenas por admins autenticados
 
-Nenhuma rota precisa mudar - `/equipe`, `/performance` e `/configuracoes` continuam funcionando normalmente. A mudanca e puramente visual/navegacional no sidebar.
+## Arquivo modificado
+| Arquivo | Acao |
+|---------|------|
+| `src/components/baseConhecimento/RichTextEditor.tsx` | Reescrever como WYSIWYG com contentEditable |
 
