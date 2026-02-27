@@ -142,6 +142,13 @@ export const queryKeys = {
   audit: {
     logs: (page: number, pageSize: number) => ['audit-logs', page, pageSize] as const,
   },
+
+  // ==================== BASE DE CONHECIMENTO ====================
+  baseConhecimento: {
+    categorias: ['base-conhecimento-categorias'] as const,
+    artigos: ['base-conhecimento-artigos'] as const,
+    artigo: (id: string) => ['base-conhecimento-artigo', id] as const,
+  },
 } as const;
 
 // Tipo helper para extrair o tipo de uma query key

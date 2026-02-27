@@ -26,6 +26,8 @@ const Equipe = lazy(() => import("./pages/Equipe"));
 const CadastrosPendentes = lazy(() => import("./pages/CadastrosPendentes"));
 const TestesValidacao = lazy(() => import("./pages/TestesValidacao"));
 const Performance = lazy(() => import("./pages/Performance"));
+const BaseConhecimento = lazy(() => import("./pages/BaseConhecimento"));
+const ArtigoDetalhes = lazy(() => import("./pages/ArtigoDetalhes"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const CadastroEvento = lazy(() => import("./pages/public/CadastroEvento"));
 const AcompanharCadastro = lazy(() => import("./pages/public/AcompanharCadastro"));
@@ -118,6 +120,8 @@ function ProtectedRoutes() {
         <Route path="cadastros-pendentes" element={<CadastrosPendentes />} />
         <Route path="testes-validacao" element={<TestesValidacao />} />
         <Route path="performance" element={<Performance />} />
+        <Route path="base-conhecimento" element={<BaseConhecimento />} />
+        <Route path="base-conhecimento/:id" element={<ArtigoDetalhes />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
