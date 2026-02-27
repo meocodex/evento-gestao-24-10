@@ -1,111 +1,68 @@
 
 
-# Base de Conhecimento - Area Informativa
+# Editor de Texto Rico para Base de Conhecimento
 
-## Objetivo
-Criar um modulo completo de Base de Conhecimento onde administradores podem publicar tutoriais, guias e artigos informativos para os membros da equipe. O conteudo sera organizado por categorias e tags, com suporte a texto rico, links/videos, e anexos de arquivos.
+## Contexto
+Atualmente o campo "Conteudo" dos artigos usa um `<Textarea>` simples (texto puro). O conteudo e renderizado com `dangerouslySetInnerHTML` na pagina de detalhes, mas o admin precisa digitar HTML manualmente. Precisamos adicionar uma barra de ferramentas de formatacao.
 
-## Estrutura do Banco de Dados
+## Sobre o campo "Publicado"
+O switch "Publicado" controla a visibilidade do artigo:
+- **Desligado (Rascunho)**: somente admins podem ver o artigo
+- **Ligado (Publicado)**: todos os membros da equipe podem ver
 
-### Tabela: `base_conhecimento_categorias`
-Armazena as categorias para organizar artigos (ex: Estoque, Eventos, Financeiro, Geral).
+Vamos renomear o label para deixar mais claro: "Publicar para a equipe" com uma descricao auxiliar.
 
-| Coluna | Tipo | Descricao |
-|--------|------|-----------|
-| id | uuid PK | Identificador unico |
-| nome | text NOT NULL | Nome da categoria |
-| descricao | text | Descricao opcional |
-| icone | text | Emoji ou nome de icone |
-| ordem | integer DEFAULT 0 | Ordem de exibicao |
-| ativa | boolean DEFAULT true | Se esta ativa |
-| created_at | timestamptz | Data de criacao |
-| updated_at | timestamptz | Data de atualizacao |
+## Solucao: Toolbar de Formatacao Customizada
 
-### Tabela: `base_conhecimento_artigos`
-Armazena os artigos/tutoriais publicados.
+Em vez de adicionar uma biblioteca pesada de rich text editor, vamos criar um componente `RichTextEditor` com uma barra de ferramentas que insere tags HTML no textarea. Isso mantem o bundle leve e o conteudo ja e renderizado como HTML na pagina de detalhes.
 
-| Coluna | Tipo | Descricao |
-|--------|------|-----------|
-| id | uuid PK | Identificador unico |
-| titulo | text NOT NULL | Titulo do artigo |
-| conteudo | text NOT NULL | Conteudo em texto rico (HTML) |
-| resumo | text | Resumo curto do artigo |
-| categoria_id | uuid FK | Referencia a categoria |
-| tags | text[] | Tags para busca |
-| anexos | jsonb DEFAULT '[]' | Lista de arquivos anexados |
-| links_externos | jsonb DEFAULT '[]' | Links e videos embutidos |
-| publicado | boolean DEFAULT false | Se esta publicado |
-| autor_id | uuid NOT NULL | Quem criou o artigo |
-| autor_nome | text NOT NULL | Nome do autor |
-| visualizacoes | integer DEFAULT 0 | Contador de visualizacoes |
-| ordem | integer DEFAULT 0 | Ordem na categoria |
-| created_at | timestamptz | Data de criacao |
-| updated_at | timestamptz | Data de atualizacao |
+### Funcionalidades da Toolbar
+- **Negrito** (Bold)
+- **Italico** (Italic)
+- **Titulo** (H2, H3)
+- **Lista com marcadores** (ul/li)
+- **Lista numerada** (ol/li)
+- **Link**
+- **Separador horizontal** (hr)
 
-### Politicas RLS
+### Componente: `src/components/baseConhecimento/RichTextEditor.tsx`
 
-- **SELECT**: Todos os usuarios autenticados podem visualizar artigos publicados
-- **INSERT/UPDATE/DELETE**: Apenas usuarios com `admin.full_access`
-- Categorias seguem o mesmo padrao
+Um componente que encapsula o textarea com uma barra de botoes acima. Cada botao insere/envolve o texto selecionado com a tag HTML correspondente. O componente usa `useRef` para manipular a selecao do textarea (`selectionStart`, `selectionEnd`).
 
-### Storage Bucket
-- Bucket `base-conhecimento` (privado) para upload de PDFs, imagens e documentos anexados aos artigos
-
-## Frontend - Componentes
-
-### 1. Pagina principal: `src/pages/BaseConhecimento.tsx`
-- Barra de busca para filtrar artigos por titulo, conteudo ou tags
-- Grid de categorias com contagem de artigos
-- Lista de artigos recentes
-- Filtro por categoria e tags
-
-### 2. Pagina de artigo: `src/pages/ArtigoDetalhes.tsx`
-- Titulo e metadados (autor, data, categoria, tags)
-- Conteudo renderizado com formatacao
-- Secao de links/videos embutidos (iframe do YouTube)
-- Lista de anexos com download
-- Navegacao entre artigos da mesma categoria
-
-### 3. Componentes de gestao (admin):
-- `NovoArtigoSheet.tsx` - Formulario para criar artigo com editor de texto rico, upload de anexos, adicao de links/videos
-- `EditarArtigoSheet.tsx` - Edicao do artigo existente
-- `GerenciarCategoriasSheet.tsx` - CRUD de categorias
-
-### 4. Hooks e Queries:
-- `src/contexts/baseConhecimento/useBaseConhecimentoQueries.ts` - Queries para listar artigos e categorias
-- `src/contexts/baseConhecimento/useBaseConhecimentoMutations.ts` - Mutations para CRUD
-
-## Navegacao
-
-- Novo item no sidebar: **"Base de Conhecimento"** no grupo **"Gestao"**, com icone `BookOpen`
-- Acessivel para todos os usuarios autenticados (visualizacao)
-- Rota: `/base-conhecimento` e `/base-conhecimento/:id`
-
-## Detalhes Tecnicos
-
-### Query Keys
-Adicionar ao `queryKeys.ts`:
+Interface:
 ```text
-baseConhecimento: {
-  categorias: ['base-conhecimento-categorias'],
-  artigos: ['base-conhecimento-artigos'],
-  artigo: (id: string) => ['base-conhecimento-artigo', id],
+interface RichTextEditorProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
 }
 ```
 
-### Permissoes no Sidebar
-- Todos os usuarios autenticados podem ver o menu (como Dashboard)
-- Gestao de conteudo restrita a admins no frontend via `usePermissions`
+### Alteracoes nos Sheets
 
-### Editor de Texto
-Utilizar `textarea` com suporte a Markdown simples ou HTML basico, sem dependencia extra de bibliotecas de rich text editor para manter o bundle leve.
+**NovoArtigoSheet.tsx e EditarArtigoSheet.tsx:**
+- Substituir o `<Textarea>` do campo "Conteudo" pelo novo `RichTextEditor`
+- Integrar com `react-hook-form` usando `watch` + `setValue` ao inves de `register`
+- Renomear o label do switch "Publicado" para "Publicar para a equipe" com texto auxiliar
 
-## Sequencia de Implementacao
+### Preview em Tempo Real
 
-1. Criar migracao SQL (tabelas, RLS, bucket de storage)
-2. Adicionar query keys e tipos TypeScript
-3. Criar hooks de queries e mutations
-4. Criar pagina principal da Base de Conhecimento
-5. Criar pagina de detalhes do artigo
-6. Criar componentes de gestao (sheets para CRUD)
-7. Adicionar rota e item no sidebar
+Adicionar uma aba de pre-visualizacao ao lado da edicao usando `Tabs` do shadcn, com duas abas:
+- **Editar**: mostra o editor com toolbar
+- **Visualizar**: renderiza o HTML do conteudo no mesmo estilo da pagina de detalhes
+
+## Detalhes Tecnicos
+
+### Arquivos a criar
+- `src/components/baseConhecimento/RichTextEditor.tsx` - Editor com toolbar
+
+### Arquivos a modificar
+- `src/components/baseConhecimento/NovoArtigoSheet.tsx` - Usar RichTextEditor e melhorar label do switch
+- `src/components/baseConhecimento/EditarArtigoSheet.tsx` - Mesmas alteracoes
+
+### Sequencia
+1. Criar o componente `RichTextEditor` com toolbar de formatacao
+2. Atualizar `NovoArtigoSheet` para usar o editor e melhorar UX do switch "Publicado"
+3. Atualizar `EditarArtigoSheet` com as mesmas mudancas
+
