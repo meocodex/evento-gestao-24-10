@@ -60,10 +60,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // THEN check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      if (!session) {
-        setLoading(false);
+      // Se o usuário escolheu NÃO manter conectado (remember_me=false) e o
+      // navegador foi reaberto (session_transient ausente), fazer logout
+      if (session && localStorage.getItem('remember_me') === 'false' && !sessionStorage.getItem('session_transient')) {
+        supabase.auth.signOut().then(() => {
+          localStorage.removeItem('remember_me');
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+        });
+        return;
       }
+      setSession(session);
+      if (!session) setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -159,6 +168,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     // Limpar todo o cache ao fazer logout para garantir dados limpos no próximo login
     queryClient.clear();
+    localStorage.removeItem('remember_me');
+    sessionStorage.removeItem('session_transient');
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
