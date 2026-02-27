@@ -1,68 +1,39 @@
 
 
-# Editor de Texto Rico para Base de Conhecimento
+# Corrigir Sincronização de Categorias Entre Usuários
 
-## Contexto
-Atualmente o campo "Conteudo" dos artigos usa um `<Textarea>` simples (texto puro). O conteudo e renderizado com `dangerouslySetInnerHTML` na pagina de detalhes, mas o admin precisa digitar HTML manualmente. Precisamos adicionar uma barra de ferramentas de formatacao.
+## Problema
+Quando o Usuário A cria uma nova categoria, o Usuário B não a vê porque:
+1. O cache do React Query é persistido no localStorage com `staleTime` de 5 minutos
+2. Não existe listener de tempo real (Realtime) para invalidar o cache quando categorias mudam
 
-## Sobre o campo "Publicado"
-O switch "Publicado" controla a visibilidade do artigo:
-- **Desligado (Rascunho)**: somente admins podem ver o artigo
-- **Ligado (Publicado)**: todos os membros da equipe podem ver
+## Solução
+Adicionar listeners Realtime nas tabelas de categorias para que mudanças feitas por qualquer usuário invalidem automaticamente o cache de todos os outros usuários conectados.
 
-Vamos renomear o label para deixar mais claro: "Publicar para a equipe" com uma descricao auxiliar.
+## Alterações
 
-## Solucao: Toolbar de Formatacao Customizada
-
-Em vez de adicionar uma biblioteca pesada de rich text editor, vamos criar um componente `RichTextEditor` com uma barra de ferramentas que insere tags HTML no textarea. Isso mantem o bundle leve e o conteudo ja e renderizado como HTML na pagina de detalhes.
-
-### Funcionalidades da Toolbar
-- **Negrito** (Bold)
-- **Italico** (Italic)
-- **Titulo** (H2, H3)
-- **Lista com marcadores** (ul/li)
-- **Lista numerada** (ol/li)
-- **Link**
-- **Separador horizontal** (hr)
-
-### Componente: `src/components/baseConhecimento/RichTextEditor.tsx`
-
-Um componente que encapsula o textarea com uma barra de botoes acima. Cada botao insere/envolve o texto selecionado com a tag HTML correspondente. O componente usa `useRef` para manipular a selecao do textarea (`selectionStart`, `selectionEnd`).
-
-Interface:
+### 1. Habilitar Realtime nas tabelas (Migração SQL)
 ```text
-interface RichTextEditorProps {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  className?: string;
-}
+ALTER PUBLICATION supabase_realtime ADD TABLE public.configuracoes_categorias;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.base_conhecimento_categorias;
 ```
 
-### Alteracoes nos Sheets
+### 2. Adicionar listener Realtime em `useCategoriasQueries.ts`
+- Adicionar `useEffect` com subscription no canal `configuracoes_categorias`
+- Quando receber evento `postgres_changes` (INSERT, UPDATE, DELETE), invalidar a query key `queryKeys.configuracoes.categorias`
+- Reduzir `staleTime` para 1 minuto (o Realtime cuida da invalidação)
+- Cleanup da subscription no return do useEffect
 
-**NovoArtigoSheet.tsx e EditarArtigoSheet.tsx:**
-- Substituir o `<Textarea>` do campo "Conteudo" pelo novo `RichTextEditor`
-- Integrar com `react-hook-form` usando `watch` + `setValue` ao inves de `register`
-- Renomear o label do switch "Publicado" para "Publicar para a equipe" com texto auxiliar
-
-### Preview em Tempo Real
-
-Adicionar uma aba de pre-visualizacao ao lado da edicao usando `Tabs` do shadcn, com duas abas:
-- **Editar**: mostra o editor com toolbar
-- **Visualizar**: renderiza o HTML do conteudo no mesmo estilo da pagina de detalhes
-
-## Detalhes Tecnicos
-
-### Arquivos a criar
-- `src/components/baseConhecimento/RichTextEditor.tsx` - Editor com toolbar
+### 3. Adicionar listener Realtime em `useBaseConhecimentoQueries.ts`
+- Mesmo padrão: subscription no canal `base_conhecimento_categorias`
+- Invalidar `queryKeys.baseConhecimento.categorias` e a query `['base-conhecimento-categorias', 'todas']`
 
 ### Arquivos a modificar
-- `src/components/baseConhecimento/NovoArtigoSheet.tsx` - Usar RichTextEditor e melhorar label do switch
-- `src/components/baseConhecimento/EditarArtigoSheet.tsx` - Mesmas alteracoes
+- `src/contexts/categorias/useCategoriasQueries.ts` — adicionar Realtime listener
+- `src/contexts/baseConhecimento/useBaseConhecimentoQueries.ts` — adicionar Realtime listener
 
-### Sequencia
-1. Criar o componente `RichTextEditor` com toolbar de formatacao
-2. Atualizar `NovoArtigoSheet` para usar o editor e melhorar UX do switch "Publicado"
-3. Atualizar `EditarArtigoSheet` com as mesmas mudancas
+### Arquivos a criar
+- Migração SQL para habilitar Realtime nas tabelas
 
+### Detalhes técnicos
+Os listeners usarão `useEffect` com cleanup, importando `useQueryClient` do TanStack Query para chamar `invalidateQueries` quando receberem mudanças. Isso segue o padrão já existente no sistema para outras tabelas (profiles, user_roles, etc.).
