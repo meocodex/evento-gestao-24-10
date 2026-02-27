@@ -6,7 +6,6 @@ import {
   Package,
   Truck,
   DollarSign,
-  FileText,
   BarChart3,
   Settings,
   Home,
@@ -16,19 +15,20 @@ import {
   ClipboardList,
   RefreshCw,
   BookOpen,
+  ChevronDown,
 } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarHeader,
   SidebarFooter,
 } from '@/components/ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from '@/components/ui/button';
@@ -38,45 +38,27 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { supabase } from '@/integrations/supabase/client';
 
 type MenuItem = { title: string; url: string; icon: React.ComponentType<{ className?: string }> };
-type MenuGroup = { label: string; items: MenuItem[] };
 
-const menuGroups: MenuGroup[] = [
-  {
-    label: 'Menu Principal',
-    items: [
-      { title: 'Dashboard', url: '/dashboard', icon: Home },
-      { title: 'Eventos', url: '/eventos', icon: Calendar },
-    ],
-  },
-  {
-    label: 'Pessoas',
-    items: [
-      { title: 'Clientes', url: '/clientes', icon: Users },
-      { title: 'Equipe', url: '/equipe', icon: UserCog },
-      { title: 'Demandas', url: '/demandas', icon: ClipboardList },
-    ],
-  },
-  {
-    label: 'Operacional',
-    items: [
-      { title: 'Estoque', url: '/estoque', icon: Package },
-      { title: 'Transportadoras', url: '/transportadoras', icon: Truck },
-    ],
-  },
-  {
-    label: 'Gestão',
-    items: [
-      { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
-      { title: 'Relatórios', url: '/relatorios', icon: BarChart3 },
-      { title: 'Base de Conhecimento', url: '/base-conhecimento', icon: BookOpen },
-      { title: 'Performance', url: '/performance', icon: Activity },
-      { title: 'Configurações', url: '/configuracoes', icon: Settings },
-    ],
-  },
+const mainMenuItems: MenuItem[] = [
+  { title: 'Dashboard', url: '/dashboard', icon: Home },
+  { title: 'Eventos', url: '/eventos', icon: Calendar },
+  { title: 'Clientes', url: '/clientes', icon: Users },
+  { title: 'Financeiro', url: '/financeiro', icon: DollarSign },
+  { title: 'Demandas', url: '/demandas', icon: ClipboardList },
+  { title: 'Base de Conhecimento', url: '/base-conhecimento', icon: BookOpen },
+  { title: 'Estoque', url: '/estoque', icon: Package },
+  { title: 'Transportadoras', url: '/transportadoras', icon: Truck },
+  { title: 'Relatórios', url: '/relatorios', icon: BarChart3 },
+];
+
+const configSubItems: MenuItem[] = [
+  { title: 'Geral', url: '/configuracoes', icon: Settings },
+  { title: 'Equipe', url: '/equipe', icon: UserCog },
+  { title: 'Performance', url: '/performance', icon: Activity },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user, logout, loading } = useAuth();
+  const { user, logout } = useAuth();
   const { state } = useSidebar();
   const location = useLocation();
   const { hasAnyPermission } = usePermissions();
@@ -94,8 +76,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         return hasAnyPermission(['clientes.visualizar', 'clientes.criar', 'clientes.editar']);
       case 'Demandas':
         return hasAnyPermission(['demandas.visualizar', 'demandas.criar', 'demandas.editar', 'demandas.atribuir']);
-      case 'Equipe':
-        return hasAnyPermission(['equipe.visualizar', 'equipe.editar']);
       case 'Estoque':
         return hasAnyPermission(['estoque.visualizar', 'estoque.editar', 'estoque.alocar']);
       case 'Transportadoras':
@@ -105,23 +85,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       case 'Relatórios':
         return hasAnyPermission(['relatorios.visualizar', 'relatorios.gerar', 'relatorios.exportar']);
       case 'Base de Conhecimento':
-        return true; // Todos autenticados podem ver
+        return true;
+      // Config sub-items
+      case 'Geral':
       case 'Performance':
-      case 'Configurações':
-        return false;
+        return false; // admin only
+      case 'Equipe':
+        return hasAnyPermission(['equipe.visualizar', 'equipe.editar']);
       default:
         return false;
     }
   };
 
-  const filteredGroups = menuGroups
-    .map(group => ({
-      ...group,
-      items: group.items.filter(item => canSeeItem(item.title)),
-    }))
-    .filter(group => group.items.length > 0);
+  const filteredMainItems = mainMenuItems.filter(item => canSeeItem(item.title));
+  const filteredConfigItems = configSubItems.filter(item => canSeeItem(item.title));
+  const showConfig = filteredConfigItems.length > 0;
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => location.pathname === path || location.pathname.startsWith(path + '/');
+  const isConfigActive = configSubItems.some(item => isActive(item.url));
 
   return (
     <Sidebar className="border-r-0 bg-sidebar" {...props}>
@@ -134,38 +115,75 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        {filteredGroups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/60 px-4">
-              {group.label}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu className="space-y-1 px-2">
-                {group.items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild 
-                      isActive={isActive(item.url)}
-                      className={cn(
-                        "mx-2 min-h-[44px] transition-all duration-200",
-                        isActive(item.url) && "border-l-4 border-accent shadow-md"
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1 px-2">
+              {filteredMainItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={isActive(item.url)}
+                    className={cn(
+                      "mx-2 min-h-[44px] transition-all duration-200",
+                      isActive(item.url) && "border-l-4 border-accent shadow-md"
+                    )}
+                    tooltip={state === 'collapsed' ? item.title : undefined}
+                  >
+                    <Link to={item.url}>
+                      <item.icon className="h-5 w-5" />
+                      <span className="font-medium">{item.title}</span>
+                      {isActive(item.url) && (
+                        <div className="ml-auto w-2 h-2 rounded-full bg-accent animate-pulse" />
                       )}
-                      tooltip={state === 'collapsed' ? item.title : undefined}
-                    >
-                      <Link to={item.url}>
-                        <item.icon className="h-5 w-5" />
-                        <span className="font-medium">{item.title}</span>
-                        {isActive(item.url) && (
-                          <div className="ml-auto w-2 h-2 rounded-full bg-accent animate-pulse" />
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+
+              {showConfig && (
+                <SidebarMenuItem>
+                  <Collapsible defaultOpen={isConfigActive}>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        isActive={isConfigActive}
+                        className={cn(
+                          "mx-2 min-h-[44px] transition-all duration-200",
+                          isConfigActive && "border-l-4 border-accent shadow-md"
                         )}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
+                        tooltip={state === 'collapsed' ? 'Configurações' : undefined}
+                      >
+                        <Settings className="h-5 w-5" />
+                        <span className="font-medium">Configurações</span>
+                        <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenu className="ml-4 mt-1 space-y-1 border-l border-sidebar-border/30 pl-2">
+                        {filteredConfigItems.map((sub) => (
+                          <SidebarMenuItem key={sub.title}>
+                            <SidebarMenuButton
+                              asChild
+                              isActive={isActive(sub.url)}
+                              className={cn(
+                                "min-h-[38px] transition-all duration-200",
+                                isActive(sub.url) && "border-l-2 border-accent"
+                              )}
+                            >
+                              <Link to={sub.url}>
+                                <sub.icon className="h-4 w-4" />
+                                <span className="text-sm">{sub.title}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenu>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </SidebarMenuItem>
+              )}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border/30 p-3 md:p-4">
@@ -180,7 +198,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <p>Admin: {user?.isAdmin ? 'Sim' : 'Não'}</p>
                 </div>
               )}
-              
+
               <div className="px-3 md:px-4 py-2 md:py-3 bg-sidebar-accent/50 backdrop-blur-sm rounded-xl border border-sidebar-border/30">
                 <p className="text-xs text-sidebar-foreground/60 font-medium uppercase tracking-wide">
                   Perfil
@@ -189,11 +207,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   {user?.role}
                 </p>
               </div>
-              
+
               <Separator className="bg-sidebar-border/30" />
             </>
           )}
-          
+
           <div className="flex gap-2">
             {!isAdmin && state !== 'collapsed' && (
               <Button
@@ -209,7 +227,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <RefreshCw className="h-4 w-4" />
               </Button>
             )}
-            
+
             <Button
               variant="ghost"
               onClick={logout}
