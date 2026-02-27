@@ -1,47 +1,40 @@
 
 
-# Fix: React Error #310 on /eventos page
+# Adicionar "Manter-me conectado" na tela de Login
 
-## Root Cause Analysis
+## O que sera feito
 
-React error #310 means "Objects are not valid as a React child." After investigation, the most probable causes are:
+Adicionar um checkbox "Manter-me conectado" entre o campo de senha e o botao "Entrar" na tela de login. Quando marcado, a sessao persistira no `localStorage` (comportamento padrao do Supabase Auth). Quando desmarcado, usara `sessionStorage` para que a sessao expire ao fechar o navegador.
 
-1. **Stale persisted cache**: The app uses `PersistQueryClientProvider` with localStorage (`gercao-cache` key). Previously corrupted or stale data from before the 403 fixes may be restored and rendered as objects instead of strings.
+## Mudancas
 
-2. **Missing data guards**: Some components render query data without null-safe checks that could result in objects being passed where strings are expected (e.g., Supabase error objects or raw DB objects).
+### 1. `src/pages/Auth.tsx`
 
-## Changes
+- Adicionar estado `rememberMe` (default: `false`)
+- Adicionar import do `Checkbox` de `@/components/ui/checkbox`
+- Inserir checkbox entre o campo de senha (linha 392) e o botao Entrar (linha 394)
+- No `handleLogin`, antes do `signInWithPassword`, configurar a persistencia da sessao:
+  - Se `rememberMe` estiver desmarcado, chamar `supabase.auth.setSession` com storage customizado usando `sessionStorage`
+  - Forma mais simples: armazenar a preferencia em `localStorage` e usar no `AuthContext` para controlar o comportamento
 
-### 1. Add cache version bust in AppProviders
+### 2. `src/integrations/supabase/client.ts` -- NAO pode ser editado
 
-Add a `buster` option to the persister configuration so old cache data from before the fixes is automatically discarded. This ensures stale/corrupt data doesn't cause render errors.
+Como o client nao pode ser editado, a abordagem sera:
+- Apos login bem-sucedido com `rememberMe` desmarcado, salvar um flag `session_transient` no `sessionStorage`
+- No `AuthContext`, ao detectar esse flag ausente (navegador reaberto), fazer `signOut` automatico
 
-**File:** `src/providers/AppProviders.tsx`
-- Add `buster: 'v2'` to `persistOptions` so old cached data is invalidated
+### Abordagem final simplificada
 
-### 2. Add defensive rendering in EventosStats
+1. **Auth.tsx**: Adicionar checkbox + estado. Apos login com sucesso, salvar flag em `sessionStorage` se `rememberMe` estiver desmarcado
+2. **AuthContext.tsx**: No carregamento, verificar se existe sessao ativa mas sem o flag `sessionStorage` -- se sim, fazer logout automatico (sessao expirou ao fechar navegador)
 
-Add guards so that if `eventos` contains unexpected shapes from cache, the component won't crash.
+## Detalhes da UI
 
-**File:** `src/components/eventos/EventosStats.tsx`
-- Wrap stat values with `String()` to ensure they're always renderable
+```text
+[ Campo Senha        ]
+[x] Manter-me conectado
+[ Entrar             ]
+```
 
-### 3. Add defensive rendering in Dashboard stats
-
-The Dashboard queries `vw_eventos_stats` and `vw_demandas_stats`. If these return unexpected data shapes from cache, rendering could fail.
-
-**File:** `src/pages/Dashboard.tsx`
-- Ensure all stat values passed to `StatCard` are explicitly converted to strings
-
-### 4. Add error handling for vw stats queries in useDashboardStats
-
-**File:** `src/hooks/useDashboardStats.ts`
-- Add null checks when processing `eventosStats` and `demandasStats` arrays
-- Default to safe values (0) if data is missing or malformed
-
-## Why this should fix it
-
-- Busting the cache version forces a fresh fetch with the new GRANT permissions
-- Defensive string conversions prevent objects from being passed as React children
-- The underlying 403 issue is already fixed by the previous migration
+O checkbox usara o componente `Checkbox` do shadcn/ui ja existente no projeto, com label inline.
 
