@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Loader2, ShieldAlert, UserCog } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { loginSchema, signupSchema } from "@/lib/validations/auth";
 import { ZodError } from "zod";
 import logoTicketUp from "@/assets/logo-ticket-up.png";
@@ -14,6 +15,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [checkingUsers, setCheckingUsers] = useState(true);
   const [hasUsers, setHasUsers] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [setupData, setSetupData] = useState({ 
     nome: "", 
@@ -81,12 +83,17 @@ export default function Auth() {
       }
 
       if (data.user) {
+        // Salvar preferência de sessão
+        if (rememberMe) {
+          localStorage.setItem('remember_me', 'true');
+        } else {
+          localStorage.setItem('remember_me', 'false');
+          sessionStorage.setItem('session_transient', 'true');
+        }
         toast.success("Login realizado com sucesso!");
-        // Redirecionamento automático via AuthRoutes
       }
     } catch (error) {
       if (error instanceof ZodError) {
-        // Mostrar primeiro erro de validação
         toast.error(error.errors[0].message);
       } else {
         toast.error("Erro ao fazer login");
@@ -390,6 +397,19 @@ export default function Auth() {
                   disabled={loading}
                   required
                 />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="remember-me"
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(checked === true)}
+                />
+                <label
+                  htmlFor="remember-me"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Manter-me conectado
+                </label>
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
