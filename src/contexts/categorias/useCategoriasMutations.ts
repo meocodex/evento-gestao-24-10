@@ -108,9 +108,11 @@ export function useCategoriasMutations() {
         .select('categorias')
         .eq('tipo', tipo)
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      const categorias = (config?.categorias as unknown as Categoria[]) || [];
+      if (!config) throw new Error('Configuração de categorias não encontrada');
+
+      const categorias = (config.categorias as unknown as Categoria[]) || [];
       const updated = categorias.map(c =>
         c.value === value ? { ...c, ativa: !c.ativa } : c
       );
@@ -144,9 +146,11 @@ export function useCategoriasMutations() {
         .select('categorias')
         .eq('tipo', tipo)
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      const categorias = (config?.categorias as unknown as Categoria[]) || [];
+      if (!config) throw new Error('Configuração de categorias não encontrada');
+
+      const categorias = (config.categorias as unknown as Categoria[]) || [];
       const updated = categorias.map(c =>
         c.value === value ? { ...c, label: novoLabel } : c
       );
@@ -180,9 +184,11 @@ export function useCategoriasMutations() {
         .select('categorias')
         .eq('tipo', tipo)
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      const categorias = (config?.categorias as unknown as Categoria[]) || [];
+      if (!config) throw new Error('Configuração de categorias não encontrada');
+
+      const categorias = (config.categorias as unknown as Categoria[]) || [];
       const categoriaExiste = categorias.find(c => c.value === value);
       
       if (!categoriaExiste) {

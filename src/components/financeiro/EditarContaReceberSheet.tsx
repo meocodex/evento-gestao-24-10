@@ -26,8 +26,6 @@ interface EditarContaReceberSheetProps {
 export function EditarContaReceberSheet({ conta, open, onOpenChange }: EditarContaReceberSheetProps) {
   const { atualizar } = useContasReceber();
   const [anexos, setAnexos] = useState<AnexoFinanceiro[]>(conta.anexos || []);
-  const [quantidade, setQuantidade] = useState(conta.quantidade);
-  const [valorUnitario, setValorUnitario] = useState(conta.valor_unitario);
 
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<ContaReceberFormData>({
     resolver: zodResolver(contaReceberSchema),
@@ -63,16 +61,16 @@ export function EditarContaReceberSheet({ conta, open, onOpenChange }: EditarCon
       forma_recebimento: conta.forma_recebimento || undefined,
     });
     setAnexos(conta.anexos || []);
-    setQuantidade(conta.quantidade);
-    setValorUnitario(conta.valor_unitario);
   }, [conta, reset]);
 
   const status = watch('status');
   const recorrencia = watch('recorrencia');
   const cliente = watch('cliente');
   const responsavel = watch('responsavel');
+  const watchedQuantidade = watch('quantidade') || 0;
+  const watchedValorUnitario = watch('valor_unitario') || 0;
 
-  const valorTotal = quantidade * valorUnitario;
+  const valorTotal = watchedQuantidade * watchedValorUnitario;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,7 +139,6 @@ export function EditarContaReceberSheet({ conta, open, onOpenChange }: EditarCon
               id="quantidade"
               type="number"
               {...register('quantidade', { valueAsNumber: true })}
-              onChange={(e) => setQuantidade(Number(e.target.value))}
             />
             {errors.quantidade && <p className="text-sm text-destructive">{errors.quantidade.message}</p>}
           </div>
@@ -153,7 +150,6 @@ export function EditarContaReceberSheet({ conta, open, onOpenChange }: EditarCon
               type="number"
               step="0.01"
               {...register('valor_unitario', { valueAsNumber: true })}
-              onChange={(e) => setValorUnitario(Number(e.target.value))}
             />
             {errors.valor_unitario && <p className="text-sm text-destructive">{errors.valor_unitario.message}</p>}
           </div>

@@ -25,8 +25,6 @@ interface NovaContaReceberSheetProps {
 export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSheetProps) {
   const { criar } = useContasReceber();
   const [anexos, setAnexos] = useState<AnexoFinanceiro[]>([]);
-  const [quantidade, setQuantidade] = useState(1);
-  const [valorUnitario, setValorUnitario] = useState(0);
 
   const { register, handleSubmit, watch, setValue, reset, formState: { errors } } = useForm<ContaReceberFormData>({
     resolver: zodResolver(contaReceberSchema),
@@ -42,8 +40,10 @@ export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSh
   const recorrencia = watch('recorrencia');
   const cliente = watch('cliente');
   const responsavel = watch('responsavel');
+  const watchedQuantidade = watch('quantidade') || 0;
+  const watchedValorUnitario = watch('valor_unitario') || 0;
 
-  const valorTotal = quantidade * valorUnitario;
+  const valorTotal = watchedQuantidade * watchedValorUnitario;
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,7 +113,6 @@ export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSh
               id="quantidade"
               type="number"
               {...register('quantidade', { valueAsNumber: true })}
-              onChange={(e) => setQuantidade(Number(e.target.value))}
             />
             {errors.quantidade && <p className="text-sm text-destructive">{errors.quantidade.message}</p>}
           </div>
@@ -125,7 +124,6 @@ export function NovaContaReceberSheet({ open, onOpenChange }: NovaContaReceberSh
               type="number"
               step="0.01"
               {...register('valor_unitario', { valueAsNumber: true })}
-              onChange={(e) => setValorUnitario(Number(e.target.value))}
             />
             {errors.valor_unitario && <p className="text-sm text-destructive">{errors.valor_unitario.message}</p>}
           </div>
