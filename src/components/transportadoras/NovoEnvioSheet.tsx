@@ -203,8 +203,8 @@ export function NovoEnvioSheet({ open, onOpenChange }: NovoEnvioSheetProps) {
       
       setEnvioRecemCriado(novoEnvio);
       setShowGerarDeclaracao(true);
-    } catch (error) {
-      console.error('Erro ao criar envio:', error);
+    } catch {
+      // Erro já tratado pelo hook
     }
   };
 

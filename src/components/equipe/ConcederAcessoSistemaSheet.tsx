@@ -186,8 +186,6 @@ export function ConcederAcessoSistemaSheet({ open, onOpenChange, membro }: Conce
 
       close();
     } catch (error: unknown) {
-      console.error('Erro ao conceder acesso:', error);
-      
       let errorMessage = 'Erro ao conceder acesso. Tente novamente.';
       
       // Parse de erros de validação da edge function
