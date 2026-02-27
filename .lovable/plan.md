@@ -1,48 +1,31 @@
 
 
-# Corrigir bug de categorias que desaparecem ao editar
+# Corrigir erro ao criar nova conta a pagar
 
 ## Problema Identificado
 
-A tabela `configuracoes_categorias` tem uma constraint UNIQUE em `(user_id, tipo)`, mas o codigo das mutations e queries **nao filtra por `user_id`**. Isso causa:
+Dois bugs no formulario `NovaContaPagarSheet.tsx`:
 
-1. **Queries**: Buscam categorias de TODOS os usuarios, misturando dados
-2. **Mutations (editar/toggle/excluir)**: Usam `.eq('tipo', tipo).single()` sem filtrar por usuario -- com dois usuarios no sistema, o `.single()` falha ou retorna a linha errada
-3. **Upsert (adicionar)**: Usa `onConflict: 'tipo'` mas a constraint e `(user_id, tipo)`, causando conflito incorreto
+### Bug 1: Data vazia enviada ao banco (ERRO PRINCIPAL)
+O erro no banco e `invalid input syntax for type date: ""`. Quando o usuario nao preenche a data de vencimento ou deixa o campo vazio, o valor `""` (string vazia) e enviado ao Supabase, que rejeita por nao ser uma data valida. O schema Zod deveria capturar isso, mas o `register('data_vencimento')` envia string vazia que passa pelo refine.
 
-Resultado: ao editar uma categoria de estoque, a mutation pegou a linha errada, sobrescreveu os dados, e ambas as linhas de estoque ficaram com `categorias: []`.
+### Bug 2: onChange sobrescrito nos campos numericos
+Os inputs de `quantidade` e `valor_unitario` usam `{...register(...)}` junto com um `onChange` customizado que SOBRESCREVE o onChange do react-hook-form. Resultado: o react-hook-form nunca recebe os valores digitados, mantendo os defaults (quantidade=1, valor_unitario=undefined/0). A validacao Zod de `valor_unitario > 0` falha silenciosamente.
 
 ## Correcoes
 
-### 1. Restaurar categorias de estoque no banco (dados perdidos)
+### Arquivo: `src/components/financeiro/NovaContaPagarSheet.tsx`
 
-Restaurar as categorias padrao de estoque para os dois usuarios afetados via UPDATE direto no banco.
+1. **Campos numericos**: Remover o `onChange` customizado e usar `watch()` do react-hook-form para calcular o valor total, eliminando os estados locais `quantidade` e `valorUnitario`.
 
-### 2. Corrigir `useCategoriasQueries.ts`
+2. **Calculo do valor total**: Usar os valores do react-hook-form via `watch('quantidade')` e `watch('valor_unitario')` para calcular `valorTotal` de forma reativa.
 
-Adicionar filtro por `user_id` na query para buscar apenas as categorias do usuario logado:
+### Arquivo: `src/lib/validations/financeiro.ts`
 
-- Usar `.eq('user_id', userId)` na query do Supabase
-- Obter o `userId` do contexto de autenticacao
+3. **Validacao da data**: Reforcar a validacao de `data_vencimento` para rejeitar strings vazias antes do refine (adicionar `.min(1, 'Data de vencimento e obrigatoria')` antes do `.refine`).
 
-### 3. Corrigir `useCategoriasMutations.ts`
+## Resumo das mudancas
 
-Em todas as mutations:
-
-- **adicionarCategoria**: Trocar `onConflict: 'tipo'` por `onConflict: 'user_id,tipo'` e incluir `user_id` no upsert
-- **editarCategoria**: Adicionar `.eq('user_id', userId)` no SELECT e UPDATE
-- **toggleCategoria**: Adicionar `.eq('user_id', userId)` no SELECT e UPDATE  
-- **excluirCategoria**: Adicionar `.eq('user_id', userId)` no SELECT e UPDATE
-- **atualizarCategorias**: Incluir `user_id` no upsert e corrigir `onConflict`
-
-### 4. Obter `user_id` nas mutations
-
-Importar `useAuth` para obter o ID do usuario logado e usar em todas as operacoes de banco.
-
-## Sequencia
-
-1. Restaurar dados perdidos no banco
-2. Corrigir queries (filtro por user_id)
-3. Corrigir mutations (filtro por user_id + onConflict correto)
-4. Testar criacao e edicao de categorias
+- `src/components/financeiro/NovaContaPagarSheet.tsx`: Remover estados locais `quantidade`/`valorUnitario`, remover `onChange` customizados dos inputs numericos, usar `watch` para calcular valor total
+- `src/lib/validations/financeiro.ts`: Adicionar `.min(1)` nos campos de data para rejeitar strings vazias
 
