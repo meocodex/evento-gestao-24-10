@@ -19,8 +19,8 @@ export { useFecharEvento } from './useFecharEvento';
 export { useEventoContabilizado } from './useEventoContabilizado';
 
 // Wrapper para compatibilidade
-export function useEventos(page?: number, pageSize?: number, searchTerm?: string) {
-  const queries = useEventosQueriesImpl(page, pageSize, searchTerm);
+export function useEventos(page?: number, pageSize?: number, searchTerm?: string, incluirArquivados?: boolean) {
+  const queries = useEventosQueriesImpl(page, pageSize, searchTerm, incluirArquivados);
   const mutations = useEventosMutationsImpl();
   
   return {

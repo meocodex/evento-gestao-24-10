@@ -29,8 +29,6 @@ export default function Eventos() {
   const [page, setPage] = useState(1);
   const pageSize = 50;
   const [searchTerm, setSearchTerm] = useState('');
-  const { eventos = [], totalCount = 0 } = useEventos(page, pageSize, searchTerm);
-  const navigate = useNavigate();
   const [filters, setFilters] = useState<EventoFiltersType>({ 
     status: [], 
     cidade: '', 
@@ -39,6 +37,8 @@ export default function Eventos() {
     urgentes: false,
     altaPrioridade: false,
   });
+  const { eventos = [], totalCount = 0 } = useEventos(page, pageSize, searchTerm, filters.incluirArquivados);
+  const navigate = useNavigate();
   const [quickCreateOpen, setQuickCreateOpen] = useState(false);
   const permissions = usePermissions();
   const [activeTab, setActiveTab] = useState<string>('todos');
