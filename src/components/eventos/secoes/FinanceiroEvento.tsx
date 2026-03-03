@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2, FileText, Receipt, Paperclip, Printer, Archive, ChevronUp } from 'lucide-react';
+import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2, FileText, Receipt, Paperclip, Printer, Archive, ChevronUp, CheckCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useEventoContabilizado } from '@/hooks/eventos';
 import { FileViewer } from '@/components/shared/FileViewer';
 import { AdicionarReceitaSheet } from '../modals/AdicionarReceitaSheet';
 import { AdicionarDespesaSheet } from '../modals/AdicionarDespesaSheet';
@@ -25,6 +27,7 @@ interface FinanceiroEventoProps {
 export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps) {
   const { toast } = useToast();
   const financeiro = useEventosFinanceiro(evento.id);
+  const { jaContabilizado } = useEventoContabilizado(evento.id);
   const { data: demandasReembolso = [] } = useDemandasReembolso();
   const [showAddReceita, setShowAddReceita] = useState(false);
   const [showAddDespesa, setShowAddDespesa] = useState(false);
@@ -106,6 +109,17 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
 
   return (
     <div className="space-y-6">
+      {jaContabilizado && (
+        <Card className="border-green-500/50 bg-green-500/10">
+          <CardContent className="flex items-center gap-3 py-4">
+            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0" />
+            <p className="text-sm font-medium text-green-700 dark:text-green-400">
+              Este evento já foi contabilizado no financeiro geral.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -180,7 +194,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
             <div className="space-y-2">
               {evento.financeiro.receitas.map((receita) => (
                 <div key={receita.id} className="flex justify-between items-center p-3 border rounded">
-                  {evento.status === 'finalizado' && (
+                  {evento.status === 'finalizado' && !jaContabilizado && (
                     <Checkbox
                       checked={receitasSelecionadas.has(receita.id)}
                       onCheckedChange={() => toggleReceitaSelecionada(receita.id)}
@@ -268,7 +282,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
             <div className="space-y-2">
               {evento.financeiro.despesas.map((despesa) => (
                 <div key={despesa.id} className="flex justify-between items-center p-3 border rounded">
-                  {evento.status === 'finalizado' && (
+                  {evento.status === 'finalizado' && !jaContabilizado && (
                     <Checkbox 
                       checked={despesasSelecionadas.has(despesa.id)}
                       onCheckedChange={() => toggleDespesaSelecionada(despesa.id)}
@@ -394,10 +408,26 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
                 <Printer className="h-4 w-4 mr-2" />
                 Imprimir Fechamento
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setShowFecharEventoDialog(true)}>
-                <Archive className="h-4 w-4 mr-2" />
-                Fechar Evento
-              </DropdownMenuItem>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <DropdownMenuItem 
+                        disabled={jaContabilizado}
+                        onClick={() => !jaContabilizado && setShowFecharEventoDialog(true)}
+                      >
+                        <Archive className="h-4 w-4 mr-2" />
+                        Fechar Evento
+                      </DropdownMenuItem>
+                    </div>
+                  </TooltipTrigger>
+                  {jaContabilizado && (
+                    <TooltipContent>
+                      Este evento já foi contabilizado no financeiro geral
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
