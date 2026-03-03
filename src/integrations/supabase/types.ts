@@ -482,6 +482,7 @@ export type Database = {
           data_pagamento: string | null
           data_vencimento: string
           descricao: string
+          evento_id: string | null
           forma_pagamento: string | null
           fornecedor: string | null
           id: string
@@ -506,6 +507,7 @@ export type Database = {
           data_pagamento?: string | null
           data_vencimento: string
           descricao: string
+          evento_id?: string | null
           forma_pagamento?: string | null
           fornecedor?: string | null
           id?: string
@@ -530,6 +532,7 @@ export type Database = {
           data_pagamento?: string | null
           data_vencimento?: string
           descricao?: string
+          evento_id?: string | null
           forma_pagamento?: string | null
           fornecedor?: string | null
           id?: string
@@ -546,6 +549,20 @@ export type Database = {
           valor_unitario?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "contas_pagar_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contas_pagar_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_financeiro_eventos"
+            referencedColumns: ["evento_id"]
+          },
           {
             foreignKeyName: "contas_pagar_recorrencia_origem_id_fkey"
             columns: ["recorrencia_origem_id"]
@@ -565,6 +582,7 @@ export type Database = {
           data_recebimento: string | null
           data_vencimento: string
           descricao: string
+          evento_id: string | null
           forma_recebimento: string | null
           id: string
           observacoes: string | null
@@ -589,6 +607,7 @@ export type Database = {
           data_recebimento?: string | null
           data_vencimento: string
           descricao: string
+          evento_id?: string | null
           forma_recebimento?: string | null
           id?: string
           observacoes?: string | null
@@ -613,6 +632,7 @@ export type Database = {
           data_recebimento?: string | null
           data_vencimento?: string
           descricao?: string
+          evento_id?: string | null
           forma_recebimento?: string | null
           id?: string
           observacoes?: string | null
@@ -629,6 +649,20 @@ export type Database = {
           valor_unitario?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "contas_receber_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "eventos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contas_receber_evento_id_fkey"
+            columns: ["evento_id"]
+            isOneToOne: false
+            referencedRelation: "vw_financeiro_eventos"
+            referencedColumns: ["evento_id"]
+          },
           {
             foreignKeyName: "contas_receber_recorrencia_origem_id_fkey"
             columns: ["recorrencia_origem_id"]

@@ -6,11 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2, FileText, Receipt, Paperclip } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DollarSign, TrendingUp, TrendingDown, Plus, Trash2, FileText, Receipt, Paperclip, Printer, Archive, ChevronUp } from 'lucide-react';
 import { FileViewer } from '@/components/shared/FileViewer';
 import { AdicionarReceitaSheet } from '../modals/AdicionarReceitaSheet';
 import { AdicionarDespesaSheet } from '../modals/AdicionarDespesaSheet';
 import { RelatorioFechamentoDialog } from '../modals/RelatorioFechamentoDialog';
+import { FecharEventoDialog } from '../modals/FecharEventoDialog';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useToast } from '@/hooks/use-toast';
 import { UsePermissionsResult } from '@/hooks/usePermissions';
@@ -87,6 +89,7 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
   };
 
   const [showRelatorioDialog, setShowRelatorioDialog] = useState(false);
+  const [showFecharEventoDialog, setShowFecharEventoDialog] = useState(false);
 
   const handleGerarRelatorio = () => {
     if (despesasSelecionadas.size === 0 && receitasSelecionadas.size === 0) {
@@ -344,6 +347,15 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
         despesasSelecionadas={Array.from(despesasSelecionadas)}
       />
 
+      <FecharEventoDialog
+        open={showFecharEventoDialog}
+        onOpenChange={setShowFecharEventoDialog}
+        evento={evento}
+        receitasSelecionadas={Array.from(receitasSelecionadas)}
+        despesasSelecionadas={Array.from(despesasSelecionadas)}
+        onGerarPDF={() => setShowRelatorioDialog(true)}
+      />
+
       <ConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
@@ -365,18 +377,29 @@ export function FinanceiroEvento({ evento, permissions }: FinanceiroEventoProps)
         />
       )}
 
-      {/* Botão de Fechamento Flutuante - Sempre visível quando há itens selecionados */}
+      {/* Dropdown de Fechamento Flutuante */}
       {permissions.canEditFinancial && evento.status === 'finalizado' && 
        (despesasSelecionadas.size > 0 || receitasSelecionadas.size > 0) && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-          <Button 
-            size="lg" 
-            onClick={handleGerarRelatorio}
-            className="shadow-lg"
-          >
-            <FileText className="h-5 w-5 mr-2" />
-            Fechamento ({despesasSelecionadas.size + receitasSelecionadas.size} itens)
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="lg" className="shadow-lg">
+                <FileText className="h-5 w-5 mr-2" />
+                Fechamento ({despesasSelecionadas.size + receitasSelecionadas.size} itens)
+                <ChevronUp className="h-4 w-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" side="top" className="w-56">
+              <DropdownMenuItem onClick={() => setShowRelatorioDialog(true)}>
+                <Printer className="h-4 w-4 mr-2" />
+                Imprimir Fechamento
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setShowFecharEventoDialog(true)}>
+                <Archive className="h-4 w-4 mr-2" />
+                Fechar Evento
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       )}
     </div>
