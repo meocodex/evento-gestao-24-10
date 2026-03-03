@@ -6,13 +6,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { ClienteSelect } from './ClienteSelect';
 import { ComercialSelect } from './ComercialSelect';
 import { X, Loader2, Plus } from 'lucide-react';
 import { useEventos } from '@/hooks/eventos';
 import { buscarEnderecoPorCEP } from '@/lib/api/viacep';
-import { formatarCEP } from '@/lib/validations/cliente';
+import { formatarCEP, estados } from '@/lib/validations/cliente';
 
 interface NovoEventoSheetProps {
   open: boolean;
