@@ -1,38 +1,48 @@
 
-# Receitas e Despesas entram como Pagas/Recebidas no Fechamento
 
-## Problema
-Atualmente, ao fechar o evento, o status das receitas e despesas no financeiro geral depende do status original no evento. Se uma receita estava "pendente" no evento, ela entra como "pendente" no financeiro geral. O correto e que **todas** entrem como ja liquidadas.
+# Indicador Visual de Evento Já Contabilizado
 
-## Mudanca
+## Objetivo
+Mostrar na aba Financeiro do evento se ele já foi contabilizado no financeiro geral, e impedir tentativas duplicadas desabilitando a opção "Fechar Evento".
 
-Arquivo: `src/hooks/eventos/useFecharEvento.ts`
+## Abordagem
 
-- **Receitas** (contas a receber): status sempre `'recebido'`, com `data_recebimento` preenchida com a data atual e `forma_recebimento` definida como `'Transferencia'` (valor padrao)
-- **Despesas** (contas a pagar): status sempre `'pago'`, com `data_pagamento` preenchida com a data atual e `forma_pagamento` definida como `'Transferencia'` (valor padrao)
+### 1. Criar hook `useEventoContabilizado`
+Arquivo: `src/hooks/eventos/useEventoContabilizado.ts`
 
-### Detalhes tecnicos
+- Query simples que verifica se existem registros em `contas_receber` ou `contas_pagar` com `evento_id` igual ao do evento
+- Retorna `{ jaContabilizado: boolean, isLoading: boolean }`
+- Query key: `['evento-contabilizado', eventoId]`
 
-Linha 41 muda de:
-```
-status: receita.status === 'pago' ? 'recebido' : 'pendente',
-```
-Para:
-```
-status: 'recebido',
-data_recebimento: new Date().toISOString().split('T')[0],
-forma_recebimento: 'Transferencia',
+### 2. Adicionar banner visual em `FinanceiroEvento.tsx`
+- Quando `jaContabilizado === true`, exibir um card/banner no topo com ícone de check e texto: **"Este evento já foi contabilizado no financeiro geral"** com estilo verde/success
+- Desabilitar a opção "Fechar Evento" no dropdown flutuante (manter "Imprimir Fechamento" habilitado)
+- Opcionalmente esconder os checkboxes de seleção se já contabilizado
+
+### 3. Exportar novo hook
+Arquivo: `src/hooks/eventos/index.ts` — adicionar export
+
+## Arquivos
+
+| Arquivo | Ação |
+|---------|------|
+| `src/hooks/eventos/useEventoContabilizado.ts` | Novo - query de verificação |
+| `src/hooks/eventos/index.ts` | Adicionar export |
+| `src/components/eventos/secoes/FinanceiroEvento.tsx` | Banner + desabilitar "Fechar Evento" |
+
+## Detalhes técnicos
+
+O hook fará:
+```typescript
+const { data } = await supabase
+  .from('contas_receber')
+  .select('id')
+  .eq('evento_id', eventoId)
+  .limit(1);
+return data && data.length > 0;
 ```
 
-Linha 64 muda de:
-```
-status: despesa.status === 'pago' ? 'pago' : 'pendente',
-```
-Para:
-```
-status: 'pago',
-data_pagamento: new Date().toISOString().split('T')[0],
-forma_pagamento: 'Transferencia',
-```
+O banner usará as classes de success existentes no projeto (`bg-green-500/10 border-green-500/50 text-green-700`), com ícone `CheckCircle` do lucide-react.
 
-Apenas 1 arquivo sera modificado: `src/hooks/eventos/useFecharEvento.ts`
+No dropdown, o item "Fechar Evento" receberá `disabled={jaContabilizado}` com tooltip explicativo.
+
