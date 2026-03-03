@@ -10,12 +10,12 @@ interface EventosQueryResult {
   totalCount: number;
 }
 
-export function useEventosQueries(page = 1, pageSize = 50, searchTerm?: string, enabled = true) {
+export function useEventosQueries(page = 1, pageSize = 50, searchTerm?: string, incluirArquivados = false, enabled = true) {
   // Debounce do termo de busca para evitar queries desnecessárias
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['eventos', page, pageSize, debouncedSearchTerm],
+    queryKey: ['eventos', page, pageSize, debouncedSearchTerm, incluirArquivados],
     enabled,
     queryFn: async () => {
       const from = (page - 1) * pageSize;
@@ -80,8 +80,7 @@ export function useEventosQueries(page = 1, pageSize = 50, searchTerm?: string, 
         return { eventos, totalCount: eventos.length };
       }
 
-      // Query normal (sem busca) - carregar apenas dados essenciais com paginação
-      const { data, error, count } = await supabase
+      let query = supabase
         .from('eventos')
         .select(`
           id,
@@ -104,10 +103,15 @@ export function useEventosQueries(page = 1, pageSize = 50, searchTerm?: string, 
           cliente:clientes(id, nome, email, tipo, documento, telefone, whatsapp, endereco),
           comercial:profiles!eventos_comercial_id_fkey(id, nome, email)
         `, { count: 'exact' })
-        .eq('arquivado', false)
         .neq('status', 'cancelado')
         .order('data_inicio', { ascending: false })
         .range(from, to);
+
+      if (!incluirArquivados) {
+        query = query.eq('arquivado', false);
+      }
+
+      const { data, error, count } = await query;
       
       if (error) throw error;
       
