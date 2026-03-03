@@ -24,6 +24,7 @@ interface NovoEventoSheetProps {
 export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEventoSheetProps) {
   const { toast } = useToast();
   const { criarEvento } = useEventos();
+  const [tipoEvento, setTipoEvento] = useState('');
   const [nome, setNome] = useState('');
   const [dataHoraInicio, setDataHoraInicio] = useState('');
   const [dataHoraFim, setDataHoraFim] = useState('');
@@ -97,6 +98,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
   }, [cep, toast]);
 
   const resetForm = () => {
+    setTipoEvento('');
     setNome('');
     setDataHoraInicio('');
     setDataHoraFim('');
@@ -120,6 +122,15 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!tipoEvento) {
+      toast({
+        title: 'Campo obrigatório',
+        description: 'Selecione o tipo de evento.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     if (!clienteId || !comercialId) {
       toast({
@@ -160,6 +171,7 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
       
       await criarEvento.mutateAsync({
         nome,
+        tipoEvento: tipoEvento as 'bar' | 'ingresso' | 'hibrido',
         dataInicio,
         dataFim,
         horaInicio,
@@ -215,6 +227,20 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
       size="xl"
     >
       <div className="space-y-4">
+        <div>
+          <Label htmlFor="tipoEvento">Tipo de Evento *</Label>
+          <Select value={tipoEvento} onValueChange={setTipoEvento}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione o tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="bar">Bar</SelectItem>
+              <SelectItem value="ingresso">Ingresso</SelectItem>
+              <SelectItem value="hibrido">Híbrido</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div>
           <Label htmlFor="nome">Nome do Evento *</Label>
           <Input 
@@ -341,14 +367,16 @@ export function NovoEventoSheet({ open, onOpenChange, onEventoCreated }: NovoEve
           </div>
           <div>
             <Label htmlFor="estado">Estado *</Label>
-            <Input 
-              id="estado" 
-              value={estado} 
-              onChange={(e) => setEstado(e.target.value.toUpperCase())} 
-              placeholder="MT"
-              maxLength={2}
-              required 
-            />
+            <Select value={estado} onValueChange={setEstado}>
+              <SelectTrigger>
+                <SelectValue placeholder="UF" />
+              </SelectTrigger>
+              <SelectContent>
+                {estados.map((uf) => (
+                  <SelectItem key={uf} value={uf}>{uf}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
