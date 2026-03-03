@@ -1,56 +1,33 @@
 
 
-# Eventos Arquivados Nao Aparecem
+# Fix: Erro ao ativar "Incluir arquivados"
 
-## Causa raiz
+## Problema encontrado
 
-O problema esta no hook `useEventosQueries.ts`. A query ao banco de dados aplica filtros fixos:
-
-```typescript
-.eq('arquivado', false)
-.neq('status', 'cancelado')
+Ao clicar em "Incluir arquivados", a pagina quebra com o erro:
+```
+A <Select.Item /> must have a value prop that is not an empty string.
 ```
 
-Isso significa que eventos arquivados **nunca sao buscados do banco**, independentemente do filtro `incluirArquivados` estar ativo no frontend. O filtro no `Eventos.tsx` (linha 61) e inutil porque os dados ja chegam sem os arquivados.
+**Causa**: Alguns eventos (provavelmente os arquivados) possuem o campo `cidade` vazio. O `availableCities` no `Eventos.tsx` nao filtra valores vazios, e o `SelectItem` do Radix nao aceita `value=""`.
 
-## Solucao
+## Correcao
 
-### 1. Passar o filtro `incluirArquivados` para o hook de query
+**Arquivo**: `src/pages/Eventos.tsx`
 
-- Modificar `useEventosQueries.ts` para receber um parametro `incluirArquivados`
-- Quando `true`, remover o `.eq('arquivado', false)` da query
-- Adicionar `incluirArquivados` na query key para invalidar cache corretamente
-
-### 2. Propagar o parametro desde `Eventos.tsx`
-
-- Passar `filters.incluirArquivados` para o hook `useEventos`
-- O hook intermediario (`src/hooks/eventos/index.ts` ou similar) deve repassar ao `useEventosQueries`
-
-### Arquivos a modificar
-
-| Arquivo | Mudanca |
-|---------|---------|
-| `src/contexts/eventos/useEventosQueries.ts` | Adicionar param `incluirArquivados`, condicionar `.eq('arquivado', false)` |
-| Hook intermediario (`useEventos`) | Repassar parametro |
-| `src/pages/Eventos.tsx` | Passar `filters.incluirArquivados` ao hook |
-
-### Detalhe tecnico
-
-No `useEventosQueries.ts`, a query condicional ficaria:
-
+Linha 49, alterar de:
 ```typescript
-let query = supabase.from('eventos').select(...)
-  .neq('status', 'cancelado')
-  .order('data_inicio', { ascending: false })
-  .range(from, to);
-
-if (!incluirArquivados) {
-  query = query.eq('arquivado', false);
-}
+return Array.from(new Set(eventos.map(e => e.cidade)));
+```
+Para:
+```typescript
+return Array.from(new Set(eventos.map(e => e.cidade).filter(Boolean)));
 ```
 
-E a query key incluiria o novo parametro:
+Mesma correcao para `availableTags` na linha 53:
 ```typescript
-queryKey: ['eventos', page, pageSize, debouncedSearchTerm, incluirArquivados]
+return Array.from(new Set(eventos.flatMap(e => e.tags).filter(Boolean)));
 ```
+
+Apenas 1 arquivo modificado com 2 linhas alteradas.
 
