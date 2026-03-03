@@ -1,74 +1,46 @@
 
 
-# Analise: Cadastro Publico vs Cadastro Interno + Obrigatoriedade de Imagens
+# Busca de CEP no Cadastro Publico - Analise
 
-## 1. Comparacao Cadastro Publico vs Interno
+## Resultado do teste
 
-### Cadastro Interno (`NovoEventoSheet`)
-O formulario interno cria eventos diretamente na tabela `eventos` com campos: nome, tipo_evento, datas, horarios, local, endereco, cidade, estado, cliente_id, comercial_id, tags, descricao, observacoes. **Nao coleta dados de produtor, dados bancarios, nem configuracoes de ingresso/bar no momento da criacao** - essas configuracoes sao editadas depois.
+Testei o cadastro publico diretamente no preview (`/cadastro-evento`), digitei o CEP `78045-000` e a busca automatica **funcionou corretamente**:
+- O endereço foi preenchido automaticamente (Avenida São Sebastião, Quilombo, Cuiabá, MT)
+- O toast "CEP encontrado!" apareceu
+- O spinner de loading apareceu durante a busca
 
-### Cadastro Publico (`CadastroEvento`)
-O formulario publico cria registros na tabela `cadastros_publicos` com um fluxo de 6 etapas que coleta **muito mais informacao**:
-- Step 1: Tipo do evento
-- Step 2: Dados basicos (nome, datas, endereco com CEP)
-- Step 3: Produtor (documento, contato, endereco, responsavel legal)
-- Step 4: Configuracoes (setores/ingressos/banners OU bar/estabelecimentos)
-- Step 5: Dados bancarios e observacoes
-- Step 6: Revisao e envio
+## Possiveis causas do problema no seu lado
 
-**Conclusao**: Os dois cadastros sao coerentes em proposito - o publico e um "pre-cadastro" que depois e aprovado e convertido em evento interno. Os campos do cadastro publico alimentam tanto a tabela `cadastros_publicos` quanto futuramente o `eventos` + `clientes`. A estrutura esta adequada.
+1. **Versao desatualizada**: Se voce esta acessando pela URL publicada (`evento-gestao-24-10.lovable.app`), pode estar em uma versao antiga. Publique novamente para garantir que o codigo mais recente esta no ar.
 
----
+2. **Problema de rede**: A API ViaCEP (`viacep.com.br`) pode estar bloqueada ou lenta na sua rede. O debounce de 800ms espera antes de buscar.
 
-## 2. Problema: Imagens NAO sao obrigatorias
+3. **CEP invalido ou inexistente**: Se o CEP digitado nao existe na base do ViaCEP, a busca retorna `null` e nenhum feedback visual e dado (o codigo nao mostra toast de erro nesse caso - apenas quando ha excecao de rede).
 
-No Step 4, as 4 imagens (Banner, Miniatura, Mapa, Ingresso POS) estao todas como **opcionais**:
+## Melhoria sugerida
 
-- Linha 1194: `"Envie as imagens para divulgação do seu evento (todas opcionais)"`
-- Os states sao `useState<string | undefined>()` sem validacao
-- A validacao do botao "Proximo" (linha 1596-1599) so verifica nomes de setores/tipos, **nao verifica imagens**
+Adicionar feedback quando o CEP nao e encontrado (retorno `null` sem excecao). Atualmente, se `buscarEnderecoPorCEP` retorna `null`, nada acontece - o usuario fica sem saber o que houve.
 
-### Requisito do usuario
-- **Banner Site (1170x400px)** → OBRIGATORIO
-- **Miniatura Site (500x500px)** → OBRIGATORIO
-- **Ingresso POS (300x200px)** → opcional
-- **Mapa Site (1000x1000px)** → opcional
+### Mudanca em `CadastroEvento.tsx` (linha 259-268)
 
-## Plano de implementacao
-
-### Arquivo: `src/pages/public/CadastroEvento.tsx`
-
-**1. Alterar descricao do card de imagens** (linha 1193-1195):
-```
-De: "Envie as imagens para divulgação do seu evento (todas opcionais)"
-Para: "Envie as imagens para divulgação do seu evento. Banner e Miniatura são obrigatórios."
-```
-
-**2. Adicionar indicador visual de obrigatoriedade nos campos Banner e Miniatura**:
-- Passar uma prop `required` para o `ImageUploadField` dos campos Banner e Miniatura
-- Exibir asterisco (*) e borda de alerta quando vazio
-
-**3. Alterar validacao do botao "Proximo" no Step 4** (linha 1596-1599):
-Adicionar verificacao de `bannerSite` e `miniaturaSite` na condicao `disabled`:
+Apos o `if (endereco)`, adicionar um `else` com toast informativo:
 ```typescript
-disabled={
-  (tipoEvento === 'ingresso' || tipoEvento === 'hibrido') && (
-    !bannerSite || !miniaturaSite ||
-    setores.some(s => !s.nome.trim() || s.tiposIngresso.some(t => !t.nome.trim()))
-  )
+if (endereco) {
+  // ... preenche campos (ja existe)
+} else {
+  toast({
+    title: 'CEP não encontrado',
+    description: 'Verifique o CEP digitado ou preencha o endereço manualmente.',
+    variant: 'destructive',
+  });
 }
 ```
 
-### Arquivo: `src/components/cadastro/ImageUploadField.tsx`
+Essa mesma correcao deve ser aplicada tambem ao useEffect do CEP do produtor (linhas 236-243).
 
-**4. Adicionar prop `required` ao componente**:
-- Exibir asterisco no label quando `required={true}`
-- Exibir borda vermelha/laranja quando required e sem valor
-
-### Resumo de arquivos
+### Arquivos
 
 | Arquivo | Mudanca |
 |---------|---------|
-| `src/pages/public/CadastroEvento.tsx` | Texto descritivo, props `required` nos campos Banner/Miniatura, validacao no botao |
-| `src/components/cadastro/ImageUploadField.tsx` | Adicionar suporte a prop `required` com feedback visual |
+| `src/pages/public/CadastroEvento.tsx` | Adicionar `else` com toast nos 2 useEffects de CEP |
 

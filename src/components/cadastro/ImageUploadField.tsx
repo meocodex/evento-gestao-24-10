@@ -13,7 +13,8 @@ interface ImageUploadFieldProps {
   onChange: (url: string | undefined) => void;
   accept?: string[];
   maxSizeMB?: number;
-  tempId: string; // ID temporário para organizar uploads antes de ter o protocolo
+  tempId: string;
+  required?: boolean;
 }
 
 export function ImageUploadField({
@@ -25,6 +26,7 @@ export function ImageUploadField({
   accept = ['image/jpeg', 'image/png', 'image/webp'],
   maxSizeMB = 5,
   tempId,
+  required = false,
 }: ImageUploadFieldProps) {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | undefined>(value);
@@ -118,8 +120,11 @@ export function ImageUploadField({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label className="text-sm font-medium">{label}</label>
-        <span className="text-xs text-muted-foreground">(opcional)</span>
+        <label className="text-sm font-medium">
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </label>
+        {!required && <span className="text-xs text-muted-foreground">(opcional)</span>}
       </div>
       
       {dimensions && (
@@ -171,7 +176,9 @@ export function ImageUploadField({
             transition-colors duration-200
             ${isDragActive 
               ? 'border-primary bg-primary/5' 
-              : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30'
+              : required && !value
+                ? 'border-destructive/50 hover:border-destructive hover:bg-destructive/5'
+                : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30'
             }
             ${uploading ? 'opacity-50 cursor-not-allowed' : ''}
           `}

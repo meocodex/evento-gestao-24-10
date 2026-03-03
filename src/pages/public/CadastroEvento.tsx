@@ -1191,7 +1191,7 @@ export default function CadastroEvento() {
                   Imagens do Evento
                 </CardTitle>
                 <CardDescription>
-                  Envie as imagens para divulgação do seu evento (todas opcionais)
+                  Envie as imagens para divulgação do seu evento. Banner e Miniatura são obrigatórios.
                 </CardDescription>
               </CardHeader>
               <CardContent className="grid md:grid-cols-2 gap-6">
@@ -1202,6 +1202,7 @@ export default function CadastroEvento() {
                   value={bannerSite}
                   onChange={setBannerSite}
                   tempId={tempUploadId}
+                  required
                 />
                 <ImageUploadField
                   label="Miniatura Site"
@@ -1210,6 +1211,7 @@ export default function CadastroEvento() {
                   value={miniaturaSite}
                   onChange={setMiniaturaSite}
                   tempId={tempUploadId}
+                  required
                 />
                 <ImageUploadField
                   label="Mapa Site"
@@ -1596,7 +1598,7 @@ export default function CadastroEvento() {
             <Button 
               onClick={() => setStep(5)}
               disabled={(tipoEvento === 'ingresso' || tipoEvento === 'hibrido') && 
-                setores.some(s => !s.nome.trim() || s.tiposIngresso.some(t => !t.nome.trim()))}
+                (!bannerSite || !miniaturaSite || setores.some(s => !s.nome.trim() || s.tiposIngresso.some(t => !t.nome.trim())))}
             >
               Próximo
               <ArrowRight className="h-4 w-4 ml-2" />
