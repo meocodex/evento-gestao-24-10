@@ -239,6 +239,16 @@ export default function CadastroEvento() {
             setProdutorBairro(endereco.bairro);
             setProdutorCidade(endereco.localidade);
             setProdutorEstado(endereco.uf);
+            toast({
+              title: 'CEP encontrado!',
+              description: 'Endereço do produtor preenchido automaticamente.',
+            });
+          } else {
+            toast({
+              title: 'CEP não encontrado',
+              description: 'Verifique o CEP digitado ou preencha o endereço manualmente.',
+              variant: 'destructive',
+            });
           }
         } catch (error) {
           console.error('Erro ao buscar CEP:', error);
@@ -265,6 +275,12 @@ export default function CadastroEvento() {
             toast({
               title: 'CEP encontrado!',
               description: 'Endereço preenchido automaticamente.',
+            });
+          } else {
+            toast({
+              title: 'CEP não encontrado',
+              description: 'Verifique o CEP digitado ou preencha o endereço manualmente.',
+              variant: 'destructive',
             });
           }
         } catch (error) {
