@@ -46,11 +46,11 @@ export default function Eventos() {
   const [sortBy, setSortBy] = useState<string>('dataProxima');
 
   const availableCities = useMemo(() => {
-    return Array.from(new Set(eventos.map(e => e.cidade)));
+    return Array.from(new Set(eventos.map(e => e.cidade).filter(Boolean)));
   }, [eventos]);
 
   const availableTags = useMemo(() => {
-    return Array.from(new Set(eventos.flatMap(e => e.tags)));
+    return Array.from(new Set(eventos.flatMap(e => e.tags).filter(Boolean)));
   }, [eventos]);
 
   const filteredEventos = useMemo(() => {
