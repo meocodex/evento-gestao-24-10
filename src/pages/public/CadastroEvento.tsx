@@ -1165,7 +1165,7 @@ export default function CadastroEvento() {
                 !produtorBairro ||
                 !produtorCidade ||
                 !produtorEstado ||
-                (produtorTipo === 'CNPJ' && (!responsavelNome || !responsavelCpf || !responsavelDataNascimento))
+                (produtorTipo === 'CNPJ' && (!responsavelNome || !responsavelCpf || !validarCPF(responsavelCpf.replace(/\D/g, '')) || !responsavelDataNascimento))
               }
             >
               Próximo
