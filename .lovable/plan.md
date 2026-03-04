@@ -1,35 +1,46 @@
 
 
-# Fix: Validacao do CPF do Responsavel Legal no Step 3
+# Busca de CEP no Cadastro Publico - Analise
 
-## Problema
+## Resultado do teste
 
-O formulario permite avancar do Step 3 (Produtor) com um CPF do responsavel legal incompleto ou invalido. A validacao so e feita no momento do submit final (Step 6), gerando frustacao porque o usuario ja preencheu todos os outros passos.
+Testei o cadastro publico diretamente no preview (`/cadastro-evento`), digitei o CEP `78045-000` e a busca automatica **funcionou corretamente**:
+- O endereço foi preenchido automaticamente (Avenida São Sebastião, Quilombo, Cuiabá, MT)
+- O toast "CEP encontrado!" apareceu
+- O spinner de loading apareceu durante a busca
 
-**Causa raiz**: A condicao `disabled` do botao "Proximo" no Step 3 (linha 1168) apenas verifica se `responsavelCpf` e truthy (`!responsavelCpf`), mas nao valida se e um CPF valido com 11 digitos. Entao o usuario pode digitar "123.456.7" e avancar normalmente, so recebendo o erro ao final.
+## Possiveis causas do problema no seu lado
 
-## Correcao
+1. **Versao desatualizada**: Se voce esta acessando pela URL publicada (`evento-gestao-24-10.lovable.app`), pode estar em uma versao antiga. Publique novamente para garantir que o codigo mais recente esta no ar.
 
-### Arquivo: `src/pages/public/CadastroEvento.tsx`
+2. **Problema de rede**: A API ViaCEP (`viacep.com.br`) pode estar bloqueada ou lenta na sua rede. O debounce de 800ms espera antes de buscar.
 
-Alterar a validacao do botao "Proximo" no Step 3 para incluir validacao real do CPF do responsavel legal:
+3. **CEP invalido ou inexistente**: Se o CEP digitado nao existe na base do ViaCEP, a busca retorna `null` e nenhum feedback visual e dado (o codigo nao mostra toast de erro nesse caso - apenas quando ha excecao de rede).
 
+## Melhoria sugerida
+
+Adicionar feedback quando o CEP nao e encontrado (retorno `null` sem excecao). Atualmente, se `buscarEnderecoPorCEP` retorna `null`, nada acontece - o usuario fica sem saber o que houve.
+
+### Mudanca em `CadastroEvento.tsx` (linha 259-268)
+
+Apos o `if (endereco)`, adicionar um `else` com toast informativo:
 ```typescript
-// De:
-(produtorTipo === 'CNPJ' && (!responsavelNome || !responsavelCpf || !responsavelDataNascimento))
-
-// Para:
-(produtorTipo === 'CNPJ' && (
-  !responsavelNome || 
-  !responsavelCpf || 
-  !validarCPF(responsavelCpf.replace(/\D/g, '')) ||
-  !responsavelDataNascimento
-))
+if (endereco) {
+  // ... preenche campos (ja existe)
+} else {
+  toast({
+    title: 'CEP não encontrado',
+    description: 'Verifique o CEP digitado ou preencha o endereço manualmente.',
+    variant: 'destructive',
+  });
+}
 ```
 
-Isso bloqueia o avanco no Step 3 ate que o CPF do responsavel legal seja valido, evitando que o erro so apareca no final do cadastro.
+Essa mesma correcao deve ser aplicada tambem ao useEffect do CEP do produtor (linhas 236-243).
+
+### Arquivos
 
 | Arquivo | Mudanca |
 |---------|---------|
-| `src/pages/public/CadastroEvento.tsx` | Adicionar `validarCPF()` na condicao disabled do botao Proximo do Step 3 |
+| `src/pages/public/CadastroEvento.tsx` | Adicionar `else` com toast nos 2 useEffects de CEP |
 
